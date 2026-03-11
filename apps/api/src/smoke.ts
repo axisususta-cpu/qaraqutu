@@ -137,7 +137,6 @@ export function registerSmokeRoutes(app: FastifyInstance) {
       receipt_linkage,
     };
   });
-  });
 
   // Internal long-form PDF fixture for multi-page validation
   app.get("/v1/system/pdf-fixture/claims-long", async (request, reply) => {
@@ -156,7 +155,7 @@ export function registerSmokeRoutes(app: FastifyInstance) {
       tenantId: "TENANT-SMOKE",
     };
 
-    const recordedEvidence = Array.from({ length: 40 }).map((_, idx) => ({
+    const recordedEvidence = Array.from({ length: 80 }).map((_, idx) => ({
       recordId: `REC-LONG-${idx}`,
       sourceType: "telemetry_trace",
       sourceId: `SRC-LONG-${idx}`,
@@ -167,11 +166,11 @@ export function registerSmokeRoutes(app: FastifyInstance) {
       recordedFlag: true as const,
       derivationNote: null,
       originConfidence: 0.9,
-      displayLabel: `Long recorded evidence item #${idx + 1}`,
+      displayLabel: `Long recorded evidence item #${idx + 1} — ${"Lorem ipsum dolor sit amet. ".repeat(8)}`,
       machineLabel: "long_recorded",
     }));
 
-    const derivedEvidence = Array.from({ length: 30 }).map((_, idx) => ({
+    const derivedEvidence = Array.from({ length: 60 }).map((_, idx) => ({
       derivedId: `DER-LONG-${idx}`,
       derivedType: "long_form_analysis",
       derivedFrom: [`REC-LONG-${idx}`],
@@ -183,7 +182,8 @@ export function registerSmokeRoutes(app: FastifyInstance) {
       displayLabel: `Long derived evidence item #${idx + 1}`,
       machineLabel: "long_derived",
       humanSummary:
-        "This is a synthetic long-form derived evidence summary used to exercise multi-page layout behavior.",
+        "This is a synthetic long-form derived evidence summary used to exercise multi-page layout behavior. " +
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ".repeat(6),
       sourceDependencies: [`REC-LONG-${idx}`],
     }));
 
@@ -199,25 +199,28 @@ export function registerSmokeRoutes(app: FastifyInstance) {
       scenarioKey: "Internal Long-Form PDF Fixture",
       occurredAt: now,
       summary:
-        "Internal long-form evidence fixture used to validate multi-page PDF layout behavior for claims packs.",
+        "Internal long-form evidence fixture used to validate multi-page PDF layout behavior for claims packs. " +
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore. ".repeat(20),
       verificationState: identity.verificationState,
       recordedEvidence,
       derivedEvidence,
     };
 
     const pdf = renderClaimsPdf(identity, event);
-    const range = pdf.bufferedPageRange();
-    const pageCount = range.count;
-
-    reply
-      .type("application/pdf")
-      .header(
-        "Content-Disposition",
-        `attachment; filename="${identity.exportId}.pdf"`
-      )
-      .header("x-qaraqutu-pages", String(pageCount));
-
-    pdf.pipe(reply.raw);
+    let pageCount = 1;
+    pdf.on("pageAdded", () => pageCount++);
+    const chunks: Buffer[] = [];
+    pdf.on("data", (c: Buffer) => chunks.push(c));
+    pdf.on("end", () => {
+      reply
+        .type("application/pdf")
+        .header(
+          "Content-Disposition",
+          `attachment; filename="${identity.exportId}.pdf"`
+        )
+        .header("x-qaraqutu-pages", String(pageCount))
+        .send(Buffer.concat(chunks));
+    });
     pdf.end();
   });
 }

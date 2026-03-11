@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/clean-next-lock.js && cross-env NEXT_PUBLIC_API_BASE_URL=http://localhost:4100 PORT=3002 NEXT_DIST_DIR=.next-dev next dev",
     "build": "next build",
     "start": "next start"
   },
@@ -14,8 +14,10 @@
     "react-dom": "latest"
   },
   "devDependencies": {
+    "cross-env": "latest",
     "typescript": "latest",
     "@types/react": "latest",
-    "@types/node": "latest"
+    "@types/node": "latest",
+    "rimraf": "latest"
   }
 }

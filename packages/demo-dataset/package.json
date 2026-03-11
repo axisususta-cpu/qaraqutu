@@ -5,11 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "seed": "ts-node src/seed.ts"
+    "seed": "tsx src/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "6",
-    "contracts": "0.1.0"
+    "contracts": "0.1.0",
+    "@prisma/client": "6"
   },
   "devDependencies": {
     "ts-node": "latest",

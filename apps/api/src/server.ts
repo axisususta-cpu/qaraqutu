@@ -378,7 +378,7 @@ fastify.get<{
   const { exportId } = request.params;
   const exp = await prisma.export.findUnique({
     where: { exportId },
-    include: { event: true, receipt: true, bundle: false },
+    include: { event: true, receipt: true },
   } as any);
 
   if (!exp) {
@@ -484,16 +484,9 @@ fastify.get<{
       occurredAt: event.occurredAt.toISOString(),
       summary: event.summary,
       verificationState: exp.verificationState as VerificationState,
-      recordedEvidence: recorded as CanonicalEvent["recordedEvidence"],
-      derivedEvidence: derived as CanonicalEvent["derivedEvidence"],
+      recordedEvidence: JSON.parse(JSON.stringify(recorded)) as CanonicalEvent["recordedEvidence"],
+      derivedEvidence: JSON.parse(JSON.stringify(derived)) as CanonicalEvent["derivedEvidence"],
     };
-
-    reply
-      .type("application/pdf")
-      .header(
-        "Content-Disposition",
-        `attachment; filename="${exp.exportId}.pdf"`
-      );
 
     let pdf: PDFDocument;
     if (exp.profile === "claims") {
@@ -510,8 +503,22 @@ fastify.get<{
         });
     }
 
-    pdf.pipe(reply.raw);
-    pdf.end();
+    const chunks: Buffer[] = [];
+    pdf.on("data", (c: Buffer) => chunks.push(c));
+    await new Promise<void>((resolve, reject) => {
+      pdf.on("end", () => {
+        reply
+          .type("application/pdf")
+          .header(
+            "Content-Disposition",
+            `attachment; filename="${exp.exportId}.pdf"`
+          )
+          .send(Buffer.concat(chunks));
+        resolve();
+      });
+      pdf.on("error", reject);
+      pdf.end();
+    });
     return;
   }
 
@@ -574,7 +581,7 @@ fastify.get<{
 
 const port = Number(process.env.PORT) || 4000;
 
-fastify.listen(port, "0.0.0.0", (err, address) => {
+fastify.listen({ port, host: "0.0.0.0" }, (err, address) => {
   if (err) {
     fastify.log.error(err);
     process.exit(1);

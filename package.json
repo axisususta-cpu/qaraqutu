@@ -8,11 +8,16 @@
   ],
   "scripts": {
     "dev:web": "npm run dev --workspace=web",
-    "dev:api": "npm run dev --workspace=api",
+    "dev:api": "dotenv -e .env -- npm run dev --workspace=api",
     "dev": "npm run dev:api & npm run dev:web",
-    "prisma:generate": "npm run prisma:generate --workspace=api",
-    "prisma:migrate": "npm run prisma:migrate --workspace=api",
-    "seed": "npm run seed --workspace=demo-dataset",
-    "smoke": "npm run smoke --workspace=api"
+    "prisma:generate": "node scripts/prisma-pre-generate.js && dotenv -e .env -- npx prisma generate --schema=apps/api/prisma/schema.prisma",
+    "prisma:migrate": "dotenv -e .env -- npm run prisma:migrate --workspace=api",
+    "seed": "dotenv -e .env -- npm run seed --workspace=demo-dataset",
+    "smoke": "dotenv -e .env -- npm run smoke --workspace=api"
+  },
+  "devDependencies": {
+    "tsx": "latest",
+    "dotenv-cli": "latest",
+    "prisma": "6"
   }
 }

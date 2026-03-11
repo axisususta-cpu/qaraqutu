@@ -94,25 +94,14 @@ export function drawNoticeSection(ctx: LayoutContext, text: string) {
 }
 
 export function attachFooterIdentity(doc: PDFDocument, footerText: string) {
-  doc.on("pageAdded", () => {
-    doc
-      .fontSize(FONT_SIZES.footer)
-      .text(
-        footerText,
-        MARGINS.left,
-        doc.page.height - MARGINS.bottom + 10,
-        { align: "center" }
-      );
-  });
-  // first page footer
+  const w = doc.page.width - MARGINS.left - MARGINS.right;
   doc
     .fontSize(FONT_SIZES.footer)
-    .text(
-      footerText,
-      MARGINS.left,
-      doc.page.height - MARGINS.bottom + 10,
-      { align: "center" }
-    );
+    .text(footerText, MARGINS.left, doc.page.height - MARGINS.bottom + 10, {
+      width: w,
+      align: "center",
+      lineBreak: false,
+    });
 }
 
 export function buildLayoutContext(

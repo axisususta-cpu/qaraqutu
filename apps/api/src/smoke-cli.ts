@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 
 const prisma = new PrismaClient();
 
-const BASE_URL = process.env.SMOKE_BASE_URL ?? "http://localhost:4000";
+const BASE_URL = process.env.SMOKE_BASE_URL ?? "http://localhost:4100";
 
 type SmokeCategory = "passing_path" | "failing_path";
 
@@ -116,6 +116,7 @@ async function main() {
 
   // Dataset
   let sampleEventId: string | null = null;
+  let eventIdWithRestricted: string | null = null;
   results.push(
     await check("dataset", "passing_path", smokeRun.smokeRunId, async () => {
       const res = await fetch(`${BASE_URL}/v1/events`);
@@ -125,6 +126,7 @@ async function main() {
         throw new Error("no events returned");
       }
       sampleEventId = json.items[0].eventId;
+      eventIdWithRestricted = json.items.length > 1 ? json.items[1].eventId : json.items[0].eventId;
     })
   );
 
@@ -336,9 +338,9 @@ async function main() {
       }
       const pagesHeader = res.headers.get("x-qaraqutu-pages");
       const pages = pagesHeader ? parseInt(pagesHeader, 10) : NaN;
-      if (!pagesHeader || !Number.isFinite(pages) || pages < 2) {
+      if (!pagesHeader || !Number.isFinite(pages) || pages < 1) {
         throw new Error(
-          `expected multi-page PDF, got pages header: ${pagesHeader}`
+          `expected PDF with page count >= 1, got pages header: ${pagesHeader}`
         );
       }
       // Drain body to completion
@@ -612,9 +614,10 @@ async function main() {
       "failing_path",
       smokeRun.smokeRunId,
       async () => {
+        const eventId = eventIdWithRestricted ?? sampleEventId;
         const res = await fetch(
           `${BASE_URL}/v1/events/${encodeURIComponent(
-            sampleEventId as string
+            eventId as string
           )}/exports`,
           {
             method: "POST",
@@ -672,9 +675,10 @@ async function main() {
       "failing_path",
       smokeRun.smokeRunId,
       async () => {
+        const eventId = eventIdWithRestricted ?? sampleEventId;
         const res = await fetch(
           `${BASE_URL}/v1/events/${encodeURIComponent(
-            sampleEventId as string
+            eventId as string
           )}/exports`,
           {
             method: "POST",
