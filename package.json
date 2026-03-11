@@ -1,0 +1,18 @@
+{
+  "name": "qaraqutu-saas",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=web",
+    "dev:api": "npm run dev --workspace=api",
+    "dev": "npm run dev:api & npm run dev:web",
+    "prisma:generate": "npm run prisma:generate --workspace=api",
+    "prisma:migrate": "npm run prisma:migrate --workspace=api",
+    "seed": "npm run seed --workspace=demo-dataset",
+    "smoke": "npm run smoke --workspace=api"
+  }
+}

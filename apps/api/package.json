@@ -1,0 +1,30 @@
+{
+  "name": "api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "smoke": "ts-node src/smoke-cli.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "6",
+    "contracts": "0.1.0",
+    "fastify": "latest",
+    "@fastify/cors": "latest",
+    "fastify-plugin": "latest",
+    "pdfkit": "latest"
+  },
+  "devDependencies": {
+    "prisma": "6",
+    "ts-node": "latest",
+    "ts-node-dev": "latest",
+    "typescript": "latest"
+  }
+}

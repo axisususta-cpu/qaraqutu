@@ -1,0 +1,229 @@
+"use client";
+
+export default function DocsPage() {
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#020617",
+        color: "#E5E7EB",
+        padding: "1.5rem 2rem",
+      }}
+    >
+      <div style={{ maxWidth: 960, margin: "0 auto" }}>
+        <h1 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>
+          QARAQUTU Docs / API
+        </h1>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            Product scope
+          </h2>
+          <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+            QARAQUTU currently focuses on vehicle incident, fleet, insurance,
+            claims, and legal review workflows. The system is software-first,
+            edge-ready, and hardware-later: it exposes a canonical event model,
+            verification, and export surfaces as a multi-tenant SaaS.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            Canonical model summary
+          </h2>
+          <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
+            <li>
+              <strong>Event</strong>: the canonical incident object with one
+              event ID per incident.
+            </li>
+            <li>
+              <strong>Bundle</strong>: the packaging unit for evidence objects
+              associated with an event.
+            </li>
+            <li>
+              <strong>Manifest</strong>: the integrity map describing which
+              objects belong in the bundle.
+            </li>
+            <li>
+              <strong>Export</strong>: a role-appropriate presentation artifact
+              (JSON or PDF) derived from the canonical event.
+            </li>
+            <li>
+              <strong>Receipt</strong>: protocol evidence that an action
+              occurred (such as export generation).
+            </li>
+            <li>
+              <strong>Tenant policy</strong>: a tenant-level configuration that
+              determines which export profiles are enabled, which visibility
+              classes are allowed in exports, and whether policy-driven
+              redaction is enabled.
+            </li>
+            <li>
+              <strong>Verification run</strong>: a persisted record of a single
+              verification action, linked to an event, bundle, manifest, and
+              verification state. Each run has a unique verification_run_id.
+            </li>
+            <li>
+              <strong>Verification transcript</strong>: a persisted artifact
+              linked to a verification run; stores structured steps (check,
+              result, note) for that run. Each transcript has a unique
+              transcript_id.
+            </li>
+            <li>
+              <strong>Verification State</strong>: one of PASS, FAIL, UNKNOWN,
+              UNVERIFIED for the demo events.
+            </li>
+            <li>
+              <strong>Recorded vs Derived</strong>: recorded evidence represents
+              directly captured/source-origin materials; derived evidence
+              represents later interpretation, reconstruction, or analysis.
+              They are always stored and presented in separate sections.
+            </li>
+          </ul>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            Verification semantics
+          </h2>
+          <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+            Verification is a bounded assessment of a referenced event package.
+            In this version the canonical verification state can be PASS, FAIL,
+            UNKNOWN, or UNVERIFIED. Verification does not constitute a
+            liability determination, guilt finding, or judicial decision; it is
+            an integrity and linkage assessment over the evidence package.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            Export profiles
+          </h2>
+          <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
+            <li>
+              <strong>claims</strong>: claims-oriented evidence pack, available
+              as JSON and PDF.
+            </li>
+            <li>
+              <strong>legal</strong>: legal-review oriented evidence pack,
+              available as JSON and PDF.
+            </li>
+            <li>
+              Exports are subject to tenant policy and visibility classes; not
+              all recorded or derived evidence is necessarily included in a
+              given pack.
+            </li>
+          </ul>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            Visibility classes & redaction
+          </h2>
+          <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+            Evidence items may carry a visibility class. The current demo
+            supports <code>claims_review</code>, <code>legal_review</code>,{" "}
+            <code>technical_review</code>, and{" "}
+            <code>restricted_internal</code>. Claims exports include only
+            claims_review-appropriate evidence; legal exports may include
+            claims_review, legal_review, and technical_review materials.
+            restricted_internal materials are not exported. When evidence is
+            excluded for policy reasons, exports declare this via redaction
+            metadata without altering the underlying canonical event.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            Current API routes
+          </h2>
+          <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
+            <li>
+              <code>GET /health</code> — basic liveness check.
+            </li>
+            <li>
+              <code>GET /v1/events</code> — list events for the current tenant.
+            </li>
+            <li>
+              <code>GET /v1/events/:eventId</code> — retrieve a single canonical
+              event view.
+            </li>
+            <li>
+              <code>POST /v1/events/:eventId/verify</code> — run an
+              event-first verification over the demo bundle/manifest for an
+              event; creates a persisted verification run and transcript,
+              returns verification_run_id, transcript_id, verification state,
+              and transcript summary.
+            </li>
+            <li>
+              <code>GET /v1/verifications/:verificationRunId</code> — retrieve a
+              persisted verification run and its transcript by run ID; returns
+              404 if not found.
+            </li>
+            <li>
+              <code>POST /v1/events/:eventId/exports</code> — create an export
+              with a given profile (claims, legal) and format (json, pdf); body
+              includes profile, format, and purpose. Requests that violate
+              tenant export profile or visibility policy are rejected with
+              institutional error codes (for example
+              <code>POLICY_EXPORT_PROFILE_NOT_ALLOWED</code> or{" "}
+              <code>POLICY_VISIBILITY_VIOLATION</code>) and do not create
+              export artifacts.
+            </li>
+            <li>
+              <code>GET /v1/exports/:exportId/download</code> — download an
+              export by its ID as JSON or PDF, depending on profile and format.
+            </li>
+            <li>
+              <code>GET /v1/system/diagnostics</code> — environment, dataset,
+              schema, and build diagnostics for the running backend.
+            </li>
+            <li>
+              <code>GET /v1/system/pdf-fixture/claims-long</code> — internal
+              test-only route that returns a multi-page claims PDF fixture for
+              validating layout and paging; not intended for tenant or
+              customer-facing use.
+            </li>
+          </ul>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            Diagnostics and smoke
+          </h2>
+          <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+            Diagnostics are exposed via the <code>/v1/system/diagnostics</code>{" "}
+            route and include environment, versions, supported export profiles,
+            recent export activity, recent verification activity, latest
+            verification run summary, latest smoke run details, and a compact
+            tenant policy summary. Smoke checks
+            are executed via a CLI that
+            exercises availability, diagnostics, dataset, verifier (including
+            persisted run and transcript), verification read route, export
+            creation/download, receipt linkage, and multi-page PDF behavior.
+            Each smoke CLI execution now creates a persisted SmokeRun record
+            (and individual SmokeCheck records per check). Admin shows the most
+            recent smoke run and a compact per-check summary.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            Current limitations
+          </h2>
+          <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
+            <li>
+              Smoke run history is currently limited to a short list of the
+              latest runs in diagnostics/admin.
+            </li>
+            <li>
+              Tenant policy is modeled at a simple tenant-wide level; it does
+              not yet support per-user or per-role overrides.
+            </li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  );
+}
+

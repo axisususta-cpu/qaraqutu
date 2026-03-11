@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String  @id @default(cuid())
+  name      String
+  slug      String  @unique
+  createdAt DateTime @default(now())
+  events    Event[]
+  policy    TenantPolicy?
+}
+
+model Event {
+  id                String   @id @default(cuid())
+  eventId           String   @unique
+  bundleId          String
+  manifestId        String
+  tenantId          String
+  eventClass        String
+  scenarioKey       String
+  occurredAt        DateTime
+  summary           String
+  verificationState String
+  vehicleVin        String?
+  fleetId           String?
+  policyOrClaimRef  String?
+  incidentLocation  String?
+  recordedEvidence  Json?
+  derivedEvidence   Json?
+
+  tenant    Tenant  @relation(fields: [tenantId], references: [id])
+  bundles   Bundle[]
+  manifests Manifest[]
+  exports   Export[]
+  receipts  Receipt[]
+  verificationRuns VerificationRun[]
+}
+
+model Bundle {
+  id        String   @id @default(cuid())
+  bundleId  String   @unique
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  manifests Manifest[]
+}
+
+model Manifest {
+  id         String   @id @default(cuid())
+  manifestId String   @unique
+  eventId    String
+  bundleId   String
+  event      Event    @relation(fields: [eventId], references: [id])
+  bundle     Bundle   @relation(fields: [bundleId], references: [id])
+}
+
+model Export {
+  id               String   @id @default(cuid())
+  exportId         String   @unique
+  eventId          String
+  bundleId         String
+  manifestId       String
+  profile          String
+  format           String
+  purpose          String
+  verificationState String
+  createdAt        DateTime @default(now())
+  event            Event    @relation(fields: [eventId], references: [id])
+  receipt          Receipt?
+  recordedEvidenceSnapshot Json?
+  derivedEvidenceSnapshot  Json?
+  redactionApplied         Boolean  @default(false)
+  redactedItemCount        Int?
+  redactionBasis           String?
+  policySnapshot           Json?
+}
+
+model Receipt {
+  id          String   @id @default(cuid())
+  receiptId   String   @unique
+  eventId     String
+  exportId    String?  @unique
+  actionType  String
+  createdAt   DateTime @default(now())
+  event       Event    @relation(fields: [eventId], references: [id])
+  export      Export?  @relation(fields: [exportId], references: [id])
+}
+
+model VerificationRun {
+  id                  String   @id @default(cuid())
+  verificationRunId   String   @unique
+  eventId             String
+  bundleId            String
+  manifestId          String
+  verificationState   String
+  createdAt           DateTime @default(now())
+  event               Event    @relation(fields: [eventId], references: [id])
+  transcript          VerificationTranscript?
+}
+
+model VerificationTranscript {
+  id                  String   @id @default(cuid())
+  transcriptId        String   @unique
+  verificationRunId   String   @unique
+  verificationRun     VerificationRun @relation(fields: [verificationRunId], references: [id])
+  createdAt           DateTime @default(now())
+  steps               VerificationTranscriptStep[]
+}
+
+model VerificationTranscriptStep {
+  id           String   @id @default(cuid())
+  transcriptId String
+  stepIndex    Int
+  check        String
+  result       String
+  note         String
+  transcript   VerificationTranscript @relation(fields: [transcriptId], references: [id])
+}
+
+model SmokeRun {
+  id             String   @id @default(cuid())
+  smokeRunId     String   @unique
+  overallResult  String
+  startedAt      DateTime
+  finishedAt     DateTime?
+  environment    String
+  datasetVersion String
+  buildVersion   String
+  schemaVersion  String
+  checks         SmokeCheck[]
+}
+
+model SmokeCheck {
+  id         String   @id @default(cuid())
+  smokeRunId String
+  checkName  String
+  category   String
+  result     String
+  detail     String?
+  run        SmokeRun @relation(fields: [smokeRunId], references: [smokeRunId])
+}
+
+model TenantPolicy {
+  id                     String   @id @default(cuid())
+  tenantId               String   @unique
+  enabledExportProfiles  String[]
+  enabledVisibilityClasses String[]
+  redactionEnabled       Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+  tenant                 Tenant   @relation(fields: [tenantId], references: [id])
+}
+

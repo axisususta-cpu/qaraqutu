@@ -1,0 +1,12 @@
+node_modules
+.next
+.turbo
+dist
+build
+coverage
+.vercel
+postgres-data
+*.log
+.env
+.env.*
+!.env.example
