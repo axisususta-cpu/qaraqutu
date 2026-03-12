@@ -2,8 +2,13 @@
 
 import { useEffect, useState } from "react";
 
+const DEFAULT_API_BASE =
+  process.env.NODE_ENV === "production"
+    ? "https://qaraqutu-api.vercel.app"
+    : "http://localhost:4000";
+
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000";
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE;
 
 interface Diagnostics {
   environment: string;
