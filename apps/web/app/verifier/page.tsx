@@ -35,6 +35,8 @@ function VerifierContent() {
   const [verificationRunId, setVerificationRunId] = useState<string | null>(null);
   const [transcriptId, setTranscriptId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -77,6 +79,41 @@ function VerifierContent() {
     if (json.verification_run_id) setVerificationRunId(json.verification_run_id);
     if (json.transcript_id) setTranscriptId(json.transcript_id);
     setLoading(false);
+  }
+
+  async function runExportJson() {
+    if (!selectedId || exportLoading) return;
+    setExportLoading(true);
+    setExportError(null);
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/v1/events/${selectedId}/exports`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            profile: "claims",
+            format: "json",
+            purpose: "verifier_ui_manual_export",
+          }),
+        }
+      );
+      const json = await res.json();
+
+      if (!res.ok || !json.download_url) {
+        setExportError(json.error ?? "Export failed");
+      } else if (typeof window !== "undefined") {
+        const href = `${API_BASE}${json.download_url}`;
+        window.open(href, "_blank");
+      }
+    } catch (e) {
+      setExportError("Export failed");
+    } finally {
+      setExportLoading(false);
+    }
   }
 
   return (
@@ -235,6 +272,45 @@ function VerifierContent() {
             </div>
           )}
         </section>
+
+        {selected && (
+          <section style={{ marginTop: "1.5rem" }}>
+            <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+              Exports
+            </h2>
+            <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
+              Create a one-off JSON export for the currently selected event.
+            </p>
+            <button
+              type="button"
+              onClick={runExportJson}
+              disabled={!selectedId || exportLoading}
+              style={{
+                fontSize: "0.85rem",
+                padding: "0.4rem 0.8rem",
+                borderRadius: 4,
+                border: "1px solid #374151",
+                background: "#0B1120",
+                color: "#E5E7EB",
+                cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
+                opacity: !selectedId || exportLoading ? 0.6 : 1,
+              }}
+            >
+              {exportLoading ? "Exporting…" : "Export JSON"}
+            </button>
+            {exportError && (
+              <p
+                style={{
+                  fontSize: "0.8rem",
+                  marginTop: "0.5rem",
+                  color: "#fca5a5",
+                }}
+              >
+                {exportError}
+              </p>
+            )}
+          </section>
+        )}
       </div>
     </div>
   );
