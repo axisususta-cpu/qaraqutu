@@ -1,6 +1,7 @@
 "use client";
+export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { CanonicalEvent, VerificationState } from "contracts";
 
@@ -14,7 +15,7 @@ interface TranscriptStep {
   note: string;
 }
 
-export default function VerifierPage() {
+function VerifierContent() {
   const searchParams = useSearchParams();
   const [events, setEvents] = useState<CanonicalEvent[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -231,6 +232,29 @@ export default function VerifierPage() {
         </section>
       </div>
     </div>
+  );
+}
+
+export default function VerifierPage() {
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "100vh",
+            background: "#020617",
+            color: "#E5E7EB",
+            padding: "1.5rem 2rem",
+          }}
+        >
+          <div style={{ maxWidth: 960, margin: "0 auto" }}>
+            <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>Loading…</p>
+          </div>
+        </div>
+      }
+    >
+      <VerifierContent />
+    </Suspense>
   );
 }
 
