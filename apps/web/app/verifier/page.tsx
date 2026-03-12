@@ -35,7 +35,9 @@ function VerifierContent() {
   const [verificationRunId, setVerificationRunId] = useState<string | null>(null);
   const [transcriptId, setTranscriptId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [exportLoading, setExportLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState<"json" | "pdf" | null>(
+    null
+  );
   const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -83,7 +85,7 @@ function VerifierContent() {
 
   async function runExportJson() {
     if (!selectedId || exportLoading) return;
-    setExportLoading(true);
+    setExportLoading("json");
     setExportError(null);
 
     try {
@@ -112,7 +114,42 @@ function VerifierContent() {
     } catch (e) {
       setExportError("Export failed");
     } finally {
-      setExportLoading(false);
+      setExportLoading(null);
+    }
+  }
+
+  async function runExportPdf() {
+    if (!selectedId || exportLoading) return;
+    setExportLoading("pdf");
+    setExportError(null);
+
+    try {
+      const res = await fetch(
+        `${API_BASE}/v1/events/${selectedId}/exports`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            profile: "claims",
+            format: "pdf",
+            purpose: "verifier_ui_manual_export",
+          }),
+        }
+      );
+      const json = await res.json();
+
+      if (!res.ok || !json.download_url) {
+        setExportError(json.error ?? "Export failed");
+      } else if (typeof window !== "undefined") {
+        const href = `${API_BASE}${json.download_url}`;
+        window.open(href, "_blank");
+      }
+    } catch (e) {
+      setExportError("Export failed");
+    } finally {
+      setExportLoading(null);
     }
   }
 
@@ -279,25 +316,53 @@ function VerifierContent() {
               Exports
             </h2>
             <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
-              Create a one-off JSON export for the currently selected event.
+              Create one-off exports for the currently selected event.
             </p>
-            <button
-              type="button"
-              onClick={runExportJson}
-              disabled={!selectedId || exportLoading}
+            <div
               style={{
-                fontSize: "0.85rem",
-                padding: "0.4rem 0.8rem",
-                borderRadius: 4,
-                border: "1px solid #374151",
-                background: "#0B1120",
-                color: "#E5E7EB",
-                cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
-                opacity: !selectedId || exportLoading ? 0.6 : 1,
+                display: "flex",
+                gap: "0.5rem",
+                marginTop: "0.5rem",
+                flexWrap: "wrap",
               }}
             >
-              {exportLoading ? "Exporting…" : "Export JSON"}
-            </button>
+              <button
+                type="button"
+                onClick={runExportJson}
+                disabled={!selectedId || !!exportLoading}
+                style={{
+                  fontSize: "0.85rem",
+                  padding: "0.4rem 0.8rem",
+                  borderRadius: 4,
+                  border: "1px solid #374151",
+                  background: "#0B1120",
+                  color: "#E5E7EB",
+                  cursor:
+                    !selectedId || exportLoading ? "not-allowed" : "pointer",
+                  opacity: !selectedId || exportLoading ? 0.6 : 1,
+                }}
+              >
+                {exportLoading === "json" ? "Exporting…" : "Export JSON"}
+              </button>
+              <button
+                type="button"
+                onClick={runExportPdf}
+                disabled={!selectedId || !!exportLoading}
+                style={{
+                  fontSize: "0.85rem",
+                  padding: "0.4rem 0.8rem",
+                  borderRadius: 4,
+                  border: "1px solid #374151",
+                  background: "#0B1120",
+                  color: "#E5E7EB",
+                  cursor:
+                    !selectedId || exportLoading ? "not-allowed" : "pointer",
+                  opacity: !selectedId || exportLoading ? 0.6 : 1,
+                }}
+              >
+                {exportLoading === "pdf" ? "Exporting…" : "Export PDF"}
+              </button>
+            </div>
             {exportError && (
               <p
                 style={{
