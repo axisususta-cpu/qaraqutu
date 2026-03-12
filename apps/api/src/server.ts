@@ -581,11 +581,15 @@ fastify.get<{
 
 const port = Number(process.env.PORT) || 4000;
 
-fastify.listen({ port, host: "0.0.0.0" }, (err, address) => {
-  if (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
-  fastify.log.info(`API listening at ${address}`);
-});
+export { fastify };
+
+if (!process.env.VERCEL) {
+  fastify.listen({ port, host: "0.0.0.0" }, (err, address) => {
+    if (err) {
+      fastify.log.error(err);
+      process.exit(1);
+    }
+    fastify.log.info(`API listening at ${address}`);
+  });
+}
 
