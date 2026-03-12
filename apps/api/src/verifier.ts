@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { randomUUID } from "crypto";
 import { PrismaClient } from "@prisma/client";
-import type { VerificationState } from "contracts";
+import type { VerificationState } from "./contracts";
 
 const prisma = new PrismaClient();
 

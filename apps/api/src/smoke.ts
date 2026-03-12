@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { renderClaimsPdf } from "./modules/documents/claims-pack";
 import type { DocumentIdentity } from "./modules/documents/types";
-import type { CanonicalEvent, VerificationState } from "contracts";
+import type { CanonicalEvent, VerificationState } from "./contracts";
 
 const prisma = new PrismaClient();
 

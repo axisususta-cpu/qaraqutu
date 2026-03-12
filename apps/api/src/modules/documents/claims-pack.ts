@@ -1,4 +1,4 @@
-import type { CanonicalEvent } from "contracts";
+import type { CanonicalEvent, RecordedEvidenceItem, DerivedEvidenceItem } from "../../contracts";
 import PDFDocument from "pdfkit";
 import {
   buildLayoutContext,
@@ -22,7 +22,7 @@ export function renderClaimsPdf(
     policyOrClaimRef?: string;
     incidentLocation?: string;
   }
-): PDFDocument {
+): InstanceType<typeof PDFDocument> {
   const doc = createDocument();
   const ctx = buildLayoutContext(doc, identity, event as any);
 
@@ -72,7 +72,7 @@ export function renderClaimsPdf(
   // 5. Recorded Evidence
   ensurePageSpace(ctx, 160);
   drawSectionHeading(ctx, "Recorded Evidence");
-  const recordedItems = (event.recordedEvidence ?? []).map((item) => {
+  const recordedItems = (event.recordedEvidence ?? []).map((item: RecordedEvidenceItem) => {
     const parts = [
       item.displayLabel,
       item.contentType,
@@ -90,7 +90,7 @@ export function renderClaimsPdf(
   // 6. Derived Evidence
   ensurePageSpace(ctx, 160);
   drawSectionHeading(ctx, "Derived Evidence");
-  const derivedItems = (event.derivedEvidence ?? []).map((item) => {
+  const derivedItems = (event.derivedEvidence ?? []).map((item: DerivedEvidenceItem) => {
     const parts = [
       item.displayLabel,
       item.humanSummary,

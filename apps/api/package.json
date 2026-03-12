@@ -16,12 +16,12 @@
   "dependencies": {
     "@fastify/cors": "latest",
     "@prisma/client": "^6.19.2",
-    "contracts": "0.1.0",
     "fastify": "latest",
     "fastify-plugin": "latest",
     "pdfkit": "latest"
   },
   "devDependencies": {
+    "@types/pdfkit": "latest",
     "cross-env": "latest",
     "prisma": "6",
     "ts-node": "latest",

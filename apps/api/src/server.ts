@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
-import { PrismaClient } from "@prisma/client";
-import { CanonicalEvent, VerificationState } from "contracts";
+import { PrismaClient, Prisma } from "@prisma/client";
+import { CanonicalEvent, VerificationState } from "./contracts";
 import PDFDocument from "pdfkit";
 import { renderClaimsPdf } from "./modules/documents/claims-pack";
 import { renderLegalPdf } from "./modules/documents/legal-pack";
@@ -345,7 +345,7 @@ fastify.post<{
       redactionApplied: redactionAppliedCreation,
       redactedItemCount: redactedCount || null,
       redactionBasis: redactionBasisCreation,
-      policySnapshot,
+      policySnapshot: policySnapshot === null ? Prisma.JsonNull : policySnapshot,
     },
   });
 
@@ -379,7 +379,7 @@ fastify.get<{
   const exp = await prisma.export.findUnique({
     where: { exportId },
     include: { event: true, receipt: true },
-  } as any);
+  }) as any;
 
   if (!exp) {
     return reply.code(404).send({ error: "EXPORT_NOT_FOUND" });
@@ -488,7 +488,7 @@ fastify.get<{
       derivedEvidence: JSON.parse(JSON.stringify(derived)) as CanonicalEvent["derivedEvidence"],
     };
 
-    let pdf: PDFDocument;
+    let pdf: InstanceType<typeof PDFDocument>;
     if (exp.profile === "claims") {
       pdf = renderClaimsPdf(identity, canonicalEvent as any);
     } else if (exp.profile === "legal") {

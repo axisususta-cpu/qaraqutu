@@ -1,5 +1,5 @@
-import type { CanonicalEvent, VerificationState } from "contracts";
-import type PDFDocument from "pdfkit";
+import type { CanonicalEvent, VerificationState } from "../../contracts";
+import PDFDocument from "pdfkit";
 
 export interface DocumentIdentity {
   eventId: string;
@@ -19,7 +19,7 @@ export interface DocumentIdentity {
 }
 
 export interface LayoutContext {
-  doc: PDFDocument;
+  doc: InstanceType<typeof PDFDocument>;
   identity: DocumentIdentity;
   event: CanonicalEvent & {
     vehicleVin?: string;

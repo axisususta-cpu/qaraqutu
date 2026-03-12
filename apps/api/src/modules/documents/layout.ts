@@ -1,8 +1,8 @@
 import PDFDocument from "pdfkit";
 import type { DocumentIdentity, LayoutContext } from "./types";
-import type { CanonicalEvent } from "contracts";
+import type { CanonicalEvent } from "../../contracts";
 
-export const PAGE_SIZE: PDFKit.PDFPageSize = "A4";
+export const PAGE_SIZE = "A4" as const;
 export const MARGINS = { top: 50, right: 50, bottom: 50, left: 50 };
 
 export const FONT_SIZES = {
@@ -20,7 +20,7 @@ export const SPACING = {
   bulletIndent: 16,
 };
 
-export function createDocument(): PDFDocument {
+export function createDocument(): InstanceType<typeof PDFDocument> {
   return new PDFDocument({ margin: MARGINS.top, size: PAGE_SIZE, bufferPages: true });
 }
 
@@ -93,7 +93,7 @@ export function drawNoticeSection(ctx: LayoutContext, text: string) {
   drawParagraph(ctx, text);
 }
 
-export function attachFooterIdentity(doc: PDFDocument, footerText: string) {
+export function attachFooterIdentity(doc: InstanceType<typeof PDFDocument>, footerText: string) {
   const w = doc.page.width - MARGINS.left - MARGINS.right;
   doc
     .fontSize(FONT_SIZES.footer)
@@ -105,7 +105,7 @@ export function attachFooterIdentity(doc: PDFDocument, footerText: string) {
 }
 
 export function buildLayoutContext(
-  doc: PDFDocument,
+  doc: InstanceType<typeof PDFDocument>,
   identity: DocumentIdentity,
   event: CanonicalEvent & {
     vehicleVin?: string;

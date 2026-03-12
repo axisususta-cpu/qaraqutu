@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { VerificationState } from "contracts";
+import { VerificationState } from "./contracts";
 import { randomUUID } from "crypto";
 
 const prisma = new PrismaClient();
