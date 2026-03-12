@@ -345,7 +345,7 @@ fastify.post<{
       redactionApplied: redactionAppliedCreation,
       redactedItemCount: redactedCount || null,
       redactionBasis: redactionBasisCreation,
-      policySnapshot: policySnapshot === null ? Prisma.JsonNull : policySnapshot,
+      policySnapshot: policySnapshot as any,
     },
   });
 
