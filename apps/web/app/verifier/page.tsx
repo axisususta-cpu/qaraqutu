@@ -323,103 +323,109 @@ function VerifierContent() {
             </p>
             <div
               style={{
-                fontSize: "0.8rem",
-                marginTop: "0.5rem",
-                marginBottom: "0.25rem",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                flexWrap: "wrap",
+                pointerEvents: exportLoading ? "none" : "auto",
               }}
             >
-              <span>Profile:</span>
-              <button
-                type="button"
-                onClick={() => setExportProfile("claims")}
-                disabled={!!exportLoading}
+              <div
                 style={{
                   fontSize: "0.8rem",
-                  padding: "0.25rem 0.6rem",
-                  borderRadius: 4,
-                  border:
-                    exportProfile === "claims"
-                      ? "1px solid #E5E7EB"
-                      : "1px solid #374151",
-                  background:
-                    exportProfile === "claims" ? "#111827" : "#020617",
-                  color: "#E5E7EB",
-                  cursor: exportLoading ? "not-allowed" : "pointer",
-                  opacity: exportLoading ? 0.6 : 1,
+                  marginTop: "0.5rem",
+                  marginBottom: "0.25rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  flexWrap: "wrap",
                 }}
               >
-                Claims
-              </button>
-              <button
-                type="button"
-                onClick={() => setExportProfile("legal")}
-                disabled={!!exportLoading}
+                <span>Profile:</span>
+                <button
+                  type="button"
+                  onClick={() => setExportProfile("claims")}
+                  disabled={!!exportLoading}
+                  style={{
+                    fontSize: "0.8rem",
+                    padding: "0.25rem 0.6rem",
+                    borderRadius: 4,
+                    border:
+                      exportProfile === "claims"
+                        ? "1px solid #E5E7EB"
+                        : "1px solid #374151",
+                    background:
+                      exportProfile === "claims" ? "#111827" : "#020617",
+                    color: "#E5E7EB",
+                    cursor: exportLoading ? "not-allowed" : "pointer",
+                    opacity: exportLoading ? 0.6 : 1,
+                  }}
+                >
+                  Claims
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExportProfile("legal")}
+                  disabled={!!exportLoading}
+                  style={{
+                    fontSize: "0.8rem",
+                    padding: "0.25rem 0.6rem",
+                    borderRadius: 4,
+                    border:
+                      exportProfile === "legal"
+                        ? "1px solid #E5E7EB"
+                        : "1px solid #374151",
+                    background:
+                      exportProfile === "legal" ? "#111827" : "#020617",
+                    color: "#E5E7EB",
+                    cursor: exportLoading ? "not-allowed" : "pointer",
+                    opacity: exportLoading ? 0.6 : 1,
+                  }}
+                >
+                  Legal
+                </button>
+              </div>
+              <div
                 style={{
-                  fontSize: "0.8rem",
-                  padding: "0.25rem 0.6rem",
-                  borderRadius: 4,
-                  border:
-                    exportProfile === "legal"
-                      ? "1px solid #E5E7EB"
-                      : "1px solid #374151",
-                  background:
-                    exportProfile === "legal" ? "#111827" : "#020617",
-                  color: "#E5E7EB",
-                  cursor: exportLoading ? "not-allowed" : "pointer",
-                  opacity: exportLoading ? 0.6 : 1,
+                  display: "flex",
+                  gap: "0.5rem",
+                  marginTop: "0.5rem",
+                  flexWrap: "wrap",
                 }}
               >
-                Legal
-              </button>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                gap: "0.5rem",
-                marginTop: "0.5rem",
-                flexWrap: "wrap",
-              }}
-            >
-              <button
-                type="button"
-                onClick={runExportJson}
-                disabled={!selectedId || !!exportLoading}
-                style={{
-                  fontSize: "0.85rem",
-                  padding: "0.4rem 0.8rem",
-                  borderRadius: 4,
-                  border: "1px solid #374151",
-                  background: "#0B1120",
-                  color: "#E5E7EB",
-                  cursor:
-                    !selectedId || exportLoading ? "not-allowed" : "pointer",
-                  opacity: !selectedId || exportLoading ? 0.6 : 1,
-                }}
-              >
-                {exportLoading === "json" ? "Exporting…" : "Export JSON"}
-              </button>
-              <button
-                type="button"
-                onClick={runExportPdf}
-                disabled={!selectedId || !!exportLoading}
-                style={{
-                  fontSize: "0.85rem",
-                  padding: "0.4rem 0.8rem",
-                  borderRadius: 4,
-                  border: "1px solid #374151",
-                  background: "#0B1120",
-                  color: "#E5E7EB",
-                  cursor:
-                    !selectedId || exportLoading ? "not-allowed" : "pointer",
-                  opacity: !selectedId || exportLoading ? 0.6 : 1,
-                }}
-              >
-                {exportLoading === "pdf" ? "Exporting…" : "Export PDF"}
-              </button>
+                <button
+                  type="button"
+                  onClick={runExportJson}
+                  disabled={!selectedId || !!exportLoading}
+                  style={{
+                    fontSize: "0.85rem",
+                    padding: "0.4rem 0.8rem",
+                    borderRadius: 4,
+                    border: "1px solid #374151",
+                    background: "#0B1120",
+                    color: "#E5E7EB",
+                    cursor:
+                      !selectedId || exportLoading ? "not-allowed" : "pointer",
+                    opacity: !selectedId || exportLoading ? 0.6 : 1,
+                  }}
+                >
+                  {exportLoading === "json" ? "Exporting…" : "Export JSON"}
+                </button>
+                <button
+                  type="button"
+                  onClick={runExportPdf}
+                  disabled={!selectedId || !!exportLoading}
+                  style={{
+                    fontSize: "0.85rem",
+                    padding: "0.4rem 0.8rem",
+                    borderRadius: 4,
+                    border: "1px solid #374151",
+                    background: "#0B1120",
+                    color: "#E5E7EB",
+                    cursor:
+                      !selectedId || exportLoading ? "not-allowed" : "pointer",
+                    opacity: !selectedId || exportLoading ? 0.6 : 1,
+                  }}
+                >
+                  {exportLoading === "pdf" ? "Exporting…" : "Export PDF"}
+                </button>
+              </div>
             </div>
             {exportError && (
               <p
