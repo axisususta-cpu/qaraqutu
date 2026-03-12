@@ -35,6 +35,9 @@ function VerifierContent() {
   const [verificationRunId, setVerificationRunId] = useState<string | null>(null);
   const [transcriptId, setTranscriptId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exportProfile, setExportProfile] = useState<"claims" | "legal">(
+    "claims"
+  );
   const [exportLoading, setExportLoading] = useState<"json" | "pdf" | null>(
     null
   );
@@ -97,7 +100,7 @@ function VerifierContent() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            profile: "claims",
+            profile: exportProfile,
             format: "json",
             purpose: "verifier_ui_manual_export",
           }),
@@ -132,7 +135,7 @@ function VerifierContent() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            profile: "claims",
+            profile: exportProfile,
             format: "pdf",
             purpose: "verifier_ui_manual_export",
           }),
@@ -318,6 +321,61 @@ function VerifierContent() {
             <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
               Create one-off exports for the currently selected event.
             </p>
+            <div
+              style={{
+                fontSize: "0.8rem",
+                marginTop: "0.5rem",
+                marginBottom: "0.25rem",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                flexWrap: "wrap",
+              }}
+            >
+              <span>Profile:</span>
+              <button
+                type="button"
+                onClick={() => setExportProfile("claims")}
+                disabled={!!exportLoading}
+                style={{
+                  fontSize: "0.8rem",
+                  padding: "0.25rem 0.6rem",
+                  borderRadius: 4,
+                  border:
+                    exportProfile === "claims"
+                      ? "1px solid #E5E7EB"
+                      : "1px solid #374151",
+                  background:
+                    exportProfile === "claims" ? "#111827" : "#020617",
+                  color: "#E5E7EB",
+                  cursor: exportLoading ? "not-allowed" : "pointer",
+                  opacity: exportLoading ? 0.6 : 1,
+                }}
+              >
+                Claims
+              </button>
+              <button
+                type="button"
+                onClick={() => setExportProfile("legal")}
+                disabled={!!exportLoading}
+                style={{
+                  fontSize: "0.8rem",
+                  padding: "0.25rem 0.6rem",
+                  borderRadius: 4,
+                  border:
+                    exportProfile === "legal"
+                      ? "1px solid #E5E7EB"
+                      : "1px solid #374151",
+                  background:
+                    exportProfile === "legal" ? "#111827" : "#020617",
+                  color: "#E5E7EB",
+                  cursor: exportLoading ? "not-allowed" : "pointer",
+                  opacity: exportLoading ? 0.6 : 1,
+                }}
+              >
+                Legal
+              </button>
+            </div>
             <div
               style={{
                 display: "flex",
