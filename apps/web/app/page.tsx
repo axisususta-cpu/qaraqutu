@@ -57,7 +57,7 @@ export default function LandingPage() {
             </li>
             <li>
               <strong>Verifier</strong> — a bounded assessment of the referenced
-              event package, returning a clear verification state.
+              event package; it does not make liability or guilt determinations.
             </li>
             <li>
               <strong>Role-based export family</strong> — claims and legal packs
@@ -136,8 +136,8 @@ export default function LandingPage() {
               recorded vs derived separation.
             </li>
             <li>
-              <strong>Verifier</strong> — neutral first-load interface to assess
-              an event&apos;s verification state.
+              <strong>Verifier</strong> — bounded assessment of an event package
+              and its verification state.
             </li>
             <li>
               <strong>Docs</strong> — protocol and API overview for technical
