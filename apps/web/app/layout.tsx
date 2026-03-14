@@ -57,6 +57,9 @@ export default function RootLayout({
               <Link href="/verifier" style={{ color: "#E5E7EB", textDecoration: "none" }}>
                 Verifier
               </Link>
+              <Link href="/verifier/golden" style={{ color: "#E5E7EB", textDecoration: "none" }}>
+                Verifier (Golden)
+              </Link>
               <Link href="/docs" style={{ color: "#E5E7EB", textDecoration: "none" }}>
                 Docs
               </Link>

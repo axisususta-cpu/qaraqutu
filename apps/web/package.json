@@ -14,10 +14,14 @@
     "react-dom": "latest"
   },
   "devDependencies": {
-    "cross-env": "latest",
-    "typescript": "latest",
-    "@types/react": "latest",
+    "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "latest",
-    "rimraf": "latest"
+    "@types/react": "latest",
+    "autoprefixer": "^10.4.27",
+    "cross-env": "latest",
+    "postcss": "^8.5.8",
+    "rimraf": "latest",
+    "tailwindcss": "^4.2.1",
+    "typescript": "latest"
   }
 }
