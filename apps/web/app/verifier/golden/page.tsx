@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { UstaPDemoTrigger } from "../UstaPDemoTrigger";
 
 const incidentLogs = [
   { id: 1, time: "19:42:10.000", mode: "AUTONOMOUS", speed: "1.2 m/s", event: "Normal seyir.", status: "ok", hash: "0x8f...3a1" },
@@ -23,6 +24,7 @@ export default function QaraqutuVerifierGoldenPage() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 font-sans">
+      <UstaPDemoTrigger defaultScenario="unitree" language="tr" emphasizeForDemo />
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
           <div>
@@ -32,6 +34,7 @@ export default function QaraqutuVerifierGoldenPage() {
           <div className="text-right">
             <p className="text-sm text-gray-400">Olay ID: <span className="text-white font-mono">MACAU-G1-032026</span></p>
             <p className="text-sm text-gray-400">Durum: <span className="text-red-400 animate-pulse">Post-Incident Lock</span></p>
+            <p className="text-xs text-slate-500 mt-1">Sunum asistanı: <span className="text-slate-400">Usta P → sağ üstte</span></p>
           </div>
         </div>
 

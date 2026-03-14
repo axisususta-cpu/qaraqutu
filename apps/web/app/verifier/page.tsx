@@ -9,6 +9,7 @@ import type {
   DerivedEvidenceItem,
   VerificationState,
 } from "contracts";
+import { UstaPDemoTrigger } from "./UstaPDemoTrigger";
 
 const DEFAULT_API_BASE =
   process.env.NODE_ENV === "production"
@@ -334,6 +335,8 @@ function VerifierContent() {
   const [verificationRunId, setVerificationRunId] = useState<string | null>(null);
   const [transcriptId, setTranscriptId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verificationJustCompleted, setVerificationJustCompleted] = useState(false);
   const [exportProfile, setExportProfile] = useState<"claims" | "legal">(
     "claims"
   );
@@ -385,6 +388,12 @@ function VerifierContent() {
     }
   }, [selectedSystem]);
 
+  useEffect(() => {
+    if (!verificationJustCompleted) return;
+    const t = setTimeout(() => setVerificationJustCompleted(false), 2500);
+    return () => clearTimeout(t);
+  }, [verificationJustCompleted]);
+
   // When scenario changes: reset selected event.
   const handleScenarioChange = (scenario: string | null) => {
     setSelectedScenario(scenario);
@@ -425,26 +434,37 @@ function VerifierContent() {
   async function runVerification() {
     if (!selectedId) return;
     setLoading(true);
+    setVerificationError(null);
     setVerificationState(null);
     setTranscript(null);
     setIdentity(null);
     setVerificationRunId(null);
     setTranscriptId(null);
 
-    const res = await fetch(`${API_BASE}/v1/events/${selectedId}/verify`, {
-      method: "POST",
-    });
-    const json = await res.json();
-    setVerificationState(json.verification_state as VerificationState);
-    setTranscript(json.transcript_summary ?? null);
-    setIdentity({
-      event_id: json.event_id,
-      bundle_id: json.bundle_id,
-      manifest_id: json.manifest_id,
-    });
-    if (json.verification_run_id) setVerificationRunId(json.verification_run_id);
-    if (json.transcript_id) setTranscriptId(json.transcript_id);
-    setLoading(false);
+    try {
+      const res = await fetch(`${API_BASE}/v1/events/${selectedId}/verify`, {
+        method: "POST",
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setVerificationError(json?.message || `HTTP ${res.status}`);
+        return;
+      }
+      setVerificationState(json.verification_state as VerificationState);
+      setTranscript(json.transcript_summary ?? null);
+      setIdentity({
+        event_id: json.event_id,
+        bundle_id: json.bundle_id,
+        manifest_id: json.manifest_id,
+      });
+      if (json.verification_run_id) setVerificationRunId(json.verification_run_id);
+      if (json.transcript_id) setTranscriptId(json.transcript_id);
+      setVerificationJustCompleted(true);
+    } catch (err) {
+      setVerificationError(err instanceof Error ? err.message : "Verification failed");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function runExportJson() {
@@ -615,14 +635,52 @@ function VerifierContent() {
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
                 opacity: 0.7,
-                marginBottom: "0.5rem",
+                marginBottom: "0.35rem",
               }}
             >
               {language === "tr" ? "Komut Omurgası" : "Command Spine"}
             </div>
+            <div
+              style={{
+                padding: "0.5rem 0.6rem",
+                marginBottom: "0.5rem",
+                background: "rgba(15, 23, 42, 0.6)",
+                border: "1px solid #1E3A5F",
+                borderRadius: 4,
+                borderLeft: "3px solid #3B82F6",
+              }}
+              role="status"
+              aria-live="polite"
+            >
+              <div
+                style={{
+                  fontSize: "0.85rem",
+                  fontWeight: 600,
+                  color: "#E5E7EB",
+                  opacity: 1,
+                }}
+              >
+                {language === "tr"
+                  ? "1. Sistem seç → 2. Senaryo seç → 3. Olay seç"
+                  : "1. Select system → 2. Select scenario → 3. Select event"}
+              </div>
+              <div
+                style={{
+                  fontSize: "0.7rem",
+                  opacity: 0.85,
+                  marginTop: "0.2rem",
+                  color: "#94A3B8",
+                }}
+              >
+                {language === "tr"
+                  ? "Sol taraftan sırayla seçin."
+                  : "Select in order from the left."}
+              </div>
+            </div>
             {[
               {
                 id: "system",
+                step: 1,
                 label:
                   language === "tr"
                     ? "Sistem"
@@ -630,6 +688,7 @@ function VerifierContent() {
               },
               {
                 id: "scenario",
+                step: 2,
                 label:
                   language === "tr"
                     ? "Senaryo"
@@ -637,6 +696,7 @@ function VerifierContent() {
               },
               {
                 id: "event",
+                step: 3,
                 label:
                   language === "tr"
                     ? "Olay"
@@ -644,6 +704,7 @@ function VerifierContent() {
               },
               {
                 id: "summary",
+                step: null,
                 label:
                   language === "tr"
                     ? "Olay Özeti"
@@ -651,6 +712,7 @@ function VerifierContent() {
               },
               {
                 id: "evidence",
+                step: null,
                 label:
                   language === "tr"
                     ? "Delil Katmanları"
@@ -658,6 +720,7 @@ function VerifierContent() {
               },
               {
                 id: "transcript",
+                step: null,
                 label:
                   language === "tr"
                     ? "Doğrulama Kaydı"
@@ -665,6 +728,7 @@ function VerifierContent() {
               },
               {
                 id: "issuance",
+                step: null,
                 label:
                   language === "tr"
                     ? "Belge Üretimi"
@@ -672,6 +736,7 @@ function VerifierContent() {
               },
             ].map((section) => {
               const isActive = activeSpineSection === section.id;
+              const isStep = section.step != null;
               return (
                 <div
                   key={section.id}
@@ -680,8 +745,11 @@ function VerifierContent() {
                     borderRadius: 4,
                     border: isActive
                       ? "1px solid #4B5563"
+                      : isStep
+                      ? "1px solid #1E3A5F"
                       : "1px solid #111827",
-                    background: isActive ? "#020617" : "transparent",
+                    background: isActive ? "#020617" : isStep ? "rgba(15, 23, 42, 0.35)" : "transparent",
+                    borderLeft: isStep ? "2px solid #374151" : undefined,
                   }}
                 >
                   <button
@@ -701,7 +769,10 @@ function VerifierContent() {
                       cursor: "pointer",
                     }}
                   >
-                    <span>{section.label}</span>
+                    <span>
+                      {section.step != null ? `${section.step}. ` : ""}
+                      {section.label}
+                    </span>
                     <span
                       style={{
                         fontSize: "0.7rem",
@@ -1438,28 +1509,72 @@ function VerifierContent() {
                     ))}
                   </select>
                   <div style={{ marginTop: "0.75rem" }}>
-                    <button
-                      type="button"
-                      onClick={runVerification}
-                      disabled={!selectedId || loading}
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                      <button
+                        type="button"
+                        onClick={runVerification}
+                        disabled={!selectedId || loading}
+                        style={{
+                          fontSize: "0.85rem",
+                          padding: "0.5rem 1rem",
+                          borderRadius: 4,
+                          border: loading ? "1px solid #4B5563" : "1px solid #374151",
+                          background: loading ? "#1E3A5F" : "#0B1120",
+                          color: "#E5E7EB",
+                          cursor: loading ? "wait" : "pointer",
+                          opacity: !selectedId ? 0.6 : 1,
+                          transition: "background 0.2s ease, border-color 0.2s ease",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.4rem",
+                        }}
+                      >
+                        {loading && (
+                          <span
+                            style={{
+                              width: 14,
+                              height: 14,
+                              border: "2px solid #94A3B8",
+                              borderTopColor: "transparent",
+                              borderRadius: "50%",
+                              animation: "spin 0.7s linear infinite",
+                            }}
+                          />
+                        )}
+                        {loading
+                          ? language === "tr"
+                            ? "Doğrulanıyor…"
+                            : "Verifying…"
+                          : language === "tr"
+                          ? "Olayı Doğrula"
+                          : "Verify Event Package"}
+                      </button>
+                      {loading && (
+                        <span
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "#94A3B8",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {language === "tr" ? "Paket ve zincir kontrol ediliyor…" : "Checking bundle and chain…"}
+                        </span>
+                      )}
+                    </div>
+                    <div
                       style={{
-                        fontSize: "0.85rem",
-                        padding: "0.4rem 0.8rem",
-                        borderRadius: 4,
-                        border: "1px solid #374151",
-                        background: "#0B1120",
-                        color: "#E5E7EB",
-                        cursor: loading ? "wait" : "pointer",
+                        marginTop: "0.4rem",
+                        fontSize: "0.75rem",
+                        opacity: 0.9,
                       }}
                     >
-                      {loading
-                        ? language === "tr"
-                          ? "Doğrulanıyor…"
-                          : "Verifying…"
-                        : language === "tr"
-                        ? "Olayı Doğrula"
-                        : "Verify Event Package"}
-                    </button>
+                      {loading && (language === "tr" ? "İşleniyor — sonuç aşağıda güncellenecek." : "Processing — result will update below.")}
+                      {!loading && verificationError && (language === "tr" ? "Hata: " : "Error: ")}
+                      {!loading && verificationError && <strong style={{ color: "#F87171" }}>{verificationError}</strong>}
+                      {!loading && !verificationError && verificationState && (language === "tr" ? "Durum: " : "Status: ")}
+                      {!loading && !verificationError && verificationState && <strong>{verificationState}</strong>}
+                      {!loading && !verificationError && !verificationState && selectedId && (language === "tr" ? "Doğrulama bekleniyor." : "Verification pending.")}
+                    </div>
                   </div>
                 </>
               )}
@@ -1483,13 +1598,49 @@ function VerifierContent() {
             </section>
 
             {isVehicle && (
-            <section>
+            <section
+              style={{
+                border: loading ? "1px solid #1E3A5F" : undefined,
+                borderRadius: 6,
+                padding: loading ? "0.75rem 1rem" : undefined,
+                background: loading ? "rgba(30, 58, 95, 0.15)" : undefined,
+                transition: "border-color 0.2s ease, background 0.2s ease",
+              }}
+            >
               <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
                 {language === "tr"
                   ? "Doğrulama Sonucu"
                   : "Verification Result"}
               </h2>
-              {!verificationState && !transcript && (
+              {loading && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.5rem 0",
+                    fontSize: "0.85rem",
+                    color: "#94A3B8",
+                  }}
+                  role="status"
+                  aria-live="polite"
+                >
+                  <span
+                    style={{
+                      width: 14,
+                      height: 14,
+                      border: "2px solid #94A3B8",
+                      borderTopColor: "transparent",
+                      borderRadius: "50%",
+                      animation: "spin 0.7s linear infinite",
+                    }}
+                  />
+                  {language === "tr"
+                    ? "Doğrulama çalışıyor — sonuç burada görünecek."
+                    : "Verification in progress — result will appear here."}
+                </div>
+              )}
+              {!loading && !verificationState && !transcript && (
                 <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
                   {language === "tr"
                     ? "Henüz bir doğrulama çalıştırılmadı. Bir olay seçin ve doğrulamayı başlatın."
@@ -1500,10 +1651,12 @@ function VerifierContent() {
               {verificationState && identity && (
                 <div
                   style={{
-                    border: "1px solid #1F2937",
+                    border: verificationJustCompleted ? "1px solid #34D399" : "1px solid #1F2937",
                     borderRadius: 6,
                     padding: "0.75rem 1rem",
                     marginBottom: "1rem",
+                    transition: "border-color 0.3s ease",
+                    boxShadow: verificationJustCompleted ? "0 0 0 1px rgba(52, 211, 153, 0.2)" : undefined,
                   }}
                 >
                   <div
@@ -1780,6 +1933,7 @@ function VerifierContent() {
           </main>
         </div>
       </div>
+      <UstaPDemoTrigger language={language} defaultScenario="togg" />
     </div>
   );
 }
