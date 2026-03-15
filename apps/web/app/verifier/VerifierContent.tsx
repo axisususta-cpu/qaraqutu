@@ -7,7 +7,7 @@ import type {
   DerivedEvidenceItem,
   VerificationState,
 } from "contracts";
-import { getCanonicalCases, getCanonicalCaseByEventId } from "../../lib/canonical-spine";
+import { getCanonicalCases, getCanonicalCaseByEventId, evaluateGoldenAcceptance } from "../../lib/canonical-spine";
 import { UstaPDemoTrigger } from "./UstaPDemoTrigger";
 
 const DEFAULT_API_BASE =
@@ -1505,6 +1505,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   <strong>{selectedEventCard.eventId}</strong> — {selectedEventCard.title}
                 </div>
               )}
+              {selectedCase && (() => {
+                const gate = evaluateGoldenAcceptance(selectedCase);
+                return (
+                  <div style={{ fontSize: "0.75rem", opacity: 0.7, marginBottom: "0.5rem" }}>
+                    {language === "tr" ? "Golden kabul:" : "Golden acceptance:"}{" "}
+                    {gate.passed}/{gate.total}
+                  </div>
+                );
+              })()}
               <p style={{ fontSize: "0.8rem", opacity: 0.8, marginBottom: "0.5rem" }}>
                 {language === "tr"
                   ? "Olay seçimi sol omurgadaki Event bölümündeki kartlardan yapılır. Araç için aşağıdaki açılır menü yedek olarak kullanılabilir."

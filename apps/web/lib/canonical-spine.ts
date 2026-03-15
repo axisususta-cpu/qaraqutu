@@ -376,3 +376,40 @@ export function getCanonicalCaseByEventId(eventId: string): CanonicalCase | null
 export function getCanonicalCaseById(caseId: string): CanonicalCase | null {
   return CANONICAL_CASES.find((c) => c.caseId === caseId) ?? null;
 }
+
+/** Golden acceptance rubric: quality gate for every case. Doctrine-aligned criteria. */
+export interface GoldenRubricCriterion {
+  id: string;
+  label: string;
+  pass: boolean;
+}
+
+export interface GoldenAcceptanceResult {
+  passed: number;
+  total: number;
+  criteria: GoldenRubricCriterion[];
+}
+
+const GOLDEN_ACCEPTANCE_CRITERIA: Array<{ id: string; label: string; check: (c: CanonicalCase) => boolean }> = [
+  { id: "incident_class", label: "Incident Class", check: (c) => !!c.incidentClass?.trim() },
+  { id: "scenario_frame", label: "Scenario Frame", check: (c) => !!c.scenarioFrame?.trim() },
+  { id: "recorded_evidence", label: "Recorded Evidence", check: (c) => Array.isArray(c.recordedEvidence) && c.recordedEvidence.length > 0 },
+  { id: "derived_assessment", label: "Derived Assessment", check: (c) => Array.isArray(c.derivedAssessment) && c.derivedAssessment.length > 0 },
+  { id: "unknown_disputed", label: "Unknown / Disputed", check: (c) => Array.isArray(c.unknownDisputed) },
+  { id: "verification_trace", label: "Verification Trace", check: (c) => Array.isArray(c.verificationTrace) && c.verificationTrace.length > 0 },
+  { id: "artifact_issuance", label: "Artifact Issuance", check: (c) => c.artifactIssuance != null && typeof c.artifactIssuance.available === "boolean" },
+  { id: "why_inevitable", label: "Why QARAQUTU is inevitable", check: (c) => !!c.whyInevitable?.trim() },
+];
+
+export function evaluateGoldenAcceptance(case_: CanonicalCase): GoldenAcceptanceResult {
+  const criteria: GoldenRubricCriterion[] = GOLDEN_ACCEPTANCE_CRITERIA.map(({ id, label, check }) => ({
+    id,
+    label,
+    pass: check(case_),
+  }));
+  const passed = criteria.filter((c) => c.pass).length;
+  return { passed, total: criteria.length, criteria };
+}
+
+/** Ordered criterion labels for display (e.g. Golden page). */
+export const GOLDEN_ACCEPTANCE_RUBRIC_LABELS = GOLDEN_ACCEPTANCE_CRITERIA.map((c) => c.label);

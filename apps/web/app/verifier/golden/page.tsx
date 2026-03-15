@@ -3,12 +3,21 @@
 import React from "react";
 import Link from "next/link";
 import { UstaPDemoTrigger } from "../UstaPDemoTrigger";
+import {
+  CANONICAL_CASES,
+  evaluateGoldenAcceptance,
+  GOLDEN_ACCEPTANCE_RUBRIC_LABELS,
+} from "../../../lib/canonical-spine";
 
 /**
  * Golden is not a separate product; it is the canonical quality bar for the verifier.
- * This page is a doctrine-consistent support surface: reference and entry to the main verifier.
+ * This page exposes the Golden acceptance rubric as the quality gate for every case.
  */
 export default function VerifierGoldenPage() {
+  const caseResults = CANONICAL_CASES.map((c) => ({ case: c, result: evaluateGoldenAcceptance(c) }));
+  const allPass = caseResults.every((r) => r.result.passed === r.result.total);
+  const rubricTotal = GOLDEN_ACCEPTANCE_RUBRIC_LABELS.length;
+
   return (
     <div
       style={{
@@ -36,9 +45,78 @@ export default function VerifierGoldenPage() {
         </h1>
         <p style={{ fontSize: "0.9rem", opacity: 0.9, lineHeight: 1.5, marginBottom: "1.5rem" }}>
           Golden is not a separate product. It is the canonical quality bar against which the main
-          verifier is measured. Use the verifier for event selection, evidence layers, verification
-          trace, and artifact issuance.
+          verifier is measured. Every case must satisfy the acceptance rubric below.
         </p>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", fontWeight: 600 }}>
+            Golden acceptance rubric (quality gate)
+          </h2>
+          <ul
+            style={{
+              listStyle: "none",
+              padding: 0,
+              margin: 0,
+              fontSize: "0.85rem",
+              opacity: 0.9,
+              border: "1px solid #1F2937",
+              borderRadius: 6,
+              overflow: "hidden",
+            }}
+          >
+            {GOLDEN_ACCEPTANCE_RUBRIC_LABELS.map((label, i) => (
+              <li
+                key={i}
+                style={{
+                  padding: "0.5rem 0.85rem",
+                  borderBottom: i < GOLDEN_ACCEPTANCE_RUBRIC_LABELS.length - 1 ? "1px solid #1F2937" : "none",
+                }}
+              >
+                {label}
+              </li>
+            ))}
+          </ul>
+          <p style={{ fontSize: "0.8rem", opacity: 0.75, marginTop: "0.5rem" }}>
+            Each case in the canonical spine is evaluated against these {rubricTotal} criteria.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", fontWeight: 600 }}>
+            Spine cases: {caseResults.length} / {caseResults.length} pass
+          </h2>
+          <div
+            style={{
+              border: "1px solid #1F2937",
+              borderRadius: 6,
+              padding: "0.75rem 1rem",
+              fontSize: "0.8rem",
+              opacity: 0.9,
+              background: allPass ? "#0F172A" : "#1C1917",
+            }}
+          >
+            {caseResults.map(({ case: c, result }, idx) => (
+              <div
+                key={c.caseId}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "0.35rem 0",
+                  borderBottom: idx < caseResults.length - 1 ? "1px solid #1F2937" : "none",
+                }}
+              >
+                <span>
+                  {c.scenarioFrame} ({c.eventId})
+                </span>
+                <span style={{ fontWeight: 600 }}>
+                  {result.passed}/{result.total}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <div
           style={{
             border: "1px solid #1F2937",
