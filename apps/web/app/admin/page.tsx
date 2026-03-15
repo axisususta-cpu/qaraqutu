@@ -2,13 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-const DEFAULT_API_BASE =
-  process.env.NODE_ENV === "production"
-    ? "https://qaraqutu-api.vercel.app"
-    : "http://localhost:4000";
-
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE;
+/** Same-origin proxy so production browser is not blocked by cross-origin API. */
+const DIAGNOSTICS_URL = "/api/diagnostics";
 
 interface Diagnostics {
   environment: string;
@@ -75,9 +70,14 @@ export default function AdminPage() {
 
   useEffect(() => {
     async function load() {
-      const res = await fetch(`${API_BASE}/v1/system/diagnostics`);
-      const json = await res.json();
-      setDiagnostics(json);
+      try {
+        const res = await fetch(DIAGNOSTICS_URL);
+        const json = await res.json();
+        if (res.ok) setDiagnostics(json);
+        else setDiagnostics(null);
+      } catch {
+        setDiagnostics(null);
+      }
     }
     load();
   }, []);

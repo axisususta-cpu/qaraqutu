@@ -205,7 +205,7 @@ export function UstaPDemoTrigger({
               disabled={isActive}
               style={{ width: 12, height: 12 }}
             />
-            <span style={{ fontSize: "0.65rem" }}>please pilis (EN)</span>
+            <span style={{ fontSize: "0.65rem" }}>{language === "tr" ? "Kapanış (EN)" : "Closing (EN)"}</span>
           </label>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem", marginTop: "0.35rem", alignItems: "center" }}>

@@ -28,9 +28,7 @@ function LoadingFallback() {
             <div style={{ padding: "0.5rem 0", fontSize: "0.8rem", opacity: 0.8 }}>System → Scenario → Event</div>
           </aside>
           <main style={{ flex: 1 }}>
-            <div style={{ border: "1px solid #111827", borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.8rem", opacity: 0.85 }}>
-              Loading events…
-            </div>
+            <div style={{ border: "1px solid #111827", borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.8rem", opacity: 0.6, minHeight: 120 }} aria-hidden="true" />
           </main>
         </div>
       </div>

@@ -19,8 +19,8 @@ export interface UstaPScript {
 export const USTA_P_SCRIPTS: Record<UstaPScenarioId, UstaPScript> = {
   togg: {
     id: "togg",
-    label: "TOGG",
-    labelTr: "TOGG",
+    label: "Vehicle",
+    labelTr: "Araç",
     segments: [
       "QARAQUTU inceleme başlatıldı.",
       "Vaka sınıfı: araç olay incelemesi.",
@@ -31,8 +31,8 @@ export const USTA_P_SCRIPTS: Record<UstaPScenarioId, UstaPScript> = {
   },
   insurance: {
     id: "insurance",
-    label: "Insurance",
-    labelTr: "Sigorta",
+    label: "Drone",
+    labelTr: "İHA",
     segments: [
       "QARAQUTU inceleme başlatıldı.",
       "Vaka sınıfı: sigorta talebi olay incelemesi.",
@@ -43,8 +43,8 @@ export const USTA_P_SCRIPTS: Record<UstaPScenarioId, UstaPScript> = {
   },
   unitree: {
     id: "unitree",
-    label: "Unitree / Macau",
-    labelTr: "Unitree / Makao",
+    label: "Robot",
+    labelTr: "Robot",
     segments: [
       "QARAQUTU inceleme başlatıldı.",
       "Vaka sınıfı: kamusal robotik olay incelemesi.",
