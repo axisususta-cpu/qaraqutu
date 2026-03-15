@@ -8,6 +8,10 @@ import type {
   VerificationState,
 } from "contracts";
 import { getCanonicalCases, getCanonicalCaseByEventId, evaluateGoldenAcceptance } from "../../lib/canonical-spine";
+import {
+  getArtifactProfile,
+  getArtifactProfilesForDomain,
+} from "../../lib/artifact-profiles";
 import { UstaPDemoTrigger } from "./UstaPDemoTrigger";
 
 const DEFAULT_API_BASE =
@@ -57,7 +61,7 @@ interface EventCard {
 /** Map canonical case to EventCard for spine display. */
 function caseToEventCard(c: { eventId: string; scenarioFrame: string; summary: string; occurredAt: string; verificationState: string; bundleId: string; manifestId: string; artifactIssuance: { available: boolean } }): EventCard {
   const severity = c.verificationState === "FAIL" ? "high" : c.verificationState === "PASS" ? "low" : "medium";
-  const outputs = c.artifactIssuance.available ? ["Claims JSON", "Legal PDF", "Transcript"] : ["Demo context"];
+  const outputs = c.artifactIssuance.available ? ["Claims artifact", "Legal artifact", "Transcript"] : ["Demo context"];
   return {
     eventId: c.eventId,
     title: c.scenarioFrame,
@@ -97,11 +101,11 @@ function getIncidentSummary(
       next:
         verificationState === "UNVERIFIED" || verificationState === "UNKNOWN"
           ? language === "tr"
-            ? "Doğrulamayı çalıştırın veya dışa aktarım oluşturun."
-            : "Run verification or create an export."
+            ? "Doğrulamayı çalıştırın veya kontrollü artifact başlatın."
+            : "Run verification or start controlled artifact."
           : language === "tr"
-          ? "Kayıt özetini inceleyin veya dışa aktarım oluşturun."
-          : "Review transcript summary or create an export.",
+          ? "Kayıt özetini inceleyin veya artifact issuance başlatın."
+          : "Review transcript summary or start artifact issuance.",
     };
   }
   if (system === "vehicle") {
@@ -1656,7 +1660,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 >
                   {language === "tr"
                     ? "Mevcut sürümde yalnızca demo bağlamı. Doğrulama ve dışa aktarım yalnızca Araç sistemi için geçerlidir."
-                    : "Demo context only in this release. Verification and export are available for the Vehicle system."}
+                    : "Demo context only in this release. Verification and controlled issuance are available for the Vehicle system."}
                 </div>
               )}
             </section>
@@ -1859,19 +1863,19 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     }}
                   >
                     <div>
-                      <span style={{ opacity: 0.7 }}>{language === "tr" ? "Çıktı Profili" : "Output Profile"}: </span>
-                      <strong>{exportProfile === "claims" ? "Claims" : "Legal"}</strong>
+                      <span style={{ opacity: 0.7 }}>{language === "tr" ? "Artifact profili" : "Artifact profile"}: </span>
+                      <strong>
+                        {language === "tr"
+                          ? (getArtifactProfile(exportProfile)?.labelTr ?? exportProfile)
+                          : (getArtifactProfile(exportProfile)?.labelEn ?? exportProfile)}
+                      </strong>
                     </div>
                     <div>
                       <span style={{ opacity: 0.7 }}>{language === "tr" ? "Biçim" : "Format"}: </span>
                       JSON / PDF
                     </div>
                     <div>
-                      <span style={{ opacity: 0.7 }}>{language === "tr" ? "Amaç" : "Purpose"}: </span>
-                      {selectedPurpose}
-                    </div>
-                    <div>
-                      <span style={{ opacity: 0.7 }}>{language === "tr" ? "Üretim Durumu" : "Issuance Status"}: </span>
+                      <span style={{ opacity: 0.7 }}>{language === "tr" ? "Üretim durumu" : "Issuance status"}: </span>
                       <strong>
                         {exportLoading ? (language === "tr" ? "işleniyor" : "pending") : exportError ? (language === "tr" ? "hata" : "error") : language === "tr" ? "hazır" : "idle"}
                       </strong>
@@ -1891,13 +1895,25 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       </span>
                     </div>
                     <div>
-                      <span style={{ opacity: 0.7 }}>{language === "tr" ? "Dışa Aktarım ID" : "Export ID"}: </span>
+                      <span style={{ opacity: 0.7 }}>{language === "tr" ? "Artifact ID" : "Artifact ID"}: </span>
                       <span style={{ opacity: 0.85 }}>
-                        {language === "tr" ? "Dışa aktarma sonrası atanır." : "Assigned after export."}
+                        {language === "tr" ? "Issuance sonrası atanır." : "Assigned after issuance."}
                       </span>
                     </div>
                   </div>
                   <div style={{ pointerEvents: exportLoading ? "none" : "auto" }}>
+                    <p style={{ fontSize: "0.78rem", opacity: 0.88, marginBottom: "0.25rem" }}>
+                      {getArtifactProfile(exportProfile)
+                        ? language === "tr"
+                          ? getArtifactProfile(exportProfile)!.purposeShortTr
+                          : getArtifactProfile(exportProfile)!.purposeShortEn
+                        : language === "tr"
+                        ? "Aynı olay omurgasından, rol ve amaça göre kontrollü çıktı."
+                        : "Controlled issuance from the same event spine, by role and purpose."}
+                    </p>
+                    <p style={{ fontSize: "0.72rem", opacity: 0.75, marginBottom: "0.5rem" }}>
+                      {language === "tr" ? "Bu çıktı nihai hukukî veya olgusal hüküm değildir." : "This output is not a final legal or factual determination."}
+                    </p>
                     <div
                       style={{
                         fontSize: "0.8rem",
@@ -1908,7 +1924,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         flexWrap: "wrap",
                       }}
                     >
-                      <span style={{ opacity: 0.8 }}>{language === "tr" ? "Çıktı Profili:" : "Output Profile:"}</span>
+                      <span style={{ opacity: 0.8 }}>{language === "tr" ? "Artifact profili:" : "Artifact profile:"}</span>
                       <button
                         type="button"
                         onClick={() => setExportProfile("claims")}
@@ -1924,7 +1940,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           opacity: exportLoading ? 0.6 : 1,
                         }}
                       >
-                        Claims
+                        {language === "tr" ? "Hasar / Claim" : "Claims"}
                       </button>
                       <button
                         type="button"
@@ -1941,7 +1957,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           opacity: exportLoading ? 0.6 : 1,
                         }}
                       >
-                        Legal
+                        {language === "tr" ? "Hukukî inceleme" : "Legal"}
                       </button>
                     </div>
                     <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
@@ -1961,8 +1977,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         }}
                       >
                         {exportLoading === "json"
-                          ? language === "tr" ? "Dışa aktarılıyor…" : "Exporting…"
-                          : "Export JSON"}
+                          ? language === "tr" ? "Hazırlanıyor…" : "Preparing…"
+                          : "JSON indir"}
                       </button>
                       <button
                         type="button"
@@ -1980,8 +1996,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         }}
                       >
                         {exportLoading === "pdf"
-                          ? language === "tr" ? "Dışa aktarılıyor…" : "Exporting…"
-                          : "Export PDF"}
+                          ? language === "tr" ? "Hazırlanıyor…" : "Preparing…"
+                          : "PDF indir"}
                       </button>
                     </div>
                   </div>
@@ -2008,11 +2024,23 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         : "Select an event in the left spine for artifact issuance."}
                     </p>
                   ) : !isVehicle ? (
-                    <p style={{ margin: 0 }}>
-                      {language === "tr"
-                        ? "Bu olay için demo bağlamı. Belge üretimi yalnızca Araç (API) olayları için geçerlidir."
-                        : "Demo context for this case. Artifact issuance is available for Vehicle (API-backed) events only."}
-                    </p>
+                    <div>
+                      <p style={{ margin: "0 0 0.5rem" }}>
+                        {language === "tr"
+                          ? "Aynı olay omurgasından, rol ve amaça göre kontrollü issuance. Bu dikey için API destekli issuance yakında."
+                          : "Controlled issuance from the same event spine, by role and purpose. API-backed issuance for this vertical coming soon."}
+                      </p>
+                      <div style={{ fontSize: "0.8rem", opacity: 0.9 }}>
+                        {language === "tr" ? "Bu dikeyde kullanılacak artifact profilleri:" : "Artifact profiles for this vertical:"}
+                        <ul style={{ margin: "0.35rem 0 0", paddingLeft: "1.1rem" }}>
+                          {getArtifactProfilesForDomain(selectedSystem).slice(0, 5).map((p) => (
+                            <li key={p.code}>
+                              {language === "tr" ? p.ctaTr : p.ctaEn} — {language === "tr" ? p.purposeShortTr : p.purposeShortEn}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
                   ) : isVehicle && !selected ? (
                     <p style={{ margin: 0 }}>
                       {language === "tr"
