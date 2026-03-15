@@ -1,9 +1,4 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
-/** Same-origin proxy so production browser is not blocked by cross-origin API. */
-const DIAGNOSTICS_URL = "/api/diagnostics";
+import { headers } from "next/headers";
 
 interface Diagnostics {
   environment: string;
@@ -63,24 +58,37 @@ interface Diagnostics {
     enabled_visibility_classes: string[];
     redaction_enabled: boolean;
   } | null;
+  error?: string;
 }
 
-export default function AdminPage() {
-  const [diagnostics, setDiagnostics] = useState<Diagnostics | null>(null);
+async function getDiagnostics(): Promise<Diagnostics | { error: string }> {
+  try {
+    const headersList = await headers();
+    const host = headersList.get("host") ?? headersList.get("x-forwarded-host") ?? "localhost:3000";
+    const protocol = host.includes("localhost") ? "http" : "https";
+    const base = `${protocol}://${host}`;
+    const res = await fetch(`${base}/api/diagnostics`, { next: { revalidate: 10 } });
+    const data = await res.json();
+    if (!res.ok) return { error: data?.message ?? `HTTP ${res.status}` };
+    return data as Diagnostics;
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Failed to load diagnostics" };
+  }
+}
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(DIAGNOSTICS_URL);
-        const json = await res.json();
-        if (res.ok) setDiagnostics(json);
-        else setDiagnostics(null);
-      } catch {
-        setDiagnostics(null);
-      }
-    }
-    load();
-  }, []);
+export default async function AdminPage() {
+  const diagnostics = await getDiagnostics();
+
+  if ("error" in diagnostics) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#020617", color: "#E5E7EB", padding: "1.5rem 2rem" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
+          <h1 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>System Diagnostics</h1>
+          <p style={{ fontSize: "0.9rem", color: "#FCA5A5" }}>Error: {diagnostics.error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -99,16 +107,12 @@ export default function AdminPage() {
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
             Environment
           </h2>
-          {diagnostics ? (
-            <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
-              <li>Environment: {diagnostics.environment}</li>
-              <li>Dataset version: {diagnostics.dataset_version}</li>
-              <li>Schema version: {diagnostics.schema_version}</li>
-              <li>Build version: {diagnostics.build_version}</li>
-            </ul>
-          ) : (
-            <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>Loading…</p>
-          )}
+          <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
+            <li>Environment: {diagnostics.environment}</li>
+            <li>Dataset version: {diagnostics.dataset_version}</li>
+            <li>Schema version: {diagnostics.schema_version}</li>
+            <li>Build version: {diagnostics.build_version}</li>
+          </ul>
         </section>
 
         <section style={{ marginBottom: "1.5rem" }}>
@@ -116,7 +120,7 @@ export default function AdminPage() {
             Export Profiles
           </h2>
           <p style={{ fontSize: "0.8rem" }}>
-            {diagnostics?.supported_export_profiles?.length
+            {diagnostics.supported_export_profiles?.length
               ? `Supported: ${diagnostics.supported_export_profiles.join(", ")}`
               : "Supported: claims, legal"}
           </p>
@@ -126,7 +130,7 @@ export default function AdminPage() {
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
             Last Smoke Result
           </h2>
-          {diagnostics?.latest_smoke_run ? (
+          {diagnostics.latest_smoke_run ? (
             <div style={{ fontSize: "0.8rem" }}>
               <p>
                 <strong>{diagnostics.latest_smoke_run.smoke_run_id}</strong> —{" "}
@@ -161,7 +165,7 @@ export default function AdminPage() {
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
             Recent Export Activity
           </h2>
-          {diagnostics?.recent_exports?.length ? (
+          {diagnostics.recent_exports?.length ? (
             <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem", margin: 0 }}>
               {diagnostics.recent_exports.slice(0, 10).map((e) => (
                 <li key={e.export_id} style={{ marginBottom: "0.25rem" }}>
@@ -180,7 +184,7 @@ export default function AdminPage() {
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
             Recent Verification Activity
           </h2>
-          {diagnostics?.recent_verifications?.length ? (
+          {diagnostics.recent_verifications?.length ? (
             <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem", margin: 0 }}>
               {diagnostics.recent_verifications.slice(0, 10).map((r) => (
                 <li key={r.verification_run_id} style={{ marginBottom: "0.25rem" }}>
@@ -199,7 +203,7 @@ export default function AdminPage() {
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
             Latest Verification Run Summary
           </h2>
-          {diagnostics?.latest_verification_run ? (
+          {diagnostics.latest_verification_run ? (
             <div style={{ fontSize: "0.8rem" }}>
               <p>
                 <strong>{diagnostics.latest_verification_run.verification_run_id}</strong> — event: {diagnostics.latest_verification_run.event_id ?? "—"} — {diagnostics.latest_verification_run.verification_state} — {diagnostics.latest_verification_run.created_at}
@@ -223,7 +227,7 @@ export default function AdminPage() {
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
             Recent Smoke Runs
           </h2>
-          {diagnostics?.recent_smoke_runs?.length ? (
+          {diagnostics.recent_smoke_runs?.length ? (
             <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem", margin: 0 }}>
               {diagnostics.recent_smoke_runs.map((r) => (
                 <li key={r.smoke_run_id} style={{ marginBottom: "0.25rem" }}>
@@ -243,7 +247,7 @@ export default function AdminPage() {
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
             Tenant Policy
           </h2>
-          {diagnostics?.tenant_policy ? (
+          {diagnostics.tenant_policy ? (
             <div style={{ fontSize: "0.8rem" }}>
               <p>Tenant: {diagnostics.tenant_policy.tenant_id}</p>
               <p>
@@ -273,4 +277,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
