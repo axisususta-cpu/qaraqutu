@@ -714,7 +714,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       cursor: "pointer",
                     }}
                   >
-                    <span>
+                    <span
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
                       {section.step != null ? `${section.step}. ` : ""}
                       {section.label}
                     </span>
@@ -801,9 +809,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           style={{
                             display: "flex",
                             flexDirection: "column",
-                            gap: "0.5rem",
-                            maxHeight: 320,
+                            gap: "0.6rem",
+                            maxHeight: 440,
                             overflowY: "auto",
+                            paddingRight: "2px",
                           }}
                         >
                           {displayEvents.length === 0 ? (
