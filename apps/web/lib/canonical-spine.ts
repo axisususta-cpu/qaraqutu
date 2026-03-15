@@ -8,6 +8,7 @@ import type {
   RecordedEvidenceItem,
   DerivedEvidenceItem,
   VerificationTraceStep,
+  AxisusState,
 } from "contracts";
 
 const TRACE_STEP = (
@@ -94,6 +95,17 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       "Bu vaka, kamuya açık olay sınıflarından türetilmiş anonimize bir demo incelemesidir. Nihai hukukî veya olgusal hüküm değildir.",
     demoNoticeEn:
       "This case is an anonymized demo review derived from publicly known incident classes. It is not a final legal or factual determination.",
+    axisusStates: [
+      {
+        id: "axisus-veh-nearmiss-1",
+        labelTr: "İnsan incelemesi gerekli",
+        labelEn: "Human review required",
+        severity: "review",
+        reasonTr: "Sistem müdahalesi, sürücü düzeltmesi ve zamanlama zinciri birlikte değerlendirilmelidir.",
+        reasonEn: "System intervention, driver correction, and timing chain should be reviewed together.",
+        handoffRequired: true,
+      },
+    ] as AxisusState[],
   },
   // —— Vehicle 2: Intersection Collision ——
   {
@@ -155,6 +167,17 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       "Bu vaka anonimize demo incelemesidir. Nihai hukukî veya olgusal hüküm değildir.",
     demoNoticeEn:
       "This case is an anonymized demo review. It is not a final legal or factual determination.",
+    axisusStates: [
+      {
+        id: "axisus-veh-collision-1",
+        labelTr: "Sorumluluk devri tetiklendi",
+        labelEn: "Responsibility transfer triggered",
+        severity: "handoff",
+        reasonTr: "Çok taraflı olay zinciri nihai yorum için insan incelemesi gerektirir.",
+        reasonEn: "The multi-party event chain requires human review for final interpretation.",
+        handoffRequired: true,
+      },
+    ] as AxisusState[],
   },
   // —— Drone 1: Link Loss ——
   {
@@ -216,6 +239,17 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       "Bu vaka anonimize demo incelemesidir. Nihai sorumluluk veya hukukî hüküm üretmez.",
     demoNoticeEn:
       "This is an anonymized demo review. It does not produce final liability or legal judgment.",
+    axisusStates: [
+      {
+        id: "axisus-drone-linkloss-1",
+        labelTr: "Otonom akış sınırlandı",
+        labelEn: "Autonomous flow constrained",
+        severity: "limit",
+        reasonTr: "Komut zinciri belirsizliği nedeniyle güvenli yorum alanı daraltıldı.",
+        reasonEn: "Safe interpretive scope has been narrowed due to command-chain uncertainty.",
+        handoffRequired: true,
+      },
+    ] as AxisusState[],
   },
   // —— Drone 2: Mission Anomaly ——
   {
@@ -276,6 +310,17 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       "Bu vaka anonimize demo incelemesidir. Nihai hukukî veya olgusal hüküm değildir.",
     demoNoticeEn:
       "This case is an anonymized demo review. It is not a final legal or factual determination.",
+    axisusStates: [
+      {
+        id: "axisus-drone-mission-1",
+        labelTr: "Risk eşiği izlendi",
+        labelEn: "Risk threshold monitored",
+        severity: "review",
+        reasonTr: "Görev anomalisi bağlamında ek insan incelemesi değerlidir.",
+        reasonEn: "Additional human review is valuable in the context of mission anomaly.",
+        handoffRequired: false,
+      },
+    ] as AxisusState[],
   },
   // —— Robot 1: Public Interaction ——
   {
@@ -337,6 +382,17 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       "Bu vaka, kamusal alanda robot-insan etkileşimlerinden türetilmiş anonimize demo incelemesidir.",
     demoNoticeEn:
       "This case is an anonymized demo review derived from robot-human interactions in public space.",
+    axisusStates: [
+      {
+        id: "axisus-robot-public-1",
+        labelTr: "Bağlam incelemesi gerekli",
+        labelEn: "Context review required",
+        severity: "review",
+        reasonTr: "Fiziksel temas olmasa da bağlam kaybı olay niteliği taşıyabilir.",
+        reasonEn: "Even without physical contact, context loss may still constitute an event.",
+        handoffRequired: true,
+      },
+    ] as AxisusState[],
   },
   // —— Robot 2: Safety Stop ——
   {
@@ -397,6 +453,17 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       "Bu vaka anonimize demo incelemesidir. Nihai hukukî veya olgusal hüküm değildir.",
     demoNoticeEn:
       "This case is an anonymized demo review. It is not a final legal or factual determination.",
+    axisusStates: [
+      {
+        id: "axisus-robot-safety-1",
+        labelTr: "Durdurma koruyucu davranıştır",
+        labelEn: "Stopping is protective behavior",
+        severity: "limit",
+        reasonTr: "Güvenli durdurma, risk büyümeden sınır koruması sağlar.",
+        reasonEn: "Protective stopping preserves the boundary before risk escalates.",
+        handoffRequired: false,
+      },
+    ] as AxisusState[],
   },
 ];
 

@@ -121,6 +121,21 @@ export default async function AdminPage() {
 
         <section style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            AXISUS state summary
+          </h2>
+          <p style={{ fontSize: "0.8rem", opacity: 0.9, marginBottom: "0.5rem" }}>
+            Case-aware boundary states across spine (AXISUS State Pack v1).
+          </p>
+          <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
+            <li>Observe: {CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter((s) => s.severity === "observe").length}</li>
+            <li>Review: {CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter((s) => s.severity === "review").length}</li>
+            <li>Limit: {CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter((s) => s.severity === "limit").length}</li>
+            <li>Handoff: {CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter((s) => s.severity === "handoff").length}</li>
+          </ul>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
             Environment
           </h2>
           <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>

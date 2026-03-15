@@ -58,6 +58,19 @@ export interface VerificationTraceStep {
   note: string;
 }
 
+/** AXISUS State Pack v1: case-aware boundary protocol state. */
+export interface AxisusState {
+  id: string;
+  labelTr: string;
+  labelEn: string;
+  severity: "observe" | "review" | "limit" | "handoff";
+  reasonTr: string;
+  reasonEn: string;
+  handoffRequired: boolean;
+  nextStepTr?: string;
+  nextStepEn?: string;
+}
+
 export interface CanonicalCase {
   caseId: string;
   system: CanonicalSystemId;
@@ -89,5 +102,7 @@ export interface CanonicalCase {
   /** Case Registry v1: display title (optional; fallback to scenarioFrame). */
   titleTr?: string;
   titleEn?: string;
+  /** AXISUS State Pack v1: case-aware boundary states (optional). */
+  axisusStates?: AxisusState[];
 }
 

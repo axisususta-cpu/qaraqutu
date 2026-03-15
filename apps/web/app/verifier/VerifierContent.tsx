@@ -1808,28 +1808,61 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             </section>
             )}
 
-            {/* AXISUS presence — boundary protocol; visible when case selected. Verifier Demo Case Spec v2 / AXISUS sözleşmesi. */}
-            {selectedCase && (
+            {/* AXISUS State Pack v1 — case-aware boundary protocol; visible when case selected and axisusStates present. */}
+            {selectedCase?.axisusStates?.length ? (
               <section style={{ marginTop: "1rem" }} aria-label="AXISUS">
+                <div
+                  style={{
+                    fontSize: "0.75rem",
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    opacity: 0.7,
+                    marginBottom: "0.35rem",
+                  }}
+                >
+                  AXISUS
+                </div>
                 <div
                   style={{
                     border: "1px solid #374151",
                     borderRadius: 6,
-                    padding: "0.5rem 0.75rem",
-                    fontSize: "0.78rem",
-                    opacity: 0.88,
+                    overflow: "hidden",
                     background: "#111827",
                   }}
                 >
-                  <span style={{ fontWeight: 600, marginRight: "0.5rem" }}>AXISUS:</span>
-                  <span>
-                    {language === "tr"
-                      ? "Risk eşiği izlendi. İnsan incelemesi gerekli. Durdurma koruyucu davranıştır."
-                      : "Risk threshold monitored. Human review required. Stopping is protective behavior."}
-                  </span>
+                  {selectedCase.axisusStates.map((s, idx) => (
+                    <div
+                      key={s.id}
+                      style={{
+                        padding: "0.5rem 0.75rem",
+                        borderBottom:
+                          idx < selectedCase.axisusStates!.length - 1 ? "1px solid #1F2937" : "none",
+                        fontSize: "0.78rem",
+                        opacity: 0.92,
+                        borderLeft:
+                          s.severity === "handoff"
+                            ? "3px solid #4B5563"
+                            : s.severity === "limit"
+                            ? "3px solid #374151"
+                            : "3px solid #1F2937",
+                      }}
+                    >
+                      <div style={{ fontWeight: 600, marginBottom: "0.25rem" }}>
+                        {language === "tr" ? s.labelTr : s.labelEn}
+                      </div>
+                      <div style={{ marginBottom: s.nextStepTr || s.nextStepEn ? "0.25rem" : 0 }}>
+                        {language === "tr" ? s.reasonTr : s.reasonEn}
+                      </div>
+                      {(s.nextStepTr || s.nextStepEn) && (
+                        <div style={{ fontSize: "0.72rem", opacity: 0.85 }}>
+                          {language === "tr" ? s.nextStepTr : s.nextStepEn}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </section>
-            )}
+            ) : null}
 
             {/* 8) Artifact Issuance — doctrine: case-aware; Vehicle API-backed when available. */}
             <section style={{ marginTop: "1.5rem" }}>
