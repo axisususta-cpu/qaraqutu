@@ -62,7 +62,7 @@ interface EventCard {
 /** Map canonical case to EventCard for spine display. */
 function caseToEventCard(c: { eventId: string; scenarioFrame: string; summary: string; occurredAt: string; verificationState: string; bundleId: string; manifestId: string; artifactIssuance: { available: boolean } }): EventCard {
   const severity = c.verificationState === "FAIL" ? "high" : c.verificationState === "PASS" ? "low" : "medium";
-  const outputs = c.artifactIssuance.available ? ["Claims artifact", "Legal artifact", "Transcript"] : ["Demo context"];
+  const outputs = c.artifactIssuance.available ? ["Claims artifact", "Legal artifact", "Trace"] : ["Demo context"];
   return {
     eventId: c.eventId,
     title: c.scenarioFrame,
@@ -105,8 +105,8 @@ function getIncidentSummary(
             ? "Doğrulamayı çalıştırın veya kontrollü artifact başlatın."
             : "Run verification or start controlled artifact."
           : language === "tr"
-          ? "Kayıt özetini inceleyin veya artifact issuance başlatın."
-          : "Review transcript summary or start artifact issuance.",
+          ? "İz özetini inceleyin veya artifact issuance başlatın."
+          : "Review trace summary or start artifact issuance.",
     };
   }
   if (system === "vehicle") {
@@ -1159,7 +1159,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     <span>Event ID: {selectedEventCard.eventId}</span>
                     <span>Bundle ID: {isVehicle && identity ? identity.bundle_id : selectedEventCard.bundleId ?? "—"}</span>
                     <span>Manifest ID: {isVehicle && identity ? identity.manifest_id : selectedEventCard.manifestId ?? "—"}</span>
-                    {isVehicle && transcriptId && <span>Transcript ID: {transcriptId}</span>}
+                    {isVehicle && transcriptId && <span>Trace ID: {transcriptId}</span>}
                     {isVehicle && verificationRunId && <span>Verification Run ID: {verificationRunId}</span>}
                     {!isVehicle && (
                       <span style={{ opacity: 0.7 }}>
@@ -1917,8 +1917,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {transcriptId && (
                         <div>
                           {language === "tr"
-                            ? "Kayıt ID:"
-                            : "Transcript ID:"}{" "}
+                            ? "İz ID:"
+                            : "Trace ID:"}{" "}
                           {transcriptId}
                         </div>
                       )}

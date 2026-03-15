@@ -38,14 +38,14 @@ export default function VerifierGoldenPage() {
             marginBottom: "0.25rem",
           }}
         >
-          QARAQUTU — Golden
+          QARAQUTU — Internal reference
         </div>
-        <h1 style={{ fontSize: "1.5rem", marginBottom: "0.5rem", fontWeight: 600 }}>
-          Verifier quality bar
+        <h1 style={{ fontSize: "1.35rem", marginBottom: "0.5rem", fontWeight: 600 }}>
+          Golden rubric (verifier quality bar)
         </h1>
         <p style={{ fontSize: "0.9rem", opacity: 0.9, lineHeight: 1.5, marginBottom: "1.5rem" }}>
-          Golden is not a separate product. It is the canonical quality bar against which the main
-          verifier is measured. Every case must satisfy the acceptance rubric below.
+          Golden is not a separate product or primary surface. It is the internal quality bar and reference
+          for the main Verifier. Every case in the spine is evaluated against the acceptance rubric below. Use the main Verifier for review.
         </p>
 
         <section style={{ marginBottom: "1.5rem" }}>

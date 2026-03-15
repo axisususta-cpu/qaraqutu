@@ -21,7 +21,7 @@ export default function LandingPage() {
             Vehicle, Drone, and Robot. The main review station is the Verifier—a
             bounded assessment of the event package with recorded evidence,
             derived assessment, verification trace, and artifact issuance. Golden
-            is the quality bar for the verifier, not a separate product.
+            is the internal quality bar and reference for the verifier, not a separate product or primary surface.
           </p>
         </section>
 
@@ -62,8 +62,7 @@ export default function LandingPage() {
               determinations.
             </li>
             <li>
-              <strong>Golden</strong> — the verifier quality bar, not a
-              separate product.
+              <strong>Golden</strong> — internal quality bar and reference for the verifier; not a separate product or primary surface.
             </li>
             <li>
               <strong>Role-based export family</strong> — claims and legal packs
@@ -135,15 +134,13 @@ export default function LandingPage() {
             <li>
               <strong>Verifier</strong> — main review station; event selection,
               recorded/derived evidence, unknown/disputed, verification trace,
-              artifact issuance; Vehicle, Drone, Robot.
+              artifact issuance; Vehicle, Drone, Robot. Primary product surface.
             </li>
             <li>
-              <strong>Golden</strong> — quality bar for the verifier; support
-              surface and entry to the verifier.
+              <strong>Golden</strong> — internal rubric and reference for the verifier; support surface, not a primary or separate product.
             </li>
             <li>
-              <strong>Console</strong> — canonical event review with recorded vs
-              derived separation.
+              <strong>Console</strong> — reserved; canonical event review with recorded vs derived separation.
             </li>
             <li>
               <strong>Docs</strong> — protocol and API overview.
@@ -165,38 +162,16 @@ export default function LandingPage() {
             <Link
               href="/verifier"
               style={{
-                padding: "0.4rem 0.8rem",
+                padding: "0.5rem 1rem",
                 borderRadius: 4,
-                border: "1px solid #374151",
+                border: "1px solid #475569",
+                background: "rgba(30, 58, 95, 0.4)",
                 textDecoration: "none",
                 color: "#E5E7EB",
+                fontWeight: 600,
               }}
             >
               Open Verifier
-            </Link>
-            <Link
-              href="/verifier/golden"
-              style={{
-                padding: "0.4rem 0.8rem",
-                borderRadius: 4,
-                border: "1px solid #374151",
-                textDecoration: "none",
-                color: "#E5E7EB",
-              }}
-            >
-              Golden
-            </Link>
-            <Link
-              href="/console"
-              style={{
-                padding: "0.4rem 0.8rem",
-                borderRadius: 4,
-                border: "1px solid #374151",
-                textDecoration: "none",
-                color: "#E5E7EB",
-              }}
-            >
-              Open Console
             </Link>
             <Link
               href="/docs"
@@ -208,7 +183,31 @@ export default function LandingPage() {
                 color: "#E5E7EB",
               }}
             >
-              Open Docs
+              Docs
+            </Link>
+            <Link
+              href="/verifier/golden"
+              style={{
+                padding: "0.4rem 0.8rem",
+                borderRadius: 4,
+                border: "1px solid #374151",
+                textDecoration: "none",
+                color: "#94A3B8",
+              }}
+            >
+              Golden (reference)
+            </Link>
+            <Link
+              href="/console"
+              style={{
+                padding: "0.4rem 0.8rem",
+                borderRadius: 4,
+                border: "1px solid #374151",
+                textDecoration: "none",
+                color: "#94A3B8",
+              }}
+            >
+              Console
             </Link>
             <Link
               href="/admin"
@@ -220,7 +219,7 @@ export default function LandingPage() {
                 color: "#E5E7EB",
               }}
             >
-              Open Admin
+              Admin
             </Link>
           </div>
         </section>

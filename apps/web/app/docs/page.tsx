@@ -64,10 +64,10 @@ export default function DocsPage() {
               verification state. Each run has a unique verification_run_id.
             </li>
             <li>
-              <strong>Verification transcript</strong>: a persisted artifact
+              <strong>Verification trace</strong>: a persisted artifact
               linked to a verification run; stores structured steps (check,
-              result, note) for that run. Each transcript has a unique
-              transcript_id.
+              result, note) for that run. Each trace has a unique
+              <code>transcript_id</code> (API field).
             </li>
             <li>
               <strong>Verification State</strong>: one of PASS, FAIL, UNKNOWN,
@@ -151,13 +151,13 @@ export default function DocsPage() {
             <li>
               <code>POST /v1/events/:eventId/verify</code> — run an
               event-first verification over the demo bundle/manifest for an
-              event; creates a persisted verification run and transcript,
+              event; creates a persisted verification run and trace,
               returns verification_run_id, transcript_id, verification state,
-              and transcript summary.
+              and trace summary.
             </li>
             <li>
               <code>GET /v1/verifications/:verificationRunId</code> — retrieve a
-              persisted verification run and its transcript by run ID; returns
+              persisted verification run and its trace by run ID; returns
               404 if not found.
             </li>
             <li>
@@ -199,7 +199,7 @@ export default function DocsPage() {
             tenant policy summary. Smoke checks
             are executed via a CLI that
             exercises availability, diagnostics, dataset, verifier (including
-            persisted run and transcript), verification read route, export
+            persisted run and trace), verification read route, export
             creation/download, receipt linkage, and multi-page PDF behavior.
             Each smoke CLI execution now creates a persisted SmokeRun record
             (and individual SmokeCheck records per check). Admin shows the most

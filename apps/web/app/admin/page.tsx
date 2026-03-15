@@ -259,11 +259,14 @@ export default async function AdminPage() {
                 <strong>{diagnostics.latest_verification_run.verification_run_id}</strong> — event: {diagnostics.latest_verification_run.event_id ?? "—"} — {diagnostics.latest_verification_run.verification_state} — {diagnostics.latest_verification_run.created_at}
               </p>
               {diagnostics.latest_verification_run.transcript_summary?.length ? (
-                <ul style={{ paddingLeft: "1rem", marginTop: "0.5rem" }}>
-                  {diagnostics.latest_verification_run.transcript_summary.map((s, i) => (
+                <>
+                  <p style={{ fontSize: "0.75rem", opacity: 0.85, marginTop: "0.5rem", marginBottom: "0.25rem" }}>Trace summary:</p>
+                  <ul style={{ paddingLeft: "1rem", marginTop: "0" }}>
+                    {diagnostics.latest_verification_run.transcript_summary.map((s, i) => (
                     <li key={i}>{s.check} — {s.result}</li>
                   ))}
-                </ul>
+                  </ul>
+                </>
               ) : null}
             </div>
           ) : (
