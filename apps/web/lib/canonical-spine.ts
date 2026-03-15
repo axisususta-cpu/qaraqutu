@@ -9,6 +9,7 @@ import type {
   DerivedEvidenceItem,
   VerificationTraceStep,
   AxisusState,
+  ArtifactProfileVisibility,
 } from "contracts";
 
 const TRACE_STEP = (
@@ -106,6 +107,15 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         handoffRequired: true,
       },
     ] as AxisusState[],
+    artifactProfiles: [
+      { profileCode: "claims", enabled: true, apiBacked: true, reasonTr: "Hasar/claim süreci bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Claims process is meaningful for this case; issuance API is connected." },
+      { profileCode: "legal", enabled: true, apiBacked: true, reasonTr: "Hukukî inceleme bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Legal review is meaningful for this case; issuance API is connected." },
+      { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Teknik rekonstrüksiyon anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Technical reconstruction is meaningful; issuance support is not yet connected." },
+      { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Güvenlik notu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Safety note is meaningful; issuance support is not yet connected." },
+      { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      { profileCode: "regulatory", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      { profileCode: "public_safety", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+    ] as ArtifactProfileVisibility[],
   },
   // —— Vehicle 2: Intersection Collision ——
   {
@@ -178,6 +188,15 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         handoffRequired: true,
       },
     ] as AxisusState[],
+    artifactProfiles: [
+      { profileCode: "claims", enabled: true, apiBacked: true, reasonTr: "Hasar/claim süreci çatışma vakası için anlamlı; issuance API bağlı.", reasonEn: "Claims process is meaningful for collision case; issuance API is connected." },
+      { profileCode: "legal", enabled: true, apiBacked: true, reasonTr: "Hukukî inceleme çok taraflı çatışma için anlamlı; issuance API bağlı.", reasonEn: "Legal review is meaningful for multi-party collision; issuance API is connected." },
+      { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Teknik rekonstrüksiyon anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Technical reconstruction is meaningful; issuance support is not yet connected." },
+      { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Güvenlik notu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Safety note is meaningful; issuance support is not yet connected." },
+      { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      { profileCode: "regulatory", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      { profileCode: "public_safety", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+    ] as ArtifactProfileVisibility[],
   },
   // —— Drone 1: Link Loss ——
   {
@@ -250,6 +269,15 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         handoffRequired: true,
       },
     ] as AxisusState[],
+    artifactProfiles: [
+      { profileCode: "claims", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "legal", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Bağlantı kaybı telemetri rekonstrüksiyonu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Link-loss telemetry reconstruction is meaningful; issuance support is not yet connected." },
+      { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Güvenli sonraki adım bu vaka için anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Safe next step is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      { profileCode: "regulatory", enabled: true, apiBacked: false, reasonTr: "Kayıt ve trace anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Record and trace are meaningful; issuance support is not yet connected." },
+      { profileCode: "public_safety", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+    ] as ArtifactProfileVisibility[],
   },
   // —— Drone 2: Mission Anomaly ——
   {
@@ -321,6 +349,15 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         handoffRequired: false,
       },
     ] as AxisusState[],
+    artifactProfiles: [
+      { profileCode: "claims", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "legal", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Görev anomalisi rekonstrüksiyonu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Mission anomaly reconstruction is meaningful; issuance support is not yet connected." },
+      { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Risk eşiği ve güvenli sonraki adım anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Risk threshold and safe next step are meaningful; issuance support is not yet connected." },
+      { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      { profileCode: "regulatory", enabled: true, apiBacked: false, reasonTr: "Kayıt ve gözetim anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Record and oversight are meaningful; issuance support is not yet connected." },
+      { profileCode: "public_safety", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+    ] as ArtifactProfileVisibility[],
   },
   // —— Robot 1: Public Interaction ——
   {
@@ -393,6 +430,15 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         handoffRequired: true,
       },
     ] as AxisusState[],
+    artifactProfiles: [
+      { profileCode: "claims", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "legal", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Etkileşim zinciri rekonstrüksiyonu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Interaction chain reconstruction is meaningful; issuance support is not yet connected." },
+      { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Kamusal alan riski ve güvenli sonraki adım anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Public-space risk and safe next step are meaningful; issuance support is not yet connected." },
+      { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      { profileCode: "regulatory", enabled: true, apiBacked: false, reasonTr: "Kayıt ve trace anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Record and trace are meaningful; issuance support is not yet connected." },
+      { profileCode: "public_safety", enabled: true, apiBacked: false, reasonTr: "Kamusal güvenlik bağlamı anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Public safety context is meaningful; issuance support is not yet connected." },
+    ] as ArtifactProfileVisibility[],
   },
   // —— Robot 2: Safety Stop ——
   {
@@ -464,6 +510,15 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         handoffRequired: false,
       },
     ] as AxisusState[],
+    artifactProfiles: [
+      { profileCode: "claims", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "legal", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Durdurma zinciri rekonstrüksiyonu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Stop-cycle reconstruction is meaningful; issuance support is not yet connected." },
+      { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Koruyucu durdurma ve güvenli sonraki adım anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Protective stop and safe next step are meaningful; issuance support is not yet connected." },
+      { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      { profileCode: "regulatory", enabled: true, apiBacked: false, reasonTr: "Kayıt ve gözetim anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Record and oversight are meaningful; issuance support is not yet connected." },
+      { profileCode: "public_safety", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+    ] as ArtifactProfileVisibility[],
   },
 ];
 

@@ -71,6 +71,15 @@ export interface AxisusState {
   nextStepEn?: string;
 }
 
+/** Artifact Issuance Discipline Pack v1: per-case, per-profile visibility. */
+export interface ArtifactProfileVisibility {
+  profileCode: string;
+  enabled: boolean;
+  apiBacked: boolean;
+  reasonTr: string;
+  reasonEn: string;
+}
+
 export interface CanonicalCase {
   caseId: string;
   system: CanonicalSystemId;
@@ -104,5 +113,7 @@ export interface CanonicalCase {
   titleEn?: string;
   /** AXISUS State Pack v1: case-aware boundary states (optional). */
   axisusStates?: AxisusState[];
+  /** Artifact Issuance Discipline Pack v1: case-aware profile visibility (optional). */
+  artifactProfiles?: ArtifactProfileVisibility[];
 }
 

@@ -8,6 +8,7 @@ import type {
   VerificationState,
 } from "contracts";
 import { getCanonicalCases, getCanonicalCaseByEventId, evaluateGoldenAcceptance } from "../../lib/canonical-spine";
+import type { ArtifactProfileCode } from "../../lib/artifact-profiles";
 import {
   getArtifactProfile,
   getArtifactProfilesForDomain,
@@ -1873,7 +1874,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               </section>
             ) : null}
 
-            {/* 8) Artifact Issuance — doctrine: case-aware; Vehicle API-backed when available. */}
+            {/* 8) Artifact Issuance — Artifact Issuance Discipline Pack v1: case-aware, profile-aware, issuance-backed vs surface-only. */}
             <section style={{ marginTop: "1.5rem" }}>
               <div
                 style={{
@@ -1886,191 +1887,237 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               >
                 {language === "tr" ? "Belge Üretimi" : "Artifact Issuance"}
               </div>
-              {selectedCase?.artifactIssuance?.available && selectedCase?.artifactIssuance?.apiBacked && selected ? (
-                <div
-                  style={{
-                    border: "1px solid #1F2937",
-                    borderRadius: 6,
-                    padding: "1rem",
-                    background: "#020617",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "grid",
-                      gap: "0.5rem 1.5rem",
-                      gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-                      fontSize: "0.8rem",
-                      marginBottom: "1rem",
-                    }}
-                  >
-                    <div>
-                      <span style={{ opacity: 0.7 }}>{language === "tr" ? "Artifact profili" : "Artifact profile"}: </span>
-                      <strong>
-                        {language === "tr"
-                          ? (getArtifactProfile(exportProfile)?.labelTr ?? exportProfile)
-                          : (getArtifactProfile(exportProfile)?.labelEn ?? exportProfile)}
-                      </strong>
-                    </div>
-                    <div>
-                      <span style={{ opacity: 0.7 }}>{language === "tr" ? "Biçim" : "Format"}: </span>
-                      JSON / PDF
-                    </div>
-                    <div>
-                      <span style={{ opacity: 0.7 }}>{language === "tr" ? "Üretim durumu" : "Issuance status"}: </span>
-                      <strong>
-                        {exportLoading ? (language === "tr" ? "işleniyor" : "pending") : exportError ? (language === "tr" ? "hata" : "error") : language === "tr" ? "hazır" : "idle"}
-                      </strong>
-                    </div>
-                    <div>
-                      <span style={{ opacity: 0.7 }}>Bundle ID: </span>
-                      {identity?.bundle_id ?? selected.bundleId ?? (language === "tr" ? "Doğrulama sonrası görünür." : "Visible after verification.")}
-                    </div>
-                    <div>
-                      <span style={{ opacity: 0.7 }}>Manifest ID: </span>
-                      {identity?.manifest_id ?? selected.manifestId ?? (language === "tr" ? "Doğrulama sonrası görünür." : "Visible after verification.")}
-                    </div>
-                    <div>
-                      <span style={{ opacity: 0.7 }}>{language === "tr" ? "Makbuz ID" : "Receipt ID"}: </span>
-                      <span style={{ opacity: 0.85 }}>
-                        {language === "tr" ? "Henüz üretilmedi." : "Not issued yet."}
-                      </span>
-                    </div>
-                    <div>
-                      <span style={{ opacity: 0.7 }}>{language === "tr" ? "Artifact ID" : "Artifact ID"}: </span>
-                      <span style={{ opacity: 0.85 }}>
-                        {language === "tr" ? "Issuance sonrası atanır." : "Assigned after issuance."}
-                      </span>
-                    </div>
+              {!selectedCase ? (
+                <div style={{ border: "1px solid #111827", borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.8rem", opacity: 0.85 }}>
+                  <p style={{ margin: 0 }}>
+                    {language === "tr"
+                      ? "Belge üretimi için sol omurgadan bir olay seçin."
+                      : "Select an event in the left spine for artifact issuance."}
+                  </p>
+                </div>
+              ) : selectedCase.artifactProfiles && selectedCase.artifactProfiles.length > 0 ? (
+                <div style={{ border: "1px solid #1F2937", borderRadius: 6, padding: "1rem", background: "#020617" }}>
+                  <p style={{ fontSize: "0.72rem", opacity: 0.75, marginBottom: "0.75rem" }}>
+                    {language === "tr"
+                      ? "Bu çıktı nihai hukukî veya olgusal hüküm değildir. Issuance kullanılabilirliği, gerçeklik iddiası anlamına gelmez."
+                      : "This output is not a final legal or factual determination. Issuance availability does not imply a truth claim."}
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    {selectedCase.artifactProfiles.map((ap) => {
+                      const meta = getArtifactProfile(ap.profileCode as ArtifactProfileCode);
+                      const label = meta ? (language === "tr" ? meta.labelTr : meta.labelEn) : ap.profileCode;
+                      const purpose = meta ? (language === "tr" ? meta.purposeShortTr : meta.purposeShortEn) : "";
+                      let statusText: string;
+                      if (ap.enabled && ap.apiBacked) {
+                        statusText = language === "tr" ? "Bu vaka için anlamlı; issuance API bağlı." : "Meaningful for this case; issuance API connected.";
+                      } else if (ap.enabled && !ap.apiBacked) {
+                        statusText = language === "tr" ? "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir." : "This profile is meaningful for this case; issuance support is not yet connected.";
+                      } else {
+                        statusText = language === "tr" ? ap.reasonTr : ap.reasonEn;
+                      }
+                      return (
+                        <div
+                          key={ap.profileCode}
+                          style={{
+                            borderLeft: "2px solid #374151",
+                            padding: "0.5rem 0.6rem",
+                            background: "rgba(15, 23, 42, 0.4)",
+                            borderRadius: 4,
+                            fontSize: "0.8rem",
+                          }}
+                        >
+                          <div style={{ fontWeight: 600, marginBottom: "0.2rem" }}>{label}</div>
+                          {purpose ? <div style={{ opacity: 0.88, marginBottom: "0.25rem", fontSize: "0.78rem" }}>{purpose}</div> : null}
+                          <div style={{ fontSize: "0.75rem", opacity: 0.82 }}>{statusText}</div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div style={{ pointerEvents: exportLoading ? "none" : "auto" }}>
-                    <p style={{ fontSize: "0.78rem", opacity: 0.88, marginBottom: "0.25rem" }}>
-                      {getArtifactProfile(exportProfile)
-                        ? language === "tr"
-                          ? getArtifactProfile(exportProfile)!.purposeShortTr
-                          : getArtifactProfile(exportProfile)!.purposeShortEn
-                        : language === "tr"
-                        ? "Aynı olay omurgasından, rol ve amaça göre kontrollü çıktı."
-                        : "Controlled issuance from the same event spine, by role and purpose."}
-                    </p>
-                    <p style={{ fontSize: "0.72rem", opacity: 0.75, marginBottom: "0.5rem" }}>
-                      {language === "tr" ? "Bu çıktı nihai hukukî veya olgusal hüküm değildir." : "This output is not a final legal or factual determination."}
-                    </p>
-                    <div
+                  {isVehicle && selected && selectedCase.artifactProfiles.some((ap) => ap.enabled && ap.apiBacked && (ap.profileCode === "claims" || ap.profileCode === "legal")) ? (
+                    <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid #111827" }}>
+                      <div style={{ fontSize: "0.8rem", marginBottom: "0.25rem", display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                        <span style={{ opacity: 0.8 }}>{language === "tr" ? "Issuance profili:" : "Issuance profile:"}</span>
+                        {selectedCase.artifactProfiles.some((ap) => ap.profileCode === "claims" && ap.enabled && ap.apiBacked) && (
+                          <button
+                            type="button"
+                            onClick={() => setExportProfile("claims")}
+                            disabled={!!exportLoading}
+                            style={{
+                              fontSize: "0.8rem",
+                              padding: "0.25rem 0.6rem",
+                              borderRadius: 4,
+                              border: exportProfile === "claims" ? "1px solid #E5E7EB" : "1px solid #374151",
+                              background: exportProfile === "claims" ? "#111827" : "#020617",
+                              color: "#E5E7EB",
+                              cursor: exportLoading ? "not-allowed" : "pointer",
+                              opacity: exportLoading ? 0.6 : 1,
+                            }}
+                          >
+                            {language === "tr" ? "Hasar / Claim" : "Claims"}
+                          </button>
+                        )}
+                        {selectedCase.artifactProfiles.some((ap) => ap.profileCode === "legal" && ap.enabled && ap.apiBacked) && (
+                          <button
+                            type="button"
+                            onClick={() => setExportProfile("legal")}
+                            disabled={!!exportLoading}
+                            style={{
+                              fontSize: "0.8rem",
+                              padding: "0.25rem 0.6rem",
+                              borderRadius: 4,
+                              border: exportProfile === "legal" ? "1px solid #E5E7EB" : "1px solid #374151",
+                              background: exportProfile === "legal" ? "#111827" : "#020617",
+                              color: "#E5E7EB",
+                              cursor: exportLoading ? "not-allowed" : "pointer",
+                              opacity: exportLoading ? 0.6 : 1,
+                            }}
+                          >
+                            {language === "tr" ? "Hukukî inceleme" : "Legal"}
+                          </button>
+                        )}
+                      </div>
+                      <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          onClick={runExportJson}
+                          disabled={!selectedId || !!exportLoading}
+                          style={{
+                            fontSize: "0.85rem",
+                            padding: "0.4rem 0.8rem",
+                            borderRadius: 4,
+                            border: "1px solid #374151",
+                            background: "#0B1120",
+                            color: "#E5E7EB",
+                            cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
+                            opacity: !selectedId || exportLoading ? 0.6 : 1,
+                          }}
+                        >
+                          {exportLoading === "json"
+                            ? language === "tr" ? "Hazırlanıyor…" : "Preparing…"
+                            : language === "tr" ? "Issuance — JSON" : "Issue as JSON"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={runExportPdf}
+                          disabled={!selectedId || !!exportLoading}
+                          style={{
+                            fontSize: "0.85rem",
+                            padding: "0.4rem 0.8rem",
+                            borderRadius: 4,
+                            border: "1px solid #374151",
+                            background: "#0B1120",
+                            color: "#E5E7EB",
+                            cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
+                            opacity: !selectedId || exportLoading ? 0.6 : 1,
+                          }}
+                        >
+                          {exportLoading === "pdf"
+                            ? language === "tr" ? "Hazırlanıyor…" : "Preparing…"
+                            : language === "tr" ? "Issuance — PDF" : "Issue as PDF"}
+                        </button>
+                      </div>
+                      {(identity?.bundle_id ?? selected?.bundleId) && (
+                        <div style={{ fontSize: "0.72rem", opacity: 0.7, marginTop: "0.5rem" }}>
+                          Bundle ID: {identity?.bundle_id ?? selected?.bundleId} · Manifest ID: {identity?.manifest_id ?? selected?.manifestId ?? "—"}
+                        </div>
+                      )}
+                      {exportError && (
+                        <p style={{ fontSize: "0.8rem", marginTop: "0.5rem", color: "#fca5a5" }}>{exportError}</p>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              ) : selectedCase?.artifactIssuance?.available && selectedCase?.artifactIssuance?.apiBacked && selected ? (
+                <div style={{ border: "1px solid #1F2937", borderRadius: 6, padding: "1rem", background: "#020617" }}>
+                  <p style={{ fontSize: "0.72rem", opacity: 0.75, marginBottom: "0.5rem" }}>
+                    {language === "tr" ? "Bu çıktı nihai hukukî veya olgusal hüküm değildir." : "This output is not a final legal or factual determination."}
+                  </p>
+                  <div style={{ fontSize: "0.8rem", marginBottom: "0.5rem" }}>
+                    <span style={{ opacity: 0.7 }}>{language === "tr" ? "Artifact profili" : "Artifact profile"}: </span>
+                    <strong>{language === "tr" ? (getArtifactProfile(exportProfile)?.labelTr ?? exportProfile) : (getArtifactProfile(exportProfile)?.labelEn ?? exportProfile)}</strong>
+                  </div>
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      onClick={() => setExportProfile("claims")}
+                      disabled={!!exportLoading}
                       style={{
                         fontSize: "0.8rem",
-                        marginBottom: "0.25rem",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        flexWrap: "wrap",
+                        padding: "0.25rem 0.6rem",
+                        borderRadius: 4,
+                        border: exportProfile === "claims" ? "1px solid #E5E7EB" : "1px solid #374151",
+                        background: exportProfile === "claims" ? "#111827" : "#020617",
+                        color: "#E5E7EB",
+                        cursor: exportLoading ? "not-allowed" : "pointer",
+                        opacity: exportLoading ? 0.6 : 1,
                       }}
                     >
-                      <span style={{ opacity: 0.8 }}>{language === "tr" ? "Artifact profili:" : "Artifact profile:"}</span>
-                      <button
-                        type="button"
-                        onClick={() => setExportProfile("claims")}
-                        disabled={!!exportLoading}
-                        style={{
-                          fontSize: "0.8rem",
-                          padding: "0.25rem 0.6rem",
-                          borderRadius: 4,
-                          border: exportProfile === "claims" ? "1px solid #E5E7EB" : "1px solid #374151",
-                          background: exportProfile === "claims" ? "#111827" : "#020617",
-                          color: "#E5E7EB",
-                          cursor: exportLoading ? "not-allowed" : "pointer",
-                          opacity: exportLoading ? 0.6 : 1,
-                        }}
-                      >
-                        {language === "tr" ? "Hasar / Claim" : "Claims"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setExportProfile("legal")}
-                        disabled={!!exportLoading}
-                        style={{
-                          fontSize: "0.8rem",
-                          padding: "0.25rem 0.6rem",
-                          borderRadius: 4,
-                          border: exportProfile === "legal" ? "1px solid #E5E7EB" : "1px solid #374151",
-                          background: exportProfile === "legal" ? "#111827" : "#020617",
-                          color: "#E5E7EB",
-                          cursor: exportLoading ? "not-allowed" : "pointer",
-                          opacity: exportLoading ? 0.6 : 1,
-                        }}
-                      >
-                        {language === "tr" ? "Hukukî inceleme" : "Legal"}
-                      </button>
-                    </div>
-                    <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
-                      <button
-                        type="button"
-                        onClick={runExportJson}
-                        disabled={!selectedId || !!exportLoading}
-                        style={{
-                          fontSize: "0.85rem",
-                          padding: "0.4rem 0.8rem",
-                          borderRadius: 4,
-                          border: "1px solid #374151",
-                          background: "#0B1120",
-                          color: "#E5E7EB",
-                          cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
-                          opacity: !selectedId || exportLoading ? 0.6 : 1,
-                        }}
-                      >
-                        {exportLoading === "json"
-                          ? language === "tr" ? "Hazırlanıyor…" : "Preparing…"
-                          : "JSON indir"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={runExportPdf}
-                        disabled={!selectedId || !!exportLoading}
-                        style={{
-                          fontSize: "0.85rem",
-                          padding: "0.4rem 0.8rem",
-                          borderRadius: 4,
-                          border: "1px solid #374151",
-                          background: "#0B1120",
-                          color: "#E5E7EB",
-                          cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
-                          opacity: !selectedId || exportLoading ? 0.6 : 1,
-                        }}
-                      >
-                        {exportLoading === "pdf"
-                          ? language === "tr" ? "Hazırlanıyor…" : "Preparing…"
-                          : "PDF indir"}
-                      </button>
-                    </div>
+                      {language === "tr" ? "Hasar / Claim" : "Claims"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setExportProfile("legal")}
+                      disabled={!!exportLoading}
+                      style={{
+                        fontSize: "0.8rem",
+                        padding: "0.25rem 0.6rem",
+                        borderRadius: 4,
+                        border: exportProfile === "legal" ? "1px solid #E5E7EB" : "1px solid #374151",
+                        background: exportProfile === "legal" ? "#111827" : "#020617",
+                        color: "#E5E7EB",
+                        cursor: exportLoading ? "not-allowed" : "pointer",
+                        opacity: exportLoading ? 0.6 : 1,
+                      }}
+                    >
+                      {language === "tr" ? "Hukukî inceleme" : "Legal"}
+                    </button>
                   </div>
-                  {exportError && (
-                    <p style={{ fontSize: "0.8rem", marginTop: "0.5rem", color: "#fca5a5" }}>
-                      {exportError}
-                    </p>
-                  )}
+                  <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      onClick={runExportJson}
+                      disabled={!selectedId || !!exportLoading}
+                      style={{
+                        fontSize: "0.85rem",
+                        padding: "0.4rem 0.8rem",
+                        borderRadius: 4,
+                        border: "1px solid #374151",
+                        background: "#0B1120",
+                        color: "#E5E7EB",
+                        cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
+                        opacity: !selectedId || exportLoading ? 0.6 : 1,
+                      }}
+                    >
+                      {exportLoading === "json" ? (language === "tr" ? "Hazırlanıyor…" : "Preparing…") : language === "tr" ? "Issuance — JSON" : "Issue as JSON"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={runExportPdf}
+                      disabled={!selectedId || !!exportLoading}
+                      style={{
+                        fontSize: "0.85rem",
+                        padding: "0.4rem 0.8rem",
+                        borderRadius: 4,
+                        border: "1px solid #374151",
+                        background: "#0B1120",
+                        color: "#E5E7EB",
+                        cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
+                        opacity: !selectedId || exportLoading ? 0.6 : 1,
+                      }}
+                    >
+                      {exportLoading === "pdf" ? (language === "tr" ? "Hazırlanıyor…" : "Preparing…") : language === "tr" ? "Issuance — PDF" : "Issue as PDF"}
+                    </button>
+                  </div>
+                  {exportError && <p style={{ fontSize: "0.8rem", marginTop: "0.5rem", color: "#fca5a5" }}>{exportError}</p>}
                 </div>
               ) : (
-                <div
-                  style={{
-                    border: "1px solid #111827",
-                    borderRadius: 6,
-                    padding: "0.75rem 1rem",
-                    fontSize: "0.8rem",
-                    opacity: 0.85,
-                  }}
-                >
-                  {!selectedCase ? (
-                    <p style={{ margin: 0 }}>
-                      {language === "tr"
-                        ? "Belge üretimi için sol omurgadan bir olay seçin."
-                        : "Select an event in the left spine for artifact issuance."}
-                    </p>
-                  ) : !isVehicle ? (
+                <div style={{ border: "1px solid #111827", borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.8rem", opacity: 0.85 }}>
+                  {!isVehicle ? (
                     <div>
                       <p style={{ margin: "0 0 0.5rem" }}>
                         {language === "tr"
-                          ? "Aynı olay omurgasından, rol ve amaça göre kontrollü issuance. Bu dikey için API destekli issuance yakında."
-                          : "Controlled issuance from the same event spine, by role and purpose. API-backed issuance for this vertical coming soon."}
+                          ? "Aynı olay omurgasından, rol ve amaça göre kontrollü issuance. Bu dikey için API destekli issuance henüz bağlı değildir."
+                          : "Controlled issuance from the same event spine, by role and purpose. API-backed issuance for this vertical is not yet connected."}
                       </p>
                       <div style={{ fontSize: "0.8rem", opacity: 0.9 }}>
                         {language === "tr" ? "Bu dikeyde kullanılacak artifact profilleri:" : "Artifact profiles for this vertical:"}
@@ -2083,17 +2130,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         </ul>
                       </div>
                     </div>
-                  ) : isVehicle && !selected ? (
+                  ) : !selected ? (
                     <p style={{ margin: 0 }}>
-                      {language === "tr"
-                        ? "Belge üretimi için araç olayının API ile eşleşmesi gerekir."
-                        : "Vehicle event must match API for artifact issuance."}
+                      {language === "tr" ? "Belge üretimi için araç olayının API ile eşleşmesi gerekir." : "Vehicle event must match API for artifact issuance."}
                     </p>
                   ) : (
                     <p style={{ margin: 0 }}>
-                      {language === "tr"
-                        ? "Belge üretimi için sol omurgadan bir araç olayı seçin."
-                        : "Select a vehicle event in the left spine for artifact issuance."}
+                      {language === "tr" ? "Belge üretimi için sol omurgadan bir araç olayı seçin." : "Select a vehicle event in the left spine for artifact issuance."}
                     </p>
                   )}
                 </div>
