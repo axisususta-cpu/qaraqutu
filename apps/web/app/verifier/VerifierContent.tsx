@@ -242,29 +242,6 @@ function buildTranscriptStepRows(
   }));
 }
 
-// Mock evidence for Drone/Robot (Phase 3).
-function getMockRecordedRows(eventId: string, language: "en" | "tr"): RecordedEvidenceRow[] {
-  const en = [
-    { source: "UAV telemetry stream", timestamp: "2025-03-12T14:22:00Z", description: "Mission telemetry capture", referenceId: "rec-" + eventId + "-1", status: "recorded" },
-    { source: "Operator handoff log", timestamp: "2025-03-12T14:21:58Z", description: "Handoff event log", referenceId: "rec-" + eventId + "-2", status: "recorded" },
-  ];
-  const tr = [
-    { source: "İHA telemetri akışı", timestamp: "2025-03-12T14:22:00Z", description: "Görev telemetri kaydı", referenceId: "rec-" + eventId + "-1", status: "kayıtlı" },
-    { source: "Operatör el değişim günlüğü", timestamp: "2025-03-12T14:21:58Z", description: "El değişim olay günlüğü", referenceId: "rec-" + eventId + "-2", status: "kayıtlı" },
-  ];
-  return language === "tr" ? tr : en;
-}
-
-function getMockDerivedRows(eventId: string, language: "en" | "tr"): DerivedEvidenceRow[] {
-  const en = [
-    { type: "timeline_synthesis", basisReferences: "rec-" + eventId + "-1, rec-" + eventId + "-2", explanation: "Mission timeline derived from telemetry and handoff log.", confidence: "88%", profileRelevance: "claims_review" },
-  ];
-  const tr = [
-    { type: "zaman çizelgesi sentezi", basisReferences: "rec-" + eventId + "-1, rec-" + eventId + "-2", explanation: "Telemetri ve el değişim günlüğünden türetilen görev zaman çizelgesi.", confidence: "%88", profileRelevance: "claims_review" },
-  ];
-  return language === "tr" ? tr : en;
-}
-
 export function VerifierContent({ initialEventId }: { initialEventId?: string }) {
   const [language, setLanguage] = useState<"en" | "tr">("en");
   const [selectedSystem, setSelectedSystem] = useState<MockSystemId>("vehicle");
@@ -1040,13 +1017,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 {language === "tr" ? "İnceleme Sahnesi" : "Review Stage"}
                 {selectedEventCard && (
                   <span style={{ marginLeft: "0.5rem", fontWeight: "normal", textTransform: "none" }}>
-                    — {selectedSystem} · {selectedScenario ?? (language === "tr" ? "Senaryo yok" : "No scenario")} · {selectedEventCard.eventId}
+                    — {selectedSystem} · {selectedCase?.scenarioFrame ?? selectedScenario ?? (language === "tr" ? "Senaryo yok" : "No scenario")} · {selectedEventCard.eventId}
                   </span>
                 )}
               </h2>
             </section>
 
-            {/* 2) Incident stage — context from spine selection */}
+            {/* 2) Incident stage — doctrine: Incident Class + Scenario Frame + context */}
             <section style={{ marginBottom: "1rem" }}>
               <div
                 style={{
@@ -1057,26 +1034,42 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   opacity: 0.85,
                 }}
               >
-                {selectedEventCard ? (
-                  selectedSystem === "vehicle" ? (
-                    <p style={{ margin: 0 }}>
-                      {language === "tr"
-                        ? "Kara yolu / aktör / çarpışma veya yakın kaçış bağlamı. Olay paketi doğrulaması için seçili olayın bütünlüğü ve manifest bağlantısı incelenir."
-                        : "Road / actor / collision or near-miss context. Bundle integrity and manifest linkage for the selected event are under verification."}
-                    </p>
-                  ) : selectedSystem === "drone" ? (
-                    <p style={{ margin: 0 }}>
-                      {language === "tr"
-                        ? "Görev rotası / anomali / el değişimi bağlamı. Demo: gerçek doğrulama mevcut sürümde devre dışı."
-                        : "Mission route / anomaly / handoff context. Demo: live verification disabled in current release."}
-                    </p>
-                  ) : (
-                    <p style={{ margin: 0 }}>
-                      {language === "tr"
-                        ? "İş hücresi / yakınlık / güvenlik durdurma bağlamı. Demo: gerçek doğrulama mevcut sürümde devre dışı."
-                        : "Workcell / proximity / safety-stop context. Demo: live verification disabled in current release."}
-                    </p>
-                  )
+                {selectedCase ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    <div>
+                      <span style={{ fontSize: "0.7rem", letterSpacing: "0.05em", opacity: 0.7 }}>
+                        {language === "tr" ? "Olay Sınıfı" : "Incident Class"}:{" "}
+                      </span>
+                      <span>{selectedCase.incidentClass}</span>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: "0.7rem", letterSpacing: "0.05em", opacity: 0.7 }}>
+                        {language === "tr" ? "Senaryo Çerçevesi" : "Scenario Frame"}:{" "}
+                      </span>
+                      <span>{selectedCase.scenarioFrame}</span>
+                    </div>
+                    {selectedSystem === "vehicle" && (
+                      <p style={{ margin: "0.5rem 0 0", fontSize: "0.78rem", opacity: 0.9 }}>
+                        {language === "tr"
+                          ? "Olay paketi doğrulaması için seçili olayın bütünlüğü ve manifest bağlantısı incelenir."
+                          : "Bundle integrity and manifest linkage for the selected event are under verification."}
+                      </p>
+                    )}
+                    {selectedSystem === "drone" && (
+                      <p style={{ margin: "0.5rem 0 0", fontSize: "0.78rem", opacity: 0.9 }}>
+                        {language === "tr"
+                          ? "Görev rotası / anomali / el değişimi bağlamı. Demo: gerçek doğrulama mevcut sürümde devre dışı."
+                          : "Mission route / anomaly / handoff context. Demo: live verification disabled in current release."}
+                      </p>
+                    )}
+                    {selectedSystem === "robot" && (
+                      <p style={{ margin: "0.5rem 0 0", fontSize: "0.78rem", opacity: 0.9 }}>
+                        {language === "tr"
+                          ? "İş hücresi / yakınlık / güvenlik durdurma bağlamı. Demo: gerçek doğrulama mevcut sürümde devre dışı."
+                          : "Workcell / proximity / safety-stop context. Demo: live verification disabled in current release."}
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   <p style={{ margin: 0 }}>
                     {language === "tr"
@@ -1779,7 +1772,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             </section>
             )}
 
-            {/* 8) Artifact Issuance — coherent panel (Phase 3). Vehicle: real export; Drone/Robot: demo note. */}
+            {/* 8) Artifact Issuance — doctrine: case-aware; Vehicle API-backed when available. */}
             <section style={{ marginTop: "1.5rem" }}>
               <div
                 style={{
@@ -1792,7 +1785,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               >
                 {language === "tr" ? "Belge Üretimi" : "Artifact Issuance"}
               </div>
-              {isVehicle && selected ? (
+              {selectedCase?.artifactIssuance?.available && selectedCase?.artifactIssuance?.apiBacked && selected ? (
                 <div
                   style={{
                     border: "1px solid #1F2937",
@@ -1953,11 +1946,23 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     opacity: 0.85,
                   }}
                 >
-                  {!isVehicle ? (
+                  {!selectedCase ? (
                     <p style={{ margin: 0 }}>
                       {language === "tr"
-                        ? "Mevcut sürümde yalnızca demo bağlamı. Belge üretimi yalnızca Araç sistemi için geçerlidir."
-                        : "Demo context only in this release. Artifact issuance is available for the Vehicle system."}
+                        ? "Belge üretimi için sol omurgadan bir olay seçin."
+                        : "Select an event in the left spine for artifact issuance."}
+                    </p>
+                  ) : !isVehicle ? (
+                    <p style={{ margin: 0 }}>
+                      {language === "tr"
+                        ? "Bu olay için demo bağlamı. Belge üretimi yalnızca Araç (API) olayları için geçerlidir."
+                        : "Demo context for this case. Artifact issuance is available for Vehicle (API-backed) events only."}
+                    </p>
+                  ) : isVehicle && !selected ? (
+                    <p style={{ margin: 0 }}>
+                      {language === "tr"
+                        ? "Belge üretimi için araç olayının API ile eşleşmesi gerekir."
+                        : "Vehicle event must match API for artifact issuance."}
                     </p>
                   ) : (
                     <p style={{ margin: 0 }}>
