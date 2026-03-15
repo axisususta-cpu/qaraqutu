@@ -101,9 +101,34 @@ export default async function AdminPage() {
       }}
     >
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
-        <h1 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>
+        <h1 style={{ fontSize: "1.4rem", marginBottom: "0.35rem" }}>
           System Diagnostics
         </h1>
+        <div
+          style={{
+            marginBottom: "0.75rem",
+            padding: "0.5rem 0.75rem",
+            borderLeft: "4px solid #374151",
+            background: "rgba(15, 23, 42, 0.6)",
+            borderRadius: 4,
+            fontSize: "0.85rem",
+            fontWeight: 600,
+            color: "#E5E7EB",
+            opacity: 0.95,
+          }}
+        >
+          Diagnostics only — not an operations dashboard.
+        </div>
+        <p
+          style={{
+            fontSize: "0.8rem",
+            opacity: 0.9,
+            marginBottom: "1.25rem",
+            lineHeight: 1.45,
+          }}
+        >
+          Verifier spine activity: verification runs, trace, and issuance are reflected below. Single product spine: witness → verification → issuance.
+        </p>
         <section style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
             Canonical spine
@@ -194,8 +219,11 @@ export default async function AdminPage() {
 
         <section style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Recent Export Activity
+            Recent Export Activity (issuance)
           </h2>
+          <p style={{ fontSize: "0.78rem", opacity: 0.8, marginBottom: "0.5rem" }}>
+            Controlled artifact issuance from the verifier.
+          </p>
           {diagnostics.recent_exports?.length ? (
             <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem", margin: 0 }}>
               {diagnostics.recent_exports.slice(0, 10).map((e) => (
@@ -213,8 +241,11 @@ export default async function AdminPage() {
 
         <section style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Recent Verification Activity
+            Recent Verification Activity (trace / runs)
           </h2>
+          <p style={{ fontSize: "0.78rem", opacity: 0.8, marginBottom: "0.5rem" }}>
+            Verification trace and run history from the verifier spine.
+          </p>
           {diagnostics.recent_verifications?.length ? (
             <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem", margin: 0 }}>
               {diagnostics.recent_verifications.slice(0, 10).map((r) => (

@@ -191,7 +191,7 @@ function toDerivedRows(items: DerivedEvidenceItem[]): DerivedEvidenceRow[] {
   }));
 }
 
-// Phase 3: Verification Transcript step row (procedural).
+// Phase 3: Verification Trace step row (procedural).
 interface TranscriptStepRow {
   label: string;
   status: string;
@@ -661,8 +661,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 step: null,
                 label:
                   language === "tr"
-                    ? "Doğrulama Kaydı"
-                    : "Verification Transcript",
+                    ? "Doğrulama İzi"
+                    : "Verification Trace",
               },
               {
                 id: "issuance",
@@ -998,8 +998,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {section.id === "transcript" && (
                         <p style={{ margin: 0 }}>
                           {language === "tr"
-                            ? "Doğrulama adımları sağdaki Doğrulama Kaydı bloğunda gösterilir."
-                            : "Verification steps are shown in the Verification Transcript block on the right."}
+                            ? "İnceleme adımları ve sonuçları sağdaki Doğrulama İzi bloğunda gösterilir; nihai hüküm değildir."
+                            : "Examination steps and outcomes are shown in the Verification Trace block on the right; not a final determination."}
                         </p>
                       )}
                       {section.id === "issuance" && (
@@ -1178,14 +1178,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             </section>
 
             {/* 4) Incident summary — real panel driven by selected event */}
-            <section style={{ marginBottom: "1rem" }}>
+            <section style={{ marginBottom: "1.25rem" }}>
               <div
                 style={{
                   fontSize: "0.75rem",
-                  letterSpacing: "0.08em",
+                  letterSpacing: "0.1em",
                   textTransform: "uppercase",
-                  opacity: 0.7,
+                  opacity: 0.8,
                   marginBottom: "0.25rem",
+                  fontWeight: 600,
                 }}
               >
                 {language === "tr" ? "Olay Özeti" : "Incident Summary"}
@@ -1252,19 +1253,47 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               </div>
             </section>
 
-            {/* 5) Evidence Layers — Recorded + Derived (Phase 3) */}
-            <section style={{ marginBottom: "1rem" }}>
+            {/* Doctrine spine: Recorded → Derived → Unknown → Trace → Issuance (visually grouped) */}
+            <div
+              style={{
+                borderLeft: "3px solid #1E3A5F",
+                paddingLeft: "1rem",
+                marginLeft: "0.25rem",
+              }}
+            >
+              <div style={{ fontSize: "0.7rem", letterSpacing: "0.12em", textTransform: "uppercase", opacity: 0.8, marginBottom: "0.75rem", fontWeight: 700 }}>
+                {language === "tr" ? "Doctrine omurgası" : "Doctrine spine"}
+              </div>
+            {/* 5) Evidence Layers — Recorded (raw) + Derived (second layer); distinct sections */}
+            <section style={{ marginBottom: "1.25rem" }}>
               <div
                 style={{
                   fontSize: "0.75rem",
                   letterSpacing: "0.1em",
                   textTransform: "uppercase",
                   opacity: 0.8,
-                  marginBottom: "0.5rem",
+                  marginBottom: "0.25rem",
                   fontWeight: 600,
                 }}
               >
                 {language === "tr" ? "Delil Katmanları" : "Evidence Layers"}
+              </div>
+              <div
+                style={{
+                  padding: "0.5rem 0.75rem",
+                  marginBottom: "0.5rem",
+                  background: "#0F172A",
+                  border: "1px solid #1E3A5F",
+                  borderRadius: 6,
+                  fontSize: "0.8rem",
+                  opacity: 0.95,
+                  lineHeight: 1.45,
+                  fontWeight: 500,
+                }}
+              >
+                {language === "tr"
+                  ? "Kayıtlı = ham kayıt katmanı. Türetilmiş = kayıtlıdan türetilen ikinci katman. Karıştırılmaz."
+                  : "Recorded = raw record layer. Derived = second layer from recorded. Not blended."}
               </div>
               {selectedEventCard ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -1388,14 +1417,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               )}
             </section>
 
-            {/* 5b) Unknown / Disputed — doctrine: per-case unknowns and disputed items */}
-            <section style={{ marginBottom: "1rem" }}>
+            {/* 5b) Unknown / Disputed — doctrine: honesty layer; open ends requiring human review */}
+            <section style={{ marginBottom: "1.25rem" }}>
               <div
                 style={{
                   fontSize: "0.75rem",
-                  letterSpacing: "0.08em",
+                  letterSpacing: "0.1em",
                   textTransform: "uppercase",
-                  opacity: 0.7,
+                  opacity: 0.8,
                   marginBottom: "0.25rem",
                   fontWeight: 600,
                 }}
@@ -1406,60 +1435,125 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 style={{
                   border: "1px solid #1F2937",
                   borderRadius: 6,
-                  padding: "0.75rem 1rem",
-                  fontSize: "0.8rem",
-                  opacity: 0.9,
+                  overflow: "hidden",
                 }}
               >
-                {selectedEventCard ? (
-                  <ul style={{ margin: 0, paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
-                    {selectedCase?.unknownDisputed?.length ? (
-                      selectedCase.unknownDisputed.map((item, i) => (
-                        <li key={i} style={{ marginBottom: "0.35rem" }}>{item}</li>
-                      ))
-                    ) : (
-                      <li style={{ marginBottom: "0.35rem", opacity: 0.8 }}>
-                        {language === "tr"
-                          ? "Bu olayda henüz sınıflandırılmamış veya tartışmalı nokta yok."
-                          : "No unknown or disputed items for this case."}
-                      </li>
-                    )}
-                    {verificationState === "UNKNOWN" && (
-                      <li style={{ marginBottom: "0.35rem", color: "#FBBF24" }}>
-                        {language === "tr" ? "Doğrulama durumu: Bilinmeyen." : "Verification state: Unknown."}
-                      </li>
-                    )}
-                  </ul>
-                ) : (
-                  <p style={{ margin: 0 }}>
+                <div
+                  style={{
+                    padding: "0.6rem 0.85rem",
+                    background: "#0F172A",
+                    borderBottom: "1px solid #1F2937",
+                  }}
+                >
+                  <div style={{ fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.3rem", opacity: 0.95 }}>
+                    {language === "tr" ? "Dürüstlük katmanı — açık uçlar" : "Honesty layer — open ends"}
+                  </div>
+                  <p style={{ margin: 0, fontSize: "0.8rem", opacity: 0.95, lineHeight: 1.45 }}>
                     {language === "tr"
-                      ? "Sol omurgadan bir olay seçin."
-                      : "Select an event in the left spine."}
+                      ? "Açık uçlar ve insan incelemesi gerektiren maddeler. Kayıtlı ve türetilmiş delilden ayrıdır. İnsan incelemesi gerekir."
+                      : "Open ends and items requiring human review. Distinct from recorded and derived evidence. Requires human review."}
                   </p>
-                )}
+                </div>
+                <div
+                  style={{
+                    padding: "0.4rem 0.75rem",
+                    background: "rgba(15, 23, 42, 0.6)",
+                    borderBottom: "1px solid #1F2937",
+                    fontSize: "0.75rem",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    opacity: 0.9,
+                    fontWeight: 600,
+                  }}
+                >
+                  {language === "tr" ? "Çözülmemiş / tartışmalı" : "Unresolved / disputed"}
+                </div>
+                <div style={{ padding: "0.75rem 1rem", fontSize: "0.8rem", opacity: 0.9 }}>
+                  {selectedEventCard ? (
+                    <>
+                      {verificationState === "UNKNOWN" && (
+                        <div
+                          style={{
+                            marginBottom: "0.75rem",
+                            padding: "0.5rem 0.65rem",
+                            borderLeft: "3px solid #FBBF24",
+                            background: "rgba(251, 191, 36, 0.08)",
+                            borderRadius: 4,
+                          }}
+                        >
+                          <div style={{ fontWeight: 600, marginBottom: "0.2rem" }}>
+                            {language === "tr" ? "Doğrulama durumu: Bilinmeyen" : "Verification state: Unknown"}
+                          </div>
+                          <div style={{ fontSize: "0.78rem", opacity: 0.95 }}>
+                            {language === "tr" ? "İnsan incelemesi gerekir." : "Requires human review."}
+                          </div>
+                        </div>
+                      )}
+                      <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
+                        {selectedCase?.unknownDisputed?.length ? (
+                          selectedCase.unknownDisputed.map((item, i) => (
+                            <li key={i} style={{ marginBottom: "0.5rem" }}>
+                              {item}
+                              <div style={{ fontSize: "0.72rem", opacity: 0.8, marginTop: "0.15rem" }}>
+                                {language === "tr" ? "İnsan incelemesi gerekir." : "Requires human review."}
+                              </div>
+                            </li>
+                          ))
+                        ) : verificationState === "UNKNOWN" ? (
+                          <li style={{ marginBottom: "0.35rem", opacity: 0.9 }}>
+                            {language === "tr"
+                              ? "Bu çalıştırma için doğrulama sonucu belirsiz; insan incelemesi gerekir."
+                              : "Verification outcome unknown for this run; requires human review."}
+                          </li>
+                        ) : (
+                          <li style={{ marginBottom: "0.35rem", opacity: 0.95 }}>
+                            {language === "tr"
+                              ? "Bu dürüstlük katmanında bu vaka için kayıtlı çözülmemiş veya tartışmalı madde yok."
+                              : "This is the honesty layer. No unresolved or disputed items recorded for this case."}
+                          </li>
+                        )}
+                      </ul>
+                    </>
+                  ) : (
+                    <p style={{ margin: 0 }}>
+                      {language === "tr"
+                        ? "Sol omurgadan bir olay seçin."
+                        : "Select an event in the left spine."}
+                    </p>
+                  )}
+                </div>
               </div>
             </section>
 
-            {/* 6) Verification Transcript — step-based block (Phase 3) */}
-            <section style={{ marginBottom: "1rem" }}>
+            {/* 6) Verification Trace — examination trace linking recorded to derived; not final truth */}
+            <section style={{ marginBottom: "1.25rem" }} aria-labelledby="verification-trace-heading">
+              <h2 id="verification-trace-heading" style={{ fontSize: "0.95rem", fontWeight: 700, marginBottom: "0.5rem", letterSpacing: "0.02em" }}>
+                {language === "tr" ? "Doğrulama İzi" : "Verification Trace"}
+              </h2>
               <div
                 style={{
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  opacity: 0.7,
-                  marginBottom: "0.25rem",
-                }}
-              >
-                {language === "tr" ? "Doğrulama Kaydı" : "Verification Transcript"}
-              </div>
-              <div
-                style={{
-                  border: "1px solid #111827",
+                  border: "1px solid #1F2937",
                   borderRadius: 6,
                   overflow: "hidden",
                 }}
               >
+                {/* Doctrine and title inside box so they cannot be missed */}
+                <div
+                  style={{
+                    padding: "0.6rem 0.9rem",
+                    background: "#0F172A",
+                    borderBottom: "1px solid #1F2937",
+                  }}
+                >
+                  <div style={{ fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.35rem", opacity: 0.95 }}>
+                    {language === "tr" ? "Doğrulama İzi" : "Verification Trace"}
+                  </div>
+                  <p style={{ margin: 0, fontSize: "0.8rem", opacity: 0.95, lineHeight: 1.45 }}>
+                    {language === "tr"
+                      ? "Kayıtlı delil ile türetilmiş değerlendirme arasındaki inceleme izi. Nihai gerçeklik veya nihai hüküm iddiası değildir."
+                      : "Inspection trace linking recorded evidence to derived assessment. Not a claim of final truth or final determination."}
+                  </p>
+                </div>
                 {selectedEventCard ? (
                   (() => {
                     const stepRows =
@@ -1468,63 +1562,114 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         : selectedCase?.verificationTrace?.length
                         ? selectedCase.verificationTrace.map((s) => ({ label: s.check, status: s.result, time: undefined as string | undefined, note: s.note || undefined }))
                         : buildTranscriptStepRows(selectedSystem, transcript, verificationState, language);
+                    const normalizeResult = (r: string) => {
+                      if (r === "OK" || r === "PASS") return { text: r, honesty: "pass" as const };
+                      if (r === "UNKNOWN" || r === "unresolved") return { text: r, honesty: "unresolved" as const };
+                      if (r === "FAIL" || r === "partial") return { text: r, honesty: "partial" as const };
+                      return { text: r, honesty: "pass" as const };
+                    };
                     return (
-                  <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-                    {stepRows.map((row, i) => (
-                      <li
-                        key={i}
-                        style={{
-                          padding: "0.5rem 0.85rem",
-                          borderBottom: i < stepRows.length - 1 ? "1px solid #111827" : "none",
-                          fontSize: "0.8rem",
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "0.6rem 1.25rem",
-                          alignItems: "baseline",
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        <span style={{ fontWeight: 600, minWidth: "12rem" }}>{row.label}</span>
-                        <span style={{ opacity: 0.9 }}>{row.status}</span>
-                        {row.time && <span style={{ fontSize: "0.75rem", opacity: 0.7 }}>{row.time}</span>}
-                        {row.note && <span style={{ fontSize: "0.75rem", opacity: 0.8 }}>{row.note}</span>}
-                      </li>
-                    ))}
-                  </ul>
+                      <>
+                        <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+                          {stepRows.map((row, i) => {
+                            const { text, honesty } = normalizeResult(row.status);
+                            const stateLabel = honesty === "pass" ? (language === "tr" ? "geçti" : "pass") : honesty === "unresolved" ? (language === "tr" ? "çözülmedi" : "unresolved") : (language === "tr" ? "kısmi" : "partial");
+                            return (
+                              <li
+                                key={i}
+                                style={{
+                                  padding: "0.6rem 0.9rem",
+                                  borderBottom: i < stepRows.length - 1 ? "1px solid #1F2937" : "none",
+                                  fontSize: "0.82rem",
+                                  display: "flex",
+                                  flexWrap: "wrap",
+                                  gap: "0.5rem 1rem",
+                                  alignItems: "baseline",
+                                  lineHeight: 1.45,
+                                }}
+                              >
+                                <span style={{ fontWeight: 600, minWidth: "11rem" }}>
+                                  {language === "tr" ? "Kontrol edilen" : "Checked"}: {row.label}
+                                </span>
+                                <span
+                                  style={{
+                                    opacity: 0.95,
+                                    color: honesty === "unresolved" ? "#FBBF24" : honesty === "partial" ? "#F59E0B" : undefined,
+                                  }}
+                                >
+                                  {language === "tr" ? "Sonuç" : "Result"}: {text}
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: "0.7rem",
+                                    padding: "0.15rem 0.4rem",
+                                    borderRadius: 4,
+                                    background: honesty === "unresolved" ? "rgba(251, 191, 36, 0.2)" : honesty === "partial" ? "rgba(245, 158, 11, 0.2)" : "rgba(34, 197, 94, 0.15)",
+                                    color: honesty === "unresolved" ? "#FBBF24" : honesty === "partial" ? "#F59E0B" : "#22C55E",
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {stateLabel}
+                                </span>
+                                <span style={{ fontSize: "0.78rem", opacity: 0.9, width: "100%", marginTop: "0.2rem" }}>
+                                  {language === "tr" ? "Temel / not" : "Basis / note"}: {row.note || "—"}
+                                </span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                        <div
+                          style={{
+                            padding: "0.65rem 0.9rem",
+                            borderTop: "1px solid #1F2937",
+                            fontSize: "0.8rem",
+                            opacity: 0.95,
+                            background: "#0B1120",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {language === "tr"
+                            ? "Bu iz, yapılan inceleme adımlarını belgeler; nihai gerçeklik veya nihai hüküm oluşturmaz."
+                            : "This trace documents the examination steps performed; it does not constitute final truth or a final determination."}
+                        </div>
+                      </>
                     );
                   })()
                 ) : (
-                  <div style={{ padding: "0.75rem 1rem", fontSize: "0.8rem", opacity: 0.85 }}>
+                  <div style={{ padding: "0.75rem 1rem", fontSize: "0.8rem", opacity: 0.9 }}>
                     <p style={{ margin: 0 }}>
                       {language === "tr"
-                        ? "Doğrulama kaydı için sol omurgadan bir olay seçin."
-                        : "Select an event in the left spine to view the verification transcript."}
+                        ? "Doğrulama izi için sol omurgadan bir olay seçin."
+                        : "Select an event in the left spine to view the verification trace."}
                     </p>
                   </div>
                 )}
               </div>
             </section>
 
-            {/* 6b) Review Assistant — reserved slot (Phase 4). Not active in current release. */}
-            <section style={{ marginBottom: "1rem" }}>
+            </div>
+            {/* End doctrine spine (Evidence → Unknown → Trace). Issuance follows after secondary blocks. */}
+
+            {/* Secondary: Review Assistant — reserved slot; does not overshadow doctrine spine */}
+            <section style={{ marginBottom: "0.75rem", marginTop: "1rem" }}>
               <div
                 style={{
-                  fontSize: "0.7rem",
+                  fontSize: "0.65rem",
                   letterSpacing: "0.06em",
                   textTransform: "uppercase",
-                  opacity: 0.55,
-                  marginBottom: "0.35rem",
+                  opacity: 0.5,
+                  marginBottom: "0.3rem",
                 }}
               >
                 {language === "tr" ? "İnceleme Asistanı" : "Review Assistant"}
               </div>
               <div
                 style={{
-                  border: "1px solid #1F2937",
+                  border: "1px solid #111827",
                   borderRadius: 6,
-                  padding: "0.6rem 0.85rem",
-                  fontSize: "0.78rem",
-                  opacity: 0.75,
+                  padding: "0.5rem 0.75rem",
+                  fontSize: "0.76rem",
+                  opacity: 0.7,
                   background: "#0B1120",
                 }}
               >
@@ -1683,12 +1828,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 padding: loading ? "0.75rem 1rem" : undefined,
                 background: loading ? "rgba(30, 58, 95, 0.15)" : undefined,
                 transition: "border-color 0.2s ease, background 0.2s ease",
+                marginTop: "1rem",
               }}
             >
-              <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+              <h2 style={{ fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.4rem", opacity: 0.75, letterSpacing: "0.05em", textTransform: "uppercase" }}>
                 {language === "tr"
-                  ? "Doğrulama Sonucu"
-                  : "Verification Result"}
+                  ? "Doğrulama sonucu (bu çalıştırma)"
+                  : "Verification result (this run)"}
               </h2>
               {loading && (
                 <div
@@ -1722,7 +1868,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
                   {language === "tr"
                     ? "Henüz bir doğrulama çalıştırılmadı. Bir olay seçin ve doğrulamayı başlatın."
-                    : "No verification has been run yet. Select an event and start verification to see its current state and a concise transcript summary."}
+                    : "No verification has been run yet. Select an event and start verification to see its current state and verification trace summary."}
                 </p>
               )}
 
@@ -1800,8 +1946,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     }}
                   >
                     {language === "tr"
-                      ? "Kayıt Özeti"
-                      : "Transcript Summary"}
+                      ? "İz özeti (bu çalıştırma)"
+                      : "Trace summary (this run)"}
                   </div>
                   <ul
                     style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}
@@ -1818,16 +1964,16 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             </section>
             )}
 
-            {/* AXISUS State Pack v1 — case-aware boundary protocol; visible when case selected and axisusStates present. */}
+            {/* AXISUS — boundary protocol; secondary to doctrine spine */}
             {selectedCase?.axisusStates?.length ? (
               <section style={{ marginTop: "1rem" }} aria-label="AXISUS">
                 <div
                   style={{
-                    fontSize: "0.75rem",
-                    letterSpacing: "0.08em",
+                    fontSize: "0.68rem",
+                    letterSpacing: "0.06em",
                     textTransform: "uppercase",
-                    opacity: 0.7,
-                    marginBottom: "0.35rem",
+                    opacity: 0.6,
+                    marginBottom: "0.3rem",
                   }}
                 >
                   AXISUS
@@ -1874,19 +2020,33 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               </section>
             ) : null}
 
-            {/* 8) Artifact Issuance — Artifact Issuance Discipline Pack v1: case-aware, profile-aware, issuance-backed vs surface-only. */}
-            <section style={{ marginTop: "1.5rem" }}>
+            {/* 8) Artifact Issuance — doctrine spine (continued); conditioned on trace and uncertainty */}
+            <div style={{ borderLeft: "3px solid #1E3A5F", paddingLeft: "1rem", marginLeft: "0.25rem", marginTop: "0.5rem" }}>
+            <section style={{ marginBottom: "1rem" }}>
               <div
                 style={{
                   fontSize: "0.75rem",
-                  letterSpacing: "0.08em",
+                  letterSpacing: "0.1em",
                   textTransform: "uppercase",
-                  opacity: 0.7,
-                  marginBottom: "0.5rem",
+                  opacity: 0.8,
+                  marginBottom: "0.25rem",
+                  fontWeight: 600,
                 }}
               >
                 {language === "tr" ? "Belge Üretimi" : "Artifact Issuance"}
               </div>
+              <p
+                style={{
+                  fontSize: "0.72rem",
+                  opacity: 0.8,
+                  marginBottom: "0.5rem",
+                  lineHeight: 1.4,
+                }}
+              >
+                {language === "tr"
+                  ? "Üretim, yukarıdaki doğrulama izi ve açık belirsizliklere bağlıdır; onların üzerine yazmaz."
+                  : "Issuance is conditioned on the verification trace and open unknowns above; it does not override them."}
+              </p>
               {!selectedCase ? (
                 <div style={{ border: "1px solid #111827", borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.8rem", opacity: 0.85 }}>
                   <p style={{ margin: 0 }}>
@@ -2142,15 +2302,16 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
               )}
             </section>
+            </div>
 
             {/* 9) Why QARAQUTU is inevitable — doctrine: per-case rationale */}
-            <section style={{ marginTop: "1.5rem", marginBottom: "1rem" }}>
+            <section style={{ marginTop: "1rem", marginBottom: "1rem" }}>
               <div
                 style={{
                   fontSize: "0.75rem",
-                  letterSpacing: "0.08em",
+                  letterSpacing: "0.1em",
                   textTransform: "uppercase",
-                  opacity: 0.7,
+                  opacity: 0.8,
                   marginBottom: "0.5rem",
                   fontWeight: 600,
                 }}
