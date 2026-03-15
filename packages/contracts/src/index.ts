@@ -83,5 +83,11 @@ export interface CanonicalCase {
   artifactIssuance: { available: boolean; apiBacked?: boolean };
   /** Doctrine: Why QARAQUTU is inevitable */
   whyInevitable: string;
+  /** Case Registry v1: demo framing (optional; fallback to generic). */
+  demoNoticeTr?: string;
+  demoNoticeEn?: string;
+  /** Case Registry v1: display title (optional; fallback to scenarioFrame). */
+  titleTr?: string;
+  titleEn?: string;
 }
 

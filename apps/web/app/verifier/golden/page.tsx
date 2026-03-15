@@ -83,6 +83,28 @@ export default function VerifierGoldenPage() {
 
         <section style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", fontWeight: 600 }}>
+            Rubric v2 reference (scoring bands)
+          </h2>
+          <div
+            style={{
+              border: "1px solid #1F2937",
+              borderRadius: 6,
+              padding: "0.75rem 1rem",
+              fontSize: "0.8rem",
+              opacity: 0.9,
+            }}
+          >
+            <p style={{ margin: "0 0 0.5rem" }}>
+              <strong>Dimensions:</strong> Framing discipline · Recorded integrity · Derived discipline · Uncertainty honesty · Verification trace quality · Artifact control · USTA discipline · AXISUS presence · Inevitability strike.
+            </p>
+            <p style={{ margin: 0 }}>
+              <strong>Bands:</strong> 90–100 = golden-grade; 80–89 = acceptable, polish needed; 70–79 = usable, not reference; 0–69 = reject/rework. Hard-fail if recorded/derived merged, final blame language, or Golden presented as separate product.
+            </p>
+          </div>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", fontWeight: 600 }}>
             Spine cases: {caseResults.length} / {caseResults.length} pass
           </h2>
           <div

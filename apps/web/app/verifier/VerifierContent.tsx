@@ -1010,7 +1010,39 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           </aside>
 
           <main style={{ flex: 1 }}>
-            {/* Right-side structure (driven by left spine): 1) Stage header 2) Incident stage 3) Identity chain 4) Incident summary 5) Verification / export. Future: Review Assistant panel can be added after incident summary without breaking layout. */}
+            {/* Right-side structure (driven by left spine): 0) Demo framing 1) Stage header 2) Incident stage … Verifier Demo Case Spec v2 panel order. */}
+            {/* 0) Demo scenario notice — zorunlu üst çerçeve; every case screen. */}
+            {selectedCase && (
+              <section style={{ marginBottom: "1rem" }} aria-label={language === "tr" ? "Demo senaryosu bildirimi" : "Demo scenario notice"}>
+                <div
+                  style={{
+                    border: "1px solid #1E3A5F",
+                    borderRadius: 6,
+                    padding: "0.65rem 0.9rem",
+                    fontSize: "0.75rem",
+                    opacity: 0.92,
+                    background: "#0F172A",
+                    color: "#E5E7EB",
+                  }}
+                >
+                  <div style={{ fontWeight: 600, marginBottom: "0.35rem", letterSpacing: "0.04em" }}>
+                    {language === "tr" ? "Demo senaryosu bildirimi" : "Demo scenario notice"}
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: "1.1rem", lineHeight: 1.5 }}>
+                    <li>{language === "tr" ? "Demo senaryo." : "Demo scenario."}</li>
+                    <li>{language === "tr" ? "Kamuya açık olay sınıfı." : "Publicly known incident class."}</li>
+                    <li>{language === "tr" ? "Anonimize inceleme akışı." : "Anonymized review flow."}</li>
+                    <li>{language === "tr" ? "Nihai hukukî veya olgusal hüküm değildir." : "Not a final legal or factual determination."}</li>
+                  </ul>
+                  {(selectedCase.demoNoticeTr || selectedCase.demoNoticeEn) && (
+                    <p style={{ margin: "0.5rem 0 0", fontSize: "0.72rem", opacity: 0.85 }}>
+                      {language === "tr" ? selectedCase.demoNoticeTr : selectedCase.demoNoticeEn}
+                    </p>
+                  )}
+                </div>
+              </section>
+            )}
+
             {/* 1) Stage header — driven by spine system/scenario/event */}
             <section style={{ marginBottom: "0.5rem" }} aria-labelledby="stage-heading">
               <h2 id="stage-heading" style={{ fontSize: "0.75rem", letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.7, marginBottom: "0.25rem", fontWeight: 600 }}>
@@ -1770,6 +1802,29 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
               )}
             </section>
+            )}
+
+            {/* AXISUS presence — boundary protocol; visible when case selected. Verifier Demo Case Spec v2 / AXISUS sözleşmesi. */}
+            {selectedCase && (
+              <section style={{ marginTop: "1rem" }} aria-label="AXISUS">
+                <div
+                  style={{
+                    border: "1px solid #374151",
+                    borderRadius: 6,
+                    padding: "0.5rem 0.75rem",
+                    fontSize: "0.78rem",
+                    opacity: 0.88,
+                    background: "#111827",
+                  }}
+                >
+                  <span style={{ fontWeight: 600, marginRight: "0.5rem" }}>AXISUS:</span>
+                  <span>
+                    {language === "tr"
+                      ? "Risk eşiği izlendi. İnsan incelemesi gerekli. Durdurma koruyucu davranıştır."
+                      : "Risk threshold monitored. Human review required. Stopping is protective behavior."}
+                  </span>
+                </div>
+              </section>
             )}
 
             {/* 8) Artifact Issuance — doctrine: case-aware; Vehicle API-backed when available. */}

@@ -88,6 +88,12 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     artifactIssuance: { available: true, apiBacked: true },
     whyInevitable:
       "Without event-bound verifiable record, derived assessment, and verification trace, liability and compliance disputes remain unresolved. QARAQUTU provides evidence integrity and traceability for this case.",
+    titleTr: "Destekli Sürüş Yakın Kaçış İncelemesi",
+    titleEn: "Assisted Driving Near-Miss Review",
+    demoNoticeTr:
+      "Bu vaka, kamuya açık olay sınıflarından türetilmiş anonimize bir demo incelemesidir. Nihai hukukî veya olgusal hüküm değildir.",
+    demoNoticeEn:
+      "This case is an anonymized demo review derived from publicly known incident classes. It is not a final legal or factual determination.",
   },
   // —— Vehicle 2: Intersection Collision ——
   {
@@ -143,6 +149,12 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     artifactIssuance: { available: true, apiBacked: true },
     whyInevitable:
       "Dispute-grade evidence requires a single canonical object and verification trace. QARAQUTU delivers that for this intersection case.",
+    titleTr: "Kavşak Çatışması İncelemesi",
+    titleEn: "Intersection Conflict Review",
+    demoNoticeTr:
+      "Bu vaka anonimize demo incelemesidir. Nihai hukukî veya olgusal hüküm değildir.",
+    demoNoticeEn:
+      "This case is an anonymized demo review. It is not a final legal or factual determination.",
   },
   // —— Drone 1: Link Loss ——
   {
@@ -198,6 +210,12 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     artifactIssuance: { available: false },
     whyInevitable:
       "BVLOS and link-loss accountability require a canonical record and verification trace. QARAQUTU is the spine for this drone case.",
+    titleTr: "Bağlantı Kaybı / Operatör Belirsizliği İncelemesi",
+    titleEn: "Link Loss / Operator Uncertainty Review",
+    demoNoticeTr:
+      "Bu vaka anonimize demo incelemesidir. Nihai sorumluluk veya hukukî hüküm üretmez.",
+    demoNoticeEn:
+      "This is an anonymized demo review. It does not produce final liability or legal judgment.",
   },
   // —— Drone 2: Mission Anomaly ——
   {
@@ -252,6 +270,12 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     artifactIssuance: { available: false },
     whyInevitable:
       "Mission anomaly review requires recorded vs derived separation and a verification trace. QARAQUTU provides the canonical spine for this drone case.",
+    titleTr: "Görev Anomalisi İncelemesi",
+    titleEn: "Mission Anomaly Review",
+    demoNoticeTr:
+      "Bu vaka anonimize demo incelemesidir. Nihai hukukî veya olgusal hüküm değildir.",
+    demoNoticeEn:
+      "This case is an anonymized demo review. It is not a final legal or factual determination.",
   },
   // —— Robot 1: Public Interaction ——
   {
@@ -307,6 +331,12 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     artifactIssuance: { available: false },
     whyInevitable:
       "Public-space robot incidents require a canonical record and verification trace. QARAQUTU is the spine for this robot case.",
+    titleTr: "Kamusal Alan Etkileşim İncelemesi",
+    titleEn: "Public-Space Interaction Review",
+    demoNoticeTr:
+      "Bu vaka, kamusal alanda robot-insan etkileşimlerinden türetilmiş anonimize demo incelemesidir.",
+    demoNoticeEn:
+      "This case is an anonymized demo review derived from robot-human interactions in public space.",
   },
   // —— Robot 2: Safety Stop ——
   {
@@ -361,6 +391,12 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     artifactIssuance: { available: false },
     whyInevitable:
       "Safety-stop accountability requires recorded evidence and verification trace. QARAQUTU provides the canonical spine for this robot case.",
+    titleTr: "Güvenlik Durdurma Olayı İncelemesi",
+    titleEn: "Safety Stop Event Review",
+    demoNoticeTr:
+      "Bu vaka anonimize demo incelemesidir. Nihai hukukî veya olgusal hüküm değildir.",
+    demoNoticeEn:
+      "This case is an anonymized demo review. It is not a final legal or factual determination.",
   },
 ];
 
