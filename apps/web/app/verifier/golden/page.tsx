@@ -69,7 +69,7 @@ export default function VerifierGoldenPage() {
           </Link>
         </div>
         <p style={{ fontSize: "0.75rem", opacity: 0.7 }}>
-          Usta P (presentation assistant) is available in the top-right for controlled narrative
+          Usta P (controlled narrative witness guide) is available in the top-right
           guidance.
         </p>
       </div>

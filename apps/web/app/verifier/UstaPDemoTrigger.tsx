@@ -172,7 +172,7 @@ export function UstaPDemoTrigger({
           Usta P
         </div>
         <div style={{ fontSize: "0.65rem", opacity: 0.8, marginBottom: "0.25rem" }}>
-          {language === "tr" ? "Sunum asistanı" : "Presentation assistant"}
+          {language === "tr" ? "Kontrollü anlatı tanık rehberi" : "Controlled narrative witness guide"}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem", alignItems: "center" }}>
           {(Object.keys(USTA_P_SCRIPTS) as UstaPScenarioId[]).map((id) => (

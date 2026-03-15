@@ -14,13 +14,14 @@ export default function LandingPage() {
         {/* Hero */}
         <section style={{ marginBottom: "2rem" }}>
           <h1 style={{ fontSize: "1.8rem", marginBottom: "0.75rem" }}>
-            Dispute-grade evidence for vehicle incidents.
+            One product. Verifier-first. Three verticals.
           </h1>
           <p style={{ fontSize: "0.95rem", opacity: 0.9, maxWidth: 640 }}>
-            QARAQUTU is a premium evidence SaaS for automotive, fleet,
-            insurance, claims, and legal review teams. It turns fragmented
-            incident material into a canonical event object with verification
-            and role-appropriate evidence packs.
+            QARAQUTU is the single product for dispute-grade event verification:
+            Vehicle, Drone, and Robot. The main review station is the Verifier—a
+            bounded assessment of the event package with recorded evidence,
+            derived assessment, verification trace, and artifact issuance. Golden
+            is the quality bar for the verifier, not a separate product.
           </p>
         </section>
 
@@ -52,21 +53,21 @@ export default function LandingPage() {
           </h2>
           <ul style={{ fontSize: "0.85rem", paddingLeft: "1rem" }}>
             <li>
-              <strong>Canonical event object</strong> — one event, one
-              truth-bearing object that anchors all surfaces.
+              <strong>Single product</strong> — QARAQUTU; one canonical event
+              model across Vehicle, Drone, and Robot.
             </li>
             <li>
-              <strong>Verifier</strong> — a bounded assessment of the referenced
-              event package; it does not make liability or guilt determinations.
+              <strong>Verifier</strong> — the main review station; bounded
+              assessment of the event package; no liability or guilt
+              determinations.
+            </li>
+            <li>
+              <strong>Golden</strong> — the verifier quality bar, not a
+              separate product.
             </li>
             <li>
               <strong>Role-based export family</strong> — claims and legal packs
-              that present the same canonical truth with different emphasis.
-            </li>
-            <li>
-              <strong>Receipt and manifest linkage</strong> — exports are tied
-              back to manifests and receipts so the evidence chain remains
-              auditable.
+              tied to manifests and receipts for an auditable chain.
             </li>
           </ul>
         </section>
@@ -132,20 +133,24 @@ export default function LandingPage() {
           </h2>
           <ul style={{ fontSize: "0.85rem", paddingLeft: "1rem" }}>
             <li>
-              <strong>Console</strong> — canonical event review with visible
-              recorded vs derived separation.
+              <strong>Verifier</strong> — main review station; event selection,
+              recorded/derived evidence, unknown/disputed, verification trace,
+              artifact issuance; Vehicle, Drone, Robot.
             </li>
             <li>
-              <strong>Verifier</strong> — bounded assessment of an event package
-              and its verification state.
+              <strong>Golden</strong> — quality bar for the verifier; support
+              surface and entry to the verifier.
             </li>
             <li>
-              <strong>Docs</strong> — protocol and API overview for technical
-              reviewers and partners.
+              <strong>Console</strong> — canonical event review with recorded vs
+              derived separation.
             </li>
             <li>
-              <strong>Admin / diagnostics</strong> — environment and dataset
-              diagnostics for operational use.
+              <strong>Docs</strong> — protocol and API overview.
+            </li>
+            <li>
+              <strong>Admin / diagnostics</strong> — environment, smoke,
+              verification, and export activity.
             </li>
           </ul>
           <div
@@ -158,18 +163,6 @@ export default function LandingPage() {
             }}
           >
             <Link
-              href="/console"
-              style={{
-                padding: "0.4rem 0.8rem",
-                borderRadius: 4,
-                border: "1px solid #374151",
-                textDecoration: "none",
-                color: "#E5E7EB",
-              }}
-            >
-              Open Console
-            </Link>
-            <Link
               href="/verifier"
               style={{
                 padding: "0.4rem 0.8rem",
@@ -180,6 +173,30 @@ export default function LandingPage() {
               }}
             >
               Open Verifier
+            </Link>
+            <Link
+              href="/verifier/golden"
+              style={{
+                padding: "0.4rem 0.8rem",
+                borderRadius: 4,
+                border: "1px solid #374151",
+                textDecoration: "none",
+                color: "#E5E7EB",
+              }}
+            >
+              Golden
+            </Link>
+            <Link
+              href="/console"
+              style={{
+                padding: "0.4rem 0.8rem",
+                borderRadius: 4,
+                border: "1px solid #374151",
+                textDecoration: "none",
+                color: "#E5E7EB",
+              }}
+            >
+              Open Console
             </Link>
             <Link
               href="/docs"
@@ -214,8 +231,8 @@ export default function LandingPage() {
             QARAQUTU is a dispute-grade evidence system. It is not a liability
             engine, not a judicial decision system, and not a substitute for
             independent legal, claims, or technical judgment. Verifier states
-            and exports are role-appropriate presentation artifacts linked to a
-            canonical record, not unilateral findings about fault or outcome.
+            and exports are role-appropriate artifacts linked to
+            a canonical record, not unilateral findings about fault or outcome.
           </p>
         </section>
       </div>
