@@ -101,24 +101,12 @@ export default async function AdminPage() {
       }}
     >
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
-        <h1 style={{ fontSize: "1.4rem", marginBottom: "0.35rem" }}>
+        <h1 style={{ fontSize: "1.4rem", marginBottom: "0.25rem" }}>
           System Diagnostics
         </h1>
-        <div
-          style={{
-            marginBottom: "0.75rem",
-            padding: "0.5rem 0.75rem",
-            borderLeft: "4px solid #374151",
-            background: "rgba(15, 23, 42, 0.6)",
-            borderRadius: 4,
-            fontSize: "0.85rem",
-            fontWeight: 600,
-            color: "#E5E7EB",
-            opacity: 0.95,
-          }}
-        >
+        <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "#E5E7EB", margin: "0 0 1rem 0", lineHeight: 1.4 }}>
           Diagnostics only — not an operations dashboard.
-        </div>
+        </p>
         <p
           style={{
             fontSize: "0.8rem",
@@ -250,7 +238,7 @@ export default async function AdminPage() {
             <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem", margin: 0 }}>
               {diagnostics.recent_verifications.slice(0, 10).map((r) => (
                 <li key={r.verification_run_id} style={{ marginBottom: "0.25rem" }}>
-                  <strong>{r.verification_run_id}</strong> — event: {r.event_id ?? "—"} — {r.verification_state} — transcript: {r.transcript_id ?? "—"} — {r.created_at}
+                  <strong>{r.verification_run_id}</strong> — event: {r.event_id ?? "—"} — {r.verification_state} — trace: {r.transcript_id ?? "—"} — {r.created_at}
                 </li>
               ))}
             </ul>
