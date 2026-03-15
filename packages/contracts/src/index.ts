@@ -48,3 +48,40 @@ export interface CanonicalEvent {
   derivedEvidence: DerivedEvidenceItem[];
 }
 
+/** Canonical spine: one case shape for all verticals (Vehicle / Drone / Robot). */
+export type CanonicalSystemId = "vehicle" | "drone" | "robot";
+
+export interface VerificationTraceStep {
+  step: number;
+  check: string;
+  result: string;
+  note: string;
+}
+
+export interface CanonicalCase {
+  caseId: string;
+  system: CanonicalSystemId;
+  /** Doctrine: Incident Class */
+  incidentClass: string;
+  /** Doctrine: Scenario Frame */
+  scenarioFrame: string;
+  eventId: string;
+  bundleId: string;
+  manifestId: string;
+  occurredAt: string;
+  summary: string;
+  verificationState: VerificationState;
+  /** Doctrine: Recorded Evidence (never collapse with derived). */
+  recordedEvidence: RecordedEvidenceItem[];
+  /** Doctrine: Derived Assessment (never collapse with recorded). */
+  derivedAssessment: DerivedEvidenceItem[];
+  /** Doctrine: Unknown / Disputed */
+  unknownDisputed: string[];
+  /** Doctrine: Verification Trace */
+  verificationTrace: VerificationTraceStep[];
+  /** Doctrine: Artifact Issuance (available for vehicle when API-backed). */
+  artifactIssuance: { available: boolean; apiBacked?: boolean };
+  /** Doctrine: Why QARAQUTU is inevitable */
+  whyInevitable: string;
+}
+

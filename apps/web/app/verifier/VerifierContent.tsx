@@ -7,6 +7,7 @@ import type {
   DerivedEvidenceItem,
   VerificationState,
 } from "contracts";
+import { getCanonicalCases, getCanonicalCaseByEventId } from "../../lib/canonical-spine";
 import { UstaPDemoTrigger } from "./UstaPDemoTrigger";
 
 const DEFAULT_API_BASE =
@@ -33,28 +34,12 @@ const MOCK_SYSTEMS: { id: MockSystemId; label: string }[] = [
   { id: "robot", label: "Robot" },
 ];
 
-const MOCK_SCENARIOS_BY_SYSTEM: Record<MockSystemId, string[]> = {
-  vehicle: [
-    "Urban Intersection Collision",
-    "Near Miss / AEB Activation",
-    "Lane Merge Conflict",
-    "Fleet Incident Review",
-  ],
-  drone: [
-    "Mission Anomaly",
-    "Link Loss",
-    "Operator Handoff Dispute",
-    "Route Deviation",
-    "Post-Mission Review",
-  ],
-  robot: [
-    "Safety Stop Event",
-    "Human Proximity Incident",
-    "Public Interaction",
-    "Operational Deviation",
-    "Compliance Review",
-  ],
-};
+/** Scenario options derived from canonical case registry. */
+function getScenariosBySystem(system: MockSystemId): string[] {
+  const cases = getCanonicalCases(system);
+  const set = new Set(cases.map((c) => c.scenarioFrame));
+  return Array.from(set);
+}
 
 // Unified event card shape (Vehicle from API, Drone/Robot from mock).
 interface EventCard {
@@ -69,79 +54,22 @@ interface EventCard {
   manifestId?: string;
 }
 
-// Mock events for Drone (Phase 2).
-const MOCK_DRONE_EVENTS: EventCard[] = [
-  {
-    eventId: "drone-mission-001",
-    title: "Mission Anomaly — Altitude Deviation",
-    summary: "UAV deviated from planned altitude band during waypoint transit.",
-    timestamp: "2025-03-12T14:22:00Z",
-    severity: "medium",
-    state: "under_review",
-    availableOutputs: ["Mission log", "Telemetry export"],
-    bundleId: "bundle-drone-001",
-    manifestId: "manifest-drone-001",
-  },
-  {
-    eventId: "drone-handoff-002",
-    title: "Operator Handoff Dispute",
-    summary: "Discrepancy between primary and secondary operator handoff logs.",
-    timestamp: "2025-03-11T09:15:00Z",
-    severity: "high",
-    state: "pending",
-    availableOutputs: ["Handoff transcript", "Control log"],
-    bundleId: "bundle-drone-002",
-    manifestId: "manifest-drone-002",
-  },
-  {
-    eventId: "drone-linkloss-003",
-    title: "Link Loss — Command/Telemetry Drop",
-    summary: "Temporary loss of command link and telemetry downlink during BVLOS segment.",
-    timestamp: "2025-03-14T10:05:00Z",
-    severity: "high",
-    state: "under_review",
-    availableOutputs: ["Link log", "Recovery transcript"],
-    bundleId: "bundle-drone-003",
-    manifestId: "manifest-drone-003",
-  },
-];
-
-// Mock events for Robot (Phase 2).
-const MOCK_ROBOT_EVENTS: EventCard[] = [
-  {
-    eventId: "robot-safety-001",
-    title: "Safety Stop Event — Workcell 3",
-    summary: "Emergency stop triggered by proximity sensor during cycle.",
-    timestamp: "2025-03-13T11:08:00Z",
-    severity: "high",
-    state: "under_review",
-    availableOutputs: ["Safety log", "Cycle trace"],
-    bundleId: "bundle-robot-001",
-    manifestId: "manifest-robot-001",
-  },
-  {
-    eventId: "robot-proximity-002",
-    title: "Human Proximity Incident",
-    summary: "Operator entered restricted zone; safeguard recorded.",
-    timestamp: "2025-03-12T16:45:00Z",
-    severity: "medium",
-    state: "verified",
-    availableOutputs: ["Proximity log", "Compliance report"],
-    bundleId: "bundle-robot-002",
-    manifestId: "manifest-robot-002",
-  },
-  {
-    eventId: "robot-public-003",
-    title: "Public Interaction — Pedestrian Encounter",
-    summary: "Service robot in public space; encounter with pedestrian and recorded handoff to operator.",
-    timestamp: "2025-03-13T14:20:00Z",
-    severity: "medium",
-    state: "under_review",
-    availableOutputs: ["Interaction log", "Compliance report"],
-    bundleId: "bundle-robot-003",
-    manifestId: "manifest-robot-003",
-  },
-];
+/** Map canonical case to EventCard for spine display. */
+function caseToEventCard(c: { eventId: string; scenarioFrame: string; summary: string; occurredAt: string; verificationState: string; bundleId: string; manifestId: string; artifactIssuance: { available: boolean } }): EventCard {
+  const severity = c.verificationState === "FAIL" ? "high" : c.verificationState === "PASS" ? "low" : "medium";
+  const outputs = c.artifactIssuance.available ? ["Claims JSON", "Legal PDF", "Transcript"] : ["Demo context"];
+  return {
+    eventId: c.eventId,
+    title: c.scenarioFrame,
+    summary: c.summary,
+    timestamp: c.occurredAt,
+    severity,
+    state: c.verificationState,
+    availableOutputs: outputs,
+    bundleId: c.bundleId,
+    manifestId: c.manifestId,
+  };
+}
 
 // Incident summary content: what, why, state, next (Vehicle derived or mock).
 function getIncidentSummary(
@@ -381,11 +309,17 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       const json = await res.json();
       const items: CanonicalEvent[] = json.items ?? [];
       setEvents(items);
-      if (items.length) {
-        const requestedId = initialEventId ?? null;
-        const match =
-          requestedId && items.find((ev) => ev.eventId === requestedId);
-        const effectiveId = match ? match.eventId : items[0].eventId;
+      const vehicleCases = getCanonicalCases("vehicle");
+      const requestedId = initialEventId ?? null;
+      const fromCanonical =
+        requestedId && vehicleCases.some((c) => c.eventId === requestedId)
+          ? requestedId
+          : vehicleCases[0]?.eventId ?? null;
+      const match =
+        requestedId && items.find((ev) => ev.eventId === requestedId);
+      const effectiveId =
+        match ? match.eventId : fromCanonical ?? items[0]?.eventId ?? null;
+      if (effectiveId) {
         setSelectedId(effectiveId);
         setSelectedEventId(effectiveId);
       }
@@ -393,21 +327,27 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     load();
   }, [initialEventId]);
 
-  // When system changes: reset scenario and event; for vehicle sync selectedId from events.
+  // When system changes: reset scenario and event; for vehicle use canonical spine first.
   useEffect(() => {
     setSelectedScenario(null);
     setSelectedEventId(null);
-    if (selectedSystem === "vehicle" && events.length) {
+    if (selectedSystem === "vehicle") {
+      const cases = getCanonicalCases("vehicle");
       const requestedId = initialEventId ?? null;
-      const match =
-        requestedId && events.find((ev) => ev.eventId === requestedId);
-      const effectiveId = match ? match.eventId : events[0].eventId;
-      setSelectedId(effectiveId);
-      setSelectedEventId(effectiveId);
-    } else if (selectedSystem !== "vehicle") {
+      const inSpine =
+        requestedId && cases.some((c) => c.eventId === requestedId);
+      const effectiveId = inSpine ? requestedId! : cases[0]?.eventId ?? null;
+      if (effectiveId) {
+        setSelectedId(effectiveId);
+        setSelectedEventId(effectiveId);
+      } else setSelectedId(null);
+    } else {
+      const cases = getCanonicalCases(selectedSystem);
+      const first = cases[0]?.eventId ?? null;
+      if (first) setSelectedEventId(first);
       setSelectedId(null);
     }
-  }, [selectedSystem, events.length, initialEventId]);
+  }, [selectedSystem, initialEventId]);
 
   useEffect(() => {
     if (!verificationJustCompleted) return;
@@ -422,26 +362,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     if (selectedSystem === "vehicle") setSelectedId(null);
   };
 
-  // Display events: Vehicle = API mapped to EventCard, Drone/Robot = mock.
-  const displayEvents: EventCard[] =
-    selectedSystem === "vehicle"
-      ? events.map((ev) => ({
-          eventId: ev.eventId,
-          title: ev.scenarioKey,
-          summary: ev.summary,
-          timestamp: ev.occurredAt,
-          severity: ev.verificationState === "FAIL" ? "high" : ev.verificationState === "PASS" ? "low" : "medium",
-          state: ev.verificationState,
-          availableOutputs: ["Claims JSON", "Legal PDF", "Transcript"],
-          bundleId: ev.bundleId,
-          manifestId: ev.manifestId,
-        }))
-      : selectedSystem === "drone"
-      ? MOCK_DRONE_EVENTS
-      : MOCK_ROBOT_EVENTS;
+  // Canonical spine: one registry for all verticals.
+  const displayEvents: EventCard[] = getCanonicalCases(selectedSystem).map(caseToEventCard);
 
   const selectedEventCard =
     displayEvents.find((e) => e.eventId === selectedEventId) ?? null;
+
+  const selectedCase = selectedEventId ? getCanonicalCaseByEventId(selectedEventId) : null;
 
   // When user selects an event from cards: set selectedEventId; for Vehicle also set selectedId for API.
   const handleSelectEvent = (eventId: string) => {
@@ -859,7 +786,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       )}
                       {section.id === "scenario" && (
                         <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                          {(MOCK_SCENARIOS_BY_SYSTEM[selectedSystem] ?? []).map((name) => (
+                          {(getScenariosBySystem(selectedSystem)).map((name) => (
                             <button
                               key={name}
                               type="button"
@@ -1327,9 +1254,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     <div style={{ padding: "0.75rem 1rem" }}>
                       {(() => {
                         const recorded =
-                          isVehicle && selected?.recordedEvidence?.length
-                            ? toRecordedRows(selected.recordedEvidence)
-                            : getMockRecordedRows(selectedEventCard.eventId, language);
+                          selectedCase?.recordedEvidence?.length
+                            ? toRecordedRows(selectedCase.recordedEvidence)
+                            : [];
                         if (recorded.length === 0) {
                           return (
                             <p style={{ margin: 0, fontSize: "0.8rem", opacity: 0.8 }}>
@@ -1377,9 +1304,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     <div style={{ padding: "0.75rem 1rem" }}>
                       {(() => {
                         const derived =
-                          isVehicle && selected?.derivedEvidence?.length
-                            ? toDerivedRows(selected.derivedEvidence)
-                            : getMockDerivedRows(selectedEventCard.eventId, language);
+                          selectedCase?.derivedAssessment?.length
+                            ? toDerivedRows(selectedCase.derivedAssessment)
+                            : [];
                         if (derived.length === 0) {
                           return (
                             <p style={{ margin: 0, fontSize: "0.8rem", opacity: 0.8 }}>
@@ -1447,11 +1374,17 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               >
                 {selectedEventCard ? (
                   <ul style={{ margin: 0, paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
-                    <li style={{ marginBottom: "0.35rem" }}>
-                      {language === "tr"
-                        ? "Bu olayda henüz sınıflandırılmamış veya taraflar arasında tartışmalı noktalar burada listelenir."
-                        : "Unknown or disputed items for this case are listed here when present."}
-                    </li>
+                    {selectedCase?.unknownDisputed?.length ? (
+                      selectedCase.unknownDisputed.map((item, i) => (
+                        <li key={i} style={{ marginBottom: "0.35rem" }}>{item}</li>
+                      ))
+                    ) : (
+                      <li style={{ marginBottom: "0.35rem", opacity: 0.8 }}>
+                        {language === "tr"
+                          ? "Bu olayda henüz sınıflandırılmamış veya tartışmalı nokta yok."
+                          : "No unknown or disputed items for this case."}
+                      </li>
+                    )}
                     {verificationState === "UNKNOWN" && (
                       <li style={{ marginBottom: "0.35rem", color: "#FBBF24" }}>
                         {language === "tr" ? "Doğrulama durumu: Bilinmeyen." : "Verification state: Unknown."}
@@ -1490,12 +1423,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               >
                 {selectedEventCard ? (
                   (() => {
-                    const stepRows = buildTranscriptStepRows(
-                      selectedSystem,
-                      transcript,
-                      verificationState,
-                      language
-                    );
+                    const stepRows =
+                      isVehicle && transcript?.length
+                        ? transcript.map((s) => ({ label: s.check, status: s.result, time: undefined as string | undefined, note: s.note || undefined }))
+                        : selectedCase?.verificationTrace?.length
+                        ? selectedCase.verificationTrace.map((s) => ({ label: s.check, status: s.result, time: undefined as string | undefined, note: s.note || undefined }))
+                        : buildTranscriptStepRows(selectedSystem, transcript, verificationState, language);
                     return (
                   <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
                     {stepRows.map((row, i) => (
@@ -1599,9 +1532,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       fontSize: "0.85rem",
                     }}
                   >
-                    {events.map((ev) => (
+                    {displayEvents.map((ev) => (
                       <option key={ev.eventId} value={ev.eventId}>
-                        {ev.scenarioKey} — {ev.eventId}
+                        {ev.title} — {ev.eventId}
                       </option>
                     ))}
                   </select>
@@ -2054,9 +1987,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               >
                 {selectedEventCard ? (
                   <p style={{ margin: 0 }}>
-                    {language === "tr"
-                      ? "Olay tabanlı doğrulanabilir kayıt, türetilmiş değerlendirme ve doğrulama izi olmadan yük, sigorta ve uyumluluk tartışmaları belirsiz kalır. QARAQUTU, tek bir ürün olarak Vehicle / Drone / Robot olaylarını aynı çerçevede ele alarak kanıt bütünlüğü ve izlenebilirliği sağlar; bu nedenle bu olay bağlamında kaçınılmazdır."
-                      : "Without event-bound verifiable record, derived assessment, and verification trace, liability, insurance, and compliance disputes remain unresolved. QARAQUTU addresses Vehicle, Drone, and Robot events in one product and one framework, providing evidence integrity and traceability—hence inevitable in the context of this case."}
+                    {selectedCase?.whyInevitable ??
+                      (language === "tr"
+                        ? "Olay tabanlı doğrulanabilir kayıt, türetilmiş değerlendirme ve doğrulama izi olmadan yük, sigorta ve uyumluluk tartışmaları belirsiz kalır. QARAQUTU, tek bir ürün olarak Vehicle / Drone / Robot olaylarını aynı çerçevede ele alarak kanıt bütünlüğü ve izlenebilirliği sağlar; bu nedenle bu olay bağlamında kaçınılmazdır."
+                        : "Without event-bound verifiable record, derived assessment, and verification trace, liability, insurance, and compliance disputes remain unresolved. QARAQUTU addresses Vehicle, Drone, and Robot events in one product and one framework, providing evidence integrity and traceability—hence inevitable in the context of this case.")}
                   </p>
                 ) : (
                   <p style={{ margin: 0 }}>

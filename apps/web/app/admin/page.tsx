@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { CANONICAL_CASES, getCanonicalCases } from "../../lib/canonical-spine";
 
 interface Diagnostics {
   environment: string;
@@ -103,6 +104,21 @@ export default async function AdminPage() {
         <h1 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>
           System Diagnostics
         </h1>
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            Canonical spine
+          </h2>
+          <p style={{ fontSize: "0.8rem", opacity: 0.9, marginBottom: "0.5rem" }}>
+            Single product spine: witness → verification → issuance. Verifier reads from this registry.
+          </p>
+          <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
+            <li>Total cases: {CANONICAL_CASES.length}</li>
+            <li>Vehicle: {getCanonicalCases("vehicle").length}</li>
+            <li>Drone: {getCanonicalCases("drone").length}</li>
+            <li>Robot: {getCanonicalCases("robot").length}</li>
+          </ul>
+        </section>
+
         <section style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
             Environment
