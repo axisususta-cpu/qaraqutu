@@ -11,8 +11,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const gitCommitSha = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? process.env.VERCEL_GIT_COMMIT_SHA ?? "";
   return (
     <html lang="en">
+      <head>
+        {gitCommitSha ? <meta name="vercel:git-commit-sha" content={gitCommitSha} /> : null}
+      </head>
       <body style={{ margin: 0 }}>
         <header
           style={{
