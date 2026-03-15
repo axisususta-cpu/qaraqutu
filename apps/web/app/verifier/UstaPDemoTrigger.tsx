@@ -10,6 +10,12 @@ import {
   type UstaPScript,
   type UstaPVoiceIntegration,
 } from "../../lib/usta-p-demo";
+import {
+  USTA_TRIGGERS,
+  getUstaPResponse,
+  type UstaPTriggerId,
+  type UstaPDomain,
+} from "../../lib/usta-prompt-pack";
 
 type PlaybackState = "idle" | "playing" | "paused" | "stopped" | "finishing";
 
@@ -22,6 +28,10 @@ interface UstaPDemoTriggerProps {
   language?: "en" | "tr";
   /** When true (e.g. on golden route), place panel top-right and make entry point more visible for demo. */
   emphasizeForDemo?: boolean;
+  /** For prompt pack: domain for next_safe_step variant. */
+  selectedDomain?: UstaPDomain;
+  /** When false, triggers show silence pattern. */
+  hasCase?: boolean;
 }
 
 export function UstaPDemoTrigger({
@@ -29,6 +39,8 @@ export function UstaPDemoTrigger({
   voiceIntegration,
   language = "tr",
   emphasizeForDemo = false,
+  selectedDomain = "vehicle",
+  hasCase = false,
 }: UstaPDemoTriggerProps) {
   const [selectedId, setSelectedId] = useState<UstaPScenarioId>(defaultScenario);
   const [scriptVisible, setScriptVisible] = useState(false);
@@ -36,8 +48,21 @@ export function UstaPDemoTrigger({
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [pleasePilis, setPleasePilis] = useState(false);
   const [showingClosing, setShowingClosing] = useState(false);
+  const [triggerResponse, setTriggerResponse] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const segmentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleTrigger = useCallback(
+    (triggerId: UstaPTriggerId) => {
+      const text = getUstaPResponse(triggerId, language, {
+        domain: selectedDomain,
+        hasCase,
+      });
+      setTriggerResponse(text);
+      setScriptVisible(true);
+    },
+    [language, selectedDomain, hasCase]
+  );
 
   const selectedScript = USTA_P_SCRIPTS[selectedId];
   const segments = selectedScript.segments;
@@ -121,6 +146,7 @@ export function UstaPDemoTrigger({
     setScriptVisible(false);
     setShowingClosing(false);
     setCurrentSegmentIndex(0);
+    setTriggerResponse(null);
     voiceIntegration?.onNarrationStop?.();
   }, [voiceIntegration, clearSegmentTimer]);
 
@@ -207,6 +233,30 @@ export function UstaPDemoTrigger({
             />
             <span style={{ fontSize: "0.65rem" }}>{language === "tr" ? "Kapanış (EN)" : "Closing (EN)"}</span>
           </label>
+        </div>
+        <div style={{ fontSize: "0.65rem", opacity: 0.85, marginTop: "0.25rem", marginBottom: "0.2rem" }}>
+          {language === "tr" ? "Tetikler (Prompt Pack v1):" : "Triggers (Prompt Pack v1):"}
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem", alignItems: "center" }}>
+          {USTA_TRIGGERS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => handleTrigger(t.id)}
+              style={{
+                padding: "0.18rem 0.35rem",
+                borderRadius: 4,
+                border: "1px solid #374151",
+                background: "transparent",
+                color: "#E5E7EB",
+                cursor: "pointer",
+                fontSize: "0.65rem",
+              }}
+              title={language === "tr" ? t.ctaTr : t.ctaEn}
+            >
+              {language === "tr" ? t.labelTr : t.labelEn}
+            </button>
+          ))}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem", marginTop: "0.35rem", alignItems: "center" }}>
           <button
@@ -337,7 +387,32 @@ export function UstaPDemoTrigger({
             overflowY: "auto",
           }}
         >
-          {showingClosing ? (
+          {triggerResponse !== null ? (
+            <>
+              <div style={{ opacity: 0.7, marginBottom: "0.35rem" }}>
+                {language === "tr" ? "USTA yanıtı" : "USTA response"}
+              </div>
+              <p style={{ margin: 0, lineHeight: 1.5 }}>{triggerResponse}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setTriggerResponse(null);
+                  setScriptVisible(false);
+                }}
+                style={{
+                  marginTop: "0.5rem",
+                  padding: "0.2rem 0.4rem",
+                  fontSize: "0.65rem",
+                  border: "1px solid #374151",
+                  background: "transparent",
+                  color: "#9CA3AF",
+                  cursor: "pointer",
+                }}
+              >
+                Kapat
+              </button>
+            </>
+          ) : showingClosing ? (
             <>
               <div style={{ opacity: 0.7, marginBottom: "0.35rem" }}>
                 {language === "tr" ? "Kapanış" : "Closing"} — {pleasePilis ? "EN" : "TR"}
@@ -348,7 +423,9 @@ export function UstaPDemoTrigger({
             </>
           ) : (
             <>
-              <div style={{ opacity: 0.7, marginBottom: "0.35rem" }}>{selectedScript.labelTr} — metin</div>
+              <div style={{ opacity: 0.7, marginBottom: "0.35rem" }}>
+                {selectedScript.labelTr} — {language === "tr" ? "metin" : "script"}
+              </div>
               {segments.map((seg, i) => (
                 <p
                   key={i}

@@ -2101,7 +2101,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           </main>
         </div>
       </div>
-      <UstaPDemoTrigger language={language} defaultScenario="togg" />
+      <UstaPDemoTrigger
+        language={language}
+        defaultScenario="togg"
+        selectedDomain={selectedSystem}
+        hasCase={!!selectedCase}
+      />
     </div>
   );
 }
