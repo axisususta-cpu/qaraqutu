@@ -28,6 +28,26 @@ const DEFAULT_API_BASE =
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE;
 
+const UI = {
+  panel: "#0B1120",
+  panelRaised: "#0F172A",
+  panelSoft: "rgba(15, 23, 42, 0.78)",
+  border: "#1F2937",
+  borderMuted: "#111827",
+  borderStrong: "#334155",
+  textMuted: "#94A3B8",
+  textSoft: "#CBD5E1",
+  accent: "#C2410C",
+  accentSoft: "rgba(194, 65, 12, 0.14)",
+  accentBorder: "#9A3412",
+  success: "#34D399",
+  successSoft: "rgba(52, 211, 153, 0.14)",
+  warning: "#FBBF24",
+  warningSoft: "rgba(251, 191, 36, 0.14)",
+  error: "#F87171",
+  errorSoft: "rgba(248, 113, 113, 0.14)",
+} as const;
+
 type TranscriptStep = VerificationTranscriptEntry;
 
 interface IssuanceRecord {
@@ -81,12 +101,21 @@ function caseToEventCard(c: { eventId: string; scenarioFrame: string; summary: s
   };
 }
 
-// Incident summary content: what, why, state, next (Vehicle derived or mock).
+// Case-density: optional per-case review intent and next step (from canonical-spine).
+type CaseSummaryOverride = {
+  reviewWhyEn?: string;
+  reviewWhyTr?: string;
+  nextStepEn?: string;
+  nextStepTr?: string;
+} | null;
+
+// Incident summary content: what, why, state, next (case-driven when selectedCase provides override).
 function getIncidentSummary(
   system: MockSystemId,
   eventCard: EventCard | null,
   verificationState: VerificationState | null,
-  language: "en" | "tr"
+  language: "en" | "tr",
+  selectedCase?: CaseSummaryOverride
 ): { what: string; why: string; state: string; next: string } {
   if (!eventCard) {
     return {
@@ -96,64 +125,64 @@ function getIncidentSummary(
       next: language === "tr" ? "Bir olay seçin." : "Select an event.",
     };
   }
+  const whyFromCase = language === "tr" ? selectedCase?.reviewWhyTr : selectedCase?.reviewWhyEn;
+  const nextFromCase = language === "tr" ? selectedCase?.nextStepTr : selectedCase?.nextStepEn;
+
   if (system === "vehicle" && verificationState) {
     return {
       what: eventCard.summary,
       why:
-        language === "tr"
+        whyFromCase ??
+        (language === "tr"
           ? "Paket bütünlüğü ve manifest bağlantısı doğrulaması için incelemeye alındı."
-          : "Under review for bundle integrity and manifest linkage verification.",
+          : "Under review for bundle integrity and manifest linkage verification."),
       state: verificationState,
       next:
-        verificationState === "UNVERIFIED" || verificationState === "UNKNOWN"
+        nextFromCase ??
+        (verificationState === "UNVERIFIED" || verificationState === "UNKNOWN"
           ? language === "tr"
             ? "Doğrulamayı çalıştırın veya kontrollü artifact başlatın."
             : "Run verification or start controlled artifact."
           : language === "tr"
           ? "İz özetini inceleyin veya artifact issuance başlatın."
-          : "Review trace summary or start artifact issuance.",
+          : "Review trace summary or start artifact issuance."),
     };
   }
   if (system === "vehicle") {
     return {
       what: eventCard.summary,
       why:
-        language === "tr"
+        whyFromCase ??
+        (language === "tr"
           ? "Paket doğrulaması için incelemeye alındı."
-          : "Under review for event package verification.",
+          : "Under review for event package verification."),
       state: eventCard.state,
       next:
-        language === "tr"
+        nextFromCase ??
+        (language === "tr"
           ? "Olayı doğrula ile paket doğrulamasını başlatın."
-          : "Start package verification with Verify Event Package.",
+          : "Start package verification with Verify Event Package."),
     };
   }
-  // Drone / Robot mock summaries.
+  // Drone / Robot: case-driven why/next when present, else system fallback.
+  const droneWhy =
+    whyFromCase ??
+    (language === "tr"
+      ? "Görev anomalisi ve operatör el değişimi kayıtlarının doğrulanması için."
+      : "Under review for mission anomaly and operator handoff record verification.");
+  const robotWhy =
+    whyFromCase ??
+    (language === "tr"
+      ? "Güvenlik durdurma ve uyumluluk kayıtlarının incelenmesi için."
+      : "Under review for safety stop and compliance record assessment.");
+  const demoNext =
+    nextFromCase ??
+    (language === "tr"
+      ? "Mevcut sürümde yalnızca demo bağlamı desteklenmektedir."
+      : "Demo context only in current release.");
   const mock: Record<MockSystemId, { what: string; why: string; state: string; next: string }> = {
-    drone: {
-      what: eventCard.summary,
-      why:
-        language === "tr"
-          ? "Görev anomalisi ve operatör el değişimi kayıtlarının doğrulanması için."
-          : "Under review for mission anomaly and operator handoff record verification.",
-      state: eventCard.state,
-      next:
-        language === "tr"
-          ? "Mevcut sürümde yalnızca demo bağlamı desteklenmektedir."
-          : "Demo context only in current release.",
-    },
-    robot: {
-      what: eventCard.summary,
-      why:
-        language === "tr"
-          ? "Güvenlik durdurma ve uyumluluk kayıtlarının incelenmesi için."
-          : "Under review for safety stop and compliance record assessment.",
-      state: eventCard.state,
-      next:
-        language === "tr"
-          ? "Mevcut sürümde yalnızca demo bağlamı desteklenmektedir."
-          : "Demo context only in current release.",
-    },
+    drone: { what: eventCard.summary, why: droneWhy, state: eventCard.state, next: demoNext },
+    robot: { what: eventCard.summary, why: robotWhy, state: eventCard.state, next: demoNext },
     vehicle: { what: "", why: "", state: "", next: "" },
   };
   return mock[system];
@@ -274,6 +303,38 @@ function getVisibleUnknownItems(
   }
 
   return items ?? [];
+}
+
+function getReviewTone(state: string | null) {
+  if (state === "PASS") {
+    return {
+      borderColor: UI.success,
+      background: UI.successSoft,
+      color: UI.success,
+    };
+  }
+
+  if (state === "FAIL") {
+    return {
+      borderColor: UI.error,
+      background: UI.errorSoft,
+      color: UI.error,
+    };
+  }
+
+  if (state === "UNKNOWN") {
+    return {
+      borderColor: UI.warning,
+      background: UI.warningSoft,
+      color: UI.warning,
+    };
+  }
+
+  return {
+    borderColor: UI.borderStrong,
+    background: "rgba(148, 163, 184, 0.08)",
+    color: UI.textSoft,
+  };
 }
 
 export function VerifierContent({ initialEventId }: { initialEventId?: string }) {
@@ -449,6 +510,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const hasConnectedIssuanceProfile =
     !!selectedCase?.artifactProfiles?.some((ap) => ap.enabled && ap.apiBacked);
   const selectedProfileMeta = getArtifactProfile(exportProfile);
+  const selectedProfileLabel = selectedProfileMeta
+    ? language === "tr"
+      ? selectedProfileMeta.labelTr
+      : selectedProfileMeta.labelEn
+    : exportProfile;
+  const visibleReviewState = verificationState ?? selectedEventCard?.state ?? null;
+  const reviewTone = getReviewTone(visibleReviewState);
 
   async function runVerification() {
     if (!selectedId) return;
@@ -565,55 +633,82 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         minHeight: "100vh",
         background: "#020617",
         color: "#E5E7EB",
-        padding: "1.5rem 2rem",
+        padding: "2rem 2.5rem 2.5rem",
       }}
     >
-      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+      <div style={{ maxWidth: 1260, margin: "0 auto" }}>
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "1rem",
+            alignItems: "flex-start",
+            gap: "1rem",
+            marginBottom: "1.5rem",
+            padding: "1.15rem 1.25rem",
+            borderRadius: 12,
+            border: `1px solid ${UI.border}`,
+            background: UI.panelSoft,
+            boxShadow: "0 18px 40px rgba(2, 6, 23, 0.28)",
           }}
         >
-          <div>
+          <div style={{ maxWidth: 760 }}>
             <div
               style={{
                 fontSize: "0.75rem",
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
-                opacity: 0.7,
+                color: UI.textMuted,
+                marginBottom: "0.25rem",
               }}
             >
               Verifier
             </div>
-            <h1 style={{ fontSize: "1.4rem", margin: 0 }}>
+            <h1 style={{ fontSize: "1.65rem", margin: 0, letterSpacing: "0.01em" }}>
               {language === "tr" ? "Olay Paketi Doğrulaması" : "Event Package Verification"}
             </h1>
-            <p style={{ fontSize: "0.8rem", opacity: 0.8, marginTop: "0.25rem" }}>
+            <p style={{ fontSize: "0.88rem", color: UI.textSoft, margin: "0.35rem 0 0", lineHeight: 1.55 }}>
               {language === "tr"
                 ? "Seçili olay paketinin sınırlı değerlendirmesidir. Sorumluluk veya kusur tespiti yapmaz."
                 : "A bounded assessment of the referenced event package. It does not make liability or guilt determinations."}
+            </p>
+            <p
+              style={{
+                fontSize: "0.76rem",
+                color: UI.textMuted,
+                margin: "0.65rem 0 0",
+                lineHeight: 1.5,
+                maxWidth: 720,
+              }}
+            >
+              {language === "tr"
+                ? "Inspection station olarak kalır: recorded, derived, trace ve issuance katmanları ayrışmış halde okunur; yüzey daha rahat taranır ama protokol ciddiyeti korunur."
+                : "It remains an inspection station: recorded, derived, trace, and issuance layers stay visibly distinct; the surface is easier to scan without losing protocol seriousness."}
             </p>
           </div>
           <div
             style={{
               display: "flex",
-              gap: "0.5rem",
+              gap: "0.4rem",
               fontSize: "0.75rem",
+              padding: "0.3rem",
+              borderRadius: 999,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              flexShrink: 0,
             }}
           >
             <button
               type="button"
               onClick={() => setLanguage("en")}
               style={{
-                padding: "0.25rem 0.6rem",
-                borderRadius: 4,
+                padding: "0.35rem 0.85rem",
+                minWidth: 52,
+                borderRadius: 999,
                 border: language === "en" ? "1px solid #E5E7EB" : "1px solid #374151",
                 background: language === "en" ? "#111827" : "#020617",
                 color: "#E5E7EB",
                 cursor: "pointer",
+                fontWeight: language === "en" ? 700 : 500,
               }}
             >
               EN
@@ -622,12 +717,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               type="button"
               onClick={() => setLanguage("tr")}
               style={{
-                padding: "0.25rem 0.6rem",
-                borderRadius: 4,
+                padding: "0.35rem 0.85rem",
+                minWidth: 52,
+                borderRadius: 999,
                 border: language === "tr" ? "1px solid #E5E7EB" : "1px solid #374151",
                 background: language === "tr" ? "#111827" : "#020617",
                 color: "#E5E7EB",
                 cursor: "pointer",
+                fontWeight: language === "tr" ? 700 : 500,
               }}
             >
               TR
@@ -640,14 +737,21 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           style={{
             display: "flex",
             alignItems: "flex-start",
-            gap: "1.5rem",
+            gap: "2rem",
           }}
         >
           <aside
             style={{
-              width: 280,
-              borderRight: "1px solid #111827",
-              paddingRight: "1rem",
+              width: 300,
+              position: "sticky",
+              top: "1.5rem",
+              alignSelf: "flex-start",
+              flexShrink: 0,
+              padding: "1rem 1rem 1.1rem",
+              border: `1px solid ${UI.border}`,
+              borderRadius: 12,
+              background: UI.panelSoft,
+              boxShadow: "0 12px 30px rgba(2, 6, 23, 0.22)",
             }}
             aria-label={language === "tr" ? "Komut omurgası — seçimler sağ inceleme alanını günceller" : "Command spine — selections update the right-side review area"}
           >
@@ -656,27 +760,27 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 fontSize: "0.75rem",
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
-                opacity: 0.7,
-                marginBottom: "0.35rem",
+                color: UI.textMuted,
+                marginBottom: "0.45rem",
               }}
             >
               {language === "tr" ? "Komut Omurgası" : "Command Spine"}
             </div>
             <div
               style={{
-                padding: "0.5rem 0.6rem",
-                marginBottom: "0.5rem",
-                background: "rgba(15, 23, 42, 0.6)",
-                border: "1px solid #1E3A5F",
-                borderRadius: 4,
-                borderLeft: "3px solid #3B82F6",
+                padding: "0.75rem 0.8rem",
+                marginBottom: "0.75rem",
+                background: UI.accentSoft,
+                border: `1px solid ${UI.accentBorder}`,
+                borderRadius: 8,
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.02)",
               }}
               role="status"
               aria-live="polite"
             >
               <div
                 style={{
-                  fontSize: "0.85rem",
+                  fontSize: "0.88rem",
                   fontWeight: 600,
                   color: "#E5E7EB",
                   opacity: 1,
@@ -688,10 +792,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               </div>
               <div
                 style={{
-                  fontSize: "0.7rem",
-                  opacity: 0.85,
-                  marginTop: "0.2rem",
-                  color: "#94A3B8",
+                  fontSize: "0.74rem",
+                  marginTop: "0.35rem",
+                  color: UI.textSoft,
+                  lineHeight: 1.45,
                 }}
               >
                 {language === "tr"
@@ -796,7 +900,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     style={{
                       width: "100%",
                       textAlign: "left",
-                      padding: "0.45rem 0.6rem",
+                      padding: "0.55rem 0.7rem",
                       background: "transparent",
                       border: "none",
                       color: "#E5E7EB",
@@ -923,19 +1027,23 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 style={{
                                   padding: "0.55rem 0.7rem",
                                   textAlign: "left",
-                                  borderRadius: 4,
+                                  borderRadius: 8,
                                   border:
                                     selectedEventId === ev.eventId
-                                      ? "1px solid #4B5563"
-                                      : "1px solid #111827",
+                                      ? `1px solid ${UI.accentBorder}`
+                                      : `1px solid ${UI.borderMuted}`,
                                   background:
                                     selectedEventId === ev.eventId
-                                      ? "#0F172A"
+                                      ? UI.panelSoft
                                       : "#020617",
                                   color: "#E5E7EB",
                                   cursor: "pointer",
                                   fontSize: "0.75rem",
                                   lineHeight: 1.35,
+                                  boxShadow:
+                                    selectedEventId === ev.eventId
+                                      ? "0 0 0 1px rgba(194, 65, 12, 0.18)"
+                                      : "none",
                                 }}
                               >
                                 <div
@@ -961,19 +1069,35 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 </div>
                                 <div
                                   style={{
-                                    marginTop: "0.35rem",
+                                    marginTop: "0.45rem",
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    gap: "0.3rem 0.45rem",
+                                    alignItems: "center",
                                     fontSize: "0.65rem",
-                                    opacity: 0.65,
+                                    opacity: 0.8,
                                   }}
                                 >
-                                  {ev.timestamp} · {ev.severity} · {ev.state}
+                                  <span>{ev.timestamp}</span>
+                                  <span
+                                    style={{
+                                      padding: "0.08rem 0.35rem",
+                                      borderRadius: 999,
+                                      border: "1px solid rgba(148, 163, 184, 0.2)",
+                                      background: "rgba(148, 163, 184, 0.08)",
+                                    }}
+                                  >
+                                    {ev.state}
+                                  </span>
+                                  <span>{ev.severity}</span>
                                 </div>
                                 {ev.availableOutputs.length > 0 && (
                                   <div
                                     style={{
-                                      marginTop: "0.2rem",
+                                      marginTop: "0.35rem",
                                       fontSize: "0.65rem",
-                                      opacity: 0.6,
+                                      color: UI.textMuted,
+                                      lineHeight: 1.4,
                                     }}
                                   >
                                     {language === "tr" ? "Çıktılar:" : "Outputs:"}{" "}
@@ -1115,7 +1239,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             })}
           </aside>
 
-          <main style={{ flex: 1 }}>
+          <main style={{ flex: 1, minWidth: 0 }}>
             {/* Right-side structure (driven by left spine): 0) Demo framing 1) Stage header 2) Incident stage … Verifier Demo Case Spec v2 panel order. */}
             {/* 0) Demo scenario notice — zorunlu üst çerçeve; every case screen. */}
             {selectedCase && (
@@ -1150,15 +1274,113 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             )}
 
             {/* 1) Stage header — driven by spine system/scenario/event */}
-            <section style={{ marginBottom: "0.5rem" }} aria-labelledby="stage-heading">
-              <h2 id="stage-heading" style={{ fontSize: "0.75rem", letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.7, marginBottom: "0.25rem", fontWeight: 600 }}>
-                {language === "tr" ? "İnceleme Sahnesi" : "Review Stage"}
-                {selectedEventCard && (
-                  <span style={{ marginLeft: "0.5rem", fontWeight: "normal", textTransform: "none" }}>
-                    — {selectedSystem} · {selectedCase?.scenarioFrame ?? selectedScenario ?? (language === "tr" ? "Senaryo yok" : "No scenario")} · {selectedEventCard.eventId}
-                  </span>
-                )}
-              </h2>
+            <section style={{ marginBottom: "1rem" }} aria-labelledby="stage-heading">
+              <div
+                style={{
+                  border: `1px solid ${UI.border}`,
+                  borderRadius: 12,
+                  padding: "1rem 1.15rem",
+                  background: UI.panelSoft,
+                  borderLeft: `3px solid ${reviewTone.borderColor}`,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: "0.75rem",
+                    alignItems: "flex-start",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div style={{ minWidth: 0 }}>
+                    <div
+                      id="stage-heading"
+                      style={{
+                        fontSize: "0.72rem",
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                        color: UI.textMuted,
+                        fontWeight: 700,
+                        marginBottom: "0.35rem",
+                      }}
+                    >
+                      {language === "tr" ? "İnceleme Sahnesi" : "Review Stage"}
+                    </div>
+                    <div style={{ fontSize: "1.02rem", fontWeight: 650, lineHeight: 1.35 }}>
+                      {selectedCase?.scenarioFrame ??
+                        selectedScenario ??
+                        (language === "tr" ? "Senaryo seçilmedi" : "No scenario selected")}
+                    </div>
+                    <p style={{ margin: "0.4rem 0 0", fontSize: "0.8rem", color: UI.textSoft, lineHeight: 1.5 }}>
+                      {language === "tr"
+                        ? "Seçim akışı soldan gelir; sağ yüzey bu vaka için recorded, derived, trace ve bounded issuance katmanlarını ayrı ayrı gösterir."
+                        : "The selection flow comes from the left spine; the right surface shows recorded, derived, trace, and bounded issuance layers separately for this case."}
+                    </p>
+                  </div>
+                  <div
+                    style={{
+                      padding: "0.35rem 0.6rem",
+                      borderRadius: 999,
+                      border: `1px solid ${reviewTone.borderColor}`,
+                      background: reviewTone.background,
+                      color: reviewTone.color,
+                      fontSize: "0.76rem",
+                      fontWeight: 700,
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {language === "tr" ? "İnceleme durumu" : "Review state"}: {visibleReviewState ?? "—"}
+                  </div>
+                </div>
+                {selectedEventCard ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "0.45rem 0.6rem",
+                      marginTop: "0.8rem",
+                      fontSize: "0.74rem",
+                    }}
+                  >
+                    <span
+                      style={{
+                        padding: "0.18rem 0.5rem",
+                        borderRadius: 999,
+                        background: "rgba(148, 163, 184, 0.08)",
+                        border: "1px solid rgba(148, 163, 184, 0.18)",
+                        color: UI.textSoft,
+                      }}
+                    >
+                      {selectedSystem}
+                    </span>
+                    <span
+                      style={{
+                        padding: "0.18rem 0.5rem",
+                        borderRadius: 999,
+                        background: "rgba(148, 163, 184, 0.08)",
+                        border: "1px solid rgba(148, 163, 184, 0.18)",
+                        color: UI.textSoft,
+                      }}
+                    >
+                      Event ID: {selectedEventCard.eventId}
+                    </span>
+                    {selectedCase?.incidentClass ? (
+                      <span
+                        style={{
+                          padding: "0.18rem 0.5rem",
+                          borderRadius: 999,
+                          background: "rgba(148, 163, 184, 0.08)",
+                          border: "1px solid rgba(148, 163, 184, 0.18)",
+                          color: UI.textSoft,
+                        }}
+                      >
+                        {selectedCase.incidentClass}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
             </section>
 
             {/* 2) Incident stage — doctrine: Incident Class + Scenario Frame + context */}
@@ -1166,10 +1388,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               <div
                 style={{
                   border: "1px solid #111827",
-                  borderRadius: 6,
-                  padding: "0.75rem 1rem",
+                  borderRadius: 10,
+                  padding: "0.95rem 1.05rem",
                   fontSize: "0.8rem",
-                  opacity: 0.85,
+                  opacity: 0.92,
+                  background: UI.panelSoft,
                 }}
               >
                 {selectedCase ? (
@@ -1234,10 +1457,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               <div
                 style={{
                   border: "1px solid #111827",
-                  borderRadius: 6,
-                  padding: "0.5rem 0.75rem",
-                  fontSize: "0.75rem",
-                  opacity: 0.85,
+                  borderRadius: 10,
+                  padding: "0.75rem 0.9rem",
+                  fontSize: "0.78rem",
+                  opacity: 0.92,
+                  background: UI.panelSoft,
                 }}
               >
                 {selectedEventCard ? (
@@ -1298,7 +1522,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       selectedSystem,
                       selectedEventCard,
                       verificationState,
-                      language
+                      language,
+                      selectedCase ?? undefined
                     );
                     return (
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -1348,8 +1573,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             {/* Doctrine spine: Recorded → Derived → Unknown → Trace → Issuance (visually grouped) */}
             <div
               style={{
-                borderLeft: "3px solid #1E3A5F",
-                paddingLeft: "1rem",
+                borderLeft: `2px solid ${UI.accentBorder}`,
+                paddingLeft: "1.2rem",
                 marginLeft: "0.25rem",
               }}
             >
@@ -2251,13 +2476,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             disabled={!!exportLoading}
                             style={{
                               fontSize: "0.8rem",
-                              padding: "0.25rem 0.6rem",
-                              borderRadius: 4,
-                              border: exportProfile === "claims" ? "1px solid #E5E7EB" : "1px solid #374151",
-                              background: exportProfile === "claims" ? "#111827" : "#020617",
+                              padding: "0.35rem 0.75rem",
+                              borderRadius: 999,
+                              border: exportProfile === "claims" ? `1px solid ${UI.accentBorder}` : "1px solid #374151",
+                              background: exportProfile === "claims" ? UI.accentSoft : "#020617",
                               color: "#E5E7EB",
                               cursor: exportLoading ? "not-allowed" : "pointer",
                               opacity: exportLoading ? 0.6 : 1,
+                              fontWeight: exportProfile === "claims" ? 700 : 500,
                             }}
                           >
                             {language === "tr" ? "Hasar / Claim" : "Claims"}
@@ -2270,13 +2496,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             disabled={!!exportLoading}
                             style={{
                               fontSize: "0.8rem",
-                              padding: "0.25rem 0.6rem",
-                              borderRadius: 4,
-                              border: exportProfile === "legal" ? "1px solid #E5E7EB" : "1px solid #374151",
-                              background: exportProfile === "legal" ? "#111827" : "#020617",
+                              padding: "0.35rem 0.75rem",
+                              borderRadius: 999,
+                              border: exportProfile === "legal" ? `1px solid ${UI.accentBorder}` : "1px solid #374151",
+                              background: exportProfile === "legal" ? UI.accentSoft : "#020617",
                               color: "#E5E7EB",
                               cursor: exportLoading ? "not-allowed" : "pointer",
                               opacity: exportLoading ? 0.6 : 1,
+                              fontWeight: exportProfile === "legal" ? 700 : 500,
                             }}
                           >
                             {language === "tr" ? "Hukukî inceleme" : "Legal"}
@@ -2290,13 +2517,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           disabled={!selectedId || !!exportLoading}
                           style={{
                             fontSize: "0.85rem",
-                            padding: "0.4rem 0.8rem",
-                            borderRadius: 4,
+                            padding: "0.55rem 0.95rem",
+                            borderRadius: 8,
                             border: "1px solid #374151",
-                            background: "#0B1120",
+                            background: UI.panel,
                             color: "#E5E7EB",
                             cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
                             opacity: !selectedId || exportLoading ? 0.6 : 1,
+                            minWidth: 176,
+                            fontWeight: 600,
                           }}
                         >
                           {exportLoading === "json"
@@ -2309,13 +2538,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           disabled={!selectedId || !!exportLoading}
                           style={{
                             fontSize: "0.85rem",
-                            padding: "0.4rem 0.8rem",
-                            borderRadius: 4,
+                            padding: "0.55rem 0.95rem",
+                            borderRadius: 8,
                             border: "1px solid #374151",
-                            background: "#0B1120",
+                            background: UI.panel,
                             color: "#E5E7EB",
                             cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
                             opacity: !selectedId || exportLoading ? 0.6 : 1,
+                            minWidth: 176,
+                            fontWeight: 600,
                           }}
                         >
                           {exportLoading === "pdf"
@@ -2324,19 +2555,138 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         </button>
                       </div>
                       {(identity?.bundle_id ?? selected?.bundleId) && (
-                        <div style={{ fontSize: "0.72rem", opacity: 0.7, marginTop: "0.5rem" }}>
+                        <div style={{ fontSize: "0.72rem", color: UI.textMuted, marginTop: "0.65rem", lineHeight: 1.5 }}>
                           Bundle ID: {identity?.bundle_id ?? selected?.bundleId} · Manifest ID: {identity?.manifest_id ?? selected?.manifestId ?? "—"} · {language === "tr" ? "Trace" : "Trace"}: {transcriptId ?? (language === "tr" ? "hazırlanmadı" : "pending")}
                         </div>
                       )}
-                      {lastIssuedArtifact && (
-                        <div style={{ fontSize: "0.72rem", opacity: 0.78, marginTop: "0.35rem", lineHeight: 1.45 }}>
-                          {language === "tr"
-                            ? `Son issuance: ${lastIssuedArtifact.meta.export_profile} / ${lastIssuedArtifact.format} · Export ID: ${lastIssuedArtifact.meta.export_id} · Receipt ID: ${lastIssuedArtifact.meta.receipt_id} · Purpose: ${lastIssuedArtifact.meta.export_purpose}`
-                            : `Last issuance: ${lastIssuedArtifact.meta.export_profile} / ${lastIssuedArtifact.format} · Export ID: ${lastIssuedArtifact.meta.export_id} · Receipt ID: ${lastIssuedArtifact.meta.receipt_id} · Purpose: ${lastIssuedArtifact.meta.export_purpose}`}
+                      {issuanceState !== "idle" && (
+                        <div
+                          style={{
+                            marginTop: "0.85rem",
+                            padding: "0.8rem 0.9rem",
+                            borderRadius: 10,
+                            border:
+                              issuanceState === "success"
+                                ? `1px solid ${UI.success}`
+                                : issuanceState === "error"
+                                ? `1px solid ${UI.error}`
+                                : `1px solid ${UI.borderStrong}`,
+                            background:
+                              issuanceState === "success"
+                                ? UI.successSoft
+                                : issuanceState === "error"
+                                ? UI.errorSoft
+                                : "rgba(148, 163, 184, 0.08)",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontSize: "0.78rem",
+                              fontWeight: 700,
+                              marginBottom: "0.3rem",
+                              color:
+                                issuanceState === "success"
+                                  ? UI.success
+                                  : issuanceState === "error"
+                                  ? UI.error
+                                  : UI.textSoft,
+                            }}
+                          >
+                            {issuanceState === "success"
+                              ? language === "tr"
+                                ? "Bounded issuance hazır"
+                                : "Bounded issuance ready"
+                              : issuanceState === "error"
+                              ? language === "tr"
+                                ? "Issuance tamamlanamadı"
+                                : "Issuance could not complete"
+                              : language === "tr"
+                              ? "Issuance hazırlanıyor"
+                              : "Issuance in progress"}
+                          </div>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "0.78rem",
+                              color: UI.textSoft,
+                              lineHeight: 1.5,
+                            }}
+                          >
+                            {issuanceState === "success"
+                              ? language === "tr"
+                                ? `Seçili ${selectedProfileLabel} profili için artifact zincire bağlı olarak üretildi. Kimlik ve purpose alanları aşağıda görünür.`
+                                : `The selected ${selectedProfileLabel} artifact was issued while staying bound to the chain. Identity and purpose fields are visible below.`
+                              : issuanceState === "error"
+                              ? language === "tr"
+                                ? "Receipt/export hattı bu denemede kullanıcıya dönük bir sonuç üretemedi."
+                                : "The receipt/export path did not produce a user-facing result for this attempt."
+                              : language === "tr"
+                              ? `Seçili ${selectedProfileLabel} profili için ${selectedFormat?.toUpperCase() ?? "artifact"} hazırlanıyor.`
+                              : `Preparing ${selectedFormat?.toUpperCase() ?? "artifact"} for the selected ${selectedProfileLabel} profile.`}
+                          </p>
+                          {lastIssuedArtifact && (
+                            <div
+                              style={{
+                                marginTop: "0.7rem",
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                                gap: "0.6rem 0.85rem",
+                              }}
+                            >
+                              {[
+                                {
+                                  label: language === "tr" ? "Profile" : "Profile",
+                                  value: lastIssuedArtifact.meta.export_profile,
+                                },
+                                {
+                                  label: language === "tr" ? "Format" : "Format",
+                                  value: lastIssuedArtifact.format,
+                                },
+                                {
+                                  label: language === "tr" ? "Export ID" : "Export ID",
+                                  value: lastIssuedArtifact.meta.export_id,
+                                },
+                                {
+                                  label: language === "tr" ? "Receipt ID" : "Receipt ID",
+                                  value: lastIssuedArtifact.meta.receipt_id,
+                                },
+                                {
+                                  label: language === "tr" ? "Purpose" : "Purpose",
+                                  value: lastIssuedArtifact.meta.export_purpose,
+                                },
+                              ].map((item) => (
+                                <div key={item.label} style={{ minWidth: 0 }}>
+                                  <div
+                                    style={{
+                                      fontSize: "0.68rem",
+                                      letterSpacing: "0.08em",
+                                      textTransform: "uppercase",
+                                      color: UI.textMuted,
+                                      marginBottom: "0.18rem",
+                                    }}
+                                  >
+                                    {item.label}
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontSize: "0.8rem",
+                                      fontWeight: 600,
+                                      lineHeight: 1.45,
+                                      wordBreak: "break-word",
+                                    }}
+                                  >
+                                    {item.value}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {exportError && (
+                            <p style={{ fontSize: "0.8rem", margin: "0.65rem 0 0", color: UI.error }}>
+                              {exportError}
+                            </p>
+                          )}
                         </div>
-                      )}
-                      {exportError && (
-                        <p style={{ fontSize: "0.8rem", marginTop: "0.5rem", color: "#fca5a5" }}>{exportError}</p>
                       )}
                     </div>
                   ) : null}
