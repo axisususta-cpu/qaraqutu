@@ -111,6 +111,12 @@ export interface CanonicalCase {
   /** Case Registry v1: display title (optional; fallback to scenarioFrame). */
   titleTr?: string;
   titleEn?: string;
+  /** Case-density: why this event is under review (optional; fallback to system-based). */
+  reviewWhyEn?: string;
+  reviewWhyTr?: string;
+  /** Case-density: suggested next step for reviewer (optional; fallback to system-based). */
+  nextStepEn?: string;
+  nextStepTr?: string;
   /** AXISUS State Pack v1: case-aware boundary states (optional). */
   axisusStates?: AxisusState[];
   /** Artifact Issuance Discipline Pack v1: case-aware profile visibility (optional). */
