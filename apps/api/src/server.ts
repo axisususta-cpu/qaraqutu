@@ -33,6 +33,15 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function normalizeExportPurpose(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 const fastify = Fastify({
   logger: true,
 });
@@ -227,6 +236,7 @@ fastify.post<{
 }>("/v1/events/:eventId/exports", async (request, reply) => {
   const { eventId } = request.params;
   const { profile, format, purpose } = request.body;
+  const normalizedPurpose = normalizeExportPurpose(purpose);
 
   const event = await prisma.event.findUnique({ where: { eventId } });
   if (!event) {
@@ -257,12 +267,12 @@ fastify.post<{
       format: format ?? null,
     });
   }
-  if (!isNonEmptyString(purpose)) {
+  if (!normalizedPurpose) {
     return reply.code(400).send({
       error: "INVALID_EXPORT_PURPOSE",
       export_profile: profile,
       format,
-      purpose: purpose ?? null,
+      purpose: null,
     });
   }
 
@@ -355,10 +365,20 @@ fastify.post<{
     });
   }
 
-  const bundle = await prisma.bundle.findFirst({ where: { eventId: event.id } });
-  const manifest = bundle
-    ? await prisma.manifest.findFirst({ where: { bundleId: bundle.id } })
-    : null;
+  const [bundle, manifest] = await Promise.all([
+    prisma.bundle.findFirst({
+      where: {
+        eventId: event.id,
+        bundleId: event.bundleId,
+      },
+    }),
+    prisma.manifest.findFirst({
+      where: {
+        eventId: event.id,
+        manifestId: event.manifestId,
+      },
+    }),
+  ]);
 
   if (!bundle || !manifest) {
     return reply.code(500).send({ error: "BUNDLE_OR_MANIFEST_MISSING" });
@@ -371,11 +391,11 @@ fastify.post<{
     data: {
       exportId,
       eventId: event.id,
-      bundleId: bundle.bundleId,
-      manifestId: manifest.manifestId,
+      bundleId: event.bundleId,
+      manifestId: event.manifestId,
       profile,
       format,
-      purpose: purpose.trim(),
+      purpose: normalizedPurpose,
       verificationState: event.verificationState,
       recordedEvidenceSnapshot: filteredRecorded,
       derivedEvidenceSnapshot: filteredDerived,
@@ -399,11 +419,11 @@ fastify.post<{
     export_id: exportId,
     receipt_id: receiptId,
     event_id: event.eventId,
-    bundle_id: bundle.bundleId,
-    manifest_id: manifest.manifestId,
+    bundle_id: event.bundleId,
+    manifest_id: event.manifestId,
     verification_state: event.verificationState as VerificationState,
     export_profile: profile as ExportProfileCode,
-    export_purpose: purpose.trim(),
+    export_purpose: normalizedPurpose,
     schema_version: SCHEMA_VERSION,
     download_url: `/v1/exports/${exportId}/download`,
   };

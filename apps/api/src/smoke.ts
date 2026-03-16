@@ -211,17 +211,22 @@ export function registerSmokeRoutes(app: FastifyInstance) {
     pdf.on("pageAdded", () => pageCount++);
     const chunks: Buffer[] = [];
     pdf.on("data", (c: Buffer) => chunks.push(c));
-    pdf.on("end", () => {
-      reply
-        .type("application/pdf")
-        .header(
-          "Content-Disposition",
-          `attachment; filename="${identity.exportId}.pdf"`
-        )
-        .header("x-qaraqutu-pages", String(pageCount))
-        .send(Buffer.concat(chunks));
+    await new Promise<void>((resolve, reject) => {
+      pdf.on("end", () => {
+        reply
+          .type("application/pdf")
+          .header(
+            "Content-Disposition",
+            `attachment; filename="${identity.exportId}.pdf"`
+          )
+          .header("x-qaraqutu-pages", String(pageCount))
+          .send(Buffer.concat(chunks));
+        resolve();
+      });
+      pdf.on("error", reject);
+      pdf.end();
     });
-    pdf.end();
+    return;
   });
 }
 
