@@ -247,6 +247,30 @@ function buildTranscriptStepRows(
   }));
 }
 
+function getVisibleUnknownItems(
+  caseId: string | undefined,
+  items: string[] | undefined,
+  language: "en" | "tr"
+): string[] {
+  if (language === "tr") return items ?? [];
+
+  if (caseId === "golden-robot-public") {
+    return [
+      "Whether context loss in the public encounter crossed the escalation threshold for supervisor review.",
+      "Whether the operator handoff captured enough context to support a bounded follow-up artifact.",
+    ];
+  }
+
+  if (caseId === "golden-robot-safety") {
+    return [
+      "Whether the proximity-trigger threshold matched the configured protective-stop policy at the moment of interruption.",
+      "Whether restart authority should remain withheld until a human review closes the stop-cycle uncertainty.",
+    ];
+  }
+
+  return items ?? [];
+}
+
 export function VerifierContent({ initialEventId }: { initialEventId?: string }) {
   const [language, setLanguage] = useState<"en" | "tr">("en");
   const [selectedSystem, setSelectedSystem] = useState<MockSystemId>("vehicle");
@@ -360,6 +384,65 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
   const selected = events.find((e) => e.eventId === selectedId) ?? null;
   const isVehicle = selectedSystem === "vehicle";
+  const bundleAnchorId =
+    isVehicle
+      ? identity?.bundle_id ?? selected?.bundleId ?? selectedEventCard?.bundleId ?? "—"
+      : selectedEventCard?.bundleId ?? "—";
+  const manifestAnchorId =
+    isVehicle
+      ? identity?.manifest_id ?? selected?.manifestId ?? selectedEventCard?.manifestId ?? "—"
+      : selectedEventCard?.manifestId ?? "—";
+  const visibleRecorded =
+    selectedCase?.recordedEvidence?.length
+      ? toRecordedRows(selectedCase.recordedEvidence).map((row, index) => {
+          if (selectedCase.caseId === "golden-drone-linkloss" && index === 0) {
+            return {
+              ...row,
+              source: "Telemetry window",
+              description:
+                "BVLOS segment telemetry window preserved on the canonical bundle; the recorded layer remains raw and separate from any recovery reading.",
+            };
+          }
+          if (selectedCase.caseId === "golden-drone-mission" && index === 0) {
+            return {
+              ...row,
+              source: "Waypoint transit telemetry",
+              description:
+                "Altitude-band and track telemetry captured as a raw mission object; significance stays in derived review, not in this recorded layer.",
+            };
+          }
+          return row;
+        })
+      : [];
+  const visibleUnknownItems = getVisibleUnknownItems(
+    selectedCase?.caseId,
+    selectedCase?.unknownDisputed,
+    language
+  );
+  const traceStepRows =
+    isVehicle && transcript?.length
+      ? transcript.map((s) => ({
+          label: s.check,
+          status: s.result,
+          time: undefined as string | undefined,
+          note: s.note || undefined,
+        }))
+      : selectedCase?.verificationTrace?.length
+      ? selectedCase.verificationTrace.map((s) => ({
+          label: s.check,
+          status: s.result,
+          time: undefined as string | undefined,
+          note:
+            s.result === "demo" && !isVehicle
+              ? language === "tr"
+                ? `${s.note} Canlı receipt/export hattı bu dikey için bağlı değildir.`
+                : `${s.note} No live receipt/export path is connected for this vertical.`
+              : s.note || undefined,
+        }))
+      : buildTranscriptStepRows(selectedSystem, transcript, verificationState, language);
+  const hasConnectedIssuanceProfile =
+    !!selectedCase?.artifactProfiles?.some((ap) => ap.enabled && ap.apiBacked);
+  const selectedProfileMeta = getArtifactProfile(exportProfile);
 
   async function runVerification() {
     if (!selectedId) return;
@@ -1320,12 +1403,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {language === "tr" ? "Kaydedilmiş Delil" : "Recorded Evidence"}
                     </div>
                     <div style={{ padding: "0.75rem 1rem" }}>
+                      <p style={{ margin: "0 0 0.65rem", fontSize: "0.78rem", opacity: 0.88, lineHeight: 1.45 }}>
+                        {language === "tr"
+                          ? `Ham kayıt katmanı. Manifest ${manifestAnchorId} ve bundle ${bundleAnchorId} altında saklanan kaynak nesneleri gösterir; türetilmiş değerlendirme ile karıştırılmaz.`
+                          : `Raw record layer. Shows source objects preserved under manifest ${manifestAnchorId} and bundle ${bundleAnchorId}; it is not blended with derived assessment.`}
+                      </p>
                       {(() => {
-                        const recorded =
-                          selectedCase?.recordedEvidence?.length
-                            ? toRecordedRows(selectedCase.recordedEvidence)
-                            : [];
-                        if (recorded.length === 0) {
+                        if (visibleRecorded.length === 0) {
                           return (
                             <p style={{ margin: 0, fontSize: "0.8rem", opacity: 0.8 }}>
                               {language === "tr" ? "Kayıtlı delil yok." : "No recorded evidence."}
@@ -1334,7 +1418,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         }
                         return (
                           <ul style={{ margin: 0, paddingLeft: "1.25rem", fontSize: "0.8rem" }}>
-                            {recorded.map((r, i) => (
+                            {visibleRecorded.map((r, i) => (
                               <li key={i} style={{ marginBottom: "0.5rem" }}>
                                 <strong>{r.source}</strong> — {r.description}
                                 <div style={{ fontSize: "0.75rem", opacity: 0.85, marginTop: "0.2rem" }}>
@@ -1367,9 +1451,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontWeight: 600,
                       }}
                     >
-                      {language === "tr" ? "Türetilmiş Değerlendirme" : "Derived Evidence"}
+                      {language === "tr" ? "Türetilmiş Değerlendirme" : "Derived Assessment"}
                     </div>
                     <div style={{ padding: "0.75rem 1rem" }}>
+                      <p style={{ margin: "0 0 0.65rem", fontSize: "0.78rem", opacity: 0.88, lineHeight: 1.45 }}>
+                        {language === "tr"
+                          ? "İkinci katman okuma. Kayıtlı delilden türetilir; kayıtlı katmanın yerine geçmez ve nihai hüküm üretmez."
+                          : "Second-layer assessment derived from the recorded layer; it does not replace the recorded layer and does not produce a final determination."}
+                      </p>
                       {(() => {
                         const derived =
                           selectedCase?.derivedAssessment?.length
@@ -1450,8 +1539,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   </div>
                   <p style={{ margin: 0, fontSize: "0.8rem", opacity: 0.95, lineHeight: 1.45 }}>
                     {language === "tr"
-                      ? "Açık uçlar ve insan incelemesi gerektiren maddeler. Kayıtlı ve türetilmiş delilden ayrıdır. İnsan incelemesi gerekir."
-                      : "Open ends and items requiring human review. Distinct from recorded and derived evidence. Requires human review."}
+                      ? "Açık uçlar ve insan incelemesi gerektiren maddeler. Kayıtlı ve türetilmiş delilden ayrıdır; sonraki issuance kapsamını da sınırlar. İnsan incelemesi gerekir."
+                      : "Open ends and items requiring human review. Distinct from recorded and derived evidence; they also bound any later issuance. Requires human review."}
                   </p>
                 </div>
                 <div
@@ -1490,8 +1579,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         </div>
                       )}
                       <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
-                        {selectedCase?.unknownDisputed?.length ? (
-                          selectedCase.unknownDisputed.map((item, i) => (
+                        {visibleUnknownItems.length ? (
+                          visibleUnknownItems.map((item, i) => (
                             <li key={i} style={{ marginBottom: "0.5rem" }}>
                               {item}
                               <div style={{ fontSize: "0.72rem", opacity: 0.8, marginTop: "0.15rem" }}>
@@ -1550,18 +1639,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   </div>
                   <p style={{ margin: 0, fontSize: "0.8rem", opacity: 0.95, lineHeight: 1.45 }}>
                     {language === "tr"
-                      ? "Kayıtlı delil ile türetilmiş değerlendirme arasındaki inceleme izi. Nihai gerçeklik veya nihai hüküm iddiası değildir."
-                      : "Inspection trace linking recorded evidence to derived assessment. Not a claim of final truth or final determination."}
+                      ? "Kayıtlı delil ile türetilmiş değerlendirme arasındaki inceleme izi. Manifeste bağlı review-chain nesnesidir; issuance veya export üstüne yazmaz. Nihai gerçeklik veya nihai hüküm iddiası değildir."
+                      : "Inspection trace linking recorded evidence to derived assessment. It is a manifest-bound review-chain object; it does not get overridden by issuance or export. Not a claim of final truth or final determination."}
                   </p>
                 </div>
                 {selectedEventCard ? (
                   (() => {
-                    const stepRows =
-                      isVehicle && transcript?.length
-                        ? transcript.map((s) => ({ label: s.check, status: s.result, time: undefined as string | undefined, note: s.note || undefined }))
-                        : selectedCase?.verificationTrace?.length
-                        ? selectedCase.verificationTrace.map((s) => ({ label: s.check, status: s.result, time: undefined as string | undefined, note: s.note || undefined }))
-                        : buildTranscriptStepRows(selectedSystem, transcript, verificationState, language);
                     const normalizeResult = (r: string) => {
                       if (r === "OK" || r === "PASS") return { text: r, honesty: "pass" as const };
                       if (r === "UNKNOWN" || r === "unresolved") return { text: r, honesty: "unresolved" as const };
@@ -1570,8 +1653,22 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     };
                     return (
                       <>
+                        <div
+                          style={{
+                            padding: "0.65rem 0.9rem",
+                            borderBottom: "1px solid #1F2937",
+                            fontSize: "0.76rem",
+                            opacity: 0.9,
+                            background: "rgba(15, 23, 42, 0.6)",
+                            lineHeight: 1.45,
+                          }}
+                        >
+                          {language === "tr"
+                            ? `Protokol zinciri: Manifest ${manifestAnchorId} -> Trace ${isVehicle ? transcriptId ?? "hazırlanmadı" : "demo review chain"} -> ${hasConnectedIssuanceProfile ? "bounded issuance mümkün" : "receipt/export hattı bağlı değil"}.`
+                            : `Protocol chain: Manifest ${manifestAnchorId} -> Trace ${isVehicle ? transcriptId ?? "pending" : "demo review chain"} -> ${hasConnectedIssuanceProfile ? "bounded issuance may follow" : "receipt/export path not connected"}.`}
+                        </div>
                         <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-                          {stepRows.map((row, i) => {
+                          {traceStepRows.map((row, i) => {
                             const { text, honesty } = normalizeResult(row.status);
                             const stateLabel = honesty === "pass" ? (language === "tr" ? "geçti" : "pass") : honesty === "unresolved" ? (language === "tr" ? "çözülmedi" : "unresolved") : (language === "tr" ? "kısmi" : "partial");
                             return (
@@ -1579,7 +1676,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 key={i}
                                 style={{
                                   padding: "0.6rem 0.9rem",
-                                  borderBottom: i < stepRows.length - 1 ? "1px solid #1F2937" : "none",
+                                  borderBottom: i < traceStepRows.length - 1 ? "1px solid #1F2937" : "none",
                                   fontSize: "0.82rem",
                                   display: "flex",
                                   flexWrap: "wrap",
@@ -1629,8 +1726,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           }}
                         >
                           {language === "tr"
-                            ? "Bu iz, yapılan inceleme adımlarını belgeler; nihai gerçeklik veya nihai hüküm oluşturmaz."
-                            : "This trace documents the examination steps performed; it does not constitute final truth or a final determination."}
+                            ? "Bu iz, yapılan inceleme adımlarını belgeler; manifeste bağlı kalır, unknown/disputed maddelerini aşmaz ve nihai gerçeklik veya nihai hüküm oluşturmaz."
+                            : "This trace documents the examination steps performed; it remains bound to the manifest, does not outrank unknown/disputed items, and does not constitute final truth or a final determination."}
                         </div>
                       </>
                     );
@@ -2062,6 +2159,38 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       ? "Bu çıktı nihai hukukî veya olgusal hüküm değildir. Issuance kullanılabilirliği, gerçeklik iddiası anlamına gelmez."
                       : "This output is not a final legal or factual determination. Issuance availability does not imply a truth claim."}
                   </p>
+                  <div
+                    style={{
+                      marginBottom: "0.85rem",
+                      padding: "0.65rem 0.75rem",
+                      border: "1px solid #111827",
+                      borderRadius: 6,
+                      background: "rgba(15, 23, 42, 0.55)",
+                      fontSize: "0.76rem",
+                      lineHeight: 1.5,
+                      opacity: 0.94,
+                    }}
+                  >
+                    <div>
+                      {language === "tr"
+                        ? `Amaç bağı: ${selectedProfileMeta ? selectedProfileMeta.purposeShortTr : "Seçili profile göre sınırlı issuance."}`
+                        : `Purpose bound: ${selectedProfileMeta ? selectedProfileMeta.purposeShortEn : "Issuance remains bounded to the selected profile."}`}
+                    </div>
+                    <div>
+                      {language === "tr"
+                        ? `Manifest bağı: ${manifestAnchorId} · İz bağı: ${isVehicle ? transcriptId ?? "hazırlanmadı" : "demo review chain"}`
+                        : `Manifest anchor: ${manifestAnchorId} · Trace anchor: ${isVehicle ? transcriptId ?? "pending" : "demo review chain"}`}
+                    </div>
+                    <div>
+                      {language === "tr"
+                        ? hasConnectedIssuanceProfile
+                          ? "Receipt/export hattı yalnızca bağlı profiller için açılır; issuance trace ve unknown/disputed üstüne yazmaz."
+                          : "Receipt/export hattı bu vaka için kasıtlı olarak kapalıdır; sebep, API destekli issuance yolunun bağlı olmamasıdır."
+                        : hasConnectedIssuanceProfile
+                        ? "The receipt/export path opens only for connected profiles; issuance does not override the trace or unknown/disputed items."
+                        : "The receipt/export path is intentionally withheld for this case because no API-backed issuance path is connected."}
+                    </div>
+                  </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                     {selectedCase.artifactProfiles.map((ap) => {
                       const meta = getArtifactProfile(ap.profileCode as ArtifactProfileCode);
@@ -2069,11 +2198,20 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       const purpose = meta ? (language === "tr" ? meta.purposeShortTr : meta.purposeShortEn) : "";
                       let statusText: string;
                       if (ap.enabled && ap.apiBacked) {
-                        statusText = language === "tr" ? "Bu vaka için anlamlı; issuance API bağlı." : "Meaningful for this case; issuance API connected.";
+                        statusText =
+                          language === "tr"
+                            ? "Bu vaka için amaç-bağlı issuance mümkündür; artifact mevcut manifest ve trace zincirine bağlı kalır."
+                            : "Purpose-bound issuance is available for this case; any artifact remains tied to the current manifest and trace chain.";
                       } else if (ap.enabled && !ap.apiBacked) {
-                        statusText = language === "tr" ? "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir." : "This profile is meaningful for this case; issuance support is not yet connected.";
+                        statusText =
+                          language === "tr"
+                            ? "Bu profil vaka için anlamlıdır; ancak API destekli receipt/export hattı bağlı olmadığı için issuance şu anda sınırlıdır."
+                            : "This profile is meaningful for the case, but issuance is currently withheld because no API-backed receipt/export path is connected.";
                       } else {
-                        statusText = language === "tr" ? ap.reasonTr : ap.reasonEn;
+                        statusText =
+                          language === "tr"
+                            ? `Rol/amaç sınırı: ${ap.reasonTr}`
+                            : `Role/purpose limit: ${ap.reasonEn}`;
                       }
                       return (
                         <div
@@ -2154,7 +2292,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         >
                           {exportLoading === "json"
                             ? language === "tr" ? "Hazırlanıyor…" : "Preparing…"
-                            : language === "tr" ? "Issuance — JSON" : "Issue as JSON"}
+                            : language === "tr" ? "Bounded Issuance — JSON" : "Issue bounded JSON"}
                         </button>
                         <button
                           type="button"
@@ -2173,12 +2311,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         >
                           {exportLoading === "pdf"
                             ? language === "tr" ? "Hazırlanıyor…" : "Preparing…"
-                            : language === "tr" ? "Issuance — PDF" : "Issue as PDF"}
+                            : language === "tr" ? "Bounded Issuance — PDF" : "Issue bounded PDF"}
                         </button>
                       </div>
                       {(identity?.bundle_id ?? selected?.bundleId) && (
                         <div style={{ fontSize: "0.72rem", opacity: 0.7, marginTop: "0.5rem" }}>
-                          Bundle ID: {identity?.bundle_id ?? selected?.bundleId} · Manifest ID: {identity?.manifest_id ?? selected?.manifestId ?? "—"}
+                          Bundle ID: {identity?.bundle_id ?? selected?.bundleId} · Manifest ID: {identity?.manifest_id ?? selected?.manifestId ?? "—"} · {language === "tr" ? "Trace" : "Trace"}: {transcriptId ?? (language === "tr" ? "hazırlanmadı" : "pending")}
                         </div>
                       )}
                       {exportError && (
@@ -2276,8 +2414,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     <div>
                       <p style={{ margin: "0 0 0.5rem" }}>
                         {language === "tr"
-                          ? "Aynı olay omurgasından, rol ve amaça göre kontrollü issuance. Bu dikey için API destekli issuance henüz bağlı değildir."
-                          : "Controlled issuance from the same event spine, by role and purpose. API-backed issuance for this vertical is not yet connected."}
+                          ? "Aynı olay omurgasından, rol ve amaça göre kontrollü issuance. Bu dikey için issuance kasıtlı olarak sınırlıdır; çünkü API destekli receipt/export hattı henüz bağlı değildir."
+                          : "Controlled issuance from the same event spine, by role and purpose. Issuance is intentionally constrained for this vertical because the API-backed receipt/export path is not yet connected."}
+                      </p>
+                      <p style={{ margin: "0 0 0.5rem", fontSize: "0.78rem", opacity: 0.88, lineHeight: 1.45 }}>
+                        {language === "tr"
+                          ? `Manifest bağı ${manifestAnchorId} üzerinde kalır; trace review-chain olarak görünür, issuance onun üstüne yazmaz.`
+                          : `The panel remains anchored to manifest ${manifestAnchorId}; the trace stays a review-chain object, and issuance does not outrank it.`}
                       </p>
                       <div style={{ fontSize: "0.8rem", opacity: 0.9 }}>
                         {language === "tr" ? "Bu dikeyde kullanılacak artifact profilleri:" : "Artifact profiles for this vertical:"}
