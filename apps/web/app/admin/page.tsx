@@ -1,6 +1,18 @@
 import { headers } from "next/headers";
 import { CANONICAL_CASES, getCanonicalCases } from "../../lib/canonical-spine";
 
+const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
+const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
+const UI = {
+  bg: "#060d1a",
+  panel: "#0a1628",
+  border: "#1a2d4a",
+  text: "#e8eef8",
+  textSoft: "#b8cce0",
+  textMuted: "#7a95b8",
+} as const;
+
 interface Diagnostics {
   environment: string;
   dataset_version: string;
@@ -82,10 +94,32 @@ export default async function AdminPage() {
 
   if ("error" in diagnostics) {
     return (
-      <div style={{ minHeight: "100vh", background: "#020617", color: "#E5E7EB", padding: "1.5rem 2rem" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
-          <h1 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>System Diagnostics</h1>
-          <p style={{ fontSize: "0.9rem", color: "#FCA5A5" }}>Error: {diagnostics.error}</p>
+      <div
+        style={{
+          minHeight: "100vh",
+          background: UI.bg,
+          color: UI.text,
+          padding: "1.75rem 2rem",
+          fontFamily: SANS,
+        }}
+      >
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <h1 style={{ fontSize: "1.35rem", marginBottom: "0.5rem" }}>System diagnostics</h1>
+          <p style={{ fontSize: "0.85rem", color: "#fca5a5", marginBottom: "0.8rem" }}>
+            Diagnostics only — not an operations dashboard.
+          </p>
+          <div
+            style={{
+              borderRadius: 10,
+              border: "1px solid rgba(127,29,29,0.6)",
+              background: "rgba(127,29,29,0.16)",
+              padding: "0.75rem 1rem",
+              fontSize: "0.8rem",
+            }}
+          >
+            <strong style={{ display: "block", marginBottom: "0.25rem" }}>Diagnostics error</strong>
+            <span style={{ fontFamily: MONO }}>{diagnostics.error}</span>
+          </div>
         </div>
       </div>
     );
@@ -95,236 +129,373 @@ export default async function AdminPage() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#020617",
-        color: "#E5E7EB",
-        padding: "1.5rem 2rem",
+        background: UI.bg,
+        color: UI.text,
+        padding: "1.75rem 2rem 2.1rem",
+        fontFamily: SANS,
       }}
     >
-      <div style={{ maxWidth: 960, margin: "0 auto" }}>
-        <h1 style={{ fontSize: "1.4rem", marginBottom: "0.25rem" }}>
-          System Diagnostics
-        </h1>
-        <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "#E5E7EB", margin: "0 0 1rem 0", lineHeight: 1.4 }}>
-          Diagnostics only — not an operations dashboard.
-        </p>
-        <p
+      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: "1.7rem" }}>
+        <header>
+          <h1 style={{ fontSize: "1.35rem", marginBottom: "0.35rem" }}>System diagnostics</h1>
+          <p
+            style={{
+              fontSize: "0.84rem",
+              color: UI.textSoft,
+              margin: 0,
+              marginBottom: "0.9rem",
+              lineHeight: 1.5,
+            }}
+          >
+            Diagnostics only — not an operations dashboard. Verifier spine activity (verification runs, trace, issuance)
+            and environment state are surfaced here for support and operations.
+          </p>
+        </header>
+
+        <section
           style={{
-            fontSize: "0.8rem",
-            opacity: 0.9,
-            marginBottom: "1.25rem",
-            lineHeight: 1.45,
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1.5fr) minmax(0, 1.5fr)",
+            gap: "1.2rem",
           }}
         >
-          Verifier spine activity: verification runs, trace, and issuance are reflected below. Single product spine: witness → verification → issuance.
-        </p>
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Canonical spine
-          </h2>
-          <p style={{ fontSize: "0.8rem", opacity: 0.9, marginBottom: "0.5rem" }}>
-            Single product spine: witness → verification → issuance. Verifier reads from this registry.
-          </p>
-          <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
-            <li>Total cases: {CANONICAL_CASES.length}</li>
-            <li>Vehicle: {getCanonicalCases("vehicle").length}</li>
-            <li>Drone: {getCanonicalCases("drone").length}</li>
-            <li>Robot: {getCanonicalCases("robot").length}</li>
-          </ul>
-        </section>
-
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            AXISUS state summary
-          </h2>
-          <p style={{ fontSize: "0.8rem", opacity: 0.9, marginBottom: "0.5rem" }}>
-            Case-aware boundary states across spine (AXISUS State Pack v1).
-          </p>
-          <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
-            <li>Observe: {CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter((s) => s.severity === "observe").length}</li>
-            <li>Review: {CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter((s) => s.severity === "review").length}</li>
-            <li>Limit: {CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter((s) => s.severity === "limit").length}</li>
-            <li>Handoff: {CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter((s) => s.severity === "handoff").length}</li>
-          </ul>
-        </section>
-
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Environment
-          </h2>
-          <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
-            <li>Environment: {diagnostics.environment}</li>
-            <li>Dataset version: {diagnostics.dataset_version}</li>
-            <li>Schema version: {diagnostics.schema_version}</li>
-            <li>Build version: {diagnostics.build_version}</li>
-          </ul>
-        </section>
-
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Export Profiles
-          </h2>
-          <p style={{ fontSize: "0.8rem" }}>
-            {diagnostics.supported_export_profiles?.length
-              ? `Supported: ${diagnostics.supported_export_profiles.join(", ")}`
-              : "Supported: claims, legal"}
-          </p>
-        </section>
-
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Last Smoke Result
-          </h2>
-          {diagnostics.latest_smoke_run ? (
-            <div style={{ fontSize: "0.8rem" }}>
-              <p>
-                <strong>{diagnostics.latest_smoke_run.smoke_run_id}</strong> —{" "}
-                {diagnostics.latest_smoke_run.overall_result} — started{" "}
-                {diagnostics.latest_smoke_run.started_at} — finished{" "}
-                {diagnostics.latest_smoke_run.finished_at ?? "—"}
-              </p>
-              <p style={{ marginTop: "0.25rem" }}>
-                Env: {diagnostics.latest_smoke_run.environment} — dataset:{" "}
-                {diagnostics.latest_smoke_run.dataset_version} — schema:{" "}
-                {diagnostics.latest_smoke_run.schema_version} — build:{" "}
-                {diagnostics.latest_smoke_run.build_version}
-              </p>
-              {diagnostics.latest_smoke_run.checks?.length ? (
-                <ul style={{ paddingLeft: "1rem", marginTop: "0.5rem" }}>
-                  {diagnostics.latest_smoke_run.checks.map((c, idx) => (
-                    <li key={idx}>
-                      {c.check_name} ({c.category}) — {c.result}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          ) : (
-            <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
-              No smoke runs have been recorded yet.
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "0.95rem 1.05rem 1.05rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Canonical spine</h2>
+            <p
+              style={{
+                fontSize: "0.8rem",
+                color: UI.textSoft,
+                margin: 0,
+                marginBottom: "0.5rem",
+              }}
+            >
+              Single product spine: witness → verification → issuance. Verifier reads from this registry.
             </p>
-          )}
-        </section>
-
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Recent Export Activity (issuance)
-          </h2>
-          <p style={{ fontSize: "0.78rem", opacity: 0.8, marginBottom: "0.5rem" }}>
-            Controlled artifact issuance from the verifier.
-          </p>
-          {diagnostics.recent_exports?.length ? (
-            <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem", margin: 0 }}>
-              {diagnostics.recent_exports.slice(0, 10).map((e) => (
-                <li key={e.export_id} style={{ marginBottom: "0.25rem" }}>
-                  <strong>{e.export_id}</strong> — {e.profile} / {e.format} — event: {e.event_id ?? "—"} — receipt: {e.receipt_id ?? "—"} — {e.created_at}
-                </li>
-              ))}
+            <ul style={{ fontSize: "0.8rem", paddingLeft: "1.1rem", margin: 0, lineHeight: 1.6 }}>
+              <li>Total cases: {CANONICAL_CASES.length}</li>
+              <li>Vehicle: {getCanonicalCases("vehicle").length}</li>
+              <li>Drone: {getCanonicalCases("drone").length}</li>
+              <li>Robot: {getCanonicalCases("robot").length}</li>
             </ul>
-          ) : (
-            <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
-              No export activity yet.
-            </p>
-          )}
-        </section>
+          </div>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Recent Verification Activity (trace / runs)
-          </h2>
-          <p style={{ fontSize: "0.78rem", opacity: 0.8, marginBottom: "0.5rem" }}>
-            Verification trace and run history from the verifier spine.
-          </p>
-          {diagnostics.recent_verifications?.length ? (
-            <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem", margin: 0 }}>
-              {diagnostics.recent_verifications.slice(0, 10).map((r) => (
-                <li key={r.verification_run_id} style={{ marginBottom: "0.25rem" }}>
-                  <strong>{r.verification_run_id}</strong> — event: {r.event_id ?? "—"} — {r.verification_state} — trace: {r.transcript_id ?? "—"} — {r.created_at}
-                </li>
-              ))}
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "0.95rem 1.05rem 1.05rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>AXISUS state summary</h2>
+            <p
+              style={{
+                fontSize: "0.8rem",
+                color: UI.textSoft,
+                margin: 0,
+                marginBottom: "0.5rem",
+              }}
+            >
+              Case-aware boundary states across spine (AXISUS State Pack v1).
+            </p>
+            <ul style={{ fontSize: "0.8rem", paddingLeft: "1.1rem", margin: 0, lineHeight: 1.6 }}>
+              <li>
+                Observe:{" "}
+                {
+                  CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter(
+                    (s) => s.severity === "observe",
+                  ).length
+                }
+              </li>
+              <li>
+                Review:{" "}
+                {
+                  CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter(
+                    (s) => s.severity === "review",
+                  ).length
+                }
+              </li>
+              <li>
+                Limit:{" "}
+                {
+                  CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter(
+                    (s) => s.severity === "limit",
+                  ).length
+                }
+              </li>
+              <li>
+                Handoff:{" "}
+                {
+                  CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter(
+                    (s) => s.severity === "handoff",
+                  ).length
+                }
+              </li>
             </ul>
-          ) : (
-            <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
-              No verification activity yet.
-            </p>
-          )}
+          </div>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Latest Verification Run Summary
-          </h2>
-          {diagnostics.latest_verification_run ? (
-            <div style={{ fontSize: "0.8rem" }}>
-              <p>
-                <strong>{diagnostics.latest_verification_run.verification_run_id}</strong> — event: {diagnostics.latest_verification_run.event_id ?? "—"} — {diagnostics.latest_verification_run.verification_state} — {diagnostics.latest_verification_run.created_at}
-              </p>
-              {diagnostics.latest_verification_run.transcript_summary?.length ? (
-                <>
-                  <p style={{ fontSize: "0.75rem", opacity: 0.85, marginTop: "0.5rem", marginBottom: "0.25rem" }}>Trace summary:</p>
-                  <ul style={{ paddingLeft: "1rem", marginTop: "0" }}>
-                    {diagnostics.latest_verification_run.transcript_summary.map((s, i) => (
-                    <li key={i}>{s.check} — {s.result}</li>
-                  ))}
-                  </ul>
-                </>
-              ) : null}
-            </div>
-          ) : (
-            <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
-              No verification runs yet.
-            </p>
-          )}
-        </section>
-
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Recent Smoke Runs
-          </h2>
-          {diagnostics.recent_smoke_runs?.length ? (
-            <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem", margin: 0 }}>
-              {diagnostics.recent_smoke_runs.map((r) => (
-                <li key={r.smoke_run_id} style={{ marginBottom: "0.25rem" }}>
-                  <strong>{r.smoke_run_id}</strong> — {r.overall_result} —{" "}
-                  {r.started_at}
-                </li>
-              ))}
+        <section
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1.3fr) minmax(0, 1.7fr)",
+            gap: "1.2rem",
+          }}
+        >
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "0.9rem 1.05rem 1.05rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Environment</h2>
+            <ul style={{ fontSize: "0.8rem", paddingLeft: "1.1rem", margin: 0, lineHeight: 1.6 }}>
+              <li>Environment: {diagnostics.environment}</li>
+              <li>Dataset version: {diagnostics.dataset_version}</li>
+              <li>Schema version: {diagnostics.schema_version}</li>
+              <li>Build version: {diagnostics.build_version}</li>
             </ul>
-          ) : (
-            <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
-              No smoke runs yet.
+          </div>
+
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "0.9rem 1.05rem 1.05rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Export profiles</h2>
+            <p style={{ fontSize: "0.8rem", color: UI.textSoft, margin: 0 }}>
+              {diagnostics.supported_export_profiles?.length
+                ? `Supported: ${diagnostics.supported_export_profiles.join(", ")}`
+                : "Supported: claims, legal"}
             </p>
-          )}
+          </div>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Tenant Policy
-          </h2>
-          {diagnostics.tenant_policy ? (
-            <div style={{ fontSize: "0.8rem" }}>
-              <p>Tenant: {diagnostics.tenant_policy.tenant_id}</p>
-              <p>
-                Enabled export profiles:{" "}
-                {diagnostics.tenant_policy.enabled_export_profiles.join(", ")}
-              </p>
-              <p>
-                Enabled visibility classes:{" "}
-                {diagnostics.tenant_policy.enabled_visibility_classes.join(
-                  ", "
-                )}
-              </p>
-              <p>
-                Redaction:{" "}
-                {diagnostics.tenant_policy.redaction_enabled
-                  ? "enabled"
-                  : "disabled"}
-              </p>
-            </div>
-          ) : (
-            <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
-              No tenant policy record surfaced in diagnostics.
+        <section
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1.5fr) minmax(0, 1.5fr)",
+            gap: "1.2rem",
+          }}
+        >
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "0.9rem 1.05rem 1.05rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>
+              Recent export activity (issuance)
+            </h2>
+            <p
+              style={{
+                fontSize: "0.78rem",
+                color: UI.textMuted,
+                margin: 0,
+                marginBottom: "0.5rem",
+              }}
+            >
+              Controlled artifact issuance from the verifier. Issuance is tracked separately from blame.
             </p>
-          )}
+            {diagnostics.recent_exports?.length ? (
+              <ul
+                style={{
+                  fontSize: "0.8rem",
+                  paddingLeft: "1.1rem",
+                  margin: 0,
+                  lineHeight: 1.6,
+                }}
+              >
+                {diagnostics.recent_exports.slice(0, 10).map((e) => (
+                  <li key={e.export_id} style={{ marginBottom: "0.2rem" }}>
+                    <strong>{e.export_id}</strong> — {e.profile} / {e.format} — event:{" "}
+                    {e.event_id ?? "—"} — receipt: {e.receipt_id ?? "—"} — {e.created_at}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p style={{ fontSize: "0.8rem", color: UI.textMuted, margin: 0 }}>No export activity yet.</p>
+            )}
+          </div>
+
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "0.9rem 1.05rem 1.05rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>
+              Recent verification activity (trace / runs)
+            </h2>
+            <p
+              style={{
+                fontSize: "0.78rem",
+                color: UI.textMuted,
+                margin: 0,
+                marginBottom: "0.5rem",
+              }}
+            >
+              Verification trace and run history from the verifier spine.
+            </p>
+            {diagnostics.recent_verifications?.length ? (
+              <ul
+                style={{
+                  fontSize: "0.8rem",
+                  paddingLeft: "1.1rem",
+                  margin: 0,
+                  lineHeight: 1.6,
+                }}
+              >
+                {diagnostics.recent_verifications.slice(0, 10).map((r) => (
+                  <li key={r.verification_run_id} style={{ marginBottom: "0.2rem" }}>
+                    <strong>{r.verification_run_id}</strong> — event: {r.event_id ?? "—"} —{" "}
+                    {r.verification_state} — trace id: {r.transcript_id ?? "—"} — {r.created_at}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p style={{ fontSize: "0.8rem", color: UI.textMuted, margin: 0 }}>No verification activity yet.</p>
+            )}
+          </div>
+        </section>
+
+        <section
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1.5fr) minmax(0, 1.5fr)",
+            gap: "1.2rem",
+          }}
+        >
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "0.9rem 1.05rem 1.05rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Latest verification run</h2>
+            {diagnostics.latest_verification_run ? (
+              <div style={{ fontSize: "0.8rem" }}>
+                <p style={{ margin: 0, marginBottom: "0.25rem" }}>
+                  <strong>{diagnostics.latest_verification_run.verification_run_id}</strong> — event:{" "}
+                  {diagnostics.latest_verification_run.event_id ?? "—"} —{" "}
+                  {diagnostics.latest_verification_run.verification_state} —{" "}
+                  {diagnostics.latest_verification_run.created_at}
+                </p>
+                {diagnostics.latest_verification_run.transcript_summary?.length ? (
+                  <>
+                    <p
+                      style={{
+                        fontSize: "0.76rem",
+                        color: UI.textMuted,
+                        marginTop: "0.45rem",
+                        marginBottom: "0.25rem",
+                      }}
+                    >
+                      Trace summary:
+                    </p>
+                    <ul
+                      style={{
+                        paddingLeft: "1.1rem",
+                        marginTop: 0,
+                        marginBottom: 0,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {diagnostics.latest_verification_run.transcript_summary.map((s, i) => (
+                        <li key={i}>
+                          {s.check} — {s.result}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
+              </div>
+            ) : (
+              <p style={{ fontSize: "0.8rem", color: UI.textMuted, margin: 0 }}>No verification runs yet.</p>
+            )}
+          </div>
+
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "0.9rem 1.05rem 1.05rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Recent smoke runs</h2>
+            {diagnostics.recent_smoke_runs?.length ? (
+              <ul
+                style={{
+                  fontSize: "0.8rem",
+                  paddingLeft: "1.1rem",
+                  margin: 0,
+                  lineHeight: 1.6,
+                }}
+              >
+                {diagnostics.recent_smoke_runs.map((r) => (
+                  <li key={r.smoke_run_id} style={{ marginBottom: "0.2rem" }}>
+                    <strong>{r.smoke_run_id}</strong> — {r.overall_result} — {r.started_at}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p style={{ fontSize: "0.8rem", color: UI.textMuted, margin: 0 }}>No smoke runs yet.</p>
+            )}
+          </div>
+        </section>
+
+        <section>
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "0.9rem 1.05rem 1.05rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Tenant policy</h2>
+            {diagnostics.tenant_policy ? (
+              <div style={{ fontSize: "0.8rem" }}>
+                <p style={{ margin: 0, marginBottom: "0.2rem" }}>
+                  Tenant: {diagnostics.tenant_policy.tenant_id}
+                </p>
+                <p style={{ margin: 0, marginBottom: "0.2rem" }}>
+                  Enabled export profiles:{" "}
+                  {diagnostics.tenant_policy.enabled_export_profiles.join(", ")}
+                </p>
+                <p style={{ margin: 0, marginBottom: "0.2rem" }}>
+                  Enabled visibility classes:{" "}
+                  {diagnostics.tenant_policy.enabled_visibility_classes.join(", ")}
+                </p>
+                <p style={{ margin: 0 }}>
+                  Redaction: {diagnostics.tenant_policy.redaction_enabled ? "enabled" : "disabled"}
+                </p>
+              </div>
+            ) : (
+              <p style={{ fontSize: "0.8rem", color: UI.textMuted, margin: 0 }}>
+                No tenant policy record surfaced in diagnostics.
+              </p>
+            )}
+          </div>
         </section>
       </div>
     </div>

@@ -9,6 +9,18 @@ import {
   GOLDEN_ACCEPTANCE_RUBRIC_LABELS,
 } from "../../../lib/canonical-spine";
 
+const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
+const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
+const UI = {
+  bg: "#060d1a",
+  panel: "#0a1628",
+  border: "#1a2d4a",
+  text: "#e8eef8",
+  textSoft: "#b8cce0",
+  textMuted: "#7a95b8",
+} as const;
+
 /**
  * Golden is not a separate product; it is the canonical quality bar for the verifier.
  * This page exposes the Golden acceptance rubric as the quality gate for every case.
@@ -22,33 +34,44 @@ export default function VerifierGoldenPage() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#020617",
-        color: "#E5E7EB",
-        padding: "1.5rem 2rem",
+        background: UI.bg,
+        color: UI.text,
+        padding: "1.75rem 2rem 2.1rem",
+        fontFamily: SANS,
       }}
     >
       <UstaPDemoTrigger defaultScenario="unitree" language="tr" emphasizeForDemo />
-      <div style={{ maxWidth: 640, margin: "0 auto" }}>
+      <div style={{ maxWidth: 720, margin: "0 auto" }}>
         <div
           style={{
             fontSize: "0.75rem",
             letterSpacing: "0.08em",
             textTransform: "uppercase",
-            opacity: 0.7,
+            opacity: 0.75,
             marginBottom: "0.25rem",
+            color: UI.textMuted,
+            fontFamily: MONO,
           }}
         >
-          QARAQUTU — Internal reference
+          QARAQUTU — Internal reference surface
         </div>
-        <h1 style={{ fontSize: "1.35rem", marginBottom: "0.5rem", fontWeight: 600 }}>
+        <h1 style={{ fontSize: "1.3rem", marginBottom: "0.5rem", fontWeight: 600 }}>
           Golden rubric (verifier quality bar)
         </h1>
-        <p style={{ fontSize: "0.9rem", opacity: 0.9, lineHeight: 1.5, marginBottom: "1.5rem" }}>
+        <p style={{ fontSize: "0.88rem", opacity: 0.95, lineHeight: 1.6, marginBottom: "1.4rem", color: UI.textSoft }}>
           Golden is not a separate product or primary surface. It is the internal quality bar and reference
           for the main Verifier. Every case in the spine is evaluated against the acceptance rubric below. Use the main Verifier for review.
         </p>
 
-        <section style={{ marginBottom: "1.5rem" }}>
+        <section
+          style={{
+            marginBottom: "1.5rem",
+            borderRadius: 10,
+            border: `1px solid ${UI.border}`,
+            background: UI.panel,
+            padding: "0.9rem 1.05rem 1.05rem",
+          }}
+        >
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", fontWeight: 600 }}>
             Golden acceptance rubric (quality gate)
           </h2>
@@ -58,10 +81,10 @@ export default function VerifierGoldenPage() {
               padding: 0,
               margin: 0,
               fontSize: "0.85rem",
-              opacity: 0.9,
               border: "1px solid #1F2937",
               borderRadius: 6,
               overflow: "hidden",
+              background: "#020617",
             }}
           >
             {GOLDEN_ACCEPTANCE_RUBRIC_LABELS.map((label, i) => (
@@ -76,12 +99,20 @@ export default function VerifierGoldenPage() {
               </li>
             ))}
           </ul>
-          <p style={{ fontSize: "0.8rem", opacity: 0.75, marginTop: "0.5rem" }}>
+          <p style={{ fontSize: "0.8rem", opacity: 0.8, marginTop: "0.5rem", color: UI.textMuted }}>
             Each case in the canonical spine is evaluated against these {rubricTotal} criteria.
           </p>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
+        <section
+          style={{
+            marginBottom: "1.5rem",
+            borderRadius: 10,
+            border: `1px solid ${UI.border}`,
+            background: UI.panel,
+            padding: "0.9rem 1.05rem 1.05rem",
+          }}
+        >
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", fontWeight: 600 }}>
             Rubric v2 reference (scoring bands)
           </h2>
@@ -91,7 +122,7 @@ export default function VerifierGoldenPage() {
               borderRadius: 6,
               padding: "0.75rem 1rem",
               fontSize: "0.8rem",
-              opacity: 0.9,
+              opacity: 0.95,
             }}
           >
             <p style={{ margin: "0 0 0.5rem" }}>
@@ -103,7 +134,15 @@ export default function VerifierGoldenPage() {
           </div>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
+        <section
+          style={{
+            marginBottom: "1.5rem",
+            borderRadius: 10,
+            border: `1px solid ${UI.border}`,
+            background: UI.panel,
+            padding: "0.9rem 1.05rem 1.05rem",
+          }}
+        >
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", fontWeight: 600 }}>
             Spine cases: {caseResults.length} / {caseResults.length} pass
           </h2>
@@ -141,12 +180,12 @@ export default function VerifierGoldenPage() {
 
         <div
           style={{
-            border: "1px solid #1F2937",
-            borderRadius: 6,
-            padding: "1rem 1.25rem",
+            borderRadius: 10,
+            border: `1px solid ${UI.border}`,
+            background: UI.panel,
+            padding: "0.95rem 1.1rem 1.1rem",
             marginBottom: "1.5rem",
             fontSize: "0.85rem",
-            opacity: 0.9,
           }}
         >
           <div style={{ marginBottom: "0.5rem", fontWeight: 600 }}>
@@ -158,7 +197,7 @@ export default function VerifierGoldenPage() {
               display: "inline-block",
               padding: "0.5rem 1rem",
               background: "#1E3A5F",
-              color: "#E5E7EB",
+              color: UI.text,
               borderRadius: 4,
               textDecoration: "none",
               fontSize: "0.85rem",
@@ -168,7 +207,7 @@ export default function VerifierGoldenPage() {
             Open Verifier →
           </Link>
         </div>
-        <p style={{ fontSize: "0.75rem", opacity: 0.7 }}>
+        <p style={{ fontSize: "0.75rem", opacity: 0.8, color: UI.textMuted }}>
           Usta P (controlled narrative witness guide) is available in the top-right
           guidance.
         </p>
