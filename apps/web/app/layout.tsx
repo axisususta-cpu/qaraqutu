@@ -1,6 +1,7 @@
 import "./globals.css";
 import React from "react";
 import Link from "next/link";
+import { webBuildMeta } from "./build-meta";
 
 export const metadata = {
   title: "QARAQUTU",
@@ -11,11 +12,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const gitCommitSha = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ?? process.env.VERCEL_GIT_COMMIT_SHA ?? "";
+  const gitCommitSha = webBuildMeta.commitSha;
+  const shortSha = gitCommitSha === "unknown" ? "unknown" : gitCommitSha.slice(0, 7);
   return (
     <html lang="en">
       <head>
-        {gitCommitSha ? <meta name="vercel:git-commit-sha" content={gitCommitSha} /> : null}
+        {gitCommitSha !== "unknown" ? <meta name="vercel:git-commit-sha" content={gitCommitSha} /> : null}
       </head>
       <body style={{ margin: 0 }}>
         <header
@@ -42,6 +44,7 @@ export default function RootLayout({
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
               }}
+              title={`${webBuildMeta.app} @ ${shortSha} · ${webBuildMeta.buildTime}`}
             >
               QARAQUTU
             </div>
@@ -74,6 +77,19 @@ export default function RootLayout({
           </div>
         </header>
         {children}
+        <footer
+          style={{
+            padding: "0.45rem 1rem 0.7rem",
+            fontSize: "0.68rem",
+            color: "#64748B",
+            textAlign: "right",
+            letterSpacing: "0.03em",
+          }}
+        >
+          <span title={`${webBuildMeta.app} @ ${gitCommitSha} · ${webBuildMeta.buildTime}`}>
+            {webBuildMeta.app} @ {shortSha} · {webBuildMeta.buildTime}
+          </span>
+        </footer>
       </body>
     </html>
   );

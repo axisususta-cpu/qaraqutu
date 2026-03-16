@@ -16,6 +16,9 @@ const ENVIRONMENT = process.env.NODE_ENV ?? "development";
 const DATASET_VERSION = process.env.DEMO_DATASET_VERSION ?? "demo-v1";
 const SCHEMA_VERSION = "v1";
 const BUILD_VERSION = process.env.BUILD_VERSION ?? "0.1.0";
+const APP_NAME = "qaraqutu-api";
+const BUILD_COMMIT_SHA = process.env.VERCEL_GIT_COMMIT_SHA ?? "unknown";
+const BUILD_TIME = process.env.BUILD_TIME ?? new Date().toISOString();
 
 const fastify = Fastify({
   logger: true,
@@ -26,7 +29,13 @@ fastify.register(cors, {
 });
 
 fastify.get("/health", async () => {
-  return { status: "ok" };
+  return {
+    status: "ok",
+    app: APP_NAME,
+    build_version: BUILD_VERSION,
+    build_commit_sha: BUILD_COMMIT_SHA,
+    build_time: BUILD_TIME,
+  };
 });
 
 fastify.get("/v1/system/diagnostics", async () => {
@@ -132,10 +141,13 @@ fastify.get("/v1/system/diagnostics", async () => {
   });
 
   return {
+    app: APP_NAME,
     environment: ENVIRONMENT,
     dataset_version: DATASET_VERSION,
     schema_version: SCHEMA_VERSION,
     build_version: BUILD_VERSION,
+    build_commit_sha: BUILD_COMMIT_SHA,
+    build_time: BUILD_TIME,
     supported_export_profiles: ["claims", "legal"],
     recent_exports,
     recent_verifications,
