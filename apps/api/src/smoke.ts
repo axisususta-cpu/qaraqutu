@@ -61,8 +61,8 @@ export function registerSmokeRoutes(app: FastifyInstance) {
       data: {
         exportId: claimsExportId,
         eventId: event.id,
-        bundleId: bundle.id,
-        manifestId: manifest.id,
+        bundleId: bundle.bundleId,
+        manifestId: manifest.manifestId,
         profile: "claims",
         format: "json",
         purpose: "claims_submission_smoke",
@@ -85,8 +85,8 @@ export function registerSmokeRoutes(app: FastifyInstance) {
       data: {
         exportId: legalExportId,
         eventId: event.id,
-        bundleId: bundle.id,
-        manifestId: manifest.id,
+        bundleId: bundle.bundleId,
+        manifestId: manifest.manifestId,
         profile: "legal",
         format: "pdf",
         purpose: "legal_review_smoke",

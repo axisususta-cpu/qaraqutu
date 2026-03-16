@@ -1,7 +1,14 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { PrismaClient, Prisma } from "@prisma/client";
-import { CanonicalEvent, VerificationState } from "./contracts";
+import {
+  CanonicalEvent,
+  CreateExportRequest,
+  ExportArtifactResponse,
+  ExportFormat,
+  ExportProfileCode,
+  VerificationState,
+} from "./contracts";
 import PDFDocument from "pdfkit";
 import { renderClaimsPdf } from "./modules/documents/claims-pack";
 import { renderLegalPdf } from "./modules/documents/legal-pack";
@@ -19,6 +26,12 @@ const BUILD_VERSION = process.env.BUILD_VERSION ?? "0.1.0";
 const APP_NAME = "qaraqutu-api";
 const BUILD_COMMIT_SHA = process.env.VERCEL_GIT_COMMIT_SHA ?? "unknown";
 const BUILD_TIME = process.env.BUILD_TIME ?? new Date().toISOString();
+const API_SUPPORTED_EXPORT_PROFILES: ExportProfileCode[] = ["claims", "legal"];
+const API_SUPPORTED_EXPORT_FORMATS: ExportFormat[] = ["json", "pdf"];
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
 
 const fastify = Fastify({
   logger: true,
@@ -210,7 +223,7 @@ fastify.get<{
 
 fastify.post<{
   Params: { eventId: string };
-  Body: { profile: string; format: "json" | "pdf"; purpose: string };
+  Body: CreateExportRequest;
 }>("/v1/events/:eventId/exports", async (request, reply) => {
   const { eventId } = request.params;
   const { profile, format, purpose } = request.body;
@@ -224,20 +237,32 @@ fastify.post<{
     where: { tenantId: event.tenantId },
   });
 
-  const supportedProfiles = ["claims", "legal"];
-  const supportedFormats = ["json", "pdf"];
-  if (!profile || !supportedProfiles.includes(profile)) {
+  if (
+    !isNonEmptyString(profile) ||
+    !API_SUPPORTED_EXPORT_PROFILES.includes(profile as ExportProfileCode)
+  ) {
     return reply.code(400).send({
       error: "UNSUPPORTED_EXPORT_REQUEST",
       export_profile: profile ?? null,
       format: format ?? null,
     });
   }
-  if (!format || !supportedFormats.includes(format)) {
+  if (
+    !isNonEmptyString(format) ||
+    !API_SUPPORTED_EXPORT_FORMATS.includes(format as ExportFormat)
+  ) {
     return reply.code(400).send({
       error: "UNSUPPORTED_EXPORT_REQUEST",
       export_profile: profile,
       format: format ?? null,
+    });
+  }
+  if (!isNonEmptyString(purpose)) {
+    return reply.code(400).send({
+      error: "INVALID_EXPORT_PURPOSE",
+      export_profile: profile,
+      format,
+      purpose: purpose ?? null,
     });
   }
 
@@ -346,11 +371,11 @@ fastify.post<{
     data: {
       exportId,
       eventId: event.id,
-      bundleId: bundle.id,
-      manifestId: manifest.id,
+      bundleId: bundle.bundleId,
+      manifestId: manifest.manifestId,
       profile,
       format,
-      purpose,
+      purpose: purpose.trim(),
       verificationState: event.verificationState,
       recordedEvidenceSnapshot: filteredRecorded,
       derivedEvidenceSnapshot: filteredDerived,
@@ -370,18 +395,20 @@ fastify.post<{
     },
   });
 
-  return reply.code(201).send({
+  const response: ExportArtifactResponse = {
     export_id: exportId,
     receipt_id: receiptId,
     event_id: event.eventId,
     bundle_id: bundle.bundleId,
     manifest_id: manifest.manifestId,
-    verification_state: event.verificationState,
-    export_profile: profile,
-    export_purpose: purpose,
-    schema_version: "v1",
+    verification_state: event.verificationState as VerificationState,
+    export_profile: profile as ExportProfileCode,
+    export_purpose: purpose.trim(),
+    schema_version: SCHEMA_VERSION,
     download_url: `/v1/exports/${exportId}/download`,
-  });
+  };
+
+  return reply.code(201).send(response);
 });
 
 fastify.get<{
@@ -398,18 +425,14 @@ fastify.get<{
   }
 
   const event = exp.event as any;
-  const bundle = await prisma.bundle.findFirst({ where: { eventId: event.id } });
-  const manifest = bundle
-    ? await prisma.manifest.findFirst({ where: { bundleId: bundle.id } })
-    : null;
-
-  if (!bundle || !manifest) {
-    return reply.code(500).send({ error: "BUNDLE_OR_MANIFEST_MISSING" });
+  const receipt = exp.receipt ?? null;
+  if (!receipt?.receiptId) {
+    return reply.code(409).send({ error: "RECEIPT_LINKAGE_MISSING" });
   }
 
-  const receipt = await prisma.receipt.findFirst({
-    where: { exportId: exp.id },
-  });
+  if (!isNonEmptyString(exp.bundleId) || !isNonEmptyString(exp.manifestId)) {
+    return reply.code(500).send({ error: "EXPORT_IDENTITY_MISSING" });
+  }
 
   if (exp.profile === "claims" && exp.format === "json") {
     const recorded =
@@ -427,10 +450,10 @@ fastify.get<{
 
     const payload = {
       event_id: event.eventId,
-      bundle_id: bundle.bundleId,
-      manifest_id: manifest.manifestId,
+      bundle_id: exp.bundleId,
+      manifest_id: exp.manifestId,
       export_id: exp.exportId,
-      receipt_id: receipt?.receiptId ?? null,
+      receipt_id: receipt.receiptId,
       verification_state: exp.verificationState as VerificationState,
       export_profile: exp.profile,
       export_purpose: exp.purpose,
@@ -468,10 +491,10 @@ fastify.get<{
       (exp as any).redactionBasis ?? null;
     const identity: DocumentIdentity = {
       eventId: event.eventId,
-      bundleId: bundle.bundleId,
-      manifestId: manifest.manifestId,
+      bundleId: exp.bundleId,
+      manifestId: exp.manifestId,
       exportId: exp.exportId,
-      receiptId: receipt?.receiptId ?? null,
+      receiptId: receipt.receiptId,
       verificationState: exp.verificationState as VerificationState,
       generatedAt: exp.createdAt.toISOString(),
       exportProfile: exp.profile,
@@ -485,8 +508,8 @@ fastify.get<{
 
     const canonicalEvent: CanonicalEvent = {
       eventId: event.eventId,
-      bundleId: bundle.bundleId,
-      manifestId: manifest.manifestId,
+      bundleId: exp.bundleId,
+      manifestId: exp.manifestId,
       vehicleVin: event.vehicleVin ?? undefined,
       fleetId: event.fleetId ?? undefined,
       policyOrClaimRef: event.policyOrClaimRef ?? undefined,
@@ -551,10 +574,10 @@ fastify.get<{
 
     const payload = {
       event_id: event.eventId,
-      bundle_id: bundle.bundleId,
-      manifest_id: manifest.manifestId,
+      bundle_id: exp.bundleId,
+      manifest_id: exp.manifestId,
       export_id: exp.exportId,
-      receipt_id: receipt?.receiptId ?? null,
+      receipt_id: receipt.receiptId,
       verification_state: exp.verificationState as VerificationState,
       export_profile: exp.profile,
       export_purpose: exp.purpose,
@@ -564,7 +587,7 @@ fastify.get<{
       recorded_evidence: recorded,
       derived_evidence: derived,
       manifest_reference: {
-        manifest_id: manifest.manifestId,
+        manifest_id: exp.manifestId,
       },
       redaction_applied: redactionApplied,
       redacted_item_count: redactedItemCount,

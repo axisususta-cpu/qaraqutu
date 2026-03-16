@@ -249,6 +249,15 @@ async function main() {
       if (dbExport.eventId !== event.id) {
         throw new Error("export.eventId does not match requested event");
       }
+      if (dbExport.bundleId !== event.bundleId) {
+        throw new Error("export.bundleId does not preserve canonical bundle id");
+      }
+      if (dbExport.manifestId !== event.manifestId) {
+        throw new Error("export.manifestId does not preserve canonical manifest id");
+      }
+      if (dbExport.purpose !== "smoke_claims_chain") {
+        throw new Error("export.purpose does not preserve requested purpose");
+      }
 
       const dbReceipt = await prisma.receipt.findUnique({
         where: { receiptId },
@@ -308,6 +317,15 @@ async function main() {
       if (!dbExport) throw new Error("export record not found in DB");
       if (dbExport.eventId !== event.id) {
         throw new Error("export.eventId does not match requested event");
+      }
+      if (dbExport.bundleId !== event.bundleId) {
+        throw new Error("export.bundleId does not preserve canonical bundle id");
+      }
+      if (dbExport.manifestId !== event.manifestId) {
+        throw new Error("export.manifestId does not preserve canonical manifest id");
+      }
+      if (dbExport.purpose !== "smoke_legal_chain") {
+        throw new Error("export.purpose does not preserve requested purpose");
       }
 
       const dbReceipt = await prisma.receipt.findUnique({
@@ -485,6 +503,38 @@ async function main() {
       }
       const json = await res.json();
       if (!json || json.error !== "UNSUPPORTED_EXPORT_REQUEST") {
+        throw new Error(`unexpected error payload: ${JSON.stringify(json)}`);
+      }
+    }
+    )
+  );
+
+  // invalid export purpose
+  results.push(
+    await check(
+      "invalid_export_purpose",
+      "failing_path",
+      smokeRun.smokeRunId,
+      async () => {
+      const res = await fetch(
+        `${BASE_URL}/v1/events/${encodeURIComponent(
+          sampleEventId as string
+        )}/exports`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            profile: "claims",
+            format: "json",
+            purpose: "   ",
+          }),
+        }
+      );
+      if (res.status !== 400) {
+        throw new Error(`expected 400, got ${res.status}`);
+      }
+      const json = await res.json();
+      if (!json || json.error !== "INVALID_EXPORT_PURPOSE") {
         throw new Error(`unexpected error payload: ${JSON.stringify(json)}`);
       }
     }
@@ -851,8 +901,8 @@ async function main() {
         data: {
           exportId: `QEX-SYNTHETIC-${Date.now()}`,
           eventId: event.id,
-          bundleId: bundle.id,
-          manifestId: manifest.id,
+          bundleId: bundle.bundleId,
+          manifestId: manifest.manifestId,
           profile: "claims",
           format: "json",
           purpose: "smoke_synthetic_missing_receipt",

@@ -3,9 +3,14 @@
 import { useEffect, useState } from "react";
 import type {
   CanonicalEvent,
+  CreateExportRequest,
   RecordedEvidenceItem,
   DerivedEvidenceItem,
+  ExportArtifactResponse,
+  ExportFormat,
   VerificationState,
+  VerificationRunResponse,
+  VerificationTranscriptEntry,
 } from "contracts";
 import { getCanonicalCases, getCanonicalCaseByEventId, evaluateGoldenAcceptance } from "../../lib/canonical-spine";
 import type { ArtifactProfileCode } from "../../lib/artifact-profiles";
@@ -23,11 +28,11 @@ const DEFAULT_API_BASE =
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE;
 
-interface TranscriptStep {
-  step: number;
-  check: string;
-  result: string;
-  note: string;
+type TranscriptStep = VerificationTranscriptEntry;
+
+interface IssuanceRecord {
+  format: ExportFormat;
+  meta: ExportArtifactResponse;
 }
 
 // Phase 1 mock data scaffolding for future workstation wiring.
@@ -304,6 +309,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const [issuanceState, setIssuanceState] = useState<
     "idle" | "pending" | "success" | "error"
   >("idle");
+  const [lastIssuedArtifact, setLastIssuedArtifact] = useState<IssuanceRecord | null>(null);
   const [exportLoading, setExportLoading] = useState<"json" | "pdf" | null>(
     null
   );
@@ -458,20 +464,24 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       const res = await fetch(`${API_BASE}/v1/events/${selectedId}/verify`, {
         method: "POST",
       });
-      const json = await res.json().catch(() => ({}));
+      const json = (await res.json().catch(() => ({}))) as
+        | Partial<VerificationRunResponse>
+        | { error?: string; message?: string };
       if (!res.ok) {
-        setVerificationError(json?.message || `HTTP ${res.status}`);
+        const errorPayload = json as { error?: string; message?: string };
+        setVerificationError(errorPayload.error || errorPayload.message || `HTTP ${res.status}`);
         return;
       }
-      setVerificationState(json.verification_state as VerificationState);
-      setTranscript(json.transcript_summary ?? null);
+      const successPayload = json as Partial<VerificationRunResponse>;
+      setVerificationState(successPayload.verification_state as VerificationState);
+      setTranscript(successPayload.transcript_summary ?? null);
       setIdentity({
-        event_id: json.event_id,
-        bundle_id: json.bundle_id,
-        manifest_id: json.manifest_id,
+        event_id: successPayload.event_id ?? selectedId,
+        bundle_id: successPayload.bundle_id ?? "—",
+        manifest_id: successPayload.manifest_id ?? "—",
       });
-      if (json.verification_run_id) setVerificationRunId(json.verification_run_id);
-      if (json.transcript_id) setTranscriptId(json.transcript_id);
+      if (successPayload.verification_run_id) setVerificationRunId(successPayload.verification_run_id);
+      if (successPayload.transcript_id) setTranscriptId(successPayload.transcript_id);
       setVerificationJustCompleted(true);
     } catch (err) {
       setVerificationError(err instanceof Error ? err.message : "Verification failed");
@@ -480,74 +490,73 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     }
   }
 
-  async function runExportJson() {
+  async function runExport(format: ExportFormat) {
     if (!selectedId || exportLoading) return;
-    setExportLoading("json");
+    setSelectedFormat(format);
+    setExportLoading(format);
     setExportError(null);
+    setIssuanceState("pending");
+    setLastIssuedArtifact(null);
 
     try {
-      const res = await fetch(
-        `${API_BASE}/v1/events/${selectedId}/exports`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            profile: exportProfile,
-            format: "json",
-            purpose: "verifier_ui_manual_export",
-          }),
-        }
-      );
-      const json = await res.json();
+      const requestBody: CreateExportRequest = {
+        profile: exportProfile,
+        format,
+        purpose: selectedPurpose,
+      };
+      const res = await fetch(`${API_BASE}/v1/events/${selectedId}/exports`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+      const json = (await res.json().catch(() => ({}))) as
+        | Partial<ExportArtifactResponse>
+        | { error?: string };
+      const errorPayload = json as { error?: string };
+      const successPayload = json as Partial<ExportArtifactResponse>;
 
-      if (!res.ok || !json.download_url) {
-        setExportError(json.error ?? "Export failed");
-      } else if (typeof window !== "undefined") {
-        const href = `${API_BASE}${json.download_url}`;
+      if (
+        !res.ok ||
+        !successPayload.download_url ||
+        !successPayload.export_id ||
+        !successPayload.receipt_id ||
+        !successPayload.bundle_id ||
+        !successPayload.manifest_id
+      ) {
+        setIssuanceState("error");
+        setExportError(errorPayload.error ?? `Export failed (HTTP ${res.status})`);
+        return;
+      }
+
+      const meta = successPayload as ExportArtifactResponse;
+      setIssuanceState("success");
+      setLastIssuedArtifact({ format, meta });
+      setIdentity({
+        event_id: meta.event_id,
+        bundle_id: meta.bundle_id,
+        manifest_id: meta.manifest_id,
+      });
+
+      if (typeof window !== "undefined") {
+        const href = `${API_BASE}${meta.download_url}`;
         window.open(href, "_blank");
       }
     } catch (e) {
+      setIssuanceState("error");
       setExportError("Export failed");
     } finally {
       setExportLoading(null);
     }
   }
 
+  async function runExportJson() {
+    await runExport("json");
+  }
+
   async function runExportPdf() {
-    if (!selectedId || exportLoading) return;
-    setExportLoading("pdf");
-    setExportError(null);
-
-    try {
-      const res = await fetch(
-        `${API_BASE}/v1/events/${selectedId}/exports`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            profile: exportProfile,
-            format: "pdf",
-            purpose: "verifier_ui_manual_export",
-          }),
-        }
-      );
-      const json = await res.json();
-
-      if (!res.ok || !json.download_url) {
-        setExportError(json.error ?? "Export failed");
-      } else if (typeof window !== "undefined") {
-        const href = `${API_BASE}${json.download_url}`;
-        window.open(href, "_blank");
-      }
-    } catch (e) {
-      setExportError("Export failed");
-    } finally {
-      setExportLoading(null);
-    }
+    await runExport("pdf");
   }
 
   return (
@@ -2317,6 +2326,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {(identity?.bundle_id ?? selected?.bundleId) && (
                         <div style={{ fontSize: "0.72rem", opacity: 0.7, marginTop: "0.5rem" }}>
                           Bundle ID: {identity?.bundle_id ?? selected?.bundleId} · Manifest ID: {identity?.manifest_id ?? selected?.manifestId ?? "—"} · {language === "tr" ? "Trace" : "Trace"}: {transcriptId ?? (language === "tr" ? "hazırlanmadı" : "pending")}
+                        </div>
+                      )}
+                      {lastIssuedArtifact && (
+                        <div style={{ fontSize: "0.72rem", opacity: 0.78, marginTop: "0.35rem", lineHeight: 1.45 }}>
+                          {language === "tr"
+                            ? `Son issuance: ${lastIssuedArtifact.meta.export_profile} / ${lastIssuedArtifact.format} · Export ID: ${lastIssuedArtifact.meta.export_id} · Receipt ID: ${lastIssuedArtifact.meta.receipt_id} · Purpose: ${lastIssuedArtifact.meta.export_purpose}`
+                            : `Last issuance: ${lastIssuedArtifact.meta.export_profile} / ${lastIssuedArtifact.format} · Export ID: ${lastIssuedArtifact.meta.export_id} · Receipt ID: ${lastIssuedArtifact.meta.receipt_id} · Purpose: ${lastIssuedArtifact.meta.export_purpose}`}
                         </div>
                       )}
                       {exportError && (
