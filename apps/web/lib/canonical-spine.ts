@@ -34,6 +34,12 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     summary:
       "Near-miss in urban corridor where vehicle performed abrupt braking to avoid side-entry vehicle.",
     verificationState: "PASS",
+    reviewWhyEn:
+      "Under review to confirm bundle integrity and manifest linkage for the AEB activation event—timing of system intervention vs driver action must remain traceable.",
+    reviewWhyTr:
+      "AEB aktivasyon olayı için paket bütünlüğü ve manifest bağlantısının doğrulanması amacıyla incelemeye alındı; sistem müdahalesi ile sürücü aksiyonu zamanlaması izlenebilir kalmalı.",
+    nextStepEn: "Review trace summary or start artifact issuance.",
+    nextStepTr: "İz özetini inceleyin veya artifact issuance başlatın.",
     recordedEvidence: [
       {
         recordId: "REC-NEARMISS-JSON",
@@ -46,7 +52,7 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.98,
-        displayLabel: "Source event JSON payload",
+        displayLabel: "AEB event payload (raw)",
         machineLabel: "source_event_json",
       },
       {
@@ -60,7 +66,7 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.95,
-        displayLabel: "Vehicle telemetry snapshot",
+        displayLabel: "Pre- and post-brake telemetry snapshot",
         machineLabel: "telemetry_snapshot",
       },
     ] as RecordedEvidenceItem[],
@@ -73,23 +79,23 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         method: "timeline_v1",
         confidence: 0.92,
         recordedFlag: false,
-        derivationNote: "Timeline synthesized from source payload and telemetry.",
-        displayLabel: "Incident timeline synthesis",
+        derivationNote: "Structured assessment from recorded payload and telemetry; not a verdict on causation.",
+        displayLabel: "AEB near-miss timeline synthesis",
         machineLabel: "timeline_synthesis",
         humanSummary:
-          "Reconstructed timeline of braking and near-miss sequence based on source payload and telemetry trace.",
+          "Reconstructed sequence of approach, brake trigger, and near-miss clearance from source payload and telemetry; timing chain supports review of system vs driver contribution without assigning fault.",
         sourceDependencies: ["REC-NEARMISS-JSON", "REC-NEARMISS-TRACE"],
       },
     ] as DerivedEvidenceItem[],
     unknownDisputed: [],
     verificationTrace: [
-      TRACE_STEP(1, "Canonical event linkage", "PASS", "Event linked to bundle and manifest."),
-      TRACE_STEP(2, "Recorded vs derived separation", "PASS", "Distinct sections."),
-      TRACE_STEP(3, "Verification state", "PASS", "Canonical assessment."),
+      TRACE_STEP(1, "Canonical event linkage", "PASS", "Near-miss event linked to bundle and manifest; chain intact."),
+      TRACE_STEP(2, "Recorded vs derived separation", "PASS", "Recorded payload and telemetry kept distinct from timeline synthesis."),
+      TRACE_STEP(3, "Verification state", "PASS", "Canonical assessment; human review recommended for intervention context."),
     ],
     artifactIssuance: { available: true, apiBacked: true },
     whyInevitable:
-      "Without event-bound verifiable record, derived assessment, and verification trace, liability and compliance disputes remain unresolved. QARAQUTU provides evidence integrity and traceability for this case.",
+      "AEB near-miss disputes turn on timing and chain of evidence. QARAQUTU gives this vehicle case one canonical record, recorded-vs-derived separation, and a verification trace—so claims and compliance reviews have a single reference instead of fragmented logs.",
     titleTr: "Destekli Sürüş Yakın Kaçış İncelemesi",
     titleEn: "Assisted Driving Near-Miss Review",
     demoNoticeTr:
@@ -130,6 +136,12 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     summary:
       "Collision at intersection where lane entry and signal interpretation are disputed between parties.",
     verificationState: "UNKNOWN",
+    reviewWhyEn:
+      "Under review for bundle and manifest integrity; multi-party dispute over lane entry and signal state requires a single canonical record and trace before any role-based export.",
+    reviewWhyTr:
+      "Paket ve manifest bütünlüğü için incelemeye alındı; şerit girişi ve sinyal durumu konusundaki çok taraflı ihtilaf, rol bazlı export öncesi tek kanonik kayıt ve iz gerektirir.",
+    nextStepEn: "Run verification or start controlled artifact once trace and unknowns are reviewed.",
+    nextStepTr: "İz ve belirsizlikler incelendikten sonra doğrulamayı çalıştırın veya kontrollü artifact başlatın.",
     recordedEvidence: [
       {
         recordId: "REC-COLLISION-JSON",
@@ -142,7 +154,7 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.96,
-        displayLabel: "Source event JSON payload",
+        displayLabel: "Intersection collision event payload (raw)",
         machineLabel: "source_event_json",
       },
     ] as RecordedEvidenceItem[],
@@ -155,22 +167,26 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         method: "timeline_v1",
         confidence: 0.88,
         recordedFlag: false,
-        derivationNote: "Timeline from source payload.",
-        displayLabel: "Incident timeline synthesis",
+        derivationNote: "Structured reading from recorded payload; does not resolve disputed lane or signal interpretation.",
+        displayLabel: "Intersection event timeline synthesis",
         machineLabel: "timeline_synthesis",
-        humanSummary: "Reconstructed timeline of intersection collision event.",
+        humanSummary:
+          "Reconstructed sequence of approach and impact from source payload; parties disagree on lane entry and signal phase—this assessment presents the recorded-derived chain, not a liability finding.",
         sourceDependencies: ["REC-COLLISION-JSON"],
       },
     ] as DerivedEvidenceItem[],
-    unknownDisputed: ["Lane entry and signal interpretation disputed between parties."],
+    unknownDisputed: [
+      "Lane entry timing and right-of-way at moment of entry.",
+      "Signal phase and interpretation by each party; requires human review.",
+    ],
     verificationTrace: [
-      TRACE_STEP(1, "Canonical event linkage", "PASS", "Event linked to bundle and manifest."),
-      TRACE_STEP(2, "Recorded vs derived separation", "PASS", "Distinct sections."),
-      TRACE_STEP(3, "Verification state", "UNKNOWN", "Canonical assessment."),
+      TRACE_STEP(1, "Canonical event linkage", "PASS", "Intersection event linked to bundle and manifest."),
+      TRACE_STEP(2, "Recorded vs derived separation", "PASS", "Recorded payload distinct from timeline synthesis."),
+      TRACE_STEP(3, "Verification state", "UNKNOWN", "Disputed facts; verification trace documents steps only; human review required."),
     ],
     artifactIssuance: { available: true, apiBacked: true },
     whyInevitable:
-      "Dispute-grade evidence requires a single canonical object and verification trace. QARAQUTU delivers that for this intersection case.",
+      "Intersection collisions are dispute-grade: parties need one canonical object, a clear recorded-vs-derived split, and a verification trace. QARAQUTU provides that spine so claims and legal review work from the same evidence base—without it, fragmentation persists.",
     titleTr: "Kavşak Çatışması İncelemesi",
     titleEn: "Intersection Conflict Review",
     demoNoticeTr:
@@ -211,6 +227,12 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     summary:
       "Temporary loss of command link and telemetry downlink during BVLOS segment.",
     verificationState: "UNVERIFIED",
+    reviewWhyEn:
+      "Under review for mission anomaly and operator handoff record verification; link-loss window and recovery sequence must be traceable for BVLOS accountability.",
+    reviewWhyTr:
+      "Görev anomalisi ve operatör el değişimi kayıtlarının doğrulanması için incelemeye alındı; BVLOS hesap verebilirliği için bağlantı kaybı penceresi ve kurtarma dizisi izlenebilir olmalı.",
+    nextStepEn: "Demo context only in current release.",
+    nextStepTr: "Mevcut sürümde yalnızca demo bağlamı desteklenmektedir.",
     recordedEvidence: [
       {
         recordId: "rec-drone-003-1",
@@ -223,7 +245,7 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.9,
-        displayLabel: "UAV telemetry stream",
+        displayLabel: "BVLOS segment telemetry (pre- and post-link-loss)",
         machineLabel: "telemetry_stream",
       },
     ] as RecordedEvidenceItem[],
@@ -236,22 +258,27 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         method: "timeline_v1",
         confidence: 0.85,
         recordedFlag: false,
-        derivationNote: "Mission timeline from telemetry.",
-        displayLabel: "Mission timeline synthesis",
+        derivationNote: "Structured assessment from recorded telemetry; not a determination of operator responsibility.",
+        displayLabel: "Link-loss and recovery timeline synthesis",
         machineLabel: "timeline_synthesis",
-        humanSummary: "Timeline derived from telemetry and link recovery log.",
+        humanSummary:
+          "Reconstructed mission segment and link recovery sequence from recorded telemetry; supports review of command-chain uncertainty and safe next step—human review required for scope of autonomy.",
         sourceDependencies: ["rec-drone-003-1"],
       },
     ] as DerivedEvidenceItem[],
-    unknownDisputed: ["Exact duration of link loss; recovery sequence."],
+    unknownDisputed: [
+      "Exact duration of link loss and whether it exceeded operational limits.",
+      "Recovery sequence and operator re-acquisition; requires human review.",
+    ],
     verificationTrace: [
-      TRACE_STEP(1, "Manifest loaded", "OK", "—"),
-      TRACE_STEP(2, "Evidence inventory validated", "OK", "—"),
-      TRACE_STEP(3, "Verification state", "demo", "Demo context."),
+      TRACE_STEP(1, "Link-loss window", "OK", "Link-loss window is registered against the mission segment bundle and manifest."),
+      TRACE_STEP(2, "Telemetry window", "OK", "Telemetry window around the link-loss period is present and intact."),
+      TRACE_STEP(3, "Recovery sequence", "OK", "Recovery sequence is documented for human review; this trace does not decide scope of autonomy."),
+      TRACE_STEP(4, "BVLOS accountability", "demo", "BVLOS accountability remains a review surface; live verification is not connected for Drone."),
     ],
     artifactIssuance: { available: false },
     whyInevitable:
-      "BVLOS and link-loss accountability require a canonical record and verification trace. QARAQUTU is the spine for this drone case.",
+      "BVLOS and link-loss accountability depend on a single canonical record and a verification trace that keeps recorded telemetry separate from derived timeline. QARAQUTU provides that spine for this drone case—without it, operator and system boundaries stay blurred.",
     titleTr: "Bağlantı Kaybı / Operatör Belirsizliği İncelemesi",
     titleEn: "Link Loss / Operator Uncertainty Review",
     demoNoticeTr:
@@ -291,6 +318,12 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     occurredAt: "2025-03-12T14:22:00Z",
     summary: "UAV deviated from planned altitude band during waypoint transit.",
     verificationState: "UNVERIFIED",
+    reviewWhyEn:
+      "Under review for mission anomaly and altitude-deviation record verification; waypoint transit and handoff context must be traceable.",
+    reviewWhyTr:
+      "Görev anomalisi ve irtifa sapması kayıtlarının doğrulanması için incelemeye alındı; waypoint geçişi ve el değişimi bağlamı izlenebilir olmalı.",
+    nextStepEn: "Demo context only in current release.",
+    nextStepTr: "Mevcut sürümde yalnızca demo bağlamı desteklenmektedir.",
     recordedEvidence: [
       {
         recordId: "rec-drone-001-1",
@@ -303,7 +336,7 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.92,
-        displayLabel: "UAV telemetry stream",
+        displayLabel: "Waypoint-transit telemetry (altitude and track)",
         machineLabel: "telemetry_stream",
       },
     ] as RecordedEvidenceItem[],
@@ -316,22 +349,26 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         method: "timeline_v1",
         confidence: 0.88,
         recordedFlag: false,
-        derivationNote: "Mission timeline from telemetry.",
-        displayLabel: "Mission timeline synthesis",
+        derivationNote: "Structured assessment from recorded telemetry; does not assign cause of deviation.",
+        displayLabel: "Altitude-deviation and waypoint timeline synthesis",
         machineLabel: "timeline_synthesis",
-        humanSummary: "Mission timeline derived from telemetry and handoff log.",
+        humanSummary:
+          "Reconstructed mission segment and altitude band deviation from recorded telemetry; supports risk-threshold and handoff review—not a finding on pilot or system fault.",
         sourceDependencies: ["rec-drone-001-1"],
       },
     ] as DerivedEvidenceItem[],
-    unknownDisputed: [],
+    unknownDisputed: [
+      "Whether deviation exceeded procedural or regulatory tolerance; requires human review.",
+    ],
     verificationTrace: [
-      TRACE_STEP(1, "Manifest loaded", "OK", "—"),
-      TRACE_STEP(2, "Evidence inventory validated", "OK", "—"),
-      TRACE_STEP(3, "Verification state", "demo", "Demo context."),
+      TRACE_STEP(1, "Mission plan linkage", "OK", "Mission plan linkage is present for the waypoint segment under review."),
+      TRACE_STEP(2, "Altitude band deviation", "OK", "Altitude band deviation is marked from recorded telemetry; significance is reserved for oversight review."),
+      TRACE_STEP(3, "Waypoint / track separation", "OK", "Waypoint / track separation remains distinct from the derived anomaly timeline; no cause or fault is decided here."),
+      TRACE_STEP(4, "Oversight review", "demo", "Oversight review remains required; live verification is not connected for Drone."),
     ],
     artifactIssuance: { available: false },
     whyInevitable:
-      "Mission anomaly review requires recorded vs derived separation and a verification trace. QARAQUTU provides the canonical spine for this drone case.",
+      "Mission anomaly review needs recorded-vs-derived separation and a verification trace so oversight and claims have one canonical spine. QARAQUTU delivers that for this drone case—altitude and waypoint disputes otherwise lack a single reference.",
     titleTr: "Görev Anomalisi İncelemesi",
     titleEn: "Mission Anomaly Review",
     demoNoticeTr:
@@ -372,6 +409,12 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     summary:
       "Service robot in public space; encounter with pedestrian and recorded handoff to operator.",
     verificationState: "UNVERIFIED",
+    reviewWhyEn:
+      "Under review for safety stop and compliance record assessment; public-space encounter and operator handoff must be traceable for context and liability clarity.",
+    reviewWhyTr:
+      "Güvenlik durdurma ve uyumluluk kayıtlarının incelenmesi için incelemeye alındı; kamusal alan karşılaşması ve operatör devri izlenebilir olmalı.",
+    nextStepEn: "Demo context only in current release.",
+    nextStepTr: "Mevcut sürümde yalnızca demo bağlamı desteklenmektedir.",
     recordedEvidence: [
       {
         recordId: "rec-robot-003-1",
@@ -384,7 +427,7 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.9,
-        displayLabel: "Interaction log",
+        displayLabel: "Pedestrian encounter and handoff log (raw)",
         machineLabel: "interaction_log",
       },
     ] as RecordedEvidenceItem[],
@@ -397,22 +440,26 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         method: "timeline_v1",
         confidence: 0.86,
         recordedFlag: false,
-        derivationNote: "Encounter timeline.",
-        displayLabel: "Encounter timeline synthesis",
+        derivationNote: "Structured assessment from recorded interaction log; does not determine whether context loss constituted harm.",
+        displayLabel: "Encounter and handoff timeline synthesis",
         machineLabel: "timeline_synthesis",
-        humanSummary: "Timeline derived from interaction log and handoff record.",
+        humanSummary:
+          "Reconstructed encounter and operator handoff sequence from recorded log; supports context review and safe next step—human review required to assess significance of context loss.",
         sourceDependencies: ["rec-robot-003-1"],
       },
     ] as DerivedEvidenceItem[],
-    unknownDisputed: [],
+    unknownDisputed: [
+      "Whether context loss in this encounter warrants escalation; requires human review.",
+    ],
     verificationTrace: [
-      TRACE_STEP(1, "Manifest loaded", "OK", "—"),
-      TRACE_STEP(2, "Evidence inventory validated", "OK", "—"),
-      TRACE_STEP(3, "Verification state", "demo", "Demo context."),
+      TRACE_STEP(1, "Encounter registered", "OK", "Encounter is registered against the public-interaction bundle and manifest."),
+      TRACE_STEP(2, "Interaction log integrity", "OK", "Interaction log integrity is preserved and remains distinct from the derived encounter timeline."),
+      TRACE_STEP(3, "Handoff chain documented", "OK", "Handoff chain documented for context review; significance remains with human review."),
+      TRACE_STEP(4, "Context review", "demo", "Context review remains required; live verification is not connected for Robot."),
     ],
     artifactIssuance: { available: false },
     whyInevitable:
-      "Public-space robot incidents require a canonical record and verification trace. QARAQUTU is the spine for this robot case.",
+      "Public-space robot incidents need a canonical record and verification trace so that encounter, handoff, and context are one reference. QARAQUTU provides that spine for this robot case—without it, public-safety and liability discussions lack a shared evidence base.",
     titleTr: "Kamusal Alan Etkileşim İncelemesi",
     titleEn: "Public-Space Interaction Review",
     demoNoticeTr:
@@ -452,6 +499,12 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     occurredAt: "2025-03-13T11:08:00Z",
     summary: "Emergency stop triggered by proximity sensor during cycle.",
     verificationState: "UNVERIFIED",
+    reviewWhyEn:
+      "Under review for safety stop and compliance record assessment; proximity-trigger and cycle boundary must be traceable for protective-stop accountability.",
+    reviewWhyTr:
+      "Güvenlik durdurma ve uyumluluk kayıtlarının incelenmesi için incelemeye alındı; yakınlık tetikleyicisi ve döngü sınırı izlenebilir olmalı.",
+    nextStepEn: "Demo context only in current release.",
+    nextStepTr: "Mevcut sürümde yalnızca demo bağlamı desteklenmektedir.",
     recordedEvidence: [
       {
         recordId: "rec-robot-001-1",
@@ -464,7 +517,7 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.95,
-        displayLabel: "Safety log",
+        displayLabel: "Proximity-trigger and stop-cycle log (raw)",
         machineLabel: "safety_log",
       },
     ] as RecordedEvidenceItem[],
@@ -477,22 +530,26 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         method: "timeline_v1",
         confidence: 0.9,
         recordedFlag: false,
-        derivationNote: "Cycle trace.",
-        displayLabel: "Cycle trace synthesis",
+        derivationNote: "Structured assessment from recorded safety log; protective stop is boundary-preserving, not a fault finding.",
+        displayLabel: "Safety stop and cycle trace synthesis",
         machineLabel: "timeline_synthesis",
-        humanSummary: "Safety stop and cycle trace derived from safety log.",
+        humanSummary:
+          "Reconstructed stop trigger and cycle boundary from recorded safety log; supports oversight and safe next step—protective stopping preserves boundary before risk escalation; not a determination of blame.",
         sourceDependencies: ["rec-robot-001-1"],
       },
     ] as DerivedEvidenceItem[],
-    unknownDisputed: [],
+    unknownDisputed: [
+      "Whether this protective stop fully aligns with configured safety policy thresholds; requires human review.",
+    ],
     verificationTrace: [
-      TRACE_STEP(1, "Manifest loaded", "OK", "—"),
-      TRACE_STEP(2, "Evidence inventory validated", "OK", "—"),
-      TRACE_STEP(3, "Verification state", "demo", "Demo context."),
+      TRACE_STEP(1, "Workcell cycle bound", "OK", "Workcell cycle bound is registered for this protective stop event."),
+      TRACE_STEP(2, "Safety log integrity", "OK", "Safety log integrity is preserved for the proximity-triggered stop event."),
+      TRACE_STEP(3, "Proximity trigger and stop boundary", "OK", "Proximity trigger and stop boundary are traced for oversight; this trace does not decide fault or blame."),
+      TRACE_STEP(4, "Protective stop review", "demo", "Protective stop review remains required; live verification is not connected for Robot."),
     ],
     artifactIssuance: { available: false },
     whyInevitable:
-      "Safety-stop accountability requires recorded evidence and verification trace. QARAQUTU provides the canonical spine for this robot case.",
+      "Safety-stop accountability requires a canonical record and verification trace so that proximity trigger and cycle boundary are unambiguous. QARAQUTU provides that spine for this robot case—protective stopping is then evidence-backed, not contested by fragmented logs.",
     titleTr: "Güvenlik Durdurma Olayı İncelemesi",
     titleEn: "Safety Stop Event Review",
     demoNoticeTr:
