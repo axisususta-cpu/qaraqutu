@@ -1624,6 +1624,17 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     );
                     return (
                       <div>
+                        {/* Case context — system + scenario frame */}
+                        {selectedCase && (
+                          <div style={{ padding: "0.6rem 1.15rem", borderBottom: `1px solid ${UI.borderMuted}`, background: UI.panelCard }}>
+                            <div style={{ fontFamily: MONO, fontSize: "0.54rem", letterSpacing: "0.1em", textTransform: "uppercase", color: UI.textDim, marginBottom: "0.25rem" }}>
+                              {language === "tr" ? "vaka_bağlamı" : "case_context"}
+                            </div>
+                            <p style={{ margin: 0, fontSize: "0.78rem", color: UI.textMuted, fontFamily: MONO }}>
+                              {selectedSystem} · {selectedEventCard.title}
+                            </p>
+                          </div>
+                        )}
                         {/* What happened — full width primary */}
                         <div style={{ padding: "1rem 1.15rem", borderBottom: `1px solid ${UI.borderMuted}` }}>
                           <div style={{ fontFamily: MONO, fontSize: "0.56rem", letterSpacing: "0.1em", textTransform: "uppercase", color: UI.textDim, marginBottom: "0.4rem" }}>
@@ -1665,10 +1676,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     );
                   })()
                 ) : (
-                  <div style={{ padding: "1rem 1.15rem", color: UI.textDim, fontSize: "0.8rem" }}>
+                  <div style={{ padding: "1rem 1.15rem", color: UI.textDim, fontSize: "0.8rem", lineHeight: 1.5 }}>
                     {language === "tr"
-                      ? "Olay özeti için sol omurgadan bir olay seçin."
-                      : "Select an event for incident summary."}
+                      ? "Olay özeti için sol omurgadan bir olay seçin. Seçim yapıldığında vaka bağlamı, ne oldu, neden incelemede ve güvenli sonraki adım gösterilir."
+                      : "Select an event in the left spine for incident summary. Once selected, case context, what happened, why under review, and safe next step are shown."}
                   </div>
                 )}
               </div>
@@ -1872,17 +1883,19 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               ) : (
                 <div
                   style={{
-                    border: "1px solid #111827",
-                    borderRadius: 6,
-                    padding: "0.75rem 1rem",
+                    border: `1px solid ${UI.border}`,
+                    borderRadius: UI.radius.md,
+                    padding: "0.85rem 1rem",
                     fontSize: "0.8rem",
-                    opacity: 0.85,
+                    background: UI.panel,
+                    color: UI.textSoft,
+                    lineHeight: 1.55,
                   }}
                 >
                   <p style={{ margin: 0 }}>
                     {language === "tr"
-                      ? "Delil katmanları için sol omurgadan bir olay seçin."
-                      : "Select an event in the left spine to view evidence layers."}
+                      ? "Kayıtlı ve türetilmiş delil katmanları için sol omurgadan bir olay seçin. Katmanlar karıştırılmaz; doğrulama izi ve issuance buna bağlıdır."
+                      : "Select an event in the left spine to view recorded and derived evidence layers. Layers are not blended; verification trace and issuance depend on them."}
                   </p>
                 </div>
               )}
@@ -1961,17 +1974,19 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               : "Verification outcome unknown for this run; requires human review."}
                           </div>
                         ) : (
-                          <div style={{ fontFamily: MONO, fontSize: "0.68rem", color: UI.textDim }}>
+                          <div style={{ fontFamily: MONO, fontSize: "0.68rem", color: UI.textDim, lineHeight: 1.5 }}>
                             {language === "tr"
-                              ? "// çözülmemiş madde yok"
-                              : "// no_unresolved_items"}
+                              ? "Bu vaka için çözülmemiş madde yok; iz ve issuance insan incelemesi gerektiğinde buna koşullu kalır."
+                              : "No unresolved items for this case; trace and issuance remain conditioned on human review where applicable."}
                           </div>
                         )}
                       </div>
                     </>
                   ) : (
-                    <div style={{ fontFamily: MONO, fontSize: "0.68rem", color: UI.textDim }}>
-                      {language === "tr" ? "// olay seçilmedi" : "// no_event_selected"}
+                    <div style={{ fontFamily: MONO, fontSize: "0.68rem", color: UI.textDim, lineHeight: 1.5 }}>
+                      {language === "tr"
+                        ? "Bilinmeyen / çekişmeli alanı için sol omurgadan bir olay seçin."
+                        : "Select an event in the left spine for unknown / disputed items."}
                     </div>
                   )}
                 </div>
@@ -2032,6 +2047,20 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           }}
                         >
                           {`manifest:${manifestAnchorId} → trace:${isVehicle ? transcriptId ?? "pending" : "demo"} → ${hasConnectedIssuanceProfile ? "bounded_issuance:available" : "issuance:not_connected"}`}
+                        </div>
+                        <div
+                          style={{
+                            padding: "0.35rem 1rem",
+                            borderBottom: `1px solid ${UI.borderMuted}`,
+                            fontSize: "0.7rem",
+                            color: UI.textMuted,
+                            background: UI.panel,
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {language === "tr"
+                            ? "Vaka bağlı inceleme adımları; sonuç gerçek veya hüküm değildir."
+                            : "Case-bound examination steps; outcome is not truth or verdict."}
                         </div>
                         {/* Trace step rows */}
                         <div style={{ background: UI.panel }}>
@@ -2105,8 +2134,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     );
                   })()
                 ) : (
-                  <div style={{ padding: "0.75rem 1rem", fontFamily: MONO, fontSize: "0.68rem", color: UI.textDim }}>
-                    {language === "tr" ? "// olay seçilmedi" : "// no_event_selected"}
+                  <div style={{ padding: "0.75rem 1rem", fontFamily: MONO, fontSize: "0.68rem", color: UI.textDim, lineHeight: 1.5 }}>
+                    {language === "tr"
+                      ? "Doğrulama izi için sol omurgadan bir olay seçin. İz, kayıtlı ve türetilmiş zincirle bağlıdır; nihai hüküm değildir."
+                      : "Select an event in the left spine for verification trace. Trace is bound to recorded and derived chain; not a determination."}
                   </div>
                 )}
               </div>
@@ -2500,11 +2531,26 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   : "// conditioned_on: trace + open_unknowns | does_not_override"}
               </div>
               {!selectedCase ? (
-                <div style={{ border: "1px solid #111827", borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.8rem", opacity: 0.85 }}>
-                  <p style={{ margin: 0 }}>
+                <div
+                  style={{
+                    border: `1px solid ${UI.border}`,
+                    borderRadius: UI.radius.md,
+                    padding: "0.85rem 1rem",
+                    fontSize: "0.8rem",
+                    background: UI.panel,
+                    color: UI.textSoft,
+                    lineHeight: 1.55,
+                  }}
+                >
+                  <p style={{ margin: 0, marginBottom: "0.35rem" }}>
                     {language === "tr"
                       ? "Belge üretimi için sol omurgadan bir olay seçin."
                       : "Select an event in the left spine for artifact issuance."}
+                  </p>
+                  <p style={{ margin: 0, fontSize: "0.75rem", color: UI.textMuted }}>
+                    {language === "tr"
+                      ? "Issuance rol ve iz ile sınırlıdır; bilinmeyen/çekişmeli alanın veya nihai hükmün yerini almaz."
+                      : "Issuance is role- and trace-bound; it does not override unknown/disputed or produce a final ruling."}
                   </p>
                 </div>
               ) : selectedCase.artifactProfiles && selectedCase.artifactProfiles.length > 0 ? (
@@ -2546,7 +2592,25 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         : "The receipt/export path is intentionally withheld for this case because no API-backed issuance path is connected."}
                     </div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    <div
+                      style={{
+                        marginBottom: "0.75rem",
+                        padding: "0.4rem 0.75rem",
+                        fontFamily: MONO,
+                        fontSize: "0.6rem",
+                        letterSpacing: "0.08em",
+                        color: UI.textDim,
+                        background: UI.panelCard,
+                        borderRadius: UI.radius.xs,
+                        border: `1px solid ${UI.borderMuted}`,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {language === "tr"
+                        ? "Trace’e bağlı artifact · Rol sınırlı çıktı · Nihai hüküm değildir."
+                        : "Trace-linked artifact · Role-bound output · Not a determination."}
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                     {selectedCase.artifactProfiles.map((ap) => {
                       const meta = getArtifactProfile(ap.profileCode as ArtifactProfileCode);
                       const label = meta ? (language === "tr" ? meta.labelTr : meta.labelEn) : ap.profileCode;
@@ -2631,6 +2695,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           </button>
                         )}
                       </div>
+                      <p style={{ fontSize: "0.72rem", color: UI.textMuted, margin: "0.5rem 0 0.35rem", lineHeight: 1.5 }}>
+                        {language === "tr"
+                          ? "Kontrollü issuance: artifact manifest ve iz ile sınırlı kalır; suçlama veya nihai hüküm değildir."
+                          : "Controlled issuance: artifact remains bound to manifest and trace; not a blame or final verdict."}
+                      </p>
                       <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
                         <button
                           type="button"
@@ -2735,8 +2804,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           >
                             {issuanceState === "success"
                               ? language === "tr"
-                                ? `Seçili ${selectedProfileLabel} profili için artifact zincire bağlı olarak üretildi. Kimlik ve purpose alanları aşağıda görünür.`
-                                : `The selected ${selectedProfileLabel} artifact was issued while staying bound to the chain. Identity and purpose fields are visible below.`
+                                ? `Seçili ${selectedProfileLabel} profili için artifact zincire bağlı olarak üretildi. Kimlik ve purpose alanları aşağıda görünür. Artifact doğrulama izi ve manifeste bağlıdır; bilinmeyen/çekişmeli alanın yerini almaz.`
+                                : `The selected ${selectedProfileLabel} artifact was issued while staying bound to the chain. Identity and purpose fields are visible below. Artifact is bound to the verification trace and manifest; it does not replace or outrank unknown/disputed items.`
                               : issuanceState === "error"
                               ? language === "tr"
                                 ? "Receipt/export hattı bu denemede kullanıcıya dönük bir sonuç üretemedi."

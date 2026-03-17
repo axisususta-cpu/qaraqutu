@@ -1,7 +1,7 @@
 import "./globals.css";
 import React from "react";
-import Link from "next/link";
 import { webBuildMeta } from "./build-meta";
+import { NavLinks } from "./components/NavLinks";
 
 export const metadata = {
   title: "QARAQUTU",
@@ -93,84 +93,7 @@ export default function RootLayout({
                 alignItems: "center",
               }}
             >
-              <Link
-                href="/"
-                style={{
-                  color: UI.textSoft,
-                  textDecoration: "none",
-                  padding: "0.2rem 0.5rem",
-                  borderRadius: 999,
-                }}
-              >
-                Landing
-              </Link>
-              <Link
-                href="/verifier"
-                style={{
-                  color: UI.text,
-                  textDecoration: "none",
-                  fontWeight: 600,
-                  padding: "0.25rem 0.8rem",
-                  borderRadius: 999,
-                  border: `1px solid ${UI.accent}`,
-                  background: UI.accentSoft,
-                  fontFamily: MONO,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                }}
-              >
-                Verifier
-              </Link>
-              <Link
-                href="/verifier/golden"
-                style={{
-                  color: UI.textMuted,
-                  textDecoration: "none",
-                  padding: "0.2rem 0.5rem",
-                  borderRadius: 999,
-                  border: `1px solid ${UI.borderSoft}`,
-                  fontSize: "0.78rem",
-                }}
-              >
-                Golden (internal)
-              </Link>
-              <Link
-                href="/console"
-                style={{
-                  color: UI.textMuted,
-                  textDecoration: "none",
-                  padding: "0.2rem 0.5rem",
-                  borderRadius: 999,
-                  border: `1px solid ${UI.borderSoft}`,
-                  fontSize: "0.78rem",
-                }}
-              >
-                Console shell
-              </Link>
-              <Link
-                href="/docs"
-                style={{
-                  color: UI.textSoft,
-                  textDecoration: "none",
-                  padding: "0.2rem 0.5rem",
-                  borderRadius: 999,
-                }}
-              >
-                Docs
-              </Link>
-              <Link
-                href="/admin"
-                style={{
-                  color: UI.textSoft,
-                  textDecoration: "none",
-                  padding: "0.2rem 0.5rem",
-                  borderRadius: 999,
-                  border: `1px solid ${UI.borderSoft}`,
-                  fontSize: "0.78rem",
-                }}
-              >
-                Admin
-              </Link>
+              <NavLinks />
             </nav>
           </div>
         </header>
