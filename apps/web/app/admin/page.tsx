@@ -125,6 +125,27 @@ export default async function AdminPage() {
     );
   }
 
+  const totalVerifications = diagnostics.recent_verifications?.length ?? 0;
+  const verificationStates =
+    diagnostics.recent_verifications?.reduce<Record<string, number>>((acc, v) => {
+      const key = v.verification_state || "UNKNOWN";
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    }, {}) ?? {};
+
+  const latestSmokeLabel =
+    diagnostics.latest_smoke_run?.overall_result && diagnostics.latest_smoke_run?.environment
+      ? `${diagnostics.latest_smoke_run.overall_result} · ${diagnostics.latest_smoke_run.environment}`
+      : null;
+
+  const totalExports = diagnostics.recent_exports?.length ?? 0;
+  const exportProfiles =
+    diagnostics.recent_exports?.reduce<Record<string, number>>((acc, e) => {
+      const key = e.profile || "unknown";
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    }, {}) ?? {};
+
   return (
     <div
       style={{
@@ -136,22 +157,176 @@ export default async function AdminPage() {
       }}
     >
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: "1.7rem" }}>
-        <header>
-          <h1 style={{ fontSize: "1.35rem", marginBottom: "0.35rem" }}>System diagnostics</h1>
-          <p
+        <header style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
+          <div>
+            <h1 style={{ fontSize: "1.35rem", margin: 0, marginBottom: "0.25rem" }}>System diagnostics</h1>
+            <p
+              style={{
+                fontSize: "0.84rem",
+                color: UI.textSoft,
+                margin: 0,
+                lineHeight: 1.5,
+              }}
+            >
+              Internal diagnostics surface for verifier-first operations. Bounded review of environment, verifier spine,
+              and issuance pathways — not an operations dashboard or business console.
+            </p>
+          </div>
+          <div
             style={{
-              fontSize: "0.84rem",
-              color: UI.textSoft,
-              margin: 0,
-              marginBottom: "0.9rem",
-              lineHeight: 1.5,
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "0.5rem",
+              marginTop: "0.15rem",
+              fontSize: "0.75rem",
+              color: UI.textMuted,
             }}
           >
-            Diagnostics only — not an operations dashboard. Verifier spine activity (verification runs, trace, issuance)
-            and environment state are surfaced here for support and operations.
-          </p>
+            <span
+              style={{
+                borderRadius: 999,
+                border: `1px solid ${UI.border}`,
+                padding: "0.15rem 0.55rem",
+                fontFamily: MONO,
+                letterSpacing: "0.09em",
+                textTransform: "uppercase",
+              }}
+            >
+              Diagnostics only
+            </span>
+            <span
+              style={{
+                borderRadius: 999,
+                border: `1px solid ${UI.border}`,
+                padding: "0.15rem 0.55rem",
+              }}
+            >
+              Protected surface · authorized access required
+            </span>
+          </div>
         </header>
 
+        {/* Top-level status spine: environment + verifier + access boundary */}
+        <section
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1.6fr)",
+            gap: "1.2rem",
+          }}
+        >
+          {/* System status summary */}
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "0.9rem 1.05rem 1.05rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>System status summary</h2>
+            <p
+              style={{
+                fontSize: "0.8rem",
+                color: UI.textSoft,
+                margin: 0,
+                marginBottom: "0.45rem",
+              }}
+            >
+              High-level, bounded view of the current verifier environment — not a live traffic or business usage panel.
+            </p>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "minmax(0, 1.1fr) minmax(0, 1.2fr)",
+                gap: "0.6rem",
+                fontSize: "0.8rem",
+              }}
+            >
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, lineHeight: 1.6 }}>
+                <li>
+                  <span style={{ color: UI.textMuted }}>Environment:</span>{" "}
+                  <span style={{ fontFamily: MONO }}>{diagnostics.environment}</span>
+                </li>
+                <li>
+                  <span style={{ color: UI.textMuted }}>Dataset:</span>{" "}
+                  <span style={{ fontFamily: MONO }}>{diagnostics.dataset_version}</span>
+                </li>
+                <li>
+                  <span style={{ color: UI.textMuted }}>Schema:</span>{" "}
+                  <span style={{ fontFamily: MONO }}>{diagnostics.schema_version}</span>
+                </li>
+                <li>
+                  <span style={{ color: UI.textMuted }}>Build:</span>{" "}
+                  <span style={{ fontFamily: MONO }}>{diagnostics.build_version}</span>
+                </li>
+              </ul>
+              <div
+                style={{
+                  borderRadius: 8,
+                  border: `1px dashed ${UI.border}`,
+                  padding: "0.55rem 0.7rem",
+                  background: "#050b16",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: "0.75rem",
+                    color: UI.textMuted,
+                    marginBottom: "0.25rem",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.09em",
+                  }}
+                >
+                  Verifier pipeline
+                </div>
+                <p style={{ fontSize: "0.78rem", color: UI.textSoft, margin: 0, lineHeight: 1.5 }}>
+                  Recent verifier runs and issuance paths are tracked for integrity. This view reports spine health, not
+                  business throughput.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Protected boundary + surface state */}
+          <div
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "0.9rem 1.05rem 1.05rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Protected surface boundary</h2>
+            <p
+              style={{
+                fontSize: "0.8rem",
+                color: UI.textSoft,
+                margin: 0,
+                marginBottom: "0.45rem",
+              }}
+            >
+              Admin, console and golden surfaces are intentionally access-controlled. This section documents boundary
+              intent — it does not expose gate internals.
+            </p>
+            <ul style={{ fontSize: "0.8rem", paddingLeft: "1.1rem", margin: 0, lineHeight: 1.6 }}>
+              <li>
+                <strong>Admin</strong>: diagnostics workbench only — no generic operations dashboard, no business metrics.
+              </li>
+              <li>
+                <strong>Console</strong>: reserved protocol shell — not activated as a public product surface.
+              </li>
+              <li>
+                <strong>Golden</strong>: internal verifier acceptance view — surfaced under protected access only.
+              </li>
+              <li>
+                <strong>Access boundary</strong>: protected routes require authorized access; unauthorized requests see a
+                bounded restricted state.
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        {/* Canonical and AXISUS overview */}
         <section
           style={{
             display: "grid",
@@ -242,6 +417,7 @@ export default async function AdminPage() {
           </div>
         </section>
 
+        {/* Environment + export profile capability */}
         <section
           style={{
             display: "grid",
@@ -283,6 +459,7 @@ export default async function AdminPage() {
           </div>
         </section>
 
+        {/* Issuance and verifier activity */}
         <section
           style={{
             display: "grid",
@@ -375,6 +552,7 @@ export default async function AdminPage() {
           </div>
         </section>
 
+        {/* Verification trace + smoke runs */}
         <section
           style={{
             display: "grid",
@@ -463,6 +641,7 @@ export default async function AdminPage() {
           </div>
         </section>
 
+        {/* Tenant policy / issuance policy snapshot */}
         <section>
           <div
             style={{
