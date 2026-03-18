@@ -557,7 +557,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     setTranscriptId(null);
 
     try {
-      const res = await fetch(`${API_BASE}/v1/events/${selectedId}/verify`, {
+      const res = await fetch(`/api/events/${selectedId}/verify`, {
         method: "POST",
       });
       const json = (await res.json().catch(() => ({}))) as
@@ -600,7 +600,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         format,
         purpose: selectedPurpose,
       };
-      const res = await fetch(`${API_BASE}/v1/events/${selectedId}/exports`, {
+      const res = await fetch(`/api/events/${selectedId}/exports`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -636,7 +636,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       });
 
       if (typeof window !== "undefined") {
-        const href = `${API_BASE}${meta.download_url}`;
+        const href = `/api/exports/${meta.export_id}/download`;
         window.open(href, "_blank");
       }
     } catch (e) {

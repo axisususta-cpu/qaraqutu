@@ -5,11 +5,43 @@ import type { VerificationState } from "./contracts";
 
 const prisma = new PrismaClient();
 
+function getClientIp(request: any): string {
+  const xff = request.headers?.["x-forwarded-for"];
+  if (typeof xff === "string" && xff.length > 0) return xff.split(",")[0]?.trim() || "unknown";
+  const xri = request.headers?.["x-real-ip"];
+  if (typeof xri === "string" && xri.length > 0) return xri;
+  return request.ip ?? "unknown";
+}
+
+const VERIFY_BUCKETS = new Map<string, { count: number; resetAt: number }>();
+function verifyRateLimit(request: any, reply: any) {
+  const now = Date.now();
+  const ip = getClientIp(request);
+  const key = `verify:${ip}`;
+  const existing = VERIFY_BUCKETS.get(key);
+  if (!existing || existing.resetAt <= now) {
+    VERIFY_BUCKETS.set(key, { count: 1, resetAt: now + 60_000 });
+    return;
+  }
+  existing.count += 1;
+  if (existing.count > 25) {
+    return reply
+      .code(429)
+      .header("Retry-After", String(Math.ceil((existing.resetAt - now) / 1000)))
+      .send({ error: "RATE_LIMITED" });
+  }
+}
+
 export function registerVerifierRoutes(app: FastifyInstance) {
   app.post<{
     Params: { eventId: string };
   }>("/v1/events/:eventId/verify", async (request, reply) => {
+    verifyRateLimit(request as any, reply as any);
+    if ((reply as any).sent) return;
     const { eventId } = request.params;
+    if (!/^[a-zA-Z0-9_-]{6,80}$/.test(eventId)) {
+      return reply.code(400).send({ error: "INVALID_EVENT_ID" });
+    }
     const event = await prisma.event.findUnique({ where: { eventId } });
     if (!event) {
       return reply.code(404).send({ error: "EVENT_NOT_FOUND" });

@@ -28,6 +28,57 @@ const BUILD_COMMIT_SHA = process.env.VERCEL_GIT_COMMIT_SHA ?? "unknown";
 const BUILD_TIME = process.env.BUILD_TIME ?? new Date().toISOString();
 const API_SUPPORTED_EXPORT_PROFILES: ExportProfileCode[] = ["claims", "legal"];
 const API_SUPPORTED_EXPORT_FORMATS: ExportFormat[] = ["json", "pdf"];
+const ACCESS_TOKEN = process.env.QARAQUTU_ACCESS_TOKEN ?? null;
+
+function getClientIp(request: any): string {
+  const xff = request.headers?.["x-forwarded-for"];
+  if (typeof xff === "string" && xff.length > 0) return xff.split(",")[0]?.trim() || "unknown";
+  const xri = request.headers?.["x-real-ip"];
+  if (typeof xri === "string" && xri.length > 0) return xri;
+  return request.ip ?? "unknown";
+}
+
+function hasBearerAccess(request: any): boolean {
+  if (!ACCESS_TOKEN || ACCESS_TOKEN.trim().length < 12) return false;
+  const auth = request.headers?.authorization;
+  if (typeof auth === "string" && auth.startsWith("Bearer ")) {
+    return auth.slice("Bearer ".length) === ACCESS_TOKEN;
+  }
+  const alt = request.headers?.["x-qaraqutu-access"];
+  return typeof alt === "string" && alt === ACCESS_TOKEN;
+}
+
+type RateKey = string;
+const RATE_BUCKETS = new Map<RateKey, { count: number; resetAt: number }>();
+function rateLimit(opts: { windowMs: number; max: number; keyPrefix: string }) {
+  return async function onRequest(request: any, reply: any) {
+    const now = Date.now();
+    const ip = getClientIp(request);
+    const key = `${opts.keyPrefix}:${ip}`;
+    const existing = RATE_BUCKETS.get(key);
+    if (!existing || existing.resetAt <= now) {
+      RATE_BUCKETS.set(key, { count: 1, resetAt: now + opts.windowMs });
+      return;
+    }
+    existing.count += 1;
+    if (existing.count > opts.max) {
+      return reply
+        .code(429)
+        .header("Retry-After", String(Math.ceil((existing.resetAt - now) / 1000)))
+        .send({ error: "RATE_LIMITED" });
+    }
+  };
+}
+
+function attachSecurityHeaders(reply: any) {
+  reply.header("X-Frame-Options", "DENY");
+  reply.header("X-Content-Type-Options", "nosniff");
+  reply.header("Referrer-Policy", "strict-origin-when-cross-origin");
+  reply.header(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=()"
+  );
+}
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
@@ -50,6 +101,29 @@ fastify.register(cors, {
   origin: true,
 });
 
+fastify.addHook("onSend", async (_request, reply, payload) => {
+  attachSecurityHeaders(reply);
+  return payload;
+});
+
+fastify.setErrorHandler((err, request, reply) => {
+  const ip = getClientIp(request as any);
+  const route = (request as any).routerPath ?? (request as any).url ?? "unknown";
+  fastify.log.error({ err, ip, route }, "unhandled_error");
+
+  if ((reply as any).sent) return;
+
+  const anyErr = err as any;
+  if (anyErr?.validation) {
+    return reply.code(400).send({ error: "INVALID_REQUEST" });
+  }
+  const statusCode = typeof anyErr?.statusCode === "number" ? anyErr.statusCode : 500;
+  if (statusCode >= 400 && statusCode < 500) {
+    return reply.code(statusCode).send({ error: "REQUEST_REJECTED" });
+  }
+  return reply.code(500).send({ error: "INTERNAL_ERROR" });
+});
+
 fastify.get("/health", async () => {
   return {
     status: "ok",
@@ -60,7 +134,23 @@ fastify.get("/health", async () => {
   };
 });
 
-fastify.get("/v1/system/diagnostics", async () => {
+fastify.get(
+  "/v1/system/diagnostics",
+  {
+    preHandler: [
+      rateLimit({ windowMs: 60_000, max: 30, keyPrefix: "diag" }),
+      async (request, reply) => {
+        if (!hasBearerAccess(request)) {
+          fastify.log.warn(
+            { ip: getClientIp(request as any), route: "/v1/system/diagnostics" },
+            "access_denied"
+          );
+          return reply.code(403).send({ error: "ACCESS_REQUIRED" });
+        }
+      },
+    ],
+  },
+  async () => {
   const [
     recentExports,
     recentVerifications,
@@ -221,6 +311,9 @@ fastify.get<{
   Params: { eventId: string };
 }>("/v1/events/:eventId", async (request, reply) => {
   const { eventId } = request.params;
+  if (!/^[a-zA-Z0-9_-]{6,80}$/.test(eventId)) {
+    return reply.code(400).send({ error: "INVALID_EVENT_ID" });
+  }
   const event = await prisma.event.findUnique({
     where: { eventId },
   });
@@ -233,9 +326,28 @@ fastify.get<{
 fastify.post<{
   Params: { eventId: string };
   Body: CreateExportRequest;
-}>("/v1/events/:eventId/exports", async (request, reply) => {
+}>(
+  "/v1/events/:eventId/exports",
+  {
+    preHandler: [
+      rateLimit({ windowMs: 60_000, max: 12, keyPrefix: "export_create" }),
+      async (request, reply) => {
+        if (!hasBearerAccess(request)) {
+          fastify.log.warn(
+            { ip: getClientIp(request as any), route: "/v1/events/:eventId/exports" },
+            "access_denied"
+          );
+          return reply.code(403).send({ error: "ACCESS_REQUIRED" });
+        }
+      },
+    ],
+  },
+  async (request, reply) => {
   const { eventId } = request.params;
   const { profile, format, purpose } = request.body;
+  if (!/^[a-zA-Z0-9_-]{6,80}$/.test(eventId)) {
+    return reply.code(400).send({ error: "INVALID_EVENT_ID" });
+  }
   const normalizedPurpose = normalizeExportPurpose(purpose);
 
   const event = await prisma.event.findUnique({ where: { eventId } });
@@ -433,8 +545,27 @@ fastify.post<{
 
 fastify.get<{
   Params: { exportId: string };
-}>("/v1/exports/:exportId/download", async (request, reply) => {
+}>(
+  "/v1/exports/:exportId/download",
+  {
+    preHandler: [
+      rateLimit({ windowMs: 60_000, max: 30, keyPrefix: "export_download" }),
+      async (request, reply) => {
+        if (!hasBearerAccess(request)) {
+          fastify.log.warn(
+            { ip: getClientIp(request as any), route: "/v1/exports/:exportId/download" },
+            "access_denied"
+          );
+          return reply.code(403).send({ error: "ACCESS_REQUIRED" });
+        }
+      },
+    ],
+  },
+  async (request, reply) => {
   const { exportId } = request.params;
+  if (!/^QEX-[a-zA-Z0-9-]{10,120}$/.test(exportId)) {
+    return reply.code(400).send({ error: "INVALID_EXPORT_ID" });
+  }
   const exp = await prisma.export.findUnique({
     where: { exportId },
     include: { event: true, receipt: true },
