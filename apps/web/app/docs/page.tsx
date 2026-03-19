@@ -21,9 +21,12 @@ export default function DocsPage() {
           </h2>
           <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
             QARAQUTU currently focuses on vehicle incident, fleet, insurance,
-            claims, and legal review workflows. The system is software-first,
-            edge-ready, and hardware-later: it exposes a canonical event model,
-            verification, and export surfaces as a multi-tenant SaaS.
+            claims, and legal review workflows. Public doctrine is verifier-first
+            witness protocol: bounded review over canonical event packages, with
+            verification trace and controlled artifact issuance. This docs page
+            also includes implementation alignment notes where backend terms
+            (tenant, policy, visibility classes) are used as technical language,
+            not as the public product identity.
           </p>
         </section>
 
@@ -53,10 +56,10 @@ export default function DocsPage() {
               occurred (such as export generation).
             </li>
             <li>
-              <strong>Tenant policy</strong>: a tenant-level configuration that
-              determines which export profiles are enabled, which visibility
-              classes are allowed in exports, and whether policy-driven
-              redaction is enabled.
+              <strong>Tenant policy (implementation)</strong>: backend
+              configuration that determines which export profiles are enabled,
+              which visibility classes are allowed in exports, and whether
+              policy-driven redaction is enabled.
             </li>
             <li>
               <strong>Verification run</strong>: a persisted record of a single
@@ -135,6 +138,18 @@ export default function DocsPage() {
 
         <section style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            Doctrine vs implementation language
+          </h2>
+          <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+            Public product identity remains verifier-first witness protocol.
+            Terms such as tenant, policy, visibility class, diagnostics route,
+            and export profile are implementation descriptors for backend and API
+            behavior. They do not redefine QARAQUTU as a generic SaaS console.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
             Current API routes
           </h2>
           <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
@@ -196,8 +211,7 @@ export default function DocsPage() {
             route and include environment, versions, supported export profiles,
             recent export activity, recent verification activity, latest
             verification run summary, latest smoke run details, and a compact
-            tenant policy summary. Smoke checks
-            are executed via a CLI that
+            tenant policy summary. Smoke checks are executed via a CLI that
             exercises availability, diagnostics, dataset, verifier (including
             persisted run and trace), verification read route, export
             creation/download, receipt linkage, and multi-page PDF behavior.
@@ -217,8 +231,8 @@ export default function DocsPage() {
               latest runs in diagnostics/admin.
             </li>
             <li>
-              Tenant policy is modeled at a simple tenant-wide level; it does
-              not yet support per-user or per-role overrides.
+              Implementation policy is currently modeled at a tenant-wide level;
+              it does not yet support per-user or per-role overrides.
             </li>
           </ul>
         </section>

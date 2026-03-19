@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   USTA_P_CLOSING_SEGMENT_EN,
   USTA_P_CLOSING_SEGMENT_TR,
-  USTA_P_KEYBOARD_SHORTCUT,
   USTA_P_SCRIPTS,
   type UstaPScenarioId,
   type UstaPScript,
@@ -150,19 +149,6 @@ export function UstaPDemoTrigger({
     voiceIntegration?.onNarrationStop?.();
   }, [voiceIntegration, clearSegmentTimer]);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "q" || !e.ctrlKey) return;
-      const target = e.target as HTMLElement;
-      const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
-      if (isInput) return;
-      e.preventDefault();
-      if (playbackState === "idle") runNarration();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [playbackState, runNarration]);
-
   const isActive = playbackState === "playing" || playbackState === "paused" || playbackState === "stopped" || playbackState === "finishing";
   const roleLabel =
     selectedDomain === "vehicle"
@@ -257,6 +243,22 @@ export function UstaPDemoTrigger({
             ? "Review yapmaz, execution başlatmaz, diagnostics izlemez. Yalnızca sonraki bounded adımı netleştirir."
             : "Does not perform review, launch execution, or monitor diagnostics. It only clarifies the next bounded step."}
         </div>
+        <div
+          style={{
+            border: "1px dashed #334155",
+            borderRadius: 5,
+            padding: "0.35rem 0.45rem",
+            fontSize: "0.62rem",
+            color: "#94A3B8",
+            lineHeight: 1.5,
+            marginBottom: "0.35rem",
+            background: "#0B1325",
+          }}
+        >
+          {language === "tr"
+            ? "Text guidance only (mevcut sürüm): Aşağıdaki playback kontrolleri aktif değildir. Voice/script execution capability sunulmaz."
+            : "Text guidance only (current release): Playback controls below are not active. No voice/script execution capability is provided."}
+        </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem", alignItems: "center" }}>
           {(Object.keys(USTA_P_SCRIPTS) as UstaPScenarioId[]).map((id) => (
             <button
@@ -324,101 +326,108 @@ export function UstaPDemoTrigger({
           <button
             type="button"
             onClick={runNarration}
-            disabled={isActive}
+            disabled
             style={{
               padding: "0.2rem 0.5rem",
               borderRadius: 4,
               border: "1px solid #374151",
               background: "#0B1120",
               color: "#E5E7EB",
-              cursor: isActive ? "not-allowed" : "pointer",
+              cursor: "not-allowed",
               fontSize: "0.7rem",
+              opacity: 0.5,
             }}
+            title={language === "tr" ? "Mevcut sürümde aktif değil" : "Not active in current release"}
           >
             {language === "tr" ? "Run script" : "Run script"}
           </button>
           <button
             type="button"
             onClick={pauseNarration}
-            disabled={playbackState !== "playing"}
+            disabled
             style={{
               padding: "0.2rem 0.4rem",
               borderRadius: 4,
               border: "1px solid #374151",
               background: "transparent",
               color: "#E5E7EB",
-              cursor: playbackState === "playing" ? "pointer" : "not-allowed",
+              cursor: "not-allowed",
               fontSize: "0.65rem",
-              opacity: playbackState === "playing" ? 1 : 0.5,
+              opacity: 0.5,
             }}
+            title={language === "tr" ? "Mevcut sürümde aktif değil" : "Not active in current release"}
           >
             {language === "tr" ? "Pause" : "Pause"}
           </button>
           <button
             type="button"
             onClick={continueNarration}
-            disabled={playbackState !== "paused" && playbackState !== "stopped"}
+            disabled
             style={{
               padding: "0.2rem 0.4rem",
               borderRadius: 4,
               border: "1px solid #374151",
               background: "transparent",
               color: "#E5E7EB",
-              cursor: playbackState === "paused" || playbackState === "stopped" ? "pointer" : "not-allowed",
+              cursor: "not-allowed",
               fontSize: "0.65rem",
-              opacity: playbackState === "paused" || playbackState === "stopped" ? 1 : 0.5,
+              opacity: 0.5,
             }}
+            title={language === "tr" ? "Mevcut sürümde aktif değil" : "Not active in current release"}
           >
             {language === "tr" ? "Resume" : "Resume"}
           </button>
           <button
             type="button"
             onClick={stopNarration}
-            disabled={playbackState !== "playing" && playbackState !== "paused"}
+            disabled
             style={{
               padding: "0.2rem 0.4rem",
               borderRadius: 4,
               border: "1px solid #374151",
               background: "transparent",
               color: "#E5E7EB",
-              cursor: playbackState === "playing" || playbackState === "paused" ? "pointer" : "not-allowed",
+              cursor: "not-allowed",
               fontSize: "0.65rem",
-              opacity: playbackState === "playing" || playbackState === "paused" ? 1 : 0.5,
+              opacity: 0.5,
             }}
+            title={language === "tr" ? "Mevcut sürümde aktif değil" : "Not active in current release"}
           >
             {language === "tr" ? "Silence" : "Silence"}
           </button>
           <button
             type="button"
             onClick={restartNarration}
-            disabled={!isActive}
+            disabled
             style={{
               padding: "0.2rem 0.4rem",
               borderRadius: 4,
               border: "1px solid #374151",
               background: "transparent",
               color: "#E5E7EB",
-              cursor: isActive ? "pointer" : "not-allowed",
+              cursor: "not-allowed",
               fontSize: "0.65rem",
-              opacity: isActive ? 1 : 0.5,
+              opacity: 0.5,
             }}
+            title={language === "tr" ? "Mevcut sürümde aktif değil" : "Not active in current release"}
           >
             {language === "tr" ? "Restart" : "Restart"}
           </button>
           <button
             type="button"
             onClick={finishNarration}
-            disabled={!isActive}
+            disabled
             style={{
               padding: "0.2rem 0.4rem",
               borderRadius: 4,
               border: "1px solid #374151",
               background: "transparent",
               color: "#E5E7EB",
-              cursor: isActive ? "pointer" : "not-allowed",
+              cursor: "not-allowed",
               fontSize: "0.65rem",
-              opacity: isActive ? 1 : 0.5,
+              opacity: 0.5,
             }}
+            title={language === "tr" ? "Mevcut sürümde aktif değil" : "Not active in current release"}
           >
             {language === "tr" ? "Escalate close" : "Escalate close"}
           </button>
@@ -524,8 +533,8 @@ export function UstaPDemoTrigger({
 
       <button
         type="button"
-        onClick={() => (playbackState === "idle" ? runNarration() : closePanel())}
-        title={`Usta P — ${USTA_P_KEYBOARD_SHORTCUT}`}
+        onClick={() => (scriptVisible ? closePanel() : setScriptVisible(true))}
+        title={language === "tr" ? "Usta P text guidance panel" : "Usta P text guidance panel"}
         style={{
           position: "absolute",
           bottom: "0.25rem",
