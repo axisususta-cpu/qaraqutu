@@ -6,11 +6,14 @@ const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
 const UI = {
   bg: "#060d1a",
   panel: "#0a1628",
+  panelRaised: "#0d1a2f",
   border: "#1a2d4a",
+  borderSoft: "rgba(26, 45, 74, 0.72)",
   text: "#e8eef8",
   textSoft: "#b8cce0",
   textMuted: "#7a95b8",
   accent: "#D4561A",
+  accentSoft: "rgba(212, 86, 26, 0.10)",
 } as const;
 
 export default function LandingPage() {
@@ -24,12 +27,12 @@ export default function LandingPage() {
         fontFamily: SANS,
       }}
     >
-      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: "1.9rem" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
         {/* Hero */}
         <section
           style={{
             display: "grid",
-            gridTemplateColumns: "minmax(0, 2.2fr) minmax(0, 1.5fr)",
+            gridTemplateColumns: "minmax(0, 2.15fr) minmax(0, 1.45fr)",
             gap: "1.75rem",
             alignItems: "flex-start",
           }}
@@ -45,29 +48,59 @@ export default function LandingPage() {
                 fontFamily: MONO,
               }}
             >
-              QARAQUTU — Witness protocol
+              QARAQUTU - Witness protocol
             </div>
-            <h1 style={{ fontSize: "1.9rem", margin: 0, lineHeight: 1.25 }}>
+            <h1 style={{ fontSize: "2.05rem", margin: 0, lineHeight: 1.2 }}>
               One product. Verifier-first. Three verticals.
             </h1>
             <p
               style={{
-                fontSize: "0.95rem",
+                fontSize: "0.96rem",
                 color: UI.textSoft,
                 opacity: 0.95,
-                maxWidth: 640,
+                maxWidth: 680,
                 lineHeight: 1.6,
-                marginTop: "0.8rem",
+                marginTop: "0.85rem",
               }}
             >
-              QARAQUTU is the single product for dispute-grade event verification for Vehicle, Drone, and Robot.
-              The main review station is the Verifier — a bounded assessment of the event package with recorded
-              evidence, derived assessment, verification trace, and artifact issuance. Golden is the internal quality
+              QARAQUTU is a verifier-first witness protocol for dispute-grade event packages across Vehicle, Drone, and
+              Robot. The Verifier is the main review station: a bounded assessment with recorded evidence, derived
+              assessment, verification trace, and artifact issuance. Golden is the internal quality
               bar and reference for the verifier, not a separate product or primary surface.
             </p>
             <div
               style={{
-                marginTop: "1.1rem",
+                marginTop: "0.95rem",
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: "0.5rem",
+                maxWidth: 700,
+              }}
+            >
+              {[
+                "Verifier is the primary surface",
+                "Recorded and derived stay separated",
+                "Trace supports review, not final truth",
+                "Issuance is protocol artifact, not blame",
+              ].map((line) => (
+                <div
+                  key={line}
+                  style={{
+                    borderRadius: 8,
+                    border: `1px solid ${UI.borderSoft}`,
+                    background: UI.panel,
+                    padding: "0.48rem 0.62rem",
+                    fontSize: "0.79rem",
+                    color: UI.textSoft,
+                  }}
+                >
+                  {line}
+                </div>
+              ))}
+            </div>
+            <div
+              style={{
+                marginTop: "1.05rem",
                 display: "flex",
                 flexWrap: "wrap",
                 gap: "0.75rem",
@@ -80,7 +113,7 @@ export default function LandingPage() {
                   padding: "0.55rem 1.2rem",
                   borderRadius: 999,
                   border: `1px solid ${UI.accent}`,
-                  background: "rgba(212, 86, 26, 0.10)",
+                  background: UI.accentSoft,
                   textDecoration: "none",
                   color: UI.text,
                   fontWeight: 600,
@@ -126,7 +159,7 @@ export default function LandingPage() {
                 marginBottom: "0.4rem",
               }}
             >
-              Event spine · three verticals
+              Event spine - three verticals
             </div>
             <p style={{ margin: 0, marginBottom: "0.5rem", lineHeight: 1.5 }}>
               Single product spine across Vehicle, Drone, and Robot. Recorded, derived, trace, and artifacts remain
@@ -138,180 +171,172 @@ export default function LandingPage() {
               <li>Verification trace ≠ truth itself</li>
               <li>Artifact issuance ≠ blame</li>
             </ul>
+            <div
+              style={{
+                marginTop: "0.7rem",
+                borderRadius: 8,
+                border: `1px dashed ${UI.border}`,
+                padding: "0.5rem 0.6rem",
+                fontSize: "0.77rem",
+                color: UI.textMuted,
+                lineHeight: 1.5,
+              }}
+            >
+              Protocol position: QARAQUTU preserves chain-of-review integrity; it does not act as a liability engine or
+              judicial substitute.
+            </div>
           </div>
         </section>
 
-        {/* Problem statement */}
+        {/* Problem + system */}
         <section
           style={{
-            marginBottom: "1.5rem",
-            borderRadius: 10,
-            border: `1px solid ${UI.border}`,
-            background: UI.panel,
-            padding: "1rem 1.1rem",
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+            gap: "1rem",
           }}
         >
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            The problem
-          </h2>
-          <ul style={{ fontSize: "0.85rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: UI.textSoft }}>
-            <li>
-              Incident review data is fragmented across logs, screenshots, and
-              exports.
-            </li>
-            <li>
-              Recorded facts and derived interpretations are often mixed
-              together.
-            </li>
-            <li>
-              Claims, legal, and technical teams rarely look at the same
-              canonical object.
-            </li>
-          </ul>
+          {/* Problem statement */}
+          <section
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "1rem 1.1rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>The problem</h2>
+            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: UI.textSoft, margin: 0 }}>
+              <li>Incident review data is fragmented across logs, captures, and exported files.</li>
+              <li>Recorded facts and derived interpretations are often collapsed into one narrative layer.</li>
+              <li>Claims, legal, and technical teams rarely anchor decisions on the same canonical object.</li>
+            </ul>
+          </section>
+
+          {/* Product system summary */}
+          <section
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panelRaised,
+              padding: "1rem 1.1rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Product system</h2>
+            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: UI.textSoft, margin: 0 }}>
+              <li>
+                <strong>Single product:</strong> one canonical event model across Vehicle, Drone, and Robot.
+              </li>
+              <li>
+                <strong>Verifier:</strong> primary review station with bounded protocol states, not liability judgement.
+              </li>
+              <li>
+                <strong>Golden:</strong> internal quality reference for verifier continuity, not an independent product.
+              </li>
+              <li>
+                <strong>Issuance family:</strong> role-aware claims/legal artifacts tied to receipts and manifest linkage.
+              </li>
+            </ul>
+          </section>
         </section>
 
-        {/* Product system summary */}
+        {/* Role-aware review + export family */}
         <section
           style={{
-            marginBottom: "1.5rem",
-            borderRadius: 10,
-            border: `1px solid ${UI.border}`,
-            background: UI.panel,
-            padding: "1rem 1.1rem",
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+            gap: "1rem",
           }}
         >
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Product system
-          </h2>
-          <ul style={{ fontSize: "0.85rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: UI.textSoft }}>
-            <li>
-              <strong>Single product</strong> — QARAQUTU; one canonical event
-              model across Vehicle, Drone, and Robot.
-            </li>
-            <li>
-              <strong>Verifier</strong> — the main review station; bounded
-              assessment of the event package; no liability or guilt
-              determinations.
-            </li>
-            <li>
-              <strong>Golden</strong> — internal quality bar and reference for the verifier; not a separate product or primary surface.
-            </li>
-            <li>
-              <strong>Role-based export family</strong> — claims and legal packs
-              tied to manifests and receipts for an auditable chain.
-            </li>
-          </ul>
-        </section>
-
-        {/* Role-aware review flow */}
-        <section
-          style={{
-            marginBottom: "1.5rem",
-            borderRadius: 10,
-            border: `1px solid ${UI.border}`,
-            background: UI.panel,
-            padding: "1rem 1.1rem",
-          }}
-        >
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Role-aware review flow
-          </h2>
-          <ul style={{ fontSize: "0.85rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: UI.textSoft }}>
-            <li>
-              <strong>Claims teams</strong> open a claims pack for a concise,
-              institution-ready view of an incident.
-            </li>
-            <li>
-              <strong>Legal reviewers</strong> open a legal pack focused on
-              chain, manifest, receipts, and provenance.
-            </li>
-            <li>
-              <strong>Technical reviewers</strong> work from the canonical event
-              and evidence separation visible in the console.
-            </li>
-          </ul>
-        </section>
-
-        {/* Export family summary */}
-        <section
-          style={{
-            marginBottom: "1.5rem",
-            borderRadius: 10,
-            border: `1px solid ${UI.border}`,
-            background: UI.panel,
-            padding: "1rem 1.1rem",
-          }}
-        >
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Export family
-          </h2>
-          <p style={{ fontSize: "0.85rem", opacity: 0.9, color: UI.textSoft }}>
-            The current export family includes:
-          </p>
-          <ul style={{ fontSize: "0.85rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: UI.textSoft }}>
-            <li>
-              <strong>Claims pack</strong> — claims-oriented JSON and PDF
-              exports.
-            </li>
-            <li>
-              <strong>Legal pack</strong> — legal-review oriented JSON and PDF
-              exports with explicit chain and provenance sections.
-            </li>
-          </ul>
+          <section
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "1rem 1.1rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Role-aware review flow</h2>
+            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: UI.textSoft, margin: 0 }}>
+              <li>
+                <strong>Claims</strong> receives concise dispute-ready summaries tied to canonical references.
+              </li>
+              <li>
+                <strong>Legal</strong> receives chain-centric artifacts with manifest, receipt, and provenance framing.
+              </li>
+              <li>
+                <strong>Technical</strong> remains anchored to the canonical event object and evidence separation.
+              </li>
+            </ul>
+          </section>
+          <section
+            style={{
+              borderRadius: 10,
+              border: `1px solid ${UI.border}`,
+              background: UI.panel,
+              padding: "1rem 1.1rem",
+            }}
+          >
+            <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Export family</h2>
+            <p style={{ fontSize: "0.84rem", opacity: 0.9, color: UI.textSoft, marginTop: 0, marginBottom: "0.45rem" }}>
+              Controlled artifact outputs remain role-bounded and trace-linked:
+            </p>
+            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: UI.textSoft, margin: 0 }}>
+              <li>
+                <strong>Claims pack:</strong> JSON/PDF artifact family for claims review posture.
+              </li>
+              <li>
+                <strong>Legal pack:</strong> JSON/PDF artifact family with explicit chain and provenance framing.
+              </li>
+            </ul>
+          </section>
         </section>
 
         {/* Verification summary */}
         <section
           style={{
-            marginBottom: "1.5rem",
             borderRadius: 10,
             border: `1px solid ${UI.border}`,
             background: UI.panel,
             padding: "1rem 1.1rem 1.1rem",
           }}
         >
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Verification
-          </h2>
-          <p style={{ fontSize: "0.85rem", opacity: 0.9, color: UI.textSoft }}>
-            Verification is framed as a bounded assessment of an event package.
-            In this version, verification state is one of PASS, FAIL, UNKNOWN,
-            or UNVERIFIED. It is not a liability engine, does not determine
-            guilt, and does not replace judicial or independent expert review.
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Verification</h2>
+          <p style={{ fontSize: "0.84rem", opacity: 0.9, color: UI.textSoft, margin: 0 }}>
+            Verification remains a bounded package assessment. States (PASS, FAIL, UNKNOWN, UNVERIFIED) represent review
+            posture, not judicial truth, not liability assignment, and not a substitute for independent legal or expert
+            judgement.
           </p>
         </section>
 
         {/* Surfaces + CTAs */}
         <section
           style={{
-            marginBottom: "1.5rem",
             borderRadius: 10,
             border: `1px solid ${UI.border}`,
             background: UI.panel,
             padding: "1rem 1.1rem 1.1rem",
           }}
         >
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
-            Product surfaces
-          </h2>
-          <ul style={{ fontSize: "0.85rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: UI.textSoft }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Product surfaces</h2>
+          <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: UI.textSoft, marginTop: 0 }}>
             <li>
-              <strong>Verifier</strong> — main review station; event selection,
-              recorded/derived evidence, unknown/disputed, verification trace,
-              artifact issuance; Vehicle, Drone, Robot. Primary product surface.
+              <strong>Verifier</strong> - primary review station; canonical event inspection and bounded verification
+              chain.
             </li>
             <li>
-              <strong>Golden</strong> — internal rubric and reference for the verifier; support surface, not a primary or separate product.
+              <strong>Golden</strong> - internal quality reference and rubric surface for verifier continuity; not a
+              separate primary product.
             </li>
             <li>
-              <strong>Console</strong> — reserved; canonical event review with recorded vs derived separation.
+              <strong>Console</strong> - reserved shell for controlled protocol shell preparation and future bounded
+              operator surface; not active execution.
             </li>
             <li>
-              <strong>Docs</strong> — protocol and API overview.
+              <strong>Docs</strong> - protocol and API framing for implementation alignment.
             </li>
             <li>
-              <strong>Admin / diagnostics</strong> — environment, smoke,
-              verification, and export activity.
+              <strong>Admin / diagnostics</strong> - diagnostics-only workbench for environment and verification health.
             </li>
           </ul>
           <div style={{ marginTop: "0.75rem", display: "flex", flexWrap: "wrap", gap: "0.6rem", fontSize: "0.8rem" }}>
@@ -320,10 +345,11 @@ export default function LandingPage() {
                 padding: "0.35rem 0.8rem",
                 borderRadius: 999,
                 border: `1px solid ${UI.border}`,
-                color: UI.textSoft,
+                color: UI.text,
+                background: UI.accentSoft,
               }}
             >
-              Verifier
+              Verifier (primary)
             </span>
             <span
               style={{
@@ -333,7 +359,7 @@ export default function LandingPage() {
                 color: UI.textSoft,
               }}
             >
-              Golden (reference)
+              Golden (internal reference)
             </span>
             <span
               style={{
@@ -343,7 +369,7 @@ export default function LandingPage() {
                 color: UI.textSoft,
               }}
             >
-              Console
+              Console (reserved preparation shell)
             </span>
             <span
               style={{
@@ -363,13 +389,20 @@ export default function LandingPage() {
                 color: UI.textSoft,
               }}
             >
-              Admin / diagnostics
+              Admin (diagnostics-only)
             </span>
           </div>
         </section>
 
         {/* Institutional notice */}
-        <section style={{ marginTop: "0.75rem", borderTop: `1px solid ${UI.border}`, paddingTop: "0.75rem" }}>
+        <section
+          style={{
+            marginTop: "0.4rem",
+            borderTop: `1px solid ${UI.border}`,
+            paddingTop: "0.85rem",
+            paddingBottom: "0.1rem",
+          }}
+        >
           <p style={{ fontSize: "0.75rem", opacity: 0.8, color: UI.textMuted, maxWidth: 820, lineHeight: 1.6 }}>
             QARAQUTU is a dispute-grade evidence system. It is not a liability
             engine, not a judicial decision system, and not a substitute for
