@@ -164,6 +164,17 @@ export function UstaPDemoTrigger({
   }, [playbackState, runNarration]);
 
   const isActive = playbackState === "playing" || playbackState === "paused" || playbackState === "stopped" || playbackState === "finishing";
+  const roleLabel =
+    selectedDomain === "vehicle"
+      ? "Claims reviewer"
+      : selectedDomain === "drone"
+      ? "Legal reviewer"
+      : "Technical reviewer";
+  const boundaryState = !hasCase
+    ? "Insufficient context"
+    : playbackState === "finishing"
+    ? "Human escalation recommended"
+    : "Bounded guidance active";
 
   return (
     <div
@@ -195,10 +206,56 @@ export function UstaPDemoTrigger({
             color: "#E5E7EB",
           }}
         >
-          Usta P
+          USTA P — bounded guidance layer
         </div>
-        <div style={{ fontSize: "0.65rem", opacity: 0.8, marginBottom: "0.25rem" }}>
-          {language === "tr" ? "Kontrollü anlatı tanık rehberi" : "Controlled narrative witness guide"}
+        <div style={{ fontSize: "0.65rem", opacity: 0.85, marginBottom: "0.35rem", lineHeight: 1.45 }}>
+          {language === "tr"
+            ? "Serbest sohbet değildir. Verifier yerine geçmez. Scope ister, eksik bağlamda sınır koyar, riskte escalation önerir."
+            : "Not free-form chat. Does not replace verifier. Requests scope, sets boundaries on missing context, and recommends escalation under risk."}
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem", marginBottom: "0.35rem" }}>
+          {["Bounded guidance", "Role-aware", "Trace-sensitive", "Escalation-literate"].map((pill) => (
+            <span
+              key={pill}
+              style={{
+                padding: "0.12rem 0.38rem",
+                border: "1px solid #374151",
+                borderRadius: 999,
+                fontSize: "0.6rem",
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+                color: "#CBD5E1",
+              }}
+            >
+              {pill}
+            </span>
+          ))}
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+            gap: "0.3rem",
+            marginBottom: "0.35rem",
+          }}
+        >
+          <div style={{ border: "1px solid #334155", borderRadius: 5, padding: "0.3rem 0.4rem", background: "#0B1325" }}>
+            <div style={{ fontSize: "0.58rem", color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Active role mode
+            </div>
+            <div style={{ fontSize: "0.67rem", color: "#E5E7EB", marginTop: "0.15rem" }}>{roleLabel}</div>
+          </div>
+          <div style={{ border: "1px solid #334155", borderRadius: 5, padding: "0.3rem 0.4rem", background: "#0B1325" }}>
+            <div style={{ fontSize: "0.58rem", color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Boundary state
+            </div>
+            <div style={{ fontSize: "0.67rem", color: "#E5E7EB", marginTop: "0.15rem" }}>{boundaryState}</div>
+          </div>
+        </div>
+        <div style={{ fontSize: "0.6rem", opacity: 0.82, marginBottom: "0.25rem", color: "#94A3B8", lineHeight: 1.45 }}>
+          {language === "tr"
+            ? "Review yapmaz, execution başlatmaz, diagnostics izlemez. Yalnızca sonraki bounded adımı netleştirir."
+            : "Does not perform review, launch execution, or monitor diagnostics. It only clarifies the next bounded step."}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem", alignItems: "center" }}>
           {(Object.keys(USTA_P_SCRIPTS) as UstaPScenarioId[]).map((id) => (
@@ -235,7 +292,7 @@ export function UstaPDemoTrigger({
           </label>
         </div>
         <div style={{ fontSize: "0.65rem", opacity: 0.85, marginTop: "0.25rem", marginBottom: "0.2rem" }}>
-          {language === "tr" ? "Tetikler (Prompt Pack v1):" : "Triggers (Prompt Pack v1):"}
+          {language === "tr" ? "Guidance modes (Prompt Pack v1):" : "Guidance modes (Prompt Pack v1):"}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem", alignItems: "center" }}>
           {USTA_TRIGGERS.map((t) => (
@@ -258,6 +315,11 @@ export function UstaPDemoTrigger({
             </button>
           ))}
         </div>
+        <div style={{ fontSize: "0.6rem", color: "#94A3B8", marginTop: "0.28rem", lineHeight: 1.45 }}>
+          {language === "tr"
+            ? "Insufficient context -> context ister. High-risk ambiguity -> insan review'e yönlendirir."
+            : "Insufficient context -> asks for context. High-risk ambiguity -> routes to human review."}
+        </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem", marginTop: "0.35rem", alignItems: "center" }}>
           <button
             type="button"
@@ -273,7 +335,7 @@ export function UstaPDemoTrigger({
               fontSize: "0.7rem",
             }}
           >
-            Oynat
+            {language === "tr" ? "Run script" : "Run script"}
           </button>
           <button
             type="button"
@@ -290,7 +352,7 @@ export function UstaPDemoTrigger({
               opacity: playbackState === "playing" ? 1 : 0.5,
             }}
           >
-            Bekle
+            {language === "tr" ? "Pause" : "Pause"}
           </button>
           <button
             type="button"
@@ -307,7 +369,7 @@ export function UstaPDemoTrigger({
               opacity: playbackState === "paused" || playbackState === "stopped" ? 1 : 0.5,
             }}
           >
-            Devam et
+            {language === "tr" ? "Resume" : "Resume"}
           </button>
           <button
             type="button"
@@ -324,7 +386,7 @@ export function UstaPDemoTrigger({
               opacity: playbackState === "playing" || playbackState === "paused" ? 1 : 0.5,
             }}
           >
-            Sessiz kal
+            {language === "tr" ? "Silence" : "Silence"}
           </button>
           <button
             type="button"
@@ -341,7 +403,7 @@ export function UstaPDemoTrigger({
               opacity: isActive ? 1 : 0.5,
             }}
           >
-            Yeniden başla
+            {language === "tr" ? "Restart" : "Restart"}
           </button>
           <button
             type="button"
@@ -358,7 +420,7 @@ export function UstaPDemoTrigger({
               opacity: isActive ? 1 : 0.5,
             }}
           >
-            Bitir
+            {language === "tr" ? "Escalate close" : "Escalate close"}
           </button>
         </div>
         {isActive && (
@@ -390,7 +452,7 @@ export function UstaPDemoTrigger({
           {triggerResponse !== null ? (
             <>
               <div style={{ opacity: 0.7, marginBottom: "0.35rem" }}>
-                {language === "tr" ? "USTA yanıtı" : "USTA response"}
+                {language === "tr" ? "USTA guidance response" : "USTA guidance response"}
               </div>
               <p style={{ margin: 0, lineHeight: 1.5 }}>{triggerResponse}</p>
               <button
@@ -409,7 +471,7 @@ export function UstaPDemoTrigger({
                   cursor: "pointer",
                 }}
               >
-                Kapat
+                {language === "tr" ? "Close" : "Close"}
               </button>
             </>
           ) : showingClosing ? (
@@ -424,7 +486,7 @@ export function UstaPDemoTrigger({
           ) : (
             <>
               <div style={{ opacity: 0.7, marginBottom: "0.35rem" }}>
-                {selectedScript.labelTr} — {language === "tr" ? "metin" : "script"}
+                {selectedScript.labelTr} — {language === "tr" ? "bounded script" : "bounded script"}
               </div>
               {segments.map((seg, i) => (
                 <p
@@ -455,7 +517,7 @@ export function UstaPDemoTrigger({
               cursor: "pointer",
             }}
           >
-            Kapat
+            {language === "tr" ? "Close panel" : "Close panel"}
           </button>
         </div>
       )}
