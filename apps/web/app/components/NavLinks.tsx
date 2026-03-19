@@ -16,13 +16,13 @@ const UI = {
   activeBg: "rgba(26, 45, 74, 0.35)",
 } as const;
 
-const ROUTES: { href: string; label: string; verifierPrimary?: boolean }[] = [
+const ROUTES: { href: string; label: string; verifierPrimary?: boolean; protected?: boolean }[] = [
   { href: "/", label: "Landing" },
   { href: "/verifier", label: "Verifier", verifierPrimary: true },
-  { href: "/verifier/golden", label: "Golden (internal)" },
-  { href: "/console", label: "Console (protected)" },
+  { href: "/verifier/golden", label: "Golden (internal)", protected: true },
+  { href: "/console", label: "Console (protected)", protected: true },
   { href: "/docs", label: "Docs" },
-  { href: "/admin", label: "Admin (protected)" },
+  { href: "/admin", label: "Admin (protected)", protected: true },
 ];
 
 export function NavLinks() {
@@ -30,7 +30,7 @@ export function NavLinks() {
 
   return (
     <>
-      {ROUTES.map(({ href, label, verifierPrimary }) => {
+      {ROUTES.map(({ href, label, verifierPrimary, protected: isProtected }) => {
         const isActive =
           href === "/"
             ? pathname === "/"
@@ -38,11 +38,12 @@ export function NavLinks() {
             ? pathname === "/verifier"
             : pathname === href || (href !== "/" && pathname.startsWith(href + "/"));
         const isVerifierActive = href === "/verifier" && pathname === "/verifier";
+        const linkHref = isProtected ? `/access?next=${encodeURIComponent(href)}` : href;
 
         return (
           <Link
             key={href}
-            href={href}
+            href={linkHref}
             style={{
               color: isVerifierActive ? UI.text : isActive ? UI.textSoft : UI.textMuted,
               textDecoration: "none",
