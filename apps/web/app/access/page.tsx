@@ -84,11 +84,10 @@ export default function AccessPage({
             Access gate
           </div>
           <h1 style={{ fontSize: "1.35rem", margin: 0, marginBottom: "0.55rem" }}>
-            Protected access
+            Authorized access required
           </h1>
           <p style={{ fontSize: "0.86rem", color: UI.textSoft, margin: 0, lineHeight: 1.65, maxWidth: 720 }}>
-            QARAQUTU’s admin, console, and issuance surfaces are intentionally bounded. Enter an authorized access token to
-            continue.
+            QARAQUTU’s protected surfaces are intentionally bounded. Enter an authorized access token to continue.
           </p>
         </div>
 

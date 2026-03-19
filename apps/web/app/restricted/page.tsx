@@ -33,8 +33,8 @@ export default async function RestrictedPage({
 
   const surfaceLabel: Record<string, string> = {
     admin: "Admin diagnostics workbench",
-    console: "Console protocol shell",
-    golden: "Golden acceptance view",
+    console: "Console controlled shell preparation",
+    golden: "Golden internal reference view",
     "admin-diagnostics": "Admin diagnostics API",
     "artifact-issuance": "Artifact issuance",
     "artifact-download": "Artifact download",
@@ -130,8 +130,8 @@ export default async function RestrictedPage({
           </div>
 
           <p style={{ marginTop: "0.9rem", marginBottom: 0, fontSize: "0.78rem", color: UI.textMuted, lineHeight: 1.6 }}>
-            Note: “restricted” means access-controlled, not “missing” or “broken”. If you believe you should have access,
-            use the access gate and re-enter with authorized credentials.
+            Note: “restricted” means protected and access-controlled, not “missing” or “broken”. If you believe you
+            should have access, use the access gate and re-enter with authorized credentials.
           </p>
         </div>
       </div>

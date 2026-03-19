@@ -20,9 +20,9 @@ const ROUTES: { href: string; label: string; verifierPrimary?: boolean }[] = [
   { href: "/", label: "Landing" },
   { href: "/verifier", label: "Verifier", verifierPrimary: true },
   { href: "/verifier/golden", label: "Golden (internal)" },
-  { href: "/console", label: "Console (restricted)" },
+  { href: "/console", label: "Console (protected)" },
   { href: "/docs", label: "Docs" },
-  { href: "/admin", label: "Admin (restricted)" },
+  { href: "/admin", label: "Admin (protected)" },
 ];
 
 export function NavLinks() {

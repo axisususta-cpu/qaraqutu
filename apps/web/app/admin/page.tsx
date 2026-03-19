@@ -125,27 +125,6 @@ export default async function AdminPage() {
     );
   }
 
-  const totalVerifications = diagnostics.recent_verifications?.length ?? 0;
-  const verificationStates =
-    diagnostics.recent_verifications?.reduce<Record<string, number>>((acc, v) => {
-      const key = v.verification_state || "UNKNOWN";
-      acc[key] = (acc[key] ?? 0) + 1;
-      return acc;
-    }, {}) ?? {};
-
-  const latestSmokeLabel =
-    diagnostics.latest_smoke_run?.overall_result && diagnostics.latest_smoke_run?.environment
-      ? `${diagnostics.latest_smoke_run.overall_result} · ${diagnostics.latest_smoke_run.environment}`
-      : null;
-
-  const totalExports = diagnostics.recent_exports?.length ?? 0;
-  const exportProfiles =
-    diagnostics.recent_exports?.reduce<Record<string, number>>((acc, e) => {
-      const key = e.profile || "unknown";
-      acc[key] = (acc[key] ?? 0) + 1;
-      return acc;
-    }, {}) ?? {};
-
   return (
     <div
       style={{
