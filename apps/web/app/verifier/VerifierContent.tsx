@@ -18,7 +18,6 @@ import {
   getArtifactProfile,
   getArtifactProfilesForDomain,
 } from "../../lib/artifact-profiles";
-import { UstaPDemoTrigger } from "./UstaPDemoTrigger";
 
 const DEFAULT_API_BASE =
   process.env.NODE_ENV === "production"
@@ -823,6 +822,74 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               ? "Seçili olay paketinin sınırlı değerlendirmesi. Sorumluluk veya kusur tespiti yapmaz."
               : "Bounded assessment of the selected event package. Does not make liability or guilt determinations."}
           </p>
+          <div
+            style={{
+              marginTop: "0.65rem",
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "0.35rem",
+              fontSize: "0.7rem",
+            }}
+          >
+            {[
+              language === "tr" ? "Sıra: 1) Sistem 2) Senaryo 3) Olay" : "Order: 1) System 2) Scenario 3) Event",
+              language === "tr" ? "Katman: Recorded ayrı, Derived ayrı" : "Layering: Recorded separate, Derived separate",
+              language === "tr"
+                ? "Bilinmeyen/Tartışmalı ve Trace issuance üstüne yazılmaz"
+                : "Unknown/Disputed and Trace are not overridden by issuance",
+            ].map((item) => (
+              <span
+                key={item}
+                style={{
+                  border: `1px solid ${UI.borderMuted}`,
+                  borderRadius: UI.radius.pill,
+                  padding: "0.14rem 0.5rem",
+                  color: UI.textMuted,
+                  background: UI.panelCard,
+                }}
+              >
+                {item}
+              </span>
+            ))}
+          </div>
+          <div
+            style={{
+              marginTop: "0.5rem",
+              padding: "0.45rem 0.6rem",
+              borderRadius: UI.radius.xs,
+              border: `1px solid ${UI.borderMuted}`,
+              background: UI.panelCard,
+              display: "grid",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              gap: "0.4rem",
+              fontSize: "0.72rem",
+            }}
+          >
+            <div>
+              <div style={{ fontFamily: MONO, color: UI.textDim, fontSize: "0.58rem", letterSpacing: "0.08em" }}>
+                {language === "tr" ? "SEÇİLİ SİSTEM" : "SELECTED SYSTEM"}
+              </div>
+              <div style={{ color: UI.textSoft, fontWeight: 600 }}>{selectedSystem.toUpperCase()}</div>
+            </div>
+            <div>
+              <div style={{ fontFamily: MONO, color: UI.textDim, fontSize: "0.58rem", letterSpacing: "0.08em" }}>
+                {language === "tr" ? "SEÇİLİ SENARYO" : "SELECTED SCENARIO"}
+              </div>
+              <div style={{ color: UI.textSoft, fontWeight: 600 }}>
+                {selectedCase?.scenarioFrame ??
+                  selectedScenario ??
+                  (language === "tr" ? "Seçilmedi" : "Not selected")}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontFamily: MONO, color: UI.textDim, fontSize: "0.58rem", letterSpacing: "0.08em" }}>
+                {language === "tr" ? "SEÇİLİ OLAY" : "SELECTED EVENT"}
+              </div>
+              <div style={{ color: UI.textSoft, fontWeight: 600 }}>
+                {selectedEventCard?.eventId ?? (language === "tr" ? "Seçilmedi" : "Not selected")}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -3046,12 +3113,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           </main>
         </div>
       </div>
-      <UstaPDemoTrigger
-        language={language}
-        defaultScenario="togg"
-        selectedDomain={selectedSystem}
-        hasCase={!!selectedCase}
-      />
     </div>
   );
 }

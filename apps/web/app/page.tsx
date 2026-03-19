@@ -333,10 +333,6 @@ export default function LandingPage() {
               operator surface; not active execution.
             </li>
             <li>
-              <strong>USTA P</strong> - bounded guidance layer; role-aware prompts that request scope, mark uncertainty,
-              and recommend escalation when context is insufficient.
-            </li>
-            <li>
               <strong>Docs</strong> - protocol and API framing for implementation alignment.
             </li>
             <li>
@@ -374,16 +370,6 @@ export default function LandingPage() {
               }}
             >
               Console (reserved preparation shell)
-            </span>
-            <span
-              style={{
-                padding: "0.35rem 0.8rem",
-                borderRadius: 999,
-                border: `1px solid ${UI.border}`,
-                color: UI.textSoft,
-              }}
-            >
-              USTA P (bounded guidance)
             </span>
             <span
               style={{

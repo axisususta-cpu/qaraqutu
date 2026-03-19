@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { UstaPDemoTrigger } from "../UstaPDemoTrigger";
 import {
   CANONICAL_CASES,
   evaluateGoldenAcceptance,
@@ -40,7 +39,6 @@ export default function VerifierGoldenPage() {
         fontFamily: SANS,
       }}
     >
-      <UstaPDemoTrigger defaultScenario="unitree" language="tr" emphasizeForDemo />
       <div style={{ maxWidth: 720, margin: "0 auto" }}>
         <div
           style={{
@@ -126,7 +124,7 @@ export default function VerifierGoldenPage() {
             }}
           >
             <p style={{ margin: "0 0 0.5rem" }}>
-              <strong>Dimensions:</strong> Framing discipline · Recorded integrity · Derived discipline · Uncertainty honesty · Verification trace quality · Artifact control · USTA discipline · AXISUS presence · Inevitability strike.
+              <strong>Dimensions:</strong> Framing discipline · Recorded integrity · Derived discipline · Uncertainty honesty · Verification trace quality · Artifact control · AXISUS presence · Inevitability strike.
             </p>
             <p style={{ margin: 0 }}>
               <strong>Bands:</strong> 90–100 = golden-grade; 80–89 = acceptable, polish needed; 70–79 = usable, not reference; 0–69 = reject/rework. Hard-fail if recorded/derived merged, final blame language, or Golden presented as separate product.
@@ -207,10 +205,6 @@ export default function VerifierGoldenPage() {
             Open Verifier →
           </Link>
         </div>
-        <p style={{ fontSize: "0.75rem", opacity: 0.8, color: UI.textMuted }}>
-          Usta P (controlled narrative witness guide) is available in the top-right
-          guidance.
-        </p>
       </div>
     </div>
   );
