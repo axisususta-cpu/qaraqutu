@@ -6,6 +6,7 @@ import { LogoPrimary } from "./components/LogoPrimary";
 import { BRAND } from "../lib/brand";
 
 export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://qaraqutu-web.vercel.app"),
   title: "QARAQUTU",
   description: BRAND.description,
   icons: {
@@ -16,6 +17,12 @@ export const metadata = {
     title: "QARAQUTU",
     description: BRAND.description,
     type: "website",
+    images: [{ url: "/brand/og-image.svg", width: 1200, height: 630, alt: "QARAQUTU" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "QARAQUTU",
+    description: BRAND.description,
   },
   manifest: "/manifest.json",
 };

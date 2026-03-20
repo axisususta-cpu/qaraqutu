@@ -11,7 +11,7 @@ export const BRAND = {
     "Verifier-first witness protocol for dispute-grade event packages across Vehicle, Drone, and Robot.",
 } as const;
 
-/** Asset paths — replace with final assets when available. */
+/** Asset paths — QARAQUTU logo family. */
 export const BRAND_PATHS = {
   /** Primary horizontal logo — header, hero, footer, deck/OG. */
   primaryLogo: "/brand/logo-primary.svg",
@@ -19,6 +19,8 @@ export const BRAND_PATHS = {
   iconMark: "/brand/logo-icon.svg",
   /** Seal/protocol badge — report seal, artifact badge, PDF cover, verification stamp. */
   seal: "/brand/seal.svg",
+  /** OG/social preview — 1200×630. */
+  ogImage: "/brand/og-image.svg",
 } as const;
 
 /** Color tokens — canonical. */

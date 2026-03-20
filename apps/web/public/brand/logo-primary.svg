@@ -1,3 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 32" fill="none" role="img" aria-label="QARAQUTU">
-  <text x="0" y="24" font-family="'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, monospace" font-size="18" font-weight="600" letter-spacing="0.12em" fill="#e8eef8">QARAQUTU</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 36" fill="none" role="img" aria-label="QARAQUTU">
+  <!-- Geometric Q mark -->
+  <g transform="translate(0, 4)">
+    <circle cx="14" cy="14" r="12" fill="none" stroke="#D4561A" stroke-width="2"/>
+    <path d="M20 20 L26 26" stroke="#D4561A" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="36" y="26" font-family="'JetBrains Mono', 'Fira Code', 'Cascadia Code', Menlo, monospace" font-size="16" font-weight="600" letter-spacing="0.14em" fill="#e8eef8">QARAQUTU</text>
 </svg>

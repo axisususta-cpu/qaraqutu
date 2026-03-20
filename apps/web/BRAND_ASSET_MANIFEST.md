@@ -1,14 +1,15 @@
 # QARAQUTU Brand Asset Manifest
 
-Replace placeholder SVGs with final assets. Code expects these paths.
+QARAQUTU logo family — protocol-grade SVGs. Paths wired in code.
 
-## Required Assets
+## Assets (Current)
 
-| Path | Usage | Min Size | Notes |
-|------|-------|----------|-------|
-| `public/brand/logo-primary.svg` | Header, hero, footer, docs, deck, OG | 120×32 min | Horizontal mark |
-| `public/brand/logo-icon.svg` | Favicon, app icon, small avatar | 32×32 | Square mark |
-| `public/brand/seal.svg` | Report seal, artifact badge, PDF cover | 48×48 | Protocol stamp |
+| Path | Usage | Notes |
+|------|-------|-------|
+| `public/brand/logo-primary.svg` | Header, hero, footer, docs | Geometric Q + wordmark |
+| `public/brand/logo-icon.svg` | Favicon, app icon, small avatar | Square mark |
+| `public/brand/seal.svg` | Report seal, artifact badge, PDF cover | Protocol stamp |
+| `public/brand/og-image.svg` | OG/social preview | 1200×630 |
 
 ## Favicon / App Icon
 

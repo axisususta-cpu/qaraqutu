@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none" role="img">
+  <rect width="1200" height="630" fill="#060d1a"/>
+  <g transform="translate(600, 315)">
+    <circle cx="0" cy="-8" r="24" fill="none" stroke="#D4561A" stroke-width="3"/>
+    <path d="M14 6 L24 16" stroke="#D4561A" stroke-width="3" stroke-linecap="round"/>
+    <text x="0" y="52" font-family="'JetBrains Mono', monospace" font-size="32" font-weight="600" letter-spacing="0.2em" fill="#e8eef8" text-anchor="middle">QARAQUTU</text>
+    <text x="0" y="88" font-family="'JetBrains Mono', monospace" font-size="14" letter-spacing="0.2em" fill="#7a95b8" text-anchor="middle">WITNESS · VERIFIER · TRACE · ISSUANCE</text>
+  </g>
+</svg>
