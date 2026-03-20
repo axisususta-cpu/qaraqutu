@@ -4,6 +4,7 @@ import { VerticalsDiagram } from "./components/diagrams/VerticalsDiagram";
 import { CanonicalSpineDiagram } from "./components/diagrams/CanonicalSpineDiagram";
 import { EvidenceLayerDiagram } from "./components/diagrams/EvidenceLayerDiagram";
 import { RoleExportDiagram } from "./components/diagrams/RoleExportDiagram";
+import { InstitutionalUseFamilies } from "./components/institutional/InstitutionalUseFamilies";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
@@ -276,6 +277,23 @@ export default function LandingPage() {
               </li>
             </ul>
           </section>
+        </section>
+
+        {/* Institutional use families */}
+        <section
+          style={{
+            borderRadius: 10,
+            border: `1px solid ${UI.border}`,
+            background: UI.panel,
+            padding: "1rem 1.1rem",
+          }}
+        >
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Institutional use families</h2>
+          <p style={{ fontSize: "0.84rem", opacity: 0.9, color: UI.textSoft, marginTop: 0, marginBottom: "0.75rem" }}>
+            One canonical event core, many institutional shells. The same event spine is preserved; only priority,
+            visibility, and document recommendation vary by role.
+          </p>
+          <InstitutionalUseFamilies />
         </section>
 
         {/* Verification summary */}

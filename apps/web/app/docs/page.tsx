@@ -1,6 +1,8 @@
 "use client";
 
 import { LogoPrimary } from "../components/LogoPrimary";
+import { RoleDocumentMapping } from "../components/institutional/RoleDocumentMapping";
+import { DocumentFamilyRoleMatrix } from "../components/institutional/DocumentFamilyRoleMatrix";
 
 export default function DocsPage() {
   return (
@@ -139,12 +141,17 @@ export default function DocsPage() {
             Receipt ID, Version, Recorded, Derived, Unknown/Disputed, Trace, Issuance) is preserved. Only priority order,
             visibility weight, document recommendation, and shell layout vary by role.
           </p>
+          <div style={{ marginBottom: "1rem" }}>
+            <RoleDocumentMapping />
+          </div>
+          <div style={{ marginBottom: "1rem" }}>
+            <DocumentFamilyRoleMatrix />
+          </div>
           <p style={{ fontSize: "0.85rem", opacity: 0.85, marginBottom: "0.5rem" }}>
-            Institutional roles (clerk/intake, field, administrative, notary, legal, claims, technical, oversight) each
-            have a preferred document family and information ordering. Trace-linked document families (Incident Report,
-            Verification Summary, Trace Appendix, Claims Pack, Legal Pack, Technical Pack, Administrative Packet,
-            Authenticity Receipt) map to these roles. Authenticity, receipt, and version visibility remain explicit
-            across all shells.
+            Each role has a primary review priority, preferred document family, and forbidden conflation note. Trace-linked
+            document families (Incident Report, Verification Summary, Trace Appendix, Claims Pack, Legal Pack, Technical Pack,
+            Administrative Packet, Authenticity Receipt) map to these roles. Authenticity, receipt, and version visibility
+            remain explicit across all shells.
           </p>
           <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
             Role-based shells are a structural framework. Backend role switching is not yet implemented; the Verifier
