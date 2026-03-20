@@ -1,5 +1,7 @@
 "use client";
 
+import { LogoPrimary } from "../components/LogoPrimary";
+
 export default function DocsPage() {
   return (
     <div
@@ -11,6 +13,9 @@ export default function DocsPage() {
       }}
     >
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
+        <div style={{ marginBottom: "1.25rem" }}>
+          <LogoPrimary href="/" height={28} />
+        </div>
         <h1 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>
           QARAQUTU Docs / API
         </h1>
@@ -96,6 +101,33 @@ export default function DocsPage() {
             liability determination, guilt finding, or judicial decision; it is
             an integrity and linkage assessment over the evidence package.
           </p>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            Document / artifact family
+          </h2>
+          <p style={{ fontSize: "0.85rem", opacity: 0.85, marginBottom: "0.5rem" }}>
+            Shared design system for protocol-grade evidence documents. Doctrine preserved:
+            Recorded, Derived, Unknown/Disputed, Trace, Issuance — each in separate sections.
+          </p>
+          <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
+            <li>
+              <strong>Incident / Event Report</strong> — canonical event with metadata, document ID, linkage.
+            </li>
+            <li>
+              <strong>Verification Summary</strong> — bounded assessment, trace reference.
+            </li>
+            <li>
+              <strong>Trace Appendix</strong> — verification steps, not truth itself.
+            </li>
+            <li>
+              <strong>Role-based Export</strong> — claims pack, legal pack, technical pack.
+            </li>
+            <li>
+              Cover / seal / stamp layer — protocol mark, not primary logo.
+            </li>
+          </ul>
         </section>
 
         <section style={{ marginBottom: "1.5rem" }}>

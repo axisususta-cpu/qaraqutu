@@ -1,4 +1,9 @@
 import Link from "next/link";
+import { LogoPrimary } from "./components/LogoPrimary";
+import { VerticalsDiagram } from "./components/diagrams/VerticalsDiagram";
+import { CanonicalSpineDiagram } from "./components/diagrams/CanonicalSpineDiagram";
+import { EvidenceLayerDiagram } from "./components/diagrams/EvidenceLayerDiagram";
+import { RoleExportDiagram } from "./components/diagrams/RoleExportDiagram";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
@@ -38,6 +43,9 @@ export default function LandingPage() {
           }}
         >
           <div>
+            <div style={{ marginBottom: "0.6rem" }}>
+              <LogoPrimary href="/" height={32} />
+            </div>
             <div
               style={{
                 fontSize: "0.8rem",
@@ -48,7 +56,7 @@ export default function LandingPage() {
                 fontFamily: MONO,
               }}
             >
-              QARAQUTU - Witness protocol
+              Witness protocol
             </div>
             <h1 style={{ fontSize: "2.05rem", margin: 0, lineHeight: 1.2 }}>
               One product. Verifier-first. Three verticals.
@@ -138,42 +146,11 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
-          <div
-            style={{
-              borderRadius: 12,
-              border: `1px solid ${UI.border}`,
-              background:
-                "radial-gradient(circle at top left, rgba(212,86,26,0.16), transparent 55%), #0a1628",
-              padding: "0.9rem 1rem 1rem",
-              fontSize: "0.8rem",
-              color: UI.textSoft,
-            }}
-          >
+          <div>
+            <VerticalsDiagram />
             <div
               style={{
-                fontSize: "0.78rem",
-                textTransform: "uppercase",
-                letterSpacing: "0.16em",
-                color: UI.textMuted,
-                fontFamily: MONO,
-                marginBottom: "0.4rem",
-              }}
-            >
-              Event spine - three verticals
-            </div>
-            <p style={{ margin: 0, marginBottom: "0.5rem", lineHeight: 1.5 }}>
-              Single product spine across Vehicle, Drone, and Robot. Recorded, derived, trace, and artifacts remain
-              separated and explicitly framed.
-            </p>
-            <ul style={{ margin: 0, paddingLeft: "1.1rem", lineHeight: 1.5 }}>
-              <li>Recorded ≠ Derived</li>
-              <li>Derived ≠ Verdict</li>
-              <li>Verification trace ≠ truth itself</li>
-              <li>Artifact issuance ≠ blame</li>
-            </ul>
-            <div
-              style={{
-                marginTop: "0.7rem",
+                marginTop: "0.75rem",
                 borderRadius: 8,
                 border: `1px dashed ${UI.border}`,
                 padding: "0.5rem 0.6rem",
@@ -223,6 +200,9 @@ export default function LandingPage() {
             }}
           >
             <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Product system</h2>
+            <div style={{ marginBottom: "0.75rem" }}>
+              <CanonicalSpineDiagram />
+            </div>
             <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: UI.textSoft, margin: 0 }}>
               <li>
                 <strong>Single product:</strong> one canonical event model across Vehicle, Drone, and Robot.
@@ -257,6 +237,9 @@ export default function LandingPage() {
             }}
           >
             <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Role-aware review flow</h2>
+            <div style={{ marginBottom: "0.75rem" }}>
+              <RoleExportDiagram />
+            </div>
             <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: UI.textSoft, margin: 0 }}>
               <li>
                 <strong>Claims</strong> receives concise dispute-ready summaries tied to canonical references.
@@ -277,7 +260,10 @@ export default function LandingPage() {
               padding: "1rem 1.1rem",
             }}
           >
-            <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Export family</h2>
+            <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Evidence layer discipline</h2>
+            <div style={{ marginBottom: "0.75rem" }}>
+              <EvidenceLayerDiagram />
+            </div>
             <p style={{ fontSize: "0.84rem", opacity: 0.9, color: UI.textSoft, marginTop: 0, marginBottom: "0.45rem" }}>
               Controlled artifact outputs remain role-bounded and trace-linked:
             </p>

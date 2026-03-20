@@ -1,0 +1,17 @@
+{
+  "name": "QARAQUTU",
+  "short_name": "QARAQUTU",
+  "description": "Verifier-first witness protocol for dispute-grade event packages across Vehicle, Drone, and Robot.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060d1a",
+  "theme_color": "#060d1a",
+  "icons": [
+    {
+      "src": "/brand/logo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -2,9 +2,22 @@ import "./globals.css";
 import React from "react";
 import { webBuildMeta } from "./build-meta";
 import { NavLinks } from "./components/NavLinks";
+import { LogoPrimary } from "./components/LogoPrimary";
+import { BRAND } from "../lib/brand";
 
 export const metadata = {
   title: "QARAQUTU",
+  description: BRAND.description,
+  icons: {
+    icon: "/brand/logo-icon.svg",
+    apple: "/brand/logo-icon.svg",
+  },
+  openGraph: {
+    title: "QARAQUTU",
+    description: BRAND.description,
+    type: "website",
+  },
+  manifest: "/manifest.json",
 };
 
 // Match verifier typography and surface tokens (local copy, no shared import).
@@ -58,21 +71,11 @@ export default function RootLayout({
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: 2,
+                gap: 4,
+                alignItems: "flex-start",
               }}
             >
-              <div
-                style={{
-                  fontSize: "0.9rem",
-                  fontWeight: 600,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  fontFamily: MONO,
-                }}
-                title={`${webBuildMeta.app} @ ${shortSha} · ${webBuildMeta.buildTime}`}
-              >
-                QARAQUTU
-              </div>
+              <LogoPrimary href="/" height={26} />
               <div
                 style={{
                   fontSize: "0.7rem",
@@ -81,7 +84,7 @@ export default function RootLayout({
                   textTransform: "uppercase",
                 }}
               >
-                Witness · Verifier · Trace · Issuance
+                {BRAND.tagline}
               </div>
             </div>
             <nav
@@ -100,15 +103,20 @@ export default function RootLayout({
         {children}
         <footer
           style={{
-            padding: "0.45rem 2rem 0.7rem",
+            padding: "0.6rem 2rem 0.8rem",
             fontSize: "0.68rem",
             color: UI.textMuted,
-            textAlign: "right",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "0.5rem",
             letterSpacing: "0.04em",
             borderTop: `1px solid ${UI.borderSoft}`,
             marginTop: "0.5rem",
           }}
         >
+          <LogoPrimary href="/" height={20} />
           <span
             style={{ fontFamily: MONO }}
             title={`${webBuildMeta.app} @ ${gitCommitSha} · ${webBuildMeta.buildTime}`}
