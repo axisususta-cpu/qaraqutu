@@ -7,21 +7,21 @@ import { BRAND } from "../lib/brand";
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://qaraqutu-web.vercel.app"),
-  title: "QARAQUTU",
+  title: "QARAQUTU — Verifier-first witness protocol",
   description: BRAND.description,
   icons: {
     icon: "/brand/logo-icon.svg",
     apple: "/brand/logo-icon.svg",
   },
   openGraph: {
-    title: "QARAQUTU",
+    title: "QARAQUTU — Verifier-first witness protocol",
     description: BRAND.description,
     type: "website",
     images: [{ url: "/brand/og-image.svg", width: 1200, height: 630, alt: "QARAQUTU" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "QARAQUTU",
+    title: "QARAQUTU — Verifier-first witness protocol",
     description: BRAND.description,
   },
   manifest: "/manifest.json",
@@ -67,7 +67,7 @@ export default function RootLayout({
             style={{
               maxWidth: 1100,
               margin: "0 auto",
-              padding: "0.75rem 2rem",
+              padding: "0.85rem 2rem",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -78,17 +78,18 @@ export default function RootLayout({
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: 4,
+                gap: 6,
                 alignItems: "flex-start",
               }}
             >
-              <LogoPrimary href="/" height={26} />
+              <LogoPrimary href="/" height={28} />
               <div
                 style={{
-                  fontSize: "0.7rem",
+                  fontSize: "0.68rem",
                   color: UI.textMuted,
-                  letterSpacing: "0.12em",
+                  letterSpacing: "0.14em",
                   textTransform: "uppercase",
+                  fontFamily: MONO,
                 }}
               >
                 {BRAND.tagline}
@@ -110,20 +111,21 @@ export default function RootLayout({
         {children}
         <footer
           style={{
-            padding: "0.6rem 2rem 0.8rem",
-            fontSize: "0.68rem",
+            padding: "0.7rem 2rem 0.9rem",
+            fontSize: "0.66rem",
             color: UI.textMuted,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             flexWrap: "wrap",
-            gap: "0.5rem",
-            letterSpacing: "0.04em",
+            gap: "0.6rem",
+            letterSpacing: "0.05em",
             borderTop: `1px solid ${UI.borderSoft}`,
             marginTop: "0.5rem",
+            background: "rgba(5, 11, 22, 0.4)",
           }}
         >
-          <LogoPrimary href="/" height={20} />
+          <LogoPrimary href="/" height={18} />
           <span
             style={{ fontFamily: MONO }}
             title={`${webBuildMeta.app} @ ${gitCommitSha} · ${webBuildMeta.buildTime}`}

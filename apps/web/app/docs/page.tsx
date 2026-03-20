@@ -11,19 +11,19 @@ export default function DocsPage() {
         minHeight: "100vh",
         background: "#020617",
         color: "#E5E7EB",
-        padding: "1.5rem 2rem",
+        padding: "1.75rem 2rem",
       }}
     >
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
-        <div style={{ marginBottom: "1.25rem" }}>
+        <div style={{ marginBottom: "1.5rem" }}>
           <LogoPrimary href="/" height={28} />
         </div>
-        <h1 style={{ fontSize: "1.4rem", marginBottom: "1rem" }}>
+        <h1 style={{ fontSize: "1.5rem", marginBottom: "1.25rem", fontWeight: 600 }}>
           QARAQUTU Docs / API
         </h1>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+        <section style={{ marginBottom: "1.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Product scope
           </h2>
           <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
@@ -37,8 +37,8 @@ export default function DocsPage() {
           </p>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+        <section style={{ marginBottom: "1.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Canonical model summary
           </h2>
           <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
@@ -92,8 +92,8 @@ export default function DocsPage() {
           </ul>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+        <section style={{ marginBottom: "1.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Verification semantics
           </h2>
           <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
@@ -105,8 +105,8 @@ export default function DocsPage() {
           </p>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+        <section style={{ marginBottom: "1.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Document / artifact family
           </h2>
           <p style={{ fontSize: "0.85rem", opacity: 0.85, marginBottom: "0.5rem" }}>
@@ -132,8 +132,8 @@ export default function DocsPage() {
           </ul>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+        <section style={{ marginBottom: "1.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Institutional use families — Role-based review and export mapping
           </h2>
           <p style={{ fontSize: "0.85rem", opacity: 0.85, marginBottom: "0.5rem" }}>
@@ -159,8 +159,8 @@ export default function DocsPage() {
           </p>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+        <section style={{ marginBottom: "1.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Export profiles
           </h2>
           <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
@@ -180,8 +180,8 @@ export default function DocsPage() {
           </ul>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+        <section style={{ marginBottom: "1.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Visibility classes & redaction
           </h2>
           <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
@@ -197,8 +197,8 @@ export default function DocsPage() {
           </p>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+        <section style={{ marginBottom: "1.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Doctrine vs implementation language
           </h2>
           <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
@@ -209,8 +209,8 @@ export default function DocsPage() {
           </p>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+        <section style={{ marginBottom: "1.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Current API routes
           </h2>
           <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
@@ -263,8 +263,8 @@ export default function DocsPage() {
           </ul>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+        <section style={{ marginBottom: "1.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Diagnostics and smoke
           </h2>
           <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
@@ -282,8 +282,8 @@ export default function DocsPage() {
           </p>
         </section>
 
-        <section style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+        <section style={{ marginBottom: "1.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Current limitations
           </h2>
           <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>

@@ -22,28 +22,16 @@ export function InstitutionalUseFamilies() {
     <div
       style={{
         border: `1px solid ${UI.border}`,
-        borderRadius: 8,
-        padding: "1rem 1.25rem",
-        background: "rgba(10, 22, 40, 0.5)",
+        borderRadius: 6,
+        padding: "1.1rem 1.35rem",
+        background: "rgba(10, 22, 40, 0.4)",
       }}
     >
       <div
         style={{
-          fontSize: "0.7rem",
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          color: UI.textMuted,
-          marginBottom: "0.75rem",
-          fontFamily: "'JetBrains Mono', monospace",
-        }}
-      >
-        Institutional use families
-      </div>
-      <div
-        style={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "0.5rem",
+          gap: "0.6rem",
         }}
       >
         {roles.map((r) => (
@@ -52,22 +40,23 @@ export function InstitutionalUseFamilies() {
             style={{
               border: `1px solid ${UI.borderSoft}`,
               borderRadius: 6,
-              padding: "0.5rem 0.65rem",
+              padding: "0.6rem 0.75rem",
               borderLeft: `3px solid ${UI.accent}`,
+              minHeight: 56,
             }}
           >
             <div
               style={{
-                fontSize: "0.78rem",
+                fontSize: "0.8rem",
                 fontWeight: 600,
                 color: UI.text,
-                marginBottom: "0.2rem",
+                marginBottom: "0.25rem",
                 fontFamily: "'JetBrains Mono', monospace",
               }}
             >
               {r.labelEn}
             </div>
-            <div style={{ fontSize: "0.68rem", color: UI.textMuted, lineHeight: 1.35 }}>
+            <div style={{ fontSize: "0.7rem", color: UI.textMuted, lineHeight: 1.4 }}>
               {r.shortPurposeEn}
             </div>
           </div>

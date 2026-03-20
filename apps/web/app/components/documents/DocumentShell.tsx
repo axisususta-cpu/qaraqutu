@@ -77,17 +77,17 @@ export function DocumentShell({
       {showCover && (
         <div
           style={{
-            padding: "1.75rem 2rem",
+            padding: "1.85rem 2rem",
             borderBottom: `1px solid ${UI.border}`,
             background: `linear-gradient(180deg, ${UI.panel} 0%, ${UI.bg} 100%)`,
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
-            gap: "1.5rem",
+            gap: "1.75rem",
           }}
         >
           <div style={{ flex: 1 }}>
-            <LogoPrimary href="/" height={28} />
+            <LogoPrimary href="/" height={26} />
             <div
               style={{
                 marginTop: "1rem",
@@ -125,24 +125,24 @@ export function DocumentShell({
               </div>
             )}
           </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem" }}>
-            <ProtocolSeal size={44} label="Protocol" />
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.4rem" }}>
+            <ProtocolSeal size={42} label="Protocol" />
           </div>
         </div>
       )}
 
       <div
         style={{
-          padding: "0.9rem 2rem",
-          fontSize: "0.68rem",
+          padding: "0.75rem 2rem",
+          fontSize: "0.66rem",
           color: UI.textMuted,
           borderBottom: `1px solid ${UI.borderSoft}`,
-          background: "rgba(10, 22, 40, 0.4)",
+          background: "rgba(10, 22, 40, 0.5)",
           display: "grid",
           gridTemplateColumns: "1fr auto",
-          gap: "0.75rem 2rem",
+          gap: "0.6rem 2rem",
           fontFamily: "'JetBrains Mono', monospace",
-          letterSpacing: "0.03em",
+          letterSpacing: "0.04em",
         }}
       >
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0 1.25rem" }}>
@@ -165,14 +165,14 @@ export function DocumentShell({
 
       <div
         style={{
-          padding: "0.6rem 2rem",
-          fontSize: "0.62rem",
+          padding: "0.65rem 2rem",
+          fontSize: "0.6rem",
           color: UI.textMuted,
           borderTop: `1px solid ${UI.borderSoft}`,
           textAlign: "center",
-          lineHeight: 1.5,
+          lineHeight: 1.55,
           fontFamily: "'JetBrains Mono', monospace",
-          letterSpacing: "0.02em",
+          letterSpacing: "0.03em",
         }}
       >
         QARAQUTU — Verifier-first witness protocol. Not a liability engine or judicial substitute. Recorded, Derived,

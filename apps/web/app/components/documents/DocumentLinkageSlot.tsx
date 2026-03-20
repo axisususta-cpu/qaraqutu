@@ -31,7 +31,7 @@ export function DocumentLinkageSlot({ label, value, refLink, size = 64, children
         flexDirection: "column",
         alignItems: "center",
         gap: "0.35rem",
-        padding: "0.5rem",
+        padding: "0.55rem 0.65rem",
         border: `1px solid ${UI.borderSoft}`,
         borderRadius: 4,
         background: "rgba(10, 22, 40, 0.3)",
@@ -57,7 +57,7 @@ export function DocumentLinkageSlot({ label, value, refLink, size = 64, children
       )}
       <div
         style={{
-          fontSize: "0.62rem",
+          fontSize: "0.6rem",
           letterSpacing: "0.08em",
           textTransform: "uppercase",
           color: UI.textMuted,

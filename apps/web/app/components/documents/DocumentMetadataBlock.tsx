@@ -33,7 +33,7 @@ export function DocumentMetadataBlock({ label, note, children }: DocumentMetadat
     >
       <div
         style={{
-          padding: "0.55rem 0.9rem",
+          padding: "0.6rem 0.95rem",
           background: "rgba(26, 45, 74, 0.25)",
           borderBottom: `1px solid ${UI.borderSoft}`,
           fontSize: "0.72rem",
@@ -61,7 +61,7 @@ export function DocumentMetadataBlock({ label, note, children }: DocumentMetadat
       )}
       <div
         style={{
-          padding: "0.9rem 1rem",
+          padding: "0.95rem 1.05rem",
           fontSize: "0.8rem",
           color: UI.text,
           lineHeight: 1.6,

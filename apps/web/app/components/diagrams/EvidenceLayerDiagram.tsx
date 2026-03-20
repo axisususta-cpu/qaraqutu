@@ -27,7 +27,7 @@ export function EvidenceLayerDiagram() {
       style={{
         border: `1px solid ${UI.border}`,
         borderRadius: 8,
-        padding: "1rem 1.25rem",
+        padding: "1.15rem 1.35rem",
         background: "rgba(10, 22, 40, 0.5)",
       }}
     >
@@ -37,13 +37,13 @@ export function EvidenceLayerDiagram() {
           letterSpacing: "0.12em",
           textTransform: "uppercase",
           color: UI.textMuted,
-          marginBottom: "0.75rem",
+          marginBottom: "0.85rem",
           fontFamily: "'JetBrains Mono', monospace",
         }}
       >
         Evidence layer discipline
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
         {LAYERS.map((layer) => (
           <div
             key={layer.id}

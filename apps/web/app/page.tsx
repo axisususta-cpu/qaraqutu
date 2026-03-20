@@ -44,22 +44,22 @@ export default function LandingPage() {
           }}
         >
           <div>
-            <div style={{ marginBottom: "0.6rem" }}>
-              <LogoPrimary href="/" height={32} />
+            <div style={{ marginBottom: "0.75rem" }}>
+              <LogoPrimary href="/" height={34} />
             </div>
             <div
               style={{
-                fontSize: "0.8rem",
-                letterSpacing: "0.18em",
+                fontSize: "0.78rem",
+                letterSpacing: "0.16em",
                 textTransform: "uppercase",
                 color: UI.textMuted,
-                marginBottom: "0.5rem",
+                marginBottom: "0.6rem",
                 fontFamily: MONO,
               }}
             >
               Witness protocol
             </div>
-            <h1 style={{ fontSize: "2.05rem", margin: 0, lineHeight: 1.2 }}>
+            <h1 style={{ fontSize: "2.1rem", margin: 0, lineHeight: 1.25, fontWeight: 600 }}>
               One product. Verifier-first. Three verticals.
             </h1>
             <p
@@ -284,12 +284,12 @@ export default function LandingPage() {
           style={{
             borderRadius: 10,
             border: `1px solid ${UI.border}`,
-            background: UI.panel,
-            padding: "1rem 1.1rem",
+            background: UI.panelRaised,
+            padding: "1.25rem 1.35rem",
           }}
         >
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Institutional use families</h2>
-          <p style={{ fontSize: "0.84rem", opacity: 0.9, color: UI.textSoft, marginTop: 0, marginBottom: "0.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.4rem", marginTop: 0, fontWeight: 600 }}>Institutional use families</h2>
+          <p style={{ fontSize: "0.85rem", opacity: 0.92, color: UI.textSoft, marginTop: 0, marginBottom: "1rem", lineHeight: 1.55 }}>
             One canonical event core, many institutional shells. The same event spine is preserved; only priority,
             visibility, and document recommendation vary by role.
           </p>

@@ -19,7 +19,7 @@ export function DocumentFamilyRoleMatrix() {
       style={{
         border: `1px solid ${UI.border}`,
         borderRadius: 8,
-        padding: "1rem 1.25rem",
+        padding: "1.15rem 1.35rem",
         background: "rgba(10, 22, 40, 0.5)",
       }}
     >
@@ -53,7 +53,7 @@ export function DocumentFamilyRoleMatrix() {
             >
               <div
                 style={{
-                  minWidth: 160,
+                  minWidth: 170,
                   fontSize: "0.75rem",
                   fontWeight: 600,
                   color: UI.text,
