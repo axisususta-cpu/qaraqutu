@@ -31,6 +31,8 @@ export interface DocumentShellProps {
   receiptId?: string;
   manifestRef?: string;
   traceRef?: string;
+  /** Optional role-targeted subtitle (e.g. from institutional role shortPurpose). */
+  roleTargetedSubtitle?: string;
   /** Children: sections, metadata, content. */
   children: React.ReactNode;
   /** Show cover with seal. */
@@ -52,6 +54,7 @@ export function DocumentShell({
   receiptId,
   manifestRef,
   traceRef,
+  roleTargetedSubtitle,
   children,
   showCover = true,
 }: DocumentShellProps) {
@@ -108,6 +111,19 @@ export function DocumentShell({
             >
               {documentId}
             </div>
+            {roleTargetedSubtitle && (
+              <div
+                style={{
+                  marginTop: "0.4rem",
+                  fontSize: "0.7rem",
+                  color: UI.textMuted,
+                  fontFamily: "'JetBrains Mono', monospace",
+                  letterSpacing: "0.03em",
+                }}
+              >
+                {roleTargetedSubtitle}
+              </div>
+            )}
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem" }}>
             <ProtocolSeal size={44} label="Protocol" />

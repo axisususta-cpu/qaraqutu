@@ -132,6 +132,28 @@ export default function DocsPage() {
 
         <section style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+            Institutional use families — Role-based review and export mapping
+          </h2>
+          <p style={{ fontSize: "0.85rem", opacity: 0.85, marginBottom: "0.5rem" }}>
+            One canonical event core, many institutional shells. The same event spine (Event ID, Bundle ID, Manifest ID,
+            Receipt ID, Version, Recorded, Derived, Unknown/Disputed, Trace, Issuance) is preserved. Only priority order,
+            visibility weight, document recommendation, and shell layout vary by role.
+          </p>
+          <p style={{ fontSize: "0.85rem", opacity: 0.85, marginBottom: "0.5rem" }}>
+            Institutional roles (clerk/intake, field, administrative, notary, legal, claims, technical, oversight) each
+            have a preferred document family and information ordering. Trace-linked document families (Incident Report,
+            Verification Summary, Trace Appendix, Claims Pack, Legal Pack, Technical Pack, Administrative Packet,
+            Authenticity Receipt) map to these roles. Authenticity, receipt, and version visibility remain explicit
+            across all shells.
+          </p>
+          <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
+            Role-based shells are a structural framework. Backend role switching is not yet implemented; the Verifier
+            remains the primary inspection station with a single canonical view.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: "1.5rem" }}>
+          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem" }}>
             Export profiles
           </h2>
           <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
