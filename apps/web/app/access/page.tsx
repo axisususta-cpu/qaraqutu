@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState } from "react";
 import { useLanguage } from "../../lib/LanguageContext";
@@ -78,7 +78,7 @@ export default function AccessPage({
             {m.accessTitle}
           </h1>
           <p style={{ fontSize: "0.86rem", color: "var(--text-soft)", margin: 0, lineHeight: 1.65, maxWidth: 720 }}>
-            QARAQUTU’s protected surfaces are intentionally bounded. Enter an authorized {m.accessTokenLabel} to continue.
+            {m.accessBody}
           </p>
         </div>
 

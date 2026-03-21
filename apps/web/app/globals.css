@@ -140,3 +140,32 @@ body {
   background-size: 48px 48px !important;
 }
 
+/* ── Protocol document shell — print / filing posture (no PDF engine; layout only) ── */
+@media print {
+  .qaraqutu-document-shell {
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: 1px solid #1a1a1a !important;
+    border-radius: 0 !important;
+    break-inside: avoid;
+    background: #fff !important;
+    color: #111 !important;
+  }
+  .qaraqutu-document-shell * {
+    color: inherit !important;
+    box-shadow: none !important;
+  }
+  .qaraqutu-document-cover {
+    break-after: page;
+    background: #fafafa !important;
+    border-bottom: 2px solid #000 !important;
+  }
+  .qaraqutu-document-footer {
+    break-inside: avoid;
+    border-top: 2px solid #000 !important;
+  }
+  .qaraqutu-authority-grid {
+    break-inside: avoid;
+  }
+}
+

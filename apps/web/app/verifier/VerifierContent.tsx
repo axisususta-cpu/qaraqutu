@@ -21,6 +21,19 @@ import {
 } from "../../lib/artifact-profiles";
 import { InstitutionalGuidanceStrip } from "../components/institutional/InstitutionalGuidanceStrip";
 import { SectorVerifierStrip } from "../components/sector/SectorVerifierStrip";
+import { DocumentShell } from "../components/documents/DocumentShell";
+import { DocumentSection } from "../components/documents/DocumentSection";
+import { DocumentMetadataBlock } from "../components/documents/DocumentMetadataBlock";
+import { MSG } from "../../lib/i18n/messages";
+import type { InstitutionAudienceId } from "../../lib/report-authority";
+import {
+  DEFAULT_AUDIENCE_BY_PROFILE,
+  INSTITUTION_AUDIENCES,
+  resolveIssuanceDocumentFamilies,
+  documentFamilyLabel,
+  sectorIncidentReportLabel,
+} from "../../lib/report-authority";
+import { getInstitutionFraming, institutionAudienceLabel } from "../../lib/report-authority-framing";
 
 const DEFAULT_API_BASE =
   process.env.NODE_ENV === "production"
@@ -367,6 +380,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     null
   );
   const [exportError, setExportError] = useState<string | null>(null);
+  const [issuanceAudience, setIssuanceAudience] = useState<InstitutionAudienceId>(
+    DEFAULT_AUDIENCE_BY_PROFILE.claims
+  );
+  const [lastIssuedAtIso, setLastIssuedAtIso] = useState<string | null>(null);
+
+  useEffect(() => {
+    setIssuanceAudience(DEFAULT_AUDIENCE_BY_PROFILE[exportProfile]);
+  }, [exportProfile]);
 
   useEffect(() => {
     async function load() {
@@ -592,6 +613,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
       const meta = successPayload as ExportArtifactResponse;
       setIssuanceState("success");
+      setLastIssuedAtIso(new Date().toISOString());
       setLastIssuedArtifact({ format, meta });
       setIdentity({
         event_id: meta.event_id,
@@ -1840,7 +1862,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                       fontSize: "0.55rem",
                                       padding: "0.1rem 0.4rem",
                                       borderRadius: UI.radius.xs,
-                                      background: r.status === "verified" ? "var(--success-soft)" : UI.borderSubtle,
+                                      background: r.status === "verified" ? "var(--success-soft)" : "var(--border-subtle)",
                                       color: r.status === "verified" ? "var(--success)" : "var(--text-muted)",
                                       fontWeight: 700,
                                       textTransform: "uppercase",
@@ -2927,6 +2949,145 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               ))}
                             </div>
                           )}
+                          {lastIssuedArtifact && issuanceState === "success"
+                            ? (() => {
+                                const m = MSG[language];
+                                const meta = lastIssuedArtifact.meta;
+                                const { primary } = resolveIssuanceDocumentFamilies(
+                                  meta.export_profile,
+                                  selectedSystem
+                                );
+                                const framing = getInstitutionFraming(issuanceAudience, language);
+                                const traceDisplay =
+                                  isVehicle && transcriptId
+                                    ? transcriptId
+                                    : language === "tr"
+                                      ? "demo · bağlı iz yok"
+                                      : "demo · no live trace id";
+                                return (
+                                  <div style={{ marginTop: "1.25rem" }}>
+                                    <div
+                                      style={{
+                                        fontSize: "0.72rem",
+                                        fontWeight: 600,
+                                        marginBottom: "0.45rem",
+                                        fontFamily: MONO,
+                                      }}
+                                    >
+                                      {m.verifierIssuancePreviewTitle}
+                                    </div>
+                                    <label
+                                      style={{
+                                        display: "block",
+                                        fontSize: "0.68rem",
+                                        color: "var(--text-muted)",
+                                        marginBottom: "0.25rem",
+                                      }}
+                                    >
+                                      {m.verifierAudienceSelect}
+                                    </label>
+                                    <select
+                                      value={issuanceAudience}
+                                      onChange={(e) =>
+                                        setIssuanceAudience(e.target.value as InstitutionAudienceId)
+                                      }
+                                      style={{
+                                        fontSize: "0.78rem",
+                                        padding: "0.35rem 0.5rem",
+                                        marginBottom: "1rem",
+                                        borderRadius: 6,
+                                        border: "1px solid var(--border)",
+                                        background: "var(--panel)",
+                                        color: "var(--text)",
+                                        fontFamily: MONO,
+                                        maxWidth: "100%",
+                                      }}
+                                    >
+                                      {INSTITUTION_AUDIENCES.map((id) => (
+                                        <option key={id} value={id}>
+                                          {institutionAudienceLabel(id, language)}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    <DocumentShell
+                                      documentType={documentFamilyLabel(primary, language)}
+                                      documentId={`QEV-${meta.export_id}`}
+                                      eventId={meta.event_id}
+                                      bundleId={meta.bundle_id}
+                                      manifestId={meta.manifest_id}
+                                      manifestRef={meta.manifest_id}
+                                      version={meta.schema_version}
+                                      generatedAt={lastIssuedAtIso?.slice(0, 10) ?? undefined}
+                                      verifiedAt={lastIssuedAtIso ?? undefined}
+                                      verificationState={meta.verification_state}
+                                      receiptId={meta.receipt_id}
+                                      traceRef={traceDisplay}
+                                      exportPurpose={meta.export_purpose}
+                                      exportProfile={meta.export_profile}
+                                      audienceLabel={institutionAudienceLabel(issuanceAudience, language)}
+                                      sectorContextLine={sectorIncidentReportLabel(selectedSystem, language)}
+                                      institutionHeadingTone={framing.headingTone}
+                                      institutionSubtitle={framing.subtitle}
+                                      institutionSummary={framing.summaryWording}
+                                      institutionMetadataEmphasis={framing.metadataEmphasis}
+                                      institutionOutputFraming={framing.outputFraming}
+                                    >
+                                      <DocumentSection
+                                        variant="authority"
+                                        title={
+                                          language === "tr"
+                                            ? "Düzenleme özeti"
+                                            : "Issuance summary"
+                                        }
+                                      >
+                                        <p
+                                          style={{
+                                            margin: "0 0 0.5rem",
+                                            fontSize: "0.8rem",
+                                            lineHeight: 1.6,
+                                          }}
+                                        >
+                                          {language === "tr"
+                                            ? "Bu yüzey, seçilen profil ve muhatap çerçevesiyle protokole bağlı kimlik alanlarını gösterir. Kayıtlı ve türetilmiş kanıt katmanları birleştirilmez."
+                                            : "This surface shows protocol-bound identity fields for the selected profile and recipient framing. Recorded and derived evidence layers are not merged."}
+                                        </p>
+                                      </DocumentSection>
+                                      <DocumentMetadataBlock
+                                        variant="authority"
+                                        label={
+                                          language === "tr" ? "Katman ayrımı" : "Layer separation"
+                                        }
+                                        note={
+                                          language === "tr"
+                                            ? "Doktrin: kayıtlı ≠ türetilmiş; iz ≠ nihai gerçek; düzenleme ≠ sorumluluk."
+                                            : "Doctrine: recorded ≠ derived; trace ≠ final truth; issuance ≠ blame."
+                                        }
+                                      >
+                                        <ul
+                                          style={{
+                                            margin: 0,
+                                            paddingLeft: "1.1rem",
+                                            fontSize: "0.78rem",
+                                            lineHeight: 1.55,
+                                          }}
+                                        >
+                                          <li>
+                                            {language === "tr"
+                                              ? "Kusur veya suç isnadı dili kullanılmaz."
+                                              : "No fault or criminal-attribution language is used."}
+                                          </li>
+                                          <li>
+                                            {language === "tr"
+                                              ? "Çıktı, bounded issuance kurallarına tabidir."
+                                              : "Output remains subject to bounded issuance rules."}
+                                          </li>
+                                        </ul>
+                                      </DocumentMetadataBlock>
+                                    </DocumentShell>
+                                  </div>
+                                );
+                              })()
+                            : null}
                           {exportError && (
                             <p style={{ fontSize: "0.8rem", margin: "0.65rem 0 0", color: "var(--error)" }}>
                               {exportError}

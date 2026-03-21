@@ -12,3 +12,5 @@ export { DocumentSection } from "./DocumentSection";
 export type { DocumentSectionProps } from "./DocumentSection";
 export { DocumentLinkageSlot } from "./DocumentLinkageSlot";
 export type { DocumentLinkageSlotProps } from "./DocumentLinkageSlot";
+export { DocumentAuthorityIdentityGrid } from "./DocumentAuthorityIdentityGrid";
+export type { AuthorityIdentityField } from "./DocumentAuthorityIdentityGrid";

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 
 
@@ -8,21 +8,25 @@ export interface DocumentMetadataBlockProps {
   /** Optional doctrine note. */
   note?: string;
   children: React.ReactNode;
+  /** Stronger panel for authority / filing surfaces. */
+  variant?: "default" | "authority";
 }
 
 /**
  * Reusable metadata block — doctrine-preserving section header.
  * Protocol-grade, institutional tone.
  */
-export function DocumentMetadataBlock({ label, note, children }: DocumentMetadataBlockProps) {
+export function DocumentMetadataBlock({ label, note, children, variant = "default" }: DocumentMetadataBlockProps) {
+  const authority = variant === "authority";
   return (
     <div
       style={{
         marginBottom: "1.25rem",
-        border: "1px solid var(--border-soft)",
-        borderRadius: 4,
+        border: authority ? "1px solid var(--border-strong)" : "1px solid var(--border-soft)",
+        borderRadius: authority ? 2 : 4,
         overflow: "hidden",
-        background: "var(--panel-raised)",
+        background: authority ? "var(--panel)" : "var(--panel-raised)",
+        boxShadow: authority ? "inset 0 1px 0 var(--border-subtle)" : undefined,
       }}
     >
       <div

@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useLanguage } from "../../lib/LanguageContext";
@@ -34,7 +35,7 @@ const SURFACE_LABELS_TR: Record<string, string> = {
   protected: "Korumalı yüzey",
 };
 
-export default function RestrictedPage() {
+function RestrictedPageInner() {
   const params = useSearchParams();
   const { lang } = useLanguage();
   const m = MSG[lang];
@@ -135,5 +136,26 @@ export default function RestrictedPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RestrictedPage() {
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "50vh",
+            padding: "2.2rem 2rem",
+            fontFamily: SANS,
+            color: "var(--text-muted)",
+          }}
+        >
+          Loading…
+        </div>
+      }
+    >
+      <RestrictedPageInner />
+    </Suspense>
   );
 }

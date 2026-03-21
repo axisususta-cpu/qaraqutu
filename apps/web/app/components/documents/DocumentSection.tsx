@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 
 
@@ -8,26 +8,29 @@ export interface DocumentSectionProps {
   /** Optional section number. */
   number?: number;
   children: React.ReactNode;
+  variant?: "default" | "authority";
 }
 
 /**
  * Reusable document section — heading hierarchy, spacing.
  * Protocol-grade typography.
  */
-export function DocumentSection({ title, number, children }: DocumentSectionProps) {
+export function DocumentSection({ title, number, children, variant = "default" }: DocumentSectionProps) {
+  const authority = variant === "authority";
   return (
     <section style={{ marginBottom: "1.75rem" }}>
       <h3
         style={{
-          fontSize: "0.88rem",
+          fontSize: authority ? "0.82rem" : "0.88rem",
           fontWeight: 600,
           marginBottom: "0.6rem",
           marginTop: 0,
           color: "var(--text)",
           fontFamily: "'JetBrains Mono', monospace",
-          letterSpacing: "0.06em",
+          letterSpacing: authority ? "0.1em" : "0.06em",
+          textTransform: authority ? "uppercase" : "none",
           paddingBottom: "0.35rem",
-          borderBottom: "1px solid var(--border-soft)",
+          borderBottom: authority ? "2px solid var(--border)" : "1px solid var(--border-soft)",
         }}
       >
         {number != null && (

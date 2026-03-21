@@ -134,6 +134,46 @@ const en = {
 
   // Doctrine disclaimer
   doctrineDisclaimer: "QARAQUTU is a dispute-grade evidence system. It is not a liability engine, not a judicial decision system, and not a substitute for independent legal, claims, or technical judgment. Verifier states and exports are role-appropriate artifacts linked to a canonical record, not unilateral findings about fault or outcome.",
+
+  // Document / report authority — families (canonical)
+  docFamily_incidentEvent: "Incident / Event Report",
+  docFamily_verificationSummary: "Verification Summary",
+  docFamily_traceAppendix: "Trace Appendix",
+  docFamily_claimsPack: "Claims Pack",
+  docFamily_legalPack: "Legal Pack",
+  docFamily_technicalPack: "Technical Pack",
+  docFamily_administrativePacket: "Administrative Packet",
+  docFamily_authenticityReceipt: "Authenticity Receipt",
+  docSector_vehicleIncident: "Vehicle Incident Report",
+  docSector_droneIncident: "Drone Incident Report",
+  docSector_robotIncident: "Robot Incident Report",
+  docMeta_documentId: "Document ID",
+  docMeta_eventId: "Event ID",
+  docMeta_bundleId: "Bundle ID",
+  docMeta_manifestRef: "Manifest ref",
+  docMeta_receiptRef: "Receipt ref",
+  docMeta_traceRef: "Trace ref",
+  docMeta_schemaVersion: "Schema version",
+  docMeta_createdAt: "Created at",
+  docMeta_verifiedAt: "Verified at",
+  docMeta_verificationState: "Verification state",
+  docMeta_roleAudience: "Role / audience",
+  docMeta_exportPurpose: "Export purpose",
+  docMeta_exportProfile: "Export profile",
+  docCover_label: "Cover",
+  docBody_label: "Document body",
+  docPage_identity: "Page 1 — body",
+  docAuthenticityNote:
+    "These identifiers bind this document to a canonical event package and issuance record at the stated version. They support traceability and institutional filing; they are not a claim of absolute truth, fault, or final legal outcome.",
+  docAuthorityStrip_title: "Protocol identity & chain",
+  docInstitutionLayer_title: "Recipient framing",
+  docPrintHint: "Layout optimized for print — suitable for official file placement.",
+  docFooter_doctrineShort:
+    "QARAQUTU — Verifier-first witness protocol. Not a liability engine or judicial substitute. Recorded, Derived, Unknown/Disputed, Verification Trace, and Artifact Issuance remain explicitly separated.",
+  docSealLabel: "Protocol seal",
+  verifierIssuancePreviewTitle: "Issued artifact — authority preview",
+  verifierAudienceSelect: "Recipient framing",
+  docLinkage_qr: "Verification QR slot",
 } as const;
 
 const tr = {
@@ -260,6 +300,46 @@ const tr = {
 
   // Doctrine disclaimer
   doctrineDisclaimer: "QARAQUTU bir uyuşmazlık düzeyinde kanıt sistemidir. Sorumluluk motoru, yargısal karar sistemi veya bağımsız hukuki, talep ya da teknik yargının yerini tutan bir araç değildir.",
+
+  // Document / report authority — families (canonical)
+  docFamily_incidentEvent: "Olay / Vaka Raporu",
+  docFamily_verificationSummary: "Doğrulama Özeti",
+  docFamily_traceAppendix: "İz Eki",
+  docFamily_claimsPack: "Hasar Paketi",
+  docFamily_legalPack: "Hukuk Paketi",
+  docFamily_technicalPack: "Teknik Paket",
+  docFamily_administrativePacket: "İdari Paket",
+  docFamily_authenticityReceipt: "Orijinallik Makbuzu",
+  docSector_vehicleIncident: "Araç Olay Raporu",
+  docSector_droneIncident: "İHA Olay Raporu",
+  docSector_robotIncident: "Robot Olay Raporu",
+  docMeta_documentId: "Belge ID",
+  docMeta_eventId: "Olay ID",
+  docMeta_bundleId: "Paket ID",
+  docMeta_manifestRef: "Manifest ref",
+  docMeta_receiptRef: "Makbuz ref",
+  docMeta_traceRef: "İz ref",
+  docMeta_schemaVersion: "Şema sürümü",
+  docMeta_createdAt: "Oluşturulma",
+  docMeta_verifiedAt: "Doğrulama zamanı",
+  docMeta_verificationState: "Doğrulama durumu",
+  docMeta_roleAudience: "Rol / muhatap",
+  docMeta_exportPurpose: "Dışa aktarım amacı",
+  docMeta_exportProfile: "Dışa aktarım profili",
+  docCover_label: "Kapak",
+  docBody_label: "Belge gövdesi",
+  docPage_identity: "Sayfa 1 — gövde",
+  docAuthenticityNote:
+    "Bu kimlik alanları belgeyi belirtilen sürümdeki kanonik olay paketi ve düzenleme kaydına bağlar. İzlenebilirlik ve kurumsal dosyalamayı destekler; mutlak gerçeklik, kusur veya nihai hukukî sonuç iddiası taşımaz.",
+  docAuthorityStrip_title: "Protokol kimliği ve zincir",
+  docInstitutionLayer_title: "Muhatap çerçevesi",
+  docPrintHint: "Baskıya uygun yerleşim — resmî dosyaya konmaya uygundur.",
+  docFooter_doctrineShort:
+    "QARAQUTU — Doğrulayıcı-öncelikli tanık protokolü. Sorumluluk motoru veya yargı yerine geçmez. Kayıtlı, Türetilmiş, Bilinmeyen/Tartışmalı, Doğrulama İzi ve Belge Düzenlemesi açıkça ayrı kalır.",
+  docSealLabel: "Protokol mührü",
+  verifierIssuancePreviewTitle: "Düzenlenen belge — otorite önizlemesi",
+  verifierAudienceSelect: "Muhatap çerçevesi",
+  docLinkage_qr: "Doğrulama QR alanı",
 } as const;
 
 export const MSG = { en, tr } as const;

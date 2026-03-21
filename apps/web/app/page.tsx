@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { LogoPrimary } from "./components/LogoPrimary";
-import { BRAND } from "../lib/brand";
 import { useLanguage } from "../lib/LanguageContext";
 import { MSG } from "../lib/i18n/messages";
 import { SectionHeader } from "./components/ui/SectionHeader";
@@ -90,7 +89,7 @@ export default function LandingPage() {
             </div>
             <h1 style={{ fontSize: "2.2rem", margin: 0, lineHeight: 1.25, fontWeight: 600 }}>
               {(() => {
-                const accent = lang === "tr" ? "Do?rulay?c?-öncelikli" : "Verifier-first";
+                const accent = lang === "tr" ? "Do\u011frulay\u0131c\u0131-\u00f6ncelikli" : "Verifier-first";
                 const parts = m.homeHeroHeading.split(accent);
                 if (parts.length < 2) return m.homeHeroHeading;
                 return <>{parts[0]}<span style={{ color: "var(--accent)" }}>{accent}</span>{parts[1]}</>;
@@ -193,7 +192,7 @@ export default function LandingPage() {
             >
               <Image
                 src={MEDIA.hero}
-                alt="Vehicle incident review ? QARAQUTU verifier-first witness protocol in fleet and claims context"
+                alt="Vehicle incident review - QARAQUTU verifier-first witness protocol in fleet and claims context"
                 fill
                 sizes="(max-width: 768px) 100vw, 420px"
                 style={{ objectFit: "cover" }}
@@ -235,7 +234,7 @@ export default function LandingPage() {
               boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             }}
           >
-            <SectionHeader badge={lang === "tr" ? "Ba?lam" : "Context"} heading={m.sectionProblem} />
+            <SectionHeader badge={lang === "tr" ? "Ba\u011flam" : "Context"} heading={m.sectionProblem} />
             <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
               <li>Incident review data is fragmented across logs, captures, and exported files.</li>
               <li>Recorded facts and derived interpretations are often collapsed into one narrative layer.</li>
@@ -274,7 +273,7 @@ export default function LandingPage() {
           </section>
         </section>
 
-        {/* Three verticals ? supporting visuals */}
+        {/* Three verticals - supporting visuals */}
         <section
           className="home-verticals-grid"
           style={{
@@ -284,9 +283,9 @@ export default function LandingPage() {
           }}
         >
           {[
-            { key: "vehicle", img: MEDIA.vehicle, label: "Vehicle", trace: "Event ? Bundle ? Manifest", alt: "Vehicle incident dashboard ? canonical event review and verification trace" },
-            { key: "drone", img: MEDIA.drone, label: "Drone", trace: "Mission ? Telemetry ? Link", alt: "Drone operations ? mission and telemetry linkage for QARAQUTU witness protocol" },
-            { key: "robot", img: MEDIA.robot, label: "Robot", trace: "Interaction ? Safety ? Handoff", alt: "Robot and industrial safety ? interaction and handoff trace for protocol-grade review" },
+            { key: "vehicle", img: MEDIA.vehicle, label: "Vehicle", trace: "Event \u2192 Bundle \u2192 Manifest", alt: "Vehicle incident dashboard - canonical event review and verification trace" },
+            { key: "drone", img: MEDIA.drone, label: "Drone", trace: "Mission \u2192 Telemetry \u2192 Link", alt: "Drone operations - mission and telemetry linkage for QARAQUTU witness protocol" },
+            { key: "robot", img: MEDIA.robot, label: "Robot", trace: "Interaction \u2192 Safety \u2192 Handoff", alt: "Robot and industrial safety - interaction and handoff trace for protocol-grade review" },
           ].map((v) => (
             <div
               key={v.key}
@@ -379,7 +378,7 @@ export default function LandingPage() {
             >
               <Image
                 src={MEDIA.documentProtocol}
-                alt="Document and protocol artifact family ? trace-linked, role-bounded evidence outputs"
+                alt="Document and protocol artifact family - trace-linked, role-bounded evidence outputs"
                 fill
                 sizes="(max-width: 768px) 100vw, 500px"
                 style={{ objectFit: "cover" }}
@@ -467,7 +466,7 @@ export default function LandingPage() {
             boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
           }}
         >
-          <SectionHeader badge={lang === "tr" ? "Y?zeyler" : "Surfaces"} heading={m.sectionProductSurfaces} />
+          <SectionHeader badge={lang === "tr" ? "Y\u00fczeyler" : "Surfaces"} heading={m.sectionProductSurfaces} />
           <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", marginTop: 0 }}>
             <li>
               <strong>Verifier</strong> - primary review station; canonical event inspection and bounded verification
@@ -564,7 +563,4 @@ export default function LandingPage() {
     </main>
   );
 }
-
-
-
 
