@@ -524,6 +524,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       : buildTranscriptStepRows(selectedSystem, transcript, verificationState, language);
   const hasConnectedIssuanceProfile =
     !!selectedCase?.artifactProfiles?.some((ap) => ap.enabled && ap.apiBacked);
+  const hasConnectedVehicleIssuanceProfile =
+    isVehicle &&
+    !!selected &&
+    !!selectedCase?.artifactProfiles?.some(
+      (ap) =>
+        ap.enabled &&
+        ap.apiBacked &&
+        (ap.profileCode === "claims" || ap.profileCode === "legal")
+    );
   const selectedProfileMeta = getArtifactProfile(exportProfile);
   const selectedProfileLabel = selectedProfileMeta
     ? language === "tr"
@@ -2793,7 +2802,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       );
                     })}
                   </div>
-                  {isVehicle && selected && selectedCase.artifactProfiles.some((ap) => ap.enabled && ap.apiBacked && (ap.profileCode === "claims" || ap.profileCode === "legal")) ? (
+                  {hasConnectedVehicleIssuanceProfile ? (
                     <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border)" }}>
                       <div style={{ fontSize: "0.8rem", marginBottom: "0.25rem", display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
                         <span style={{ opacity: 0.8 }}>{language === "tr" ? "Issuance profili:" : "Issuance profile:"}</span>
@@ -3370,6 +3379,103 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   )}
                 </div>
               )}
+              {issuedArtifact && !hasConnectedVehicleIssuanceProfile
+                ? (() => {
+                    const m = MSG[language];
+                    const meta = issuedArtifact.meta;
+                    const { primary } = resolveIssuanceDocumentFamilies(meta.export_profile, selectedSystem);
+                    const framing = getInstitutionFraming(issuanceAudience, language);
+                    const traceDisplay =
+                      isVehicle && transcriptId
+                        ? transcriptId
+                        : language === "tr"
+                          ? "demo · bağlı iz yok"
+                          : "demo · no live trace id";
+                    return (
+                      <div style={{ marginTop: "1rem", borderTop: "1px solid var(--border)", paddingTop: "0.9rem" }}>
+                        <div style={{ fontSize: "0.72rem", fontWeight: 600, marginBottom: "0.45rem", fontFamily: MONO }}>
+                          {m.verifierIssuancePreviewTitle}
+                        </div>
+                        {issuedArtifact.localPreview ? (
+                          <p style={{ margin: "0 0 0.55rem", fontSize: "0.72rem", color: "var(--warning)", lineHeight: 1.5 }}>
+                            {language === "tr"
+                              ? "Yerel önizleme modu: Bu belge görsel kabul için render edilir; nihai backend doğrulaması iddiası taşımaz."
+                              : "Local preview mode: this document is rendered for visual acceptance and does not claim final backend verification."}
+                          </p>
+                        ) : null}
+                        <label style={{ display: "block", fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>
+                          {m.verifierAudienceSelect}
+                        </label>
+                        <select
+                          value={issuanceAudience}
+                          onChange={(e) => setIssuanceAudience(e.target.value as InstitutionAudienceId)}
+                          style={{
+                            fontSize: "0.78rem",
+                            padding: "0.35rem 0.5rem",
+                            marginBottom: "1rem",
+                            borderRadius: 6,
+                            border: "1px solid var(--border)",
+                            background: "var(--panel)",
+                            color: "var(--text)",
+                            fontFamily: MONO,
+                            maxWidth: "100%",
+                          }}
+                        >
+                          {INSTITUTION_AUDIENCES.map((id) => (
+                            <option key={id} value={id}>
+                              {institutionAudienceLabel(id, language)}
+                            </option>
+                          ))}
+                        </select>
+                        <DocumentShell
+                          documentType={documentFamilyLabel(primary, language)}
+                          documentId={`QEV-${meta.export_id}`}
+                          eventId={meta.event_id}
+                          bundleId={meta.bundle_id}
+                          manifestId={meta.manifest_id}
+                          manifestRef={meta.manifest_id}
+                          version={meta.schema_version}
+                          generatedAt={lastIssuedAtIso?.slice(0, 10) ?? undefined}
+                          verifiedAt={lastIssuedAtIso ?? undefined}
+                          verificationState={meta.verification_state}
+                          receiptId={meta.receipt_id}
+                          traceRef={traceDisplay}
+                          exportPurpose={meta.export_purpose}
+                          exportProfile={meta.export_profile}
+                          audienceLabel={institutionAudienceLabel(issuanceAudience, language)}
+                          sectorContextLine={sectorIncidentReportLabel(selectedSystem, language)}
+                          institutionHeadingTone={framing.headingTone}
+                          institutionSubtitle={framing.subtitle}
+                          institutionSummary={framing.summaryWording}
+                          institutionMetadataEmphasis={framing.metadataEmphasis}
+                          institutionOutputFraming={framing.outputFraming}
+                        >
+                          <DocumentSection variant="authority" title={language === "tr" ? "Düzenleme özeti" : "Issuance summary"}>
+                            <p style={{ margin: "0 0 0.5rem", fontSize: "0.8rem", lineHeight: 1.6 }}>
+                              {language === "tr"
+                                ? "Bu yüzey, seçilen profil ve muhatap çerçevesiyle protokole bağlı kimlik alanlarını gösterir. Kayıtlı ve türetilmiş kanıt katmanları birleştirilmez."
+                                : "This surface shows protocol-bound identity fields for the selected profile and recipient framing. Recorded and derived evidence layers are not merged."}
+                            </p>
+                          </DocumentSection>
+                          <DocumentMetadataBlock
+                            variant="authority"
+                            label={language === "tr" ? "Katman ayrımı" : "Layer separation"}
+                            note={
+                              language === "tr"
+                                ? "Doktrin: kayıtlı ≠ türetilmiş; iz ≠ nihai gerçek; düzenleme ≠ sorumluluk."
+                                : "Doctrine: recorded ≠ derived; trace ≠ final truth; issuance ≠ blame."
+                            }
+                          >
+                            <ul style={{ margin: 0, paddingLeft: "1.1rem", fontSize: "0.78rem", lineHeight: 1.55 }}>
+                              <li>{language === "tr" ? "Kusur veya suç isnadı dili kullanılmaz." : "No fault or criminal-attribution language is used."}</li>
+                              <li>{language === "tr" ? "Çıktı, bounded issuance kurallarına tabidir." : "Output remains subject to bounded issuance rules."}</li>
+                            </ul>
+                          </DocumentMetadataBlock>
+                        </DocumentShell>
+                      </div>
+                    );
+                  })()
+                : null}
             </section>
             </div>
 

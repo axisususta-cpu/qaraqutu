@@ -239,24 +239,17 @@ export default function DocsPage() {
               <code>GET /v1/events/:eventId</code> — {isTr ? "tek bir kanonik olay görünümünü döndürür." : "retrieve a single canonical event view."}
             </li>
             <li>
-              <code>POST /v1/events/:eventId/verify</code> — run an
-              event-first verification over the demo bundle/manifest for an
-              event; creates a persisted verification run and trace,
-              returns verification_run_id, transcript_id, verification state,
-              and trace summary.
+              <code>POST /v1/events/:eventId/verify</code> — {isTr
+                ? "demo bundle/manifest üzerinde olay-öncelikli doğrulama çalıştırır; kalıcı verification run ve trace üretir, verification_run_id, transcript_id, verification state ve trace özeti döndürür."
+                : "run an event-first verification over the demo bundle/manifest for an event; creates a persisted verification run and trace, returns verification_run_id, transcript_id, verification state, and trace summary."}
             </li>
             <li>
               <code>GET /v1/verifications/:verificationRunId</code> — {isTr ? "run ID ile kalıcı verification run ve trace kaydını döndürür; bulunamazsa 404 verir." : "retrieve a persisted verification run and its trace by run ID; returns 404 if not found."}
             </li>
             <li>
-              <code>POST /v1/events/:eventId/exports</code> — create an export
-              with a given profile (claims, legal) and format (json, pdf); body
-              includes profile, format, and purpose. Requests that violate
-              tenant export profile or visibility policy are rejected with
-              institutional error codes (for example
-              <code>POLICY_EXPORT_PROFILE_NOT_ALLOWED</code> or{" "}
-              <code>POLICY_VISIBILITY_VIOLATION</code>) and do not create
-              export artifacts.
+              <code>POST /v1/events/:eventId/exports</code> — {isTr
+                ? <>verilen profil (claims, legal) ve biçimle (json, pdf) export üretir; body içinde profile, format ve purpose alanları taşınır. Tenant export profile veya visibility policy ihlali olan istekler kurumsal hata kodlarıyla (ör. <code>POLICY_EXPORT_PROFILE_NOT_ALLOWED</code> veya <code>POLICY_VISIBILITY_VIOLATION</code>) reddedilir ve export artifact üretilmez.</>
+                : <>create an export with a given profile (claims, legal) and format (json, pdf); body includes profile, format, and purpose. Requests that violate tenant export profile or visibility policy are rejected with institutional error codes (for example <code>POLICY_EXPORT_PROFILE_NOT_ALLOWED</code> or <code>POLICY_VISIBILITY_VIOLATION</code>) and do not create export artifacts.</>}
             </li>
             <li>
               <code>GET /v1/exports/:exportId/download</code> — {isTr ? "profil ve biçime göre export çıktısını ID üzerinden JSON/PDF olarak indirir." : "download an export by its ID as JSON or PDF, depending on profile and format."}
@@ -265,10 +258,9 @@ export default function DocsPage() {
               <code>GET /v1/system/diagnostics</code> — {isTr ? "çalışan backend için environment, dataset, schema ve build tanılama bilgilerini döndürür." : "environment, dataset, schema, and build diagnostics for the running backend."}
             </li>
             <li>
-              <code>GET /v1/system/pdf-fixture/claims-long</code> — internal
-              test-only route that returns a multi-page claims PDF fixture for
-              validating layout and paging; not intended for tenant or
-              customer-facing use.
+              <code>GET /v1/system/pdf-fixture/claims-long</code> — {isTr
+                ? "yalnız iç test için kullanılan, çok sayfalı claims PDF fixture döndüren rotadır; layout/paging doğrulaması içindir, tenant veya müşteri yüzüne açık kullanım için tasarlanmamıştır."
+                : "internal test-only route that returns a multi-page claims PDF fixture for validating layout and paging; not intended for tenant or customer-facing use."}
             </li>
           </ul>
         </section>
@@ -279,7 +271,7 @@ export default function DocsPage() {
           </h2>
           <p style={{ fontSize: "0.85rem", color: "var(--text-soft)", lineHeight: 1.6 }}>
             {isTr
-              ? <>Diagnostics, <code>/v1/system/diagnostics</code> rotası üzerinden yayınlanır ve environment, sürümler, desteklenen export profilleri, yakın export/verification aktiviteleri, son verification run özeti, son smoke run detayları ve özet tenant policy bilgisini içerir. Smoke kontrolleri CLI ile çalıştırılır; availability, diagnostics, dataset, verifier (persisted run/trace dahil), verification okuma rotası, export oluşturma/indirme, receipt bağlama ve çok sayfalı PDF davranışı kontrol edilir. Her smoke çalıştırması kalıcı bir SmokeRun kaydı (ve kontrol başına SmokeCheck kayıtları) üretir.</>
+              ? <>Tanılama verileri <code>/v1/system/diagnostics</code> rotası üzerinden yayınlanır ve environment, sürümler, desteklenen export profilleri, yakın export/verification aktiviteleri, son verification run özeti, son smoke run detayları ve özet tenant policy bilgisini içerir. Smoke kontrolleri CLI ile çalıştırılır; availability, diagnostics, dataset, verifier (persisted run/trace dahil), verification okuma rotası, export oluşturma/indirme, receipt bağlama ve çok sayfalı PDF davranışı kontrol edilir. Her smoke çalıştırması kalıcı bir SmokeRun kaydı (ve kontrol başına SmokeCheck kayıtları) üretir.</>
               : <>Diagnostics are exposed via the <code>/v1/system/diagnostics</code> route and include environment, versions, supported export profiles, recent export activity, recent verification activity, latest verification run summary, latest smoke run details, and a compact tenant policy summary. Smoke checks are executed via a CLI that exercises availability, diagnostics, dataset, verifier (including persisted run and trace), verification read route, export creation/download, receipt linkage, and multi-page PDF behavior. Each smoke CLI execution now creates a persisted SmokeRun record (and individual SmokeCheck records per check). Admin shows the most recent smoke run and a compact per-check summary.</>}
           </p>
         </section>
@@ -296,7 +288,7 @@ export default function DocsPage() {
             </li>
             <li>
               {isTr
-                ? "Implementation policy şu anda tenant-genel düzeyde modellenmiştir; kullanıcı/rol bazlı override henüz desteklenmez."
+                ? "Uygulama policy katmanı şu anda tenant-genel düzeyde modellenmiştir; kullanıcı/rol bazlı override henüz desteklenmez."
                 : "Implementation policy is currently modeled at a tenant-wide level; it does not yet support per-user or per-role overrides."}
             </li>
           </ul>
