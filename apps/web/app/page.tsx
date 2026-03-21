@@ -53,12 +53,12 @@ export default function LandingPage() {
             <p
               style={{
                 margin: "0 0 0.85rem 0",
-                fontSize: "1.05rem",
-                fontStyle: "italic",
-                fontWeight: 400,
+                fontSize: "1rem",
+                fontStyle: "normal",
+                fontWeight: 500,
                 color: THEME.textSoft,
-                letterSpacing: "0.01em",
-                lineHeight: 1.4,
+                letterSpacing: "-0.01em",
+                lineHeight: 1.35,
                 fontFamily: SANS,
               }}
             >
