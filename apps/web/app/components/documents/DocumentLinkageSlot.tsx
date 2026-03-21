@@ -1,11 +1,8 @@
 "use client";
 
-const UI = {
-  border: "#1a2d4a",
-  borderSoft: "rgba(26, 45, 74, 0.6)",
-  text: "#e8eef8",
-  textMuted: "#7a95b8",
-} as const;
+import { THEME } from "../../../lib/theme";
+
+const UI = THEME;
 
 export interface DocumentLinkageSlotProps {
   /** Label: QR, Receipt, Manifest, Trace. */
@@ -34,7 +31,7 @@ export function DocumentLinkageSlot({ label, value, refLink, size = 64, children
         padding: "0.55rem 0.65rem",
         border: `1px solid ${UI.borderSoft}`,
         borderRadius: 4,
-        background: "rgba(10, 22, 40, 0.3)",
+        background: UI.panelRaised,
       }}
     >
       {children ?? (

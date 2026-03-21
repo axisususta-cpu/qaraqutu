@@ -3,12 +3,9 @@
 import { DOCUMENT_FAMILY_MAP } from "../../../lib/document-family-map";
 import { getInstitutionalRole } from "../../../lib/institutional-roles";
 
-const UI = {
-  border: "#1a2d4a",
-  borderSoft: "rgba(26, 45, 74, 0.6)",
-  text: "#e8eef8",
-  textMuted: "#7a95b8",
-} as const;
+import { THEME } from "../../../lib/theme";
+
+const UI = THEME;
 
 /**
  * Document family → Role mapping — visible matrix.
@@ -20,7 +17,7 @@ export function DocumentFamilyRoleMatrix() {
         border: `1px solid ${UI.border}`,
         borderRadius: 8,
         padding: "1.15rem 1.35rem",
-        background: "rgba(10, 22, 40, 0.5)",
+        background: UI.panel,
       }}
     >
       <div

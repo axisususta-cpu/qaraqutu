@@ -1,15 +1,9 @@
 "use client";
 
 import { getInstitutionalRolesBySidebarOrder } from "../../../lib/institutional-roles";
+import { THEME } from "../../../lib/theme";
 
-const UI = {
-  border: "#1a2d4a",
-  borderSoft: "rgba(26, 45, 74, 0.6)",
-  accent: "#D4561A",
-  text: "#e8eef8",
-  textSoft: "#b8cce0",
-  textMuted: "#7a95b8",
-} as const;
+const UI = THEME;
 
 /**
  * Institutional Use Families — visible role cards.
@@ -24,7 +18,7 @@ export function InstitutionalUseFamilies() {
         border: `1px solid ${UI.border}`,
         borderRadius: 6,
         padding: "1.1rem 1.35rem",
-        background: "rgba(10, 22, 40, 0.4)",
+        background: UI.panel,
       }}
     >
       <div

@@ -4,11 +4,17 @@
   "description": "Verifier-first witness protocol for dispute-grade event packages across Vehicle, Drone, and Robot.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#060d1a",
-  "theme_color": "#060d1a",
+  "background_color": "#f5f6f8",
+  "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "/brand/logo-icon.svg",
+      "src": "/brand/logo-icon-square.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/logo-icon-square.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

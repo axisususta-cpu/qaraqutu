@@ -4,14 +4,9 @@
  * Evidence layer discipline — Recorded, Derived, Unknown/Disputed, Verification Trace, Artifact Issuance.
  * Doctrine-preserving visual.
  */
-const UI = {
-  border: "#1a2d4a",
-  borderSoft: "rgba(26, 45, 74, 0.6)",
-  accent: "#D4561A",
-  text: "#e8eef8",
-  textSoft: "#b8cce0",
-  textMuted: "#7a95b8",
-} as const;
+import { THEME } from "../../../lib/theme";
+
+const UI = THEME;
 
 const LAYERS = [
   { id: "recorded", label: "Recorded", note: "Source-origin, directly captured" },
@@ -28,7 +23,7 @@ export function EvidenceLayerDiagram() {
         border: `1px solid ${UI.border}`,
         borderRadius: 8,
         padding: "1.15rem 1.35rem",
-        background: "rgba(10, 22, 40, 0.5)",
+        background: UI.panel,
       }}
     >
       <div

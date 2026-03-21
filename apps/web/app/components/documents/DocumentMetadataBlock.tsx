@@ -1,12 +1,8 @@
 "use client";
 
-const UI = {
-  border: "#1a2d4a",
-  borderSoft: "rgba(26, 45, 74, 0.6)",
-  text: "#e8eef8",
-  textSoft: "#b8cce0",
-  textMuted: "#7a95b8",
-} as const;
+import { THEME } from "../../../lib/theme";
+
+const UI = THEME;
 
 export interface DocumentMetadataBlockProps {
   /** Label (e.g. "Recorded", "Derived", "Unknown / Disputed"). */
@@ -28,13 +24,13 @@ export function DocumentMetadataBlock({ label, note, children }: DocumentMetadat
         border: `1px solid ${UI.borderSoft}`,
         borderRadius: 4,
         overflow: "hidden",
-        background: "rgba(10, 22, 40, 0.3)",
+        background: UI.panelRaised,
       }}
     >
       <div
         style={{
           padding: "0.6rem 0.95rem",
-          background: "rgba(26, 45, 74, 0.25)",
+          background: UI.borderMuted,
           borderBottom: `1px solid ${UI.borderSoft}`,
           fontSize: "0.72rem",
           fontWeight: 600,

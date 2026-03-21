@@ -2,14 +2,9 @@
 
 import { getInstitutionalRole } from "../../../lib/institutional-roles";
 import type { InstitutionalRoleId } from "../../../lib/institutional-roles";
+import { THEME } from "../../../lib/theme";
 
-const UI = {
-  border: "#1a2d4a",
-  borderSoft: "rgba(26, 45, 74, 0.6)",
-  text: "#e8eef8",
-  textSoft: "#b8cce0",
-  textMuted: "#7a95b8",
-} as const;
+const UI = THEME;
 
 const DISPLAY_ROLES: InstitutionalRoleId[] = ["legal", "field", "technical", "claims"];
 
@@ -23,7 +18,7 @@ export function InstitutionalGuidanceStrip() {
       style={{
         padding: "0.45rem 2.5rem",
         borderBottom: `1px solid ${UI.borderSoft}`,
-        background: "rgba(10, 22, 40, 0.35)",
+        background: UI.panelRaised,
         fontSize: "0.68rem",
         maxWidth: 1400,
         margin: "0 auto",

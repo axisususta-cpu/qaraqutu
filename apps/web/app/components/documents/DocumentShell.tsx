@@ -2,18 +2,9 @@
 
 import { ProtocolSeal } from "../ProtocolSeal";
 import { LogoPrimary } from "../LogoPrimary";
+import { THEME } from "../../../lib/theme";
 
-const UI = {
-  border: "#1a2d4a",
-  borderSoft: "rgba(26, 45, 74, 0.6)",
-  borderMuted: "rgba(26, 45, 74, 0.35)",
-  text: "#e8eef8",
-  textSoft: "#b8cce0",
-  textMuted: "#7a95b8",
-  accent: "#D4561A",
-  bg: "#060d1a",
-  panel: "#0a1628",
-} as const;
+const UI = THEME;
 
 export interface DocumentShellProps {
   /** Document type: Incident Report, Verification Summary, Trace Appendix, Role-based Export. */
@@ -65,13 +56,13 @@ export function DocumentShell({
       style={{
         maxWidth: 800,
         margin: "0 auto",
-        background: UI.bg,
+        background: UI.panel,
         color: UI.text,
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         border: `1px solid ${UI.border}`,
         borderRadius: 4,
         overflow: "hidden",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.24)",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
       }}
     >
       {showCover && (
@@ -79,7 +70,7 @@ export function DocumentShell({
           style={{
             padding: "1.85rem 2rem",
             borderBottom: `1px solid ${UI.border}`,
-            background: `linear-gradient(180deg, ${UI.panel} 0%, ${UI.bg} 100%)`,
+            background: UI.panelRaised,
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
@@ -137,7 +128,7 @@ export function DocumentShell({
           fontSize: "0.66rem",
           color: UI.textMuted,
           borderBottom: `1px solid ${UI.borderSoft}`,
-          background: "rgba(10, 22, 40, 0.5)",
+          background: UI.borderMuted,
           display: "grid",
           gridTemplateColumns: "1fr auto",
           gap: "0.6rem 2rem",

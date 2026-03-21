@@ -11,33 +11,42 @@ export const BRAND = {
     "Verifier-first witness protocol for dispute-grade event packages across Vehicle, Drone, and Robot.",
 } as const;
 
-/** Asset paths — QARAQUTU logo family. */
+/** Asset paths — QARAQUTU logo family. Real assets from brand-drop. */
 export const BRAND_PATHS = {
-  /** Primary horizontal logo — header, hero, footer, deck/OG. */
+  /** Primary horizontal logo — header, hero, footer, docs, one-page intro. */
   primaryLogo: "/brand/logo-primary.svg",
-  /** Square/icon mark — favicon, app icon, small avatar, utility. */
-  iconMark: "/brand/logo-icon.svg",
-  /** Seal/protocol badge — report seal, artifact badge, PDF cover, verification stamp. */
-  seal: "/brand/seal.svg",
+  /** Square/icon mark — favicon, app icon, manifest, compact utility. */
+  iconMark: "/brand/logo-icon-square.svg",
+  iconMarkPng: "/brand/logo-icon-square.png",
+  /** Seal/protocol badge — document cover, report seal, artifact badge, verification stamp. */
+  seal: "/brand/logo-seal.svg",
+  /** Cube-only mark — micro/secondary usage. */
+  cubeMark: "/brand/logo-cube.svg",
+  /** Wordmark monument — supporting visual only, not primary logo. */
+  wordmarkMonument: "/brand/logo-wordmark-monument.svg",
+  /** Multilingual support — supporting visual only. */
+  multilingualSupport: "/brand/brand-multilingual-support.svg",
   /** OG/social preview — 1200×630. */
-  ogImage: "/brand/og-image.svg",
+  ogImage: "/brand/og-image.png",
 } as const;
 
-/** Color tokens — canonical. */
+/** Color tokens — light theme, logo-aligned. */
 export const BRAND_COLORS = {
-  /** Dark base — canonical seriousness, witness protocol, record gravity. */
-  darkBase: "#060d1a",
-  nearBlackNavy: "#050b16",
-  /** Orange — active emphasis, verification attention, controlled signal. */
+  /** Page background — institutional off-white. */
+  bg: "#f5f6f8",
+  /** Surface — white panels. */
+  panel: "#ffffff",
+  /** Primary text — near-black. */
+  text: "#0a0a0a",
+  textSoft: "#374151",
+  textMuted: "#6b7280",
+  /** Borders — trace gray. */
+  border: "#d1d5db",
+  borderSoft: "#e5e7eb",
+  /** Orange — accent from logo. */
   accent: "#D4561A",
-  accentSoft: "rgba(212, 86, 26, 0.10)",
+  accentSoft: "rgba(212, 86, 26, 0.08)",
   accentBorder: "#B54516",
-  /** Gray grid / trace lines — infrastructure, protocol trace, structural layer. */
-  border: "#1a2d4a",
-  borderSoft: "rgba(26, 45, 74, 0.8)",
-  text: "#e8eef8",
-  textSoft: "#b8cce0",
-  textMuted: "#7a95b8",
 } as const;
 
 /** Usage hierarchy — internal discipline. */
@@ -58,12 +67,8 @@ export const BRAND_USAGE = {
     useAsTrustMark: true,
     notAsPrimaryLogo: true,
   },
-  darkBackground: {
-    textColor: BRAND_COLORS.text,
-    logoVariant: "light",
-  },
   lightBackground: {
-    textColor: "#0a1628",
+    textColor: BRAND_COLORS.text,
     logoVariant: "dark",
   },
   orangeEmphasis: {

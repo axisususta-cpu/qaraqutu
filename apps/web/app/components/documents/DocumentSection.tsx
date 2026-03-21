@@ -1,11 +1,8 @@
 "use client";
 
-const UI = {
-  border: "#1a2d4a",
-  borderSoft: "rgba(26, 45, 74, 0.6)",
-  text: "#e8eef8",
-  textMuted: "#7a95b8",
-} as const;
+import { THEME } from "../../../lib/theme";
+
+const UI = THEME;
 
 export interface DocumentSectionProps {
   /** Section title (e.g. "Incident Summary", "Verification Trace"). */

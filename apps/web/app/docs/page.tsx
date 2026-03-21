@@ -3,14 +3,15 @@
 import { LogoPrimary } from "../components/LogoPrimary";
 import { RoleDocumentMapping } from "../components/institutional/RoleDocumentMapping";
 import { DocumentFamilyRoleMatrix } from "../components/institutional/DocumentFamilyRoleMatrix";
+import { THEME } from "../../lib/theme";
 
 export default function DocsPage() {
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#020617",
-        color: "#E5E7EB",
+        background: THEME.bg,
+        color: THEME.text,
         padding: "1.75rem 2rem",
       }}
     >
@@ -26,7 +27,7 @@ export default function DocsPage() {
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Product scope
           </h2>
-          <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+          <p style={{ fontSize: "0.85rem", color: THEME.textSoft, lineHeight: 1.6 }}>
             QARAQUTU currently focuses on vehicle incident, fleet, insurance,
             claims, and legal review workflows. Public doctrine is verifier-first
             witness protocol: bounded review over canonical event packages, with
@@ -96,7 +97,7 @@ export default function DocsPage() {
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Verification semantics
           </h2>
-          <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+          <p style={{ fontSize: "0.85rem", color: THEME.textSoft, lineHeight: 1.6 }}>
             Verification is a bounded assessment of a referenced event package.
             In this version the canonical verification state can be PASS, FAIL,
             UNKNOWN, or UNVERIFIED. Verification does not constitute a
@@ -109,7 +110,7 @@ export default function DocsPage() {
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Document / artifact family
           </h2>
-          <p style={{ fontSize: "0.85rem", opacity: 0.85, marginBottom: "0.5rem" }}>
+          <p style={{ fontSize: "0.85rem", color: THEME.textSoft, marginBottom: "0.5rem" }}>
             Shared design system for protocol-grade evidence documents. Doctrine preserved:
             Recorded, Derived, Unknown/Disputed, Trace, Issuance — each in separate sections.
           </p>
@@ -136,7 +137,7 @@ export default function DocsPage() {
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Institutional use families — Role-based review and export mapping
           </h2>
-          <p style={{ fontSize: "0.85rem", opacity: 0.85, marginBottom: "0.5rem" }}>
+          <p style={{ fontSize: "0.85rem", color: THEME.textSoft, marginBottom: "0.5rem" }}>
             One canonical event core, many institutional shells. The same event spine (Event ID, Bundle ID, Manifest ID,
             Receipt ID, Version, Recorded, Derived, Unknown/Disputed, Trace, Issuance) is preserved. Only priority order,
             visibility weight, document recommendation, and shell layout vary by role.
@@ -147,13 +148,13 @@ export default function DocsPage() {
           <div style={{ marginBottom: "1rem" }}>
             <DocumentFamilyRoleMatrix />
           </div>
-          <p style={{ fontSize: "0.85rem", opacity: 0.85, marginBottom: "0.5rem" }}>
+          <p style={{ fontSize: "0.85rem", color: THEME.textSoft, marginBottom: "0.5rem" }}>
             Each role has a primary review priority, preferred document family, and forbidden conflation note. Trace-linked
             document families (Incident Report, Verification Summary, Trace Appendix, Claims Pack, Legal Pack, Technical Pack,
             Administrative Packet, Authenticity Receipt) map to these roles. Authenticity, receipt, and version visibility
             remain explicit across all shells.
           </p>
-          <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
+          <p style={{ fontSize: "0.8rem", color: THEME.textMuted }}>
             Role-based shells are a structural framework. Backend role switching is not yet implemented; the Verifier
             remains the primary inspection station with a single canonical view.
           </p>
@@ -184,7 +185,7 @@ export default function DocsPage() {
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Visibility classes & redaction
           </h2>
-          <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+          <p style={{ fontSize: "0.85rem", color: THEME.textSoft, lineHeight: 1.6 }}>
             Evidence items may carry a visibility class. The current demo
             supports <code>claims_review</code>, <code>legal_review</code>,{" "}
             <code>technical_review</code>, and{" "}
@@ -201,7 +202,7 @@ export default function DocsPage() {
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Doctrine vs implementation language
           </h2>
-          <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+          <p style={{ fontSize: "0.85rem", color: THEME.textSoft, lineHeight: 1.6 }}>
             Public product identity remains verifier-first witness protocol.
             Terms such as tenant, policy, visibility class, diagnostics route,
             and export profile are implementation descriptors for backend and API
@@ -267,7 +268,7 @@ export default function DocsPage() {
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             Diagnostics and smoke
           </h2>
-          <p style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+          <p style={{ fontSize: "0.85rem", color: THEME.textSoft, lineHeight: 1.6 }}>
             Diagnostics are exposed via the <code>/v1/system/diagnostics</code>{" "}
             route and include environment, versions, supported export profiles,
             recent export activity, recent verification activity, latest

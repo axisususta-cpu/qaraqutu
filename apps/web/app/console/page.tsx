@@ -1,19 +1,11 @@
 "use client";
 
+import { THEME } from "../../lib/theme";
+
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
-const UI = {
-  bg: "#060d1a",
-  panel: "#0a1628",
-  panelRaised: "#0d1a2f",
-  border: "#1a2d4a",
-  text: "#e8eef8",
-  textSoft: "#b8cce0",
-  textMuted: "#7a95b8",
-  accent: "#D4561A",
-  accentSoft: "rgba(212, 86, 26, 0.10)",
-} as const;
+const UI = { ...THEME };
 
 const SHELL_LANES = [
   {

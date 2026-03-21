@@ -18,6 +18,7 @@ import {
   getArtifactProfile,
   getArtifactProfilesForDomain,
 } from "../../lib/artifact-profiles";
+import { THEME } from "../../lib/theme";
 import { InstitutionalGuidanceStrip } from "../components/institutional/InstitutionalGuidanceStrip";
 
 const DEFAULT_API_BASE =
@@ -28,50 +29,12 @@ const DEFAULT_API_BASE =
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE;
 
-// ── Design language constants ──────────────────────────────────────────────
-// Surface philosophy: forensic workstation, not dashboard.
-// Three surface layers with deliberate depth.
-// Mono font for all protocol data (IDs, states, checksums, trace).
-// Sans for all human-readable copy (summaries, labels, doctrine).
+// ── Design language: light theme, institutional review station ──────────────
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
 const UI = {
-  // ── Surfaces (3 deliberate layers)
-  bg:           "#060d1a",   // deepest — page background
-  panel:        "#0a1628",   // mid — sidebar, major panels
-  panelRaised:  "#0e1e35",   // raised — card headers, inset elements
-  panelCard:    "#0c1930",   // cards — evidence items, trace rows
-  surface:      "#142040",   // interactive — hover, selected bg
-  // ── Borders (3 deliberate layers)
-  border:       "#1a2d4a",   // standard — panel outlines
-  borderMuted:  "#0f1f35",   // subtle — internal dividers
-  borderStrong: "#2a4060",   // emphasis — selected, active
-  borderSubtle: "rgba(96, 130, 182, 0.12)",
-  // ── Text (4 deliberate layers)
-  text:     "#e8eef8",   // primary
-  textSoft: "#b8cce0",   // secondary body
-  textMuted:"#7a95b8",   // metadata, helper
-  textDim:  "#4a6585",   // dimmed, placeholder
-  // ── Accent: QARAQUTU orange
-  accent:       "#D4561A",
-  accentSoft:   "rgba(212, 86, 26, 0.10)",
-  accentBorder: "#B54516",
-  accentHover:  "rgba(212, 86, 26, 0.18)",
-  // ── State colors (protocol, not decorative)
-  success:      "#2DD4BF",   // teal-green — protocol PASS
-  successSoft:  "rgba(45, 212, 191, 0.08)",
-  successBorder:"rgba(45, 212, 191, 0.22)",
-  warning:      "#F59E0B",   // amber — UNKNOWN / uncertainty
-  warningSoft:  "rgba(245, 158, 11, 0.08)",
-  warningBorder:"rgba(245, 158, 11, 0.22)",
-  error:        "#F87171",   // red — FAIL / dispute
-  errorSoft:    "rgba(248, 113, 113, 0.08)",
-  errorBorder:  "rgba(248, 113, 113, 0.22)",
-  blue:         "#60A5FA",   // trace / inspection
-  blueSoft:     "rgba(96, 165, 250, 0.08)",
-  blueBorder:   "rgba(96, 165, 250, 0.22)",
-  // ── Geometry
+  ...THEME,
   radius: { xs: 4, sm: 6, md: 8, lg: 12, xl: 16, pill: 999 },
   sectionGap: "1.75rem",
 } as const;

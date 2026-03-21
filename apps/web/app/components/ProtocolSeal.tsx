@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { BRAND_PATHS } from "../../lib/brand";
+import { THEME } from "../../lib/theme";
 
 interface ProtocolSealProps {
   /** Size in px. Default 40. */
@@ -38,7 +39,7 @@ export function ProtocolSeal({ size = 40, label, className }: ProtocolSealProps)
             fontSize: "0.65rem",
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "#7a95b8",
+            color: THEME.textMuted,
             fontFamily: "'JetBrains Mono', monospace",
           }}
         >

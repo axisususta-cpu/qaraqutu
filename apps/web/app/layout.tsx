@@ -4,20 +4,21 @@ import { webBuildMeta } from "./build-meta";
 import { NavLinks } from "./components/NavLinks";
 import { LogoPrimary } from "./components/LogoPrimary";
 import { BRAND } from "../lib/brand";
+import { THEME } from "../lib/theme";
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://qaraqutu-web.vercel.app"),
   title: "QARAQUTU — Verifier-first witness protocol",
   description: BRAND.description,
   icons: {
-    icon: "/brand/logo-icon.svg",
-    apple: "/brand/logo-icon.svg",
+    icon: "/brand/logo-icon-square.png",
+    apple: "/brand/logo-icon-square.png",
   },
   openGraph: {
     title: "QARAQUTU — Verifier-first witness protocol",
     description: BRAND.description,
     type: "website",
-    images: [{ url: "/brand/og-image.svg", width: 1200, height: 630, alt: "QARAQUTU" }],
+    images: [{ url: "/brand/og-image.png", width: 1200, height: 630, alt: "QARAQUTU" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -27,21 +28,8 @@ export const metadata = {
   manifest: "/manifest.json",
 };
 
-// Match verifier typography and surface tokens (local copy, no shared import).
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-
-const UI = {
-  bg: "#060d1a",
-  headerBg: "#050b16",
-  border: "#1a2d4a",
-  borderSoft: "rgba(26, 45, 74, 0.8)",
-  text: "#e8eef8",
-  textSoft: "#b8cce0",
-  textMuted: "#7a95b8",
-  accent: "#D4561A",
-  accentSoft: "rgba(212, 86, 26, 0.10)",
-} as const;
 
 export default function RootLayout({
   children,
@@ -55,12 +43,12 @@ export default function RootLayout({
       <head>
         {gitCommitSha !== "unknown" ? <meta name="vercel:git-commit-sha" content={gitCommitSha} /> : null}
       </head>
-      <body style={{ margin: 0, background: UI.bg, color: UI.text, fontFamily: SANS }}>
+      <body style={{ margin: 0, background: THEME.bg, color: THEME.text, fontFamily: SANS }}>
         <header
           style={{
-            background: UI.headerBg,
-            color: UI.text,
-            borderBottom: `1px solid ${UI.border}`,
+            background: THEME.headerBg,
+            color: THEME.text,
+            borderBottom: `1px solid ${THEME.border}`,
           }}
         >
           <div
@@ -86,7 +74,7 @@ export default function RootLayout({
               <div
                 style={{
                   fontSize: "0.68rem",
-                  color: UI.textMuted,
+                  color: THEME.textMuted,
                   letterSpacing: "0.14em",
                   textTransform: "uppercase",
                   fontFamily: MONO,
@@ -113,16 +101,16 @@ export default function RootLayout({
           style={{
             padding: "0.7rem 2rem 0.9rem",
             fontSize: "0.66rem",
-            color: UI.textMuted,
+            color: THEME.textMuted,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             flexWrap: "wrap",
             gap: "0.6rem",
             letterSpacing: "0.05em",
-            borderTop: `1px solid ${UI.borderSoft}`,
+            borderTop: `1px solid ${THEME.borderSoft}`,
             marginTop: "0.5rem",
-            background: "rgba(5, 11, 22, 0.4)",
+            background: THEME.panel,
           }}
         >
           <LogoPrimary href="/" height={18} />
