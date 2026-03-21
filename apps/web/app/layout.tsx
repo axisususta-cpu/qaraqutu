@@ -55,7 +55,7 @@ export default function RootLayout({
             style={{
               maxWidth: 1100,
               margin: "0 auto",
-              padding: "0.85rem 2rem",
+              padding: "1rem 2rem",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
@@ -66,19 +66,19 @@ export default function RootLayout({
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: 6,
+                gap: 8,
                 alignItems: "flex-start",
               }}
             >
-              <LogoPrimary href="/" height={28} />
+              <LogoPrimary href="/" height={40} />
               <div
-                style={{
-                  fontSize: "0.68rem",
-                  color: THEME.textMuted,
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  fontFamily: MONO,
-                }}
+              style={{
+                fontSize: "0.7rem",
+                color: THEME.textMuted,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                fontFamily: MONO,
+              }}
               >
                 {BRAND.tagline}
               </div>

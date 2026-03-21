@@ -62,7 +62,7 @@ export function DocumentShell({
         border: `1px solid ${UI.border}`,
         borderRadius: 4,
         overflow: "hidden",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+        boxShadow: "0 2px 16px rgba(0,0,0,0.08)",
       }}
     >
       {showCover && (
@@ -78,7 +78,7 @@ export function DocumentShell({
           }}
         >
           <div style={{ flex: 1 }}>
-            <LogoPrimary href="/" height={26} />
+            <LogoPrimary href="/" height={32} />
             <div
               style={{
                 marginTop: "1rem",
@@ -124,11 +124,11 @@ export function DocumentShell({
 
       <div
         style={{
-          padding: "0.75rem 2rem",
-          fontSize: "0.66rem",
+          padding: "0.8rem 2rem",
+          fontSize: "0.67rem",
           color: UI.textMuted,
-          borderBottom: `1px solid ${UI.borderSoft}`,
-          background: UI.borderMuted,
+          borderBottom: `1px solid ${UI.border}`,
+          background: UI.panelRaised,
           display: "grid",
           gridTemplateColumns: "1fr auto",
           gap: "0.6rem 2rem",
@@ -156,10 +156,11 @@ export function DocumentShell({
 
       <div
         style={{
-          padding: "0.65rem 2rem",
-          fontSize: "0.6rem",
+          padding: "0.75rem 2rem",
+          fontSize: "0.62rem",
           color: UI.textMuted,
-          borderTop: `1px solid ${UI.borderSoft}`,
+          borderTop: `1px solid ${UI.border}`,
+          background: UI.panelRaised,
           textAlign: "center",
           lineHeight: 1.55,
           fontFamily: "'JetBrains Mono', monospace",

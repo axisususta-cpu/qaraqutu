@@ -43,8 +43,8 @@ export default function LandingPage() {
           }}
         >
           <div>
-            <div style={{ marginBottom: "0.75rem" }}>
-              <LogoPrimary href="/" height={34} />
+            <div style={{ marginBottom: "1rem" }}>
+              <LogoPrimary href="/" height={44} />
             </div>
             <div
               style={{
@@ -52,13 +52,13 @@ export default function LandingPage() {
                 letterSpacing: "0.16em",
                 textTransform: "uppercase",
                 color: THEME.textMuted,
-                marginBottom: "0.6rem",
+                marginBottom: "0.65rem",
                 fontFamily: MONO,
               }}
             >
               Witness protocol
             </div>
-            <h1 style={{ fontSize: "2.1rem", margin: 0, lineHeight: 1.25, fontWeight: 600 }}>
+            <h1 style={{ fontSize: "2.2rem", margin: 0, lineHeight: 1.25, fontWeight: 600 }}>
               One product. Verifier-first. Three verticals.
             </h1>
             <p
@@ -152,7 +152,8 @@ export default function LandingPage() {
                 position: "relative",
                 borderRadius: 10,
                 overflow: "hidden",
-                border: `1px solid ${THEME.borderSoft}`,
+                border: `1px solid ${THEME.border}`,
+                boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
                 aspectRatio: "16/10",
                 background: THEME.borderMuted,
               }}
@@ -259,6 +260,7 @@ export default function LandingPage() {
                 border: `1px solid ${THEME.border}`,
                 background: THEME.panel,
                 overflow: "hidden",
+                boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
               }}
             >
               <div
@@ -330,7 +332,8 @@ export default function LandingPage() {
                 marginBottom: "0.75rem",
                 borderRadius: 8,
                 overflow: "hidden",
-                border: `1px solid ${THEME.borderSoft}`,
+                border: `1px solid ${THEME.border}`,
+                boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
                 aspectRatio: "16/9",
                 maxHeight: 200,
                 position: "relative",

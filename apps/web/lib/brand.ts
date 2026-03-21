@@ -30,10 +30,10 @@ export const BRAND_PATHS = {
   ogImage: "/brand/og-image.png",
 } as const;
 
-/** Color tokens — light theme, logo-aligned. */
+/** Color tokens — light theme, logo-aligned. Use THEME from lib/theme as source of truth. */
 export const BRAND_COLORS = {
-  /** Page background — institutional off-white. */
-  bg: "#f5f6f8",
+  /** Page background — warm institutional. */
+  bg: "#faf8f6",
   /** Surface — white panels. */
   panel: "#ffffff",
   /** Primary text — near-black. */

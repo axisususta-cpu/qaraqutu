@@ -324,7 +324,7 @@ function getReviewTone(state: string | null) {
 
   return {
     borderColor: UI.borderStrong,
-    background: "rgba(148, 163, 184, 0.08)",
+    background: UI.panelCard,
     color: UI.textSoft,
   };
 }
@@ -1092,11 +1092,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 borderRadius: 4,
                                 border:
                                   selectedSystem === sys.id
-                                    ? "1px solid #E5E7EB"
-                                    : "1px solid #374151",
+                                    ? `1px solid ${UI.accent}`
+                                    : `1px solid ${UI.border}`,
                                 background:
-                                  selectedSystem === sys.id ? "#111827" : "transparent",
-                                color: "#E5E7EB",
+                                  selectedSystem === sys.id ? UI.accentSoft : "transparent",
+                                color: UI.text,
                                 cursor: "pointer",
                                 fontSize: "0.8rem",
                               }}
@@ -1123,11 +1123,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 borderRadius: 4,
                                 border:
                                   selectedScenario === name
-                                    ? "1px solid #E5E7EB"
-                                    : "1px solid #374151",
+                                    ? `1px solid ${UI.accent}`
+                                    : `1px solid ${UI.border}`,
                                 background:
-                                  selectedScenario === name ? "#111827" : "transparent",
-                                color: "#E5E7EB",
+                                  selectedScenario === name ? UI.accentSoft : "transparent",
+                                color: UI.text,
                                 cursor: "pointer",
                                 fontSize: "0.75rem",
                               }}
@@ -2230,9 +2230,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     style={{
                       marginTop: "0.5rem",
                       padding: "0.4rem 0.6rem",
-                      background: "#020617",
-                      color: "#E5E7EB",
-                      border: "1px solid #374151",
+                      background: UI.panel,
+                      color: UI.text,
+                      border: `1px solid ${UI.border}`,
                       borderRadius: 4,
                       fontSize: "0.85rem",
                     }}
@@ -2253,9 +2253,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           fontSize: "0.85rem",
                           padding: "0.5rem 1rem",
                           borderRadius: 4,
-                          border: loading ? "1px solid #4B5563" : "1px solid #374151",
-                          background: loading ? "#1E3A5F" : "#0B1120",
-                          color: "#E5E7EB",
+                          border: loading ? `1px solid ${UI.borderStrong}` : `1px solid ${UI.accent}`,
+                          background: loading ? UI.panelCard : UI.accentSoft,
+                          color: UI.text,
                           cursor: loading ? "wait" : "pointer",
                           opacity: !selectedId ? 0.6 : 1,
                           transition: "background 0.2s ease, border-color 0.2s ease",
@@ -2269,7 +2269,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             style={{
                               width: 14,
                               height: 14,
-                              border: "2px solid #94A3B8",
+                              border: `2px solid ${UI.textMuted}`,
                               borderTopColor: "transparent",
                               borderRadius: "50%",
                               animation: "spin 0.7s linear infinite",
@@ -2288,7 +2288,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         <span
                           style={{
                             fontSize: "0.8rem",
-                            color: "#94A3B8",
+                            color: UI.textMuted,
                             fontWeight: 500,
                           }}
                         >
@@ -2305,7 +2305,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     >
                       {loading && (language === "tr" ? "İşleniyor — sonuç aşağıda güncellenecek." : "Processing — result will update below.")}
                       {!loading && verificationError && (language === "tr" ? "Hata: " : "Error: ")}
-                      {!loading && verificationError && <strong style={{ color: "#F87171" }}>{verificationError}</strong>}
+                      {!loading && verificationError && <strong style={{ color: UI.error }}>{verificationError}</strong>}
                       {!loading && !verificationError && verificationState && (language === "tr" ? "Durum: " : "Status: ")}
                       {!loading && !verificationError && verificationState && <strong>{verificationState}</strong>}
                       {!loading && !verificationError && !verificationState && selectedId && (language === "tr" ? "Doğrulama bekleniyor." : "Verification pending.")}
@@ -2318,11 +2318,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   style={{
                     marginTop: "0.5rem",
                     padding: "0.6rem 0.75rem",
-                    border: "1px solid #374151",
+                    border: `1px solid ${UI.border}`,
                     borderRadius: 4,
                     fontSize: "0.8rem",
-                    opacity: 0.9,
-                    background: "#0F172A",
+                    background: UI.panelRaised,
+                    color: UI.textSoft,
                   }}
                 >
                   {language === "tr"
@@ -2335,10 +2335,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             {isVehicle && (
             <section
               style={{
-                border: loading ? "1px solid #1E3A5F" : undefined,
+                border: loading ? `1px solid ${UI.accent}` : undefined,
                 borderRadius: 6,
                 padding: loading ? "0.75rem 1rem" : undefined,
-                background: loading ? "rgba(30, 58, 95, 0.15)" : undefined,
+                background: loading ? UI.accentSoft : undefined,
                 transition: "border-color 0.2s ease, background 0.2s ease",
                 marginTop: "1rem",
               }}
@@ -2356,7 +2356,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     gap: "0.5rem",
                     padding: "0.5rem 0",
                     fontSize: "0.85rem",
-                    color: "#94A3B8",
+                    color: UI.textMuted,
                   }}
                   role="status"
                   aria-live="polite"
@@ -2365,7 +2365,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     style={{
                       width: 14,
                       height: 14,
-                      border: "2px solid #94A3B8",
+                      border: `2px solid ${UI.textMuted}`,
                       borderTopColor: "transparent",
                       borderRadius: "50%",
                       animation: "spin 0.7s linear infinite",
@@ -2387,12 +2387,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               {verificationState && identity && (
                 <div
                   style={{
-                    border: verificationJustCompleted ? "1px solid #34D399" : "1px solid #1F2937",
+                    border: verificationJustCompleted ? `1px solid ${UI.success}` : `1px solid ${UI.border}`,
                     borderRadius: 6,
                     padding: "0.75rem 1rem",
                     marginBottom: "1rem",
                     transition: "border-color 0.3s ease",
-                    boxShadow: verificationJustCompleted ? "0 0 0 1px rgba(52, 211, 153, 0.2)" : undefined,
+                    boxShadow: verificationJustCompleted ? `0 0 0 1px ${UI.successBorder}` : undefined,
                   }}
                 >
                   <div
@@ -2492,10 +2492,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
                 <div
                   style={{
-                    border: "1px solid #374151",
+                    border: `1px solid ${UI.border}`,
                     borderRadius: 6,
                     overflow: "hidden",
-                    background: "#111827",
+                    background: UI.panelRaised,
                   }}
                 >
                   {selectedCase.axisusStates.map((s, idx) => (
@@ -2504,15 +2504,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       style={{
                         padding: "0.5rem 0.75rem",
                         borderBottom:
-                          idx < selectedCase.axisusStates!.length - 1 ? "1px solid #1F2937" : "none",
+                          idx < selectedCase.axisusStates!.length - 1 ? `1px solid ${UI.borderSoft}` : "none",
                         fontSize: "0.78rem",
-                        opacity: 0.92,
+                        color: UI.text,
                         borderLeft:
                           s.severity === "handoff"
-                            ? "3px solid #4B5563"
+                            ? `3px solid ${UI.borderStrong}`
                             : s.severity === "limit"
-                            ? "3px solid #374151"
-                            : "3px solid #1F2937",
+                            ? `3px solid ${UI.border}`
+                            : `3px solid ${UI.accent}`,
                       }}
                     >
                       <div style={{ fontWeight: 600, marginBottom: "0.25rem" }}>
@@ -2589,24 +2589,24 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   </p>
                 </div>
               ) : selectedCase.artifactProfiles && selectedCase.artifactProfiles.length > 0 ? (
-                <div style={{ border: "1px solid #1F2937", borderRadius: 6, padding: "1rem", background: "#020617" }}>
-                  <p style={{ fontSize: "0.72rem", opacity: 0.75, marginBottom: "0.75rem" }}>
+                <div style={{ border: `1px solid ${UI.border}`, borderRadius: 6, padding: "1rem", background: UI.panelRaised }}>
+                  <p style={{ fontSize: "0.72rem", color: UI.textMuted, marginBottom: "0.75rem" }}>
                     {language === "tr"
                       ? "Bu çıktı nihai hukukî veya olgusal hüküm değildir. Issuance kullanılabilirliği, gerçeklik iddiası anlamına gelmez."
                       : "This output is not a final legal or factual determination. Issuance availability does not imply a truth claim."}
                   </p>
-                  <div
-                    style={{
-                      marginBottom: "0.85rem",
-                      padding: "0.65rem 0.75rem",
-                      border: "1px solid #111827",
-                      borderRadius: 6,
-                      background: "rgba(15, 23, 42, 0.55)",
-                      fontSize: "0.76rem",
-                      lineHeight: 1.5,
-                      opacity: 0.94,
-                    }}
-                  >
+                    <div
+                      style={{
+                        marginBottom: "0.85rem",
+                        padding: "0.65rem 0.75rem",
+                        border: `1px solid ${UI.border}`,
+                        borderRadius: 6,
+                        background: UI.panelCard,
+                        fontSize: "0.76rem",
+                        lineHeight: 1.5,
+                        color: UI.text,
+                      }}
+                    >
                     <div>
                       {language === "tr"
                         ? `Amaç bağı: ${selectedProfileMeta ? selectedProfileMeta.purposeShortTr : "Seçili profile göre sınırlı issuance."}`
@@ -2671,9 +2671,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         <div
                           key={ap.profileCode}
                           style={{
-                            borderLeft: "2px solid #374151",
+                            borderLeft: `2px solid ${UI.border}`,
                             padding: "0.5rem 0.6rem",
-                            background: "rgba(15, 23, 42, 0.4)",
+                            background: UI.panelCard,
                             borderRadius: 4,
                             fontSize: "0.8rem",
                           }}
@@ -2686,7 +2686,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     })}
                   </div>
                   {isVehicle && selected && selectedCase.artifactProfiles.some((ap) => ap.enabled && ap.apiBacked && (ap.profileCode === "claims" || ap.profileCode === "legal")) ? (
-                    <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid #111827" }}>
+                    <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: `1px solid ${UI.border}` }}>
                       <div style={{ fontSize: "0.8rem", marginBottom: "0.25rem", display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
                         <span style={{ opacity: 0.8 }}>{language === "tr" ? "Issuance profili:" : "Issuance profile:"}</span>
                         {selectedCase.artifactProfiles.some((ap) => ap.profileCode === "claims" && ap.enabled && ap.apiBacked) && (
@@ -2698,9 +2698,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               fontSize: "0.8rem",
                               padding: "0.35rem 0.75rem",
                               borderRadius: 999,
-                              border: exportProfile === "claims" ? `1px solid ${UI.accentBorder}` : "1px solid #374151",
-                              background: exportProfile === "claims" ? UI.accentSoft : "#020617",
-                              color: "#E5E7EB",
+                              border: exportProfile === "claims" ? `1px solid ${UI.accentBorder}` : `1px solid ${UI.border}`,
+                              background: exportProfile === "claims" ? UI.accentSoft : UI.panel,
+                              color: UI.text,
                               cursor: exportLoading ? "not-allowed" : "pointer",
                               opacity: exportLoading ? 0.6 : 1,
                               fontWeight: exportProfile === "claims" ? 700 : 500,
@@ -2718,9 +2718,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               fontSize: "0.8rem",
                               padding: "0.35rem 0.75rem",
                               borderRadius: 999,
-                              border: exportProfile === "legal" ? `1px solid ${UI.accentBorder}` : "1px solid #374151",
-                              background: exportProfile === "legal" ? UI.accentSoft : "#020617",
-                              color: "#E5E7EB",
+                              border: exportProfile === "legal" ? `1px solid ${UI.accentBorder}` : `1px solid ${UI.border}`,
+                              background: exportProfile === "legal" ? UI.accentSoft : UI.panel,
+                              color: UI.text,
                               cursor: exportLoading ? "not-allowed" : "pointer",
                               opacity: exportLoading ? 0.6 : 1,
                               fontWeight: exportProfile === "legal" ? 700 : 500,
@@ -2744,9 +2744,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             fontSize: "0.85rem",
                             padding: "0.55rem 0.95rem",
                             borderRadius: 8,
-                            border: "1px solid #374151",
+                            border: `1px solid ${UI.border}`,
                             background: UI.panel,
-                            color: "#E5E7EB",
+                            color: UI.text,
                             cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
                             opacity: !selectedId || exportLoading ? 0.6 : 1,
                             minWidth: 176,
@@ -2765,9 +2765,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             fontSize: "0.85rem",
                             padding: "0.55rem 0.95rem",
                             borderRadius: 8,
-                            border: "1px solid #374151",
+                            border: `1px solid ${UI.border}`,
                             background: UI.panel,
-                            color: "#E5E7EB",
+                            color: UI.text,
                             cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
                             opacity: !selectedId || exportLoading ? 0.6 : 1,
                             minWidth: 176,
@@ -2917,7 +2917,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   ) : null}
                 </div>
               ) : selectedCase?.artifactIssuance?.available && selectedCase?.artifactIssuance?.apiBacked && selected ? (
-                <div style={{ border: "1px solid #1F2937", borderRadius: 6, padding: "1rem", background: "#020617" }}>
+                <div style={{ border: `1px solid ${UI.border}`, borderRadius: 6, padding: "1rem", background: UI.panelRaised }}>
                   <p style={{ fontSize: "0.72rem", opacity: 0.75, marginBottom: "0.5rem" }}>
                     {language === "tr" ? "Bu çıktı nihai hukukî veya olgusal hüküm değildir." : "This output is not a final legal or factual determination."}
                   </p>
@@ -2934,9 +2934,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontSize: "0.8rem",
                         padding: "0.25rem 0.6rem",
                         borderRadius: 4,
-                        border: exportProfile === "claims" ? "1px solid #E5E7EB" : "1px solid #374151",
-                        background: exportProfile === "claims" ? "#111827" : "#020617",
-                        color: "#E5E7EB",
+                        border: exportProfile === "claims" ? `1px solid ${UI.accent}` : `1px solid ${UI.border}`,
+                        background: exportProfile === "claims" ? UI.accentSoft : UI.panel,
+                        color: UI.text,
                         cursor: exportLoading ? "not-allowed" : "pointer",
                         opacity: exportLoading ? 0.6 : 1,
                       }}
@@ -2951,9 +2951,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontSize: "0.8rem",
                         padding: "0.25rem 0.6rem",
                         borderRadius: 4,
-                        border: exportProfile === "legal" ? "1px solid #E5E7EB" : "1px solid #374151",
-                        background: exportProfile === "legal" ? "#111827" : "#020617",
-                        color: "#E5E7EB",
+                        border: exportProfile === "legal" ? `1px solid ${UI.accent}` : `1px solid ${UI.border}`,
+                        background: exportProfile === "legal" ? UI.accentSoft : UI.panel,
+                        color: UI.text,
                         cursor: exportLoading ? "not-allowed" : "pointer",
                         opacity: exportLoading ? 0.6 : 1,
                       }}
@@ -2970,9 +2970,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontSize: "0.85rem",
                         padding: "0.4rem 0.8rem",
                         borderRadius: 4,
-                        border: "1px solid #374151",
-                        background: "#0B1120",
-                        color: "#E5E7EB",
+                        border: `1px solid ${UI.border}`,
+                        background: UI.panel,
+                        color: UI.text,
                         cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
                         opacity: !selectedId || exportLoading ? 0.6 : 1,
                       }}
@@ -2987,9 +2987,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontSize: "0.85rem",
                         padding: "0.4rem 0.8rem",
                         borderRadius: 4,
-                        border: "1px solid #374151",
-                        background: "#0B1120",
-                        color: "#E5E7EB",
+                        border: `1px solid ${UI.border}`,
+                        background: UI.panel,
+                        color: UI.text,
                         cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
                         opacity: !selectedId || exportLoading ? 0.6 : 1,
                       }}
@@ -2997,10 +2997,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {exportLoading === "pdf" ? (language === "tr" ? "Hazırlanıyor…" : "Preparing…") : language === "tr" ? "Issuance — PDF" : "Issue as PDF"}
                     </button>
                   </div>
-                  {exportError && <p style={{ fontSize: "0.8rem", marginTop: "0.5rem", color: "#fca5a5" }}>{exportError}</p>}
+                  {exportError && <p style={{ fontSize: "0.8rem", marginTop: "0.5rem", color: UI.error }}>{exportError}</p>}
                 </div>
               ) : (
-                <div style={{ border: "1px solid #111827", borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.8rem", opacity: 0.85 }}>
+                <div style={{ border: `1px solid ${UI.border}`, borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.8rem", color: UI.textMuted }}>
                   {!isVehicle ? (
                     <div>
                       <p style={{ margin: "0 0 0.5rem" }}>

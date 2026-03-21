@@ -105,7 +105,7 @@ export default function AccessPage({
               padding: "0.6rem 0.7rem",
               borderRadius: 10,
               border: `1px solid ${UI.border}`,
-              background: "rgba(0,0,0,0.25)",
+              background: UI.panelCard,
               color: UI.text,
               outline: "none",
               fontFamily: MONO,

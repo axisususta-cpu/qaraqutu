@@ -99,14 +99,14 @@ export default async function AdminPage() {
       >
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <h1 style={{ fontSize: "1.35rem", marginBottom: "0.5rem" }}>System diagnostics</h1>
-          <p style={{ fontSize: "0.85rem", color: "#fca5a5", marginBottom: "0.8rem" }}>
+          <p style={{ fontSize: "0.85rem", color: UI.error, marginBottom: "0.8rem" }}>
             Diagnostics only — not an operations dashboard.
           </p>
           <div
             style={{
               borderRadius: 10,
-              border: "1px solid rgba(127,29,29,0.6)",
-              background: "rgba(127,29,29,0.16)",
+              border: `1px solid ${UI.errorBorder}`,
+              background: UI.errorSoft,
               padding: "0.75rem 1rem",
               fontSize: "0.8rem",
             }}
@@ -238,7 +238,7 @@ export default async function AdminPage() {
                   borderRadius: 8,
                   border: `1px dashed ${UI.border}`,
                   padding: "0.55rem 0.7rem",
-                  background: "#050b16",
+                  background: UI.panelRaised,
                 }}
               >
                 <div

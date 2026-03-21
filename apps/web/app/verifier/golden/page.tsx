@@ -73,10 +73,10 @@ export default function VerifierGoldenPage() {
               padding: 0,
               margin: 0,
               fontSize: "0.85rem",
-              border: "1px solid #1F2937",
+              border: `1px solid ${UI.border}`,
               borderRadius: 6,
               overflow: "hidden",
-              background: "#020617",
+              background: UI.panelRaised,
             }}
           >
             {GOLDEN_ACCEPTANCE_RUBRIC_LABELS.map((label, i) => (
@@ -84,7 +84,8 @@ export default function VerifierGoldenPage() {
                 key={i}
                 style={{
                   padding: "0.5rem 0.85rem",
-                  borderBottom: i < GOLDEN_ACCEPTANCE_RUBRIC_LABELS.length - 1 ? "1px solid #1F2937" : "none",
+                  borderBottom: i < GOLDEN_ACCEPTANCE_RUBRIC_LABELS.length - 1 ? `1px solid ${UI.borderSoft}` : "none",
+                  color: UI.text,
                 }}
               >
                 {label}
@@ -110,11 +111,12 @@ export default function VerifierGoldenPage() {
           </h2>
           <div
             style={{
-              border: "1px solid #1F2937",
+              border: `1px solid ${UI.border}`,
               borderRadius: 6,
               padding: "0.75rem 1rem",
               fontSize: "0.8rem",
-              opacity: 0.95,
+              background: UI.panelRaised,
+              color: UI.text,
             }}
           >
             <p style={{ margin: "0 0 0.5rem" }}>
@@ -140,12 +142,12 @@ export default function VerifierGoldenPage() {
           </h2>
           <div
             style={{
-              border: "1px solid #1F2937",
+              border: `1px solid ${UI.border}`,
               borderRadius: 6,
               padding: "0.75rem 1rem",
               fontSize: "0.8rem",
-              opacity: 0.9,
-              background: allPass ? "#0F172A" : "#1C1917",
+              background: allPass ? UI.successSoft : UI.panelRaised,
+              color: UI.text,
             }}
           >
             {caseResults.map(({ case: c, result }, idx) => (
@@ -156,7 +158,7 @@ export default function VerifierGoldenPage() {
                   justifyContent: "space-between",
                   alignItems: "center",
                   padding: "0.35rem 0",
-                  borderBottom: idx < caseResults.length - 1 ? "1px solid #1F2937" : "none",
+                  borderBottom: idx < caseResults.length - 1 ? `1px solid ${UI.borderSoft}` : "none",
                 }}
               >
                 <span>
@@ -188,12 +190,13 @@ export default function VerifierGoldenPage() {
             style={{
               display: "inline-block",
               padding: "0.5rem 1rem",
-              background: "#1E3A5F",
+              background: UI.accentSoft,
               color: UI.text,
               borderRadius: 4,
               textDecoration: "none",
               fontSize: "0.85rem",
-              border: "1px solid #334155",
+              border: `1px solid ${UI.accent}`,
+              fontWeight: 600,
             }}
           >
             Open Verifier →

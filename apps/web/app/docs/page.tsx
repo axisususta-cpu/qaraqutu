@@ -19,7 +19,7 @@ export default function DocsPage() {
     >
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
         <div style={{ marginBottom: "1.5rem" }}>
-          <LogoPrimary href="/" height={28} />
+          <LogoPrimary href="/" height={36} />
         </div>
         <h1 style={{ fontSize: "1.5rem", marginBottom: "1.25rem", fontWeight: 600 }}>
           QARAQUTU Docs / API

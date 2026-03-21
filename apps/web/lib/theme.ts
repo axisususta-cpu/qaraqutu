@@ -1,39 +1,39 @@
 /**
  * QARAQUTU Light Theme — institutional, corporate, logo-aligned.
- * Black/orange/gray from real logo family. No dark-theme remnants.
+ * Black/orange/gray derived from real logo family. Brand-dominant, protocol-grade.
  */
 
 export const THEME = {
-  /** Page background — warm off-white, institutional. */
-  bg: "#f5f6f8",
+  /** Page background — warm light, institutional, logo-adjacent. */
+  bg: "#faf8f6",
   /** Header/footer surface. */
   headerBg: "#ffffff",
   /** Raised panels, cards. */
   panel: "#ffffff",
-  panelRaised: "#fafbfc",
-  panelCard: "#f8f9fa",
+  panelRaised: "#fefdfb",
+  panelCard: "#f8f6f4",
   /** Interactive surface — hover, selected. */
-  surface: "rgba(212, 86, 26, 0.04)",
-  /** Primary text — near-black, record gravity. */
-  text: "#0a0a0a",
+  surface: "rgba(212, 86, 26, 0.06)",
+  /** Primary text — near-black, record gravity, logo ink. */
+  text: "#080808",
   /** Secondary text. */
-  textSoft: "#374151",
+  textSoft: "#2d3748",
   /** Muted labels, trace. */
-  textMuted: "#6b7280",
-  textDim: "#9ca3af",
-  /** Borders — graphite/trace gray. */
-  border: "#d1d5db",
-  borderSoft: "#e5e7eb",
-  borderMuted: "#f3f4f6",
-  borderStrong: "#9ca3af",
-  borderSubtle: "rgba(0, 0, 0, 0.06)",
-  /** Accent — orange from logo, controlled signal. */
+  textMuted: "#5a6578",
+  textDim: "#8b95a5",
+  /** Borders — graphite/trace gray, premium. */
+  border: "#c9cfd6",
+  borderSoft: "#e2e6ea",
+  borderMuted: "#f0f1f3",
+  borderStrong: "#8b95a5",
+  borderSubtle: "rgba(0, 0, 0, 0.05)",
+  /** Accent — orange from logo, selective emphasis. */
   accent: "#D4561A",
-  accentSoft: "rgba(212, 86, 26, 0.08)",
+  accentSoft: "rgba(212, 86, 26, 0.1)",
   accentBorder: "#B54516",
-  accentHover: "rgba(212, 86, 26, 0.12)",
+  accentHover: "rgba(212, 86, 26, 0.14)",
   /** Active/hover states. */
-  activeBg: "rgba(212, 86, 26, 0.06)",
+  activeBg: "rgba(212, 86, 26, 0.08)",
   /** Protocol state colors (doctrine-preserving). */
   success: "#059669",
   successSoft: "rgba(5, 150, 105, 0.08)",
