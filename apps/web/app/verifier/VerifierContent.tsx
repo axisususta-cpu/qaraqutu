@@ -572,6 +572,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
       if (verificationLocalPreview && process.env.NODE_ENV !== "production") {
         const nowIso = new Date().toISOString();
+        setIssuanceState("success");
+        setSelectedFormat("pdf");
         setLastIssuedAtIso(nowIso);
         setLastIssuedArtifact({
           format: "pdf",
@@ -2834,7 +2836,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         >
                           {exportLoading === "json"
                             ? language === "tr" ? "Hazırlanıyor…" : "Preparing…"
-                            : language === "tr" ? "Bounded Issuance — JSON" : "Issue bounded JSON"}
+                            : language === "tr" ? "Sınırlı Belge Düzenleme — JSON" : "Issue bounded JSON"}
                         </button>
                         <button
                           type="button"
@@ -2855,28 +2857,28 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         >
                           {exportLoading === "pdf"
                             ? language === "tr" ? "Hazırlanıyor…" : "Preparing…"
-                            : language === "tr" ? "Bounded Issuance — PDF" : "Issue bounded PDF"}
+                            : language === "tr" ? "Sınırlı Belge Düzenleme — PDF" : "Issue bounded PDF"}
                         </button>
                       </div>
                       {(identity?.bundle_id ?? selected?.bundleId) && (
                         <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.65rem", lineHeight: 1.5 }}>
-                          Bundle ID: {identity?.bundle_id ?? selected?.bundleId} · Manifest ID: {identity?.manifest_id ?? selected?.manifestId ?? "—"} · {language === "tr" ? "Trace" : "Trace"}: {transcriptId ?? (language === "tr" ? "hazırlanmadı" : "pending")}
+                          {language === "tr" ? "Paket ID" : "Bundle ID"}: {identity?.bundle_id ?? selected?.bundleId} · {language === "tr" ? "Manifest ID" : "Manifest ID"}: {identity?.manifest_id ?? selected?.manifestId ?? "—"} · {language === "tr" ? "İz" : "Trace"}: {transcriptId ?? (language === "tr" ? "hazırlanmadı" : "pending")}
                         </div>
                       )}
-                      {issuanceState !== "idle" && (
+                      {(issuanceState !== "idle" || !!lastIssuedArtifact) && (
                         <div
                           style={{
                             marginTop: "0.85rem",
                             padding: "0.8rem 0.9rem",
                             borderRadius: 10,
                             border:
-                              issuanceState === "success"
+                              (issuanceState === "success" || (issuanceState === "idle" && !!lastIssuedArtifact))
                                 ? "1px solid var(--success)"
                                 : issuanceState === "error"
                                 ? "1px solid var(--error)"
                                 : "1px solid var(--border-strong)",
                             background:
-                              issuanceState === "success"
+                              (issuanceState === "success" || (issuanceState === "idle" && !!lastIssuedArtifact))
                                 ? "var(--success-soft)"
                                 : issuanceState === "error"
                                 ? "var(--error-soft)"
@@ -2889,14 +2891,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               fontWeight: 700,
                               marginBottom: "0.3rem",
                               color:
-                                issuanceState === "success"
+                                (issuanceState === "success" || (issuanceState === "idle" && !!lastIssuedArtifact))
                                   ? "var(--success)"
                                   : issuanceState === "error"
                                   ? "var(--error)"
                                   : "var(--text-soft)",
                             }}
                           >
-                            {issuanceState === "success"
+                            {(issuanceState === "success" || (issuanceState === "idle" && !!lastIssuedArtifact))
                               ? language === "tr"
                                 ? "Bounded issuance hazır"
                                 : "Bounded issuance ready"
@@ -2916,7 +2918,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               lineHeight: 1.5,
                             }}
                           >
-                            {issuanceState === "success"
+                            {(issuanceState === "success" || (issuanceState === "idle" && !!lastIssuedArtifact))
                               ? language === "tr"
                                 ? `Seçili ${selectedProfileLabel} profili için artifact zincire bağlı olarak üretildi. Kimlik ve purpose alanları aşağıda görünür. Artifact doğrulama izi ve manifeste bağlıdır; bilinmeyen/çekişmeli alanın yerini almaz.`
                                 : `The selected ${selectedProfileLabel} artifact was issued while staying bound to the chain. Identity and purpose fields are visible below. Artifact is bound to the verification trace and manifest; it does not replace or outrank unknown/disputed items.`
@@ -2953,23 +2955,23 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             >
                               {[
                                 {
-                                  label: language === "tr" ? "Profile" : "Profile",
+                                  label: language === "tr" ? "Profil" : "Profile",
                                   value: lastIssuedArtifact.meta.export_profile,
                                 },
                                 {
-                                  label: language === "tr" ? "Format" : "Format",
+                                  label: language === "tr" ? "Biçim" : "Format",
                                   value: lastIssuedArtifact.format,
                                 },
                                 {
-                                  label: language === "tr" ? "Export ID" : "Export ID",
+                                  label: language === "tr" ? "Dışa Aktarım ID" : "Export ID",
                                   value: lastIssuedArtifact.meta.export_id,
                                 },
                                 {
-                                  label: language === "tr" ? "Receipt ID" : "Receipt ID",
+                                  label: language === "tr" ? "Makbuz ID" : "Receipt ID",
                                   value: lastIssuedArtifact.meta.receipt_id,
                                 },
                                 {
-                                  label: language === "tr" ? "Purpose" : "Purpose",
+                                  label: language === "tr" ? "Amaç" : "Purpose",
                                   value: lastIssuedArtifact.meta.export_purpose,
                                 },
                               ].map((item) => (

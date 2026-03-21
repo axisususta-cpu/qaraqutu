@@ -18,19 +18,17 @@ export function useTheme(): ThemeContextValue {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setMode] = useState<ThemeMode>("light");
-
-  useEffect(() => {
-    const stored = localStorage.getItem("qaraqutu-theme") as ThemeMode | null;
+  const [mode, setMode] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") return "light";
+    const stored = window.localStorage.getItem("qaraqutu-theme");
+    if (stored === "dark" || stored === "light") return stored;
     const domTheme = document.documentElement.getAttribute("data-theme");
-    const resolved: ThemeMode =
-      stored === "dark" || (stored !== "light" && domTheme === "dark") ? "dark" : "light";
-    setMode(resolved);
-    document.documentElement.setAttribute("data-theme", resolved);
-  }, []);
+    return domTheme === "dark" ? "dark" : "light";
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", mode);
+    localStorage.setItem("qaraqutu-theme", mode);
   }, [mode]);
 
   const toggle = useCallback(() => {

@@ -18,14 +18,23 @@ export function useLanguage(): LanguageContextValue {
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLangState] = useState<Lang>("en");
+  const [lang, setLangState] = useState<Lang>(() => {
+    if (typeof window === "undefined") return "en";
+    const stored = window.localStorage.getItem("qaraqutu-lang");
+    if (stored === "tr" || stored === "en") return stored;
+    const domLang = document.documentElement.getAttribute("data-lang");
+    return domLang === "tr" ? "tr" : "en";
+  });
 
   useEffect(() => {
-    const stored = localStorage.getItem("qaraqutu-lang") as Lang | null;
-    if (stored === "tr" || stored === "en") setLangState(stored);
-  }, []);
+    document.documentElement.setAttribute("data-lang", lang);
+    document.documentElement.lang = lang;
+    localStorage.setItem("qaraqutu-lang", lang);
+  }, [lang]);
 
   const setLang = useCallback((next: Lang) => {
+    document.documentElement.setAttribute("data-lang", next);
+    document.documentElement.lang = next;
     localStorage.setItem("qaraqutu-lang", next);
     setLangState(next);
   }, []);

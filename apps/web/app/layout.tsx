@@ -50,6 +50,11 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem('qaraqutu-theme');var m=t==='dark'?'dark':'light';document.documentElement.setAttribute('data-theme',m)}catch(e){document.documentElement.setAttribute('data-theme','light')}})()`,
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var l=localStorage.getItem('qaraqutu-lang');var n=l==='tr'?'tr':'en';document.documentElement.setAttribute('data-lang',n);document.documentElement.lang=n}catch(e){document.documentElement.setAttribute('data-lang','en');document.documentElement.lang='en'}})()`,
+          }}
+        />
         {gitCommitSha !== "unknown" ? <meta name="vercel:git-commit-sha" content={gitCommitSha} /> : null}
       </head>
       <body style={{ margin: 0, background: "var(--bg)", color: "var(--text)", fontFamily: SANS }}>

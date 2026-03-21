@@ -344,13 +344,22 @@ export default function LandingPage() {
             </div>
             <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
               <li>
-                <strong>Claims</strong> receives concise dispute-ready summaries tied to canonical references.
+                <strong>Claims</strong>{" "}
+                {lang === "tr"
+                  ? "kanonik referanslara bağlı, uyuşmazlık-odaklı kısa özetler alır."
+                  : "receives concise dispute-ready summaries tied to canonical references."}
               </li>
               <li>
-                <strong>Legal</strong> receives chain-centric artifacts with manifest, receipt, and provenance framing.
+                <strong>Legal</strong>{" "}
+                {lang === "tr"
+                  ? "manifest, makbuz ve provenans çerçevesiyle zincir-merkezli artefaktlar alır."
+                  : "receives chain-centric artifacts with manifest, receipt, and provenance framing."}
               </li>
               <li>
-                <strong>Technical</strong> remains anchored to the canonical event object and evidence separation.
+                <strong>Technical</strong>{" "}
+                {lang === "tr"
+                  ? "kanonik olay nesnesi ve kanıt ayrımı omurgasına bağlı kalır."
+                  : "remains anchored to the canonical event object and evidence separation."}
               </li>
             </ul>
           </section>
@@ -389,14 +398,22 @@ export default function LandingPage() {
               <EvidenceLayerDiagram />
             </div>
             <p style={{ fontSize: "0.84rem", opacity: 0.9, color: "var(--text-soft)", marginTop: 0, marginBottom: "0.45rem" }}>
-              Controlled artifact outputs remain role-bounded and trace-linked:
+              {lang === "tr"
+                ? "Kontrollü artifact çıktıları role bağlı ve ize bağlı kalır:"
+                : "Controlled artifact outputs remain role-bounded and trace-linked:"}
             </p>
             <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
               <li>
-                <strong>Claims pack:</strong> JSON/PDF artifact family for claims review posture.
+                <strong>{lang === "tr" ? "Claims pack:" : "Claims pack:"}</strong>{" "}
+                {lang === "tr"
+                  ? "hasar inceleme duruşu için JSON/PDF artifact ailesi."
+                  : "JSON/PDF artifact family for claims review posture."}
               </li>
               <li>
-                <strong>Legal pack:</strong> JSON/PDF artifact family with explicit chain and provenance framing.
+                <strong>{lang === "tr" ? "Legal pack:" : "Legal pack:"}</strong>{" "}
+                {lang === "tr"
+                  ? "açık zincir ve provenans çerçevesi taşıyan JSON/PDF artifact ailesi."
+                  : "JSON/PDF artifact family with explicit chain and provenance framing."}
               </li>
             </ul>
           </section>
@@ -470,22 +487,34 @@ export default function LandingPage() {
           <SectionHeader badge={lang === "tr" ? "Y\u00fczeyler" : "Surfaces"} heading={m.sectionProductSurfaces} />
           <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", marginTop: 0 }}>
             <li>
-              <strong>Verifier</strong> - primary review station; canonical event inspection and bounded verification
-              chain.
+              <strong>Verifier</strong>{" "}
+              {lang === "tr"
+                ? "- birincil inceleme istasyonu; kanonik olay denetimi ve sınırlı doğrulama zinciri."
+                : "- primary review station; canonical event inspection and bounded verification chain."}
             </li>
             <li>
-              <strong>Golden</strong> - internal quality reference and rubric surface for verifier continuity; not a
-              separate primary product.
+              <strong>Golden</strong>{" "}
+              {lang === "tr"
+                ? "- doğrulayıcı sürekliliği için dahili kalite/rubrik yüzeyi; ayrı bir birincil ürün değildir."
+                : "- internal quality reference and rubric surface for verifier continuity; not a separate primary product."}
             </li>
             <li>
-              <strong>Console</strong> - reserved shell for controlled protocol shell preparation and future bounded
-              operator surface; not active execution.
+              <strong>Console</strong>{" "}
+              {lang === "tr"
+                ? "- kontrollü protokol kabuğu hazırlığı için ayrılmış yüzey; aktif yürütme değildir."
+                : "- reserved shell for controlled protocol shell preparation and future bounded operator surface; not active execution."}
             </li>
             <li>
-              <strong>Docs</strong> - protocol and API framing for implementation alignment.
+              <strong>Docs</strong>{" "}
+              {lang === "tr"
+                ? "- uygulama hizalaması için protokol ve API çerçevesi."
+                : "- protocol and API framing for implementation alignment."}
             </li>
             <li>
-              <strong>Admin / diagnostics</strong> - diagnostics-only workbench for environment and verification health.
+              <strong>Admin / diagnostics</strong>{" "}
+              {lang === "tr"
+                ? "- ortam ve doğrulama sağlığı için yalnız tanılama çalışma yüzeyi."
+                : "- diagnostics-only workbench for environment and verification health."}
             </li>
           </ul>
           <div style={{ marginTop: "0.75rem", display: "flex", flexWrap: "wrap", gap: "0.6rem", fontSize: "0.8rem" }}>
@@ -498,7 +527,7 @@ export default function LandingPage() {
                 background: "var(--accent-soft)",
               }}
             >
-              Verifier (primary)
+              {lang === "tr" ? "Doğrulayıcı (birincil)" : "Verifier (primary)"}
             </span>
             <span
               style={{
@@ -508,7 +537,7 @@ export default function LandingPage() {
                 color: "var(--text-soft)",
               }}
             >
-              Golden (internal reference)
+              {lang === "tr" ? "Golden (dahili referans)" : "Golden (internal reference)"}
             </span>
             <span
               style={{
@@ -518,7 +547,7 @@ export default function LandingPage() {
                 color: "var(--text-soft)",
               }}
             >
-              Console (reserved preparation shell)
+              {lang === "tr" ? "Konsol (ayrılmış hazırlık kabuğu)" : "Console (reserved preparation shell)"}
             </span>
             <span
               style={{
@@ -528,7 +557,7 @@ export default function LandingPage() {
                 color: "var(--text-soft)",
               }}
             >
-              Docs
+              {lang === "tr" ? "Belgeler" : "Docs"}
             </span>
             <span
               style={{
@@ -538,7 +567,7 @@ export default function LandingPage() {
                 color: "var(--text-soft)",
               }}
             >
-              Admin (diagnostics-only)
+              {lang === "tr" ? "Admin (yalnız tanılama)" : "Admin (diagnostics-only)"}
             </span>
           </div>
         </section>
@@ -553,11 +582,9 @@ export default function LandingPage() {
           }}
         >
           <p style={{ fontSize: "0.75rem", opacity: 0.8, color: "var(--text-muted)", maxWidth: 820, lineHeight: 1.6 }}>
-            QARAQUTU is a dispute-grade evidence system. It is not a liability
-            engine, not a judicial decision system, and not a substitute for
-            independent legal, claims, or technical judgment. Verifier states
-            and exports are role-appropriate artifacts linked to
-            a canonical record, not unilateral findings about fault or outcome.
+            {lang === "tr"
+              ? "QARAQUTU, uyuşmazlık düzeyinde bir kanıt sistemidir. Sorumluluk motoru, yargısal karar sistemi veya bağımsız hukuk/hasar/teknik değerlendirmelerin yerine geçen bir yapı değildir. Doğrulayıcı durumları ve dışa aktarımlar, tek taraflı kusur-sonuç hükmü değil; kanonik kayda bağlı role uygun artefaktlardır."
+              : "QARAQUTU is a dispute-grade evidence system. It is not a liability engine, not a judicial decision system, and not a substitute for independent legal, claims, or technical judgment. Verifier states and exports are role-appropriate artifacts linked to a canonical record, not unilateral findings about fault or outcome."}
           </p>
         </section>
       </div>
