@@ -8,15 +8,15 @@
   "theme_color": "#ffffff",
   "icons": [
     {
-      "src": "/brand/logo-icon-square.png",
+      "src": "/brand/logo-icon-square-light.svg",
       "sizes": "any",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/brand/logo-icon-square.svg",
+      "src": "/brand/logo-icon-square.png",
       "sizes": "any",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any"
     }
   ]

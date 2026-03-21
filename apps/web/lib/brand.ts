@@ -11,15 +11,20 @@ export const BRAND = {
     "Verifier-first witness protocol for dispute-grade event packages across Vehicle, Drone, and Robot.",
 } as const;
 
-/** Asset paths — QARAQUTU logo family. Real assets from brand-drop. */
+/** Asset paths — QARAQUTU logo family. Final variants from brand-final-variants. */
 export const BRAND_PATHS = {
-  /** Primary horizontal logo — header, hero, footer, docs, one-page intro. */
-  primaryLogo: "/brand/logo-primary.svg",
-  /** Square/icon mark — favicon, app icon, manifest, compact utility. */
-  iconMark: "/brand/logo-icon-square.svg",
+  /** Explicit variant paths — future-proof for light/dark theme switching. */
+  primaryLight: "/brand/logo-primary-light.svg",
+  primaryDark: "/brand/logo-primary-dark.svg",
+  sealLight: "/brand/logo-seal-light.svg",
+  sealDark: "/brand/logo-seal-dark.svg",
+  iconSquareLight: "/brand/logo-icon-square-light.svg",
+  iconSquareDark: "/brand/logo-icon-square-dark.svg",
+  /** Live defaults — light theme (current QARAQUTU UI). */
+  primaryLogo: "/brand/logo-primary-light.svg",
+  seal: "/brand/logo-seal-light.svg",
+  iconMark: "/brand/logo-icon-square-light.svg",
   iconMarkPng: "/brand/logo-icon-square.png",
-  /** Seal/protocol badge — document cover, report seal, artifact badge, verification stamp. */
-  seal: "/brand/logo-seal.svg",
   /** Cube-only mark — micro/secondary usage. */
   cubeMark: "/brand/logo-cube.svg",
   /** Wordmark monument — supporting visual only, not primary logo. */

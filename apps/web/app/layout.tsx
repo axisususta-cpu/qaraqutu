@@ -11,8 +11,8 @@ export const metadata = {
   title: "QARAQUTU — Verifier-first witness protocol",
   description: BRAND.description,
   icons: {
-    icon: "/brand/logo-icon-square.png",
-    apple: "/brand/logo-icon-square.png",
+    icon: "/brand/logo-icon-square-light.svg",
+    apple: "/brand/logo-icon-square-light.svg",
   },
   openGraph: {
     title: "QARAQUTU — Verifier-first witness protocol",
