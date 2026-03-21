@@ -155,25 +155,25 @@ export default function ConsolePage() {
               Shell readiness is controlled and phased. This surface signals protocol evolution status, not active
               production execution.
             </p>
-            <div
-              style={{
-                marginTop: "0.75rem",
-                borderRadius: 8,
-                border: `1px dashed ${UI.border}`,
-                padding: "0.7rem 0.8rem",
-                fontSize: "0.8rem",
-                lineHeight: 1.6,
-                background: "#081224",
-              }}
-            >
-              <div style={{ color: UI.textSoft, marginBottom: "0.2rem" }}>
-                <strong>Current mode:</strong> reserved preparation shell
-              </div>
-              <div style={{ color: UI.textMuted }}>
-                No command runner, no production operation trigger, and no expanded operator privileges are enabled in
-                this stage.
-              </div>
+          <div
+            style={{
+              marginTop: "0.75rem",
+              borderRadius: 8,
+              border: `1px dashed ${UI.border}`,
+              padding: "0.7rem 0.8rem",
+              fontSize: "0.8rem",
+              lineHeight: 1.6,
+              background: UI.panelCard,
+            }}
+          >
+            <div style={{ color: UI.textSoft, marginBottom: "0.2rem" }}>
+              <strong>Current mode:</strong> reserved preparation shell
             </div>
+            <div style={{ color: UI.textMuted }}>
+              No command runner, no production operation trigger, and no expanded operator privileges are enabled in
+              this stage.
+            </div>
+          </div>
           </div>
         </section>
 
@@ -199,7 +199,7 @@ export default function ConsolePage() {
                 style={{
                   borderRadius: 10,
                   border: `1px solid ${UI.border}`,
-                  background: "#081325",
+                  background: UI.panelRaised,
                   padding: "0.75rem 0.8rem",
                 }}
               >

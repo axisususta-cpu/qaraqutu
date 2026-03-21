@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { THEME } from "../../lib/theme";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 
@@ -35,17 +34,16 @@ export function NavLinks() {
             key={href}
             href={linkHref}
             style={{
-              color: isVerifierActive ? THEME.accent : isActive ? THEME.text : THEME.textMuted,
+              color: isVerifierActive ? "var(--accent)" : isActive ? "var(--text)" : "var(--text-muted)",
               textDecoration: "none",
               padding: "0.2rem 0.5rem",
               borderRadius: 999,
-              border:
-                isVerifierActive
-                  ? `1px solid ${THEME.accent}`
-                  : isActive
-                  ? `1px solid ${THEME.border}`
-                  : `1px solid ${THEME.borderSoft}`,
-              background: isVerifierActive ? THEME.accentSoft : isActive ? THEME.activeBg : "transparent",
+              border: isVerifierActive
+                ? "1px solid var(--accent-border)"
+                : isActive
+                ? "1px solid var(--border)"
+                : "1px solid var(--border-soft)",
+              background: isVerifierActive ? "var(--accent-soft)" : isActive ? "var(--active-bg)" : "transparent",
               fontSize: href === "/verifier/golden" || href === "/console" || href === "/admin" ? "0.78rem" : "0.8rem",
               fontWeight: isVerifierActive ? 600 : isActive ? 500 : 400,
               fontFamily: isVerifierActive ? MONO : undefined,

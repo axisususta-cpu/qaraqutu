@@ -3,19 +3,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import { BRAND, BRAND_PATHS } from "../../lib/brand";
+import { useTheme } from "../../lib/ThemeContext";
 
 interface LogoPrimaryProps {
-  /** Link target; omit for non-link usage (e.g. footer). */
   href?: string;
-  /** Height in px. Default 28. */
   height?: number;
   className?: string;
 }
 
 export function LogoPrimary({ href = "/", height = 28, className }: LogoPrimaryProps) {
+  const { mode } = useTheme();
+  // light surface → logo-primary-light (black ink); dark surface → logo-primary-dark (orange)
+  const src = mode === "dark" ? BRAND_PATHS.primaryDark : BRAND_PATHS.primaryLight;
+
   const img = (
     <Image
-      src={BRAND_PATHS.primaryLogo}
+      src={src}
       alt={BRAND.name}
       width={Math.round(height * 5.625)}
       height={height}

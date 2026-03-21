@@ -1,11 +1,74 @@
 @import "tailwindcss";
 
+/* ── QARAQUTU Theme: CSS Custom Properties ─────────────────────────────── */
+/* Light mode (default) */
+:root {
+  --bg: #faf8f6;
+  --header-bg: #ffffff;
+  --panel: #ffffff;
+  --panel-raised: #fefdfb;
+  --panel-card: #f8f6f4;
+  --surface: rgba(212, 86, 26, 0.06);
+  --text: #080808;
+  --text-soft: #2d3748;
+  --text-muted: #5a6578;
+  --text-dim: #8b95a5;
+  --border: #c9cfd6;
+  --border-soft: #e2e6ea;
+  --border-muted: #f0f1f3;
+  --border-strong: #8b95a5;
+  --border-subtle: rgba(0,0,0,0.05);
+  --accent: #D4561A;
+  --accent-soft: rgba(212, 86, 26, 0.10);
+  --accent-border: #B54516;
+  --accent-hover: rgba(212, 86, 26, 0.14);
+  --active-bg: rgba(212, 86, 26, 0.08);
+  --chip-bg: rgba(212, 86, 26, 0.10);
+  --chip-border: rgba(212, 86, 26, 0.22);
+  --chip-text: #D4561A;
+  --cta-gradient: linear-gradient(135deg, #D4561A, #B54516);
+  --cta-shadow: 0 2px 12px rgba(212, 86, 26, 0.20);
+  color-scheme: light;
+}
+
+/* Dark mode */
+[data-theme="dark"] {
+  --bg: #0c0c0b;
+  --header-bg: #111110;
+  --panel: #161614;
+  --panel-raised: #1a1a18;
+  --panel-card: #1e1e1c;
+  --surface: rgba(255, 107, 43, 0.07);
+  --text: #f0ede8;
+  --text-soft: #c5c0b5;
+  --text-muted: #7a7568;
+  --text-dim: #4d4840;
+  --border: #2c2b28;
+  --border-soft: #222220;
+  --border-muted: #1c1c1a;
+  --border-strong: #454540;
+  --border-subtle: rgba(255,255,255,0.04);
+  --accent: #FF6B2B;
+  --accent-soft: rgba(255, 107, 43, 0.12);
+  --accent-border: #E05A1C;
+  --accent-hover: rgba(255, 107, 43, 0.18);
+  --active-bg: rgba(255, 107, 43, 0.09);
+  --chip-bg: rgba(255, 107, 43, 0.12);
+  --chip-border: rgba(255, 107, 43, 0.28);
+  --chip-text: #FF7A3D;
+  --cta-gradient: linear-gradient(135deg, #FF6B2B, #D4561A);
+  --cta-shadow: 0 2px 16px rgba(255, 107, 43, 0.25);
+  color-scheme: dark;
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
     "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }
 
 *,

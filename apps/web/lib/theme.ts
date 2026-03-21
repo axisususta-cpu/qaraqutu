@@ -1,6 +1,7 @@
 /**
- * QARAQUTU Light Theme — institutional, corporate, logo-aligned.
- * Black/orange/gray derived from real logo family. Brand-dominant, protocol-grade.
+ * QARAQUTU Theme System — light and dark.
+ * Both modes derive from the same brand palette: orange/black/gray from the real logo family.
+ * Use THEME (light default) or DARK_THEME. CSS custom properties are the runtime source of truth.
  */
 
 export const THEME = {
@@ -55,3 +56,50 @@ export const THEME = {
   blueSoft: "rgba(37, 99, 235, 0.08)",
   blueBorder: "rgba(37, 99, 235, 0.25)",
 } as const;
+
+/**
+ * QARAQUTU Dark Theme — deep graphite, orange accent, same brand.
+ * Same institution; different surface. Not cyberpunk, not startup-dark.
+ */
+export const DARK_THEME = {
+  bg: "#0c0c0b",
+  headerBg: "#111110",
+  panel: "#161614",
+  panelRaised: "#1a1a18",
+  panelCard: "#1e1e1c",
+  surface: "rgba(255, 107, 43, 0.07)",
+  text: "#f0ede8",
+  textSoft: "#c5c0b5",
+  textMuted: "#7a7568",
+  textDim: "#4d4840",
+  border: "#2c2b28",
+  borderSoft: "#222220",
+  borderMuted: "#1c1c1a",
+  borderStrong: "#454540",
+  borderSubtle: "rgba(255,255,255, 0.04)",
+  accent: "#FF6B2B",
+  accentSoft: "rgba(255, 107, 43, 0.12)",
+  accentBorder: "#E05A1C",
+  accentHover: "rgba(255, 107, 43, 0.18)",
+  activeBg: "rgba(255, 107, 43, 0.09)",
+  chipBg: "rgba(255, 107, 43, 0.12)",
+  chipBorder: "rgba(255, 107, 43, 0.28)",
+  chipText: "#FF7A3D",
+  ctaGradient: "linear-gradient(135deg, #FF6B2B, #D4561A)",
+  ctaShadow: "0 2px 16px rgba(255, 107, 43, 0.25)",
+  success: "#10b981",
+  successSoft: "rgba(16, 185, 129, 0.1)",
+  successBorder: "rgba(16, 185, 129, 0.28)",
+  warning: "#F59E0B",
+  warningSoft: "rgba(245, 158, 11, 0.1)",
+  warningBorder: "rgba(245, 158, 11, 0.28)",
+  error: "#EF4444",
+  errorSoft: "rgba(239, 68, 68, 0.1)",
+  errorBorder: "rgba(239, 68, 68, 0.28)",
+  blue: "#3B82F6",
+  blueSoft: "rgba(59, 130, 246, 0.1)",
+  blueBorder: "rgba(59, 130, 246, 0.28)",
+} as const;
+
+export type ThemeMode = "light" | "dark";
+export const THEMES = { light: THEME, dark: DARK_THEME } as const;

@@ -9,8 +9,6 @@ import { EvidenceLayerDiagram } from "./components/diagrams/EvidenceLayerDiagram
 import { RoleExportDiagram } from "./components/diagrams/RoleExportDiagram";
 import { InstitutionalUseFamilies } from "./components/institutional/InstitutionalUseFamilies";
 import { SectorScenarioCards } from "./components/sector/SectorScenarioCards";
-import { THEME } from "../lib/theme";
-
 const MEDIA = {
   hero: "/media/home/home-hero-vehicle.jpg",
   vehicle: "/media/home/vehicle-section-dashboard.jpg",
@@ -28,9 +26,9 @@ export default function LandingPage() {
       className="home-hero-with-grid"
       style={{
         minHeight: "100vh",
-        background: THEME.bg,
+        background: "var(--bg)",
         backgroundPosition: "0 0",
-        color: THEME.text,
+        color: "var(--text)",
         padding: "1.75rem 2rem 2.25rem",
         fontFamily: SANS,
       }}
@@ -56,7 +54,7 @@ export default function LandingPage() {
                 fontSize: "1rem",
                 fontStyle: "normal",
                 fontWeight: 500,
-                color: THEME.textSoft,
+                color: "var(--text-soft)",
                 letterSpacing: "-0.01em",
                 lineHeight: 1.35,
                 fontFamily: SANS,
@@ -72,9 +70,9 @@ export default function LandingPage() {
                 padding: "0.25rem 0.6rem",
                 borderRadius: 999,
                 marginBottom: "0.65rem",
-                background: THEME.chipBg,
-                border: `1px solid ${THEME.chipBorder}`,
-                color: THEME.chipText,
+                background: "var(--chip-bg)",
+                border: "1px solid var(--chip-border)",
+                color: "var(--chip-text)",
                 fontSize: "0.7rem",
                 fontWeight: 600,
                 letterSpacing: "0.1em",
@@ -85,13 +83,12 @@ export default function LandingPage() {
               Witness protocol
             </div>
             <h1 style={{ fontSize: "2.2rem", margin: 0, lineHeight: 1.25, fontWeight: 600 }}>
-              One product. <span style={{ color: THEME.accent }}>Verifier-first.</span> Three verticals.
+              One product. <span style={{ color: "var(--accent)" }}>Verifier-first.</span> Three verticals.
             </h1>
             <p
               style={{
                 fontSize: "0.96rem",
-                color: THEME.textSoft,
-                opacity: 0.95,
+                color: "var(--text-soft)",
                 maxWidth: 680,
                 lineHeight: 1.6,
                 marginTop: "0.85rem",
@@ -121,11 +118,11 @@ export default function LandingPage() {
                   key={line}
                   style={{
                     borderRadius: 8,
-                    border: `1px solid ${THEME.borderSoft}`,
-                    background: THEME.panel,
+                    border: "1px solid var(--border-soft)",
+                    background: "var(--panel)",
                     padding: "0.48rem 0.62rem",
                     fontSize: "0.79rem",
-                    color: THEME.textSoft,
+                    color: "var(--text-soft)",
                   }}
                 >
                   {line}
@@ -147,8 +144,8 @@ export default function LandingPage() {
                   padding: "0.6rem 1.35rem",
                   borderRadius: 12,
                   border: "none",
-                  background: THEME.ctaGradient,
-                  boxShadow: THEME.ctaShadow,
+                background: "var(--cta-gradient)",
+                boxShadow: "var(--cta-shadow)",
                   textDecoration: "none",
                   color: "#ffffff",
                   fontWeight: 600,
@@ -164,10 +161,10 @@ export default function LandingPage() {
                 style={{
                   padding: "0.55rem 1.1rem",
                   borderRadius: 12,
-                  border: `1px solid ${THEME.border}`,
-                  background: THEME.panel,
+                  border: "1px solid var(--border)",
+                  background: "var(--panel)",
                   textDecoration: "none",
-                  color: THEME.textSoft,
+                  color: "var(--text-soft)",
                 }}
               >
                 Docs
@@ -180,10 +177,10 @@ export default function LandingPage() {
                 position: "relative",
                 borderRadius: 12,
                 overflow: "hidden",
-                border: `1px solid ${THEME.border}`,
+                border: "1px solid var(--border)",
                 boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
                 aspectRatio: "16/10",
-                background: THEME.borderMuted,
+                background: "var(--border-muted)",
               }}
             >
               <Image
@@ -199,10 +196,10 @@ export default function LandingPage() {
             <div
               style={{
                 borderRadius: 10,
-                border: `1px dashed ${THEME.border}`,
+                border: "1px dashed var(--border)",
                 padding: "0.55rem 0.7rem",
                 fontSize: "0.77rem",
-                color: THEME.textMuted,
+                color: "var(--text-muted)",
                 lineHeight: 1.5,
               }}
             >
@@ -224,14 +221,14 @@ export default function LandingPage() {
           <section
             style={{
               borderRadius: 12,
-              border: `1px solid ${THEME.border}`,
-              background: THEME.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "1.1rem 1.25rem",
               boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             }}
           >
             <SectionHeader badge="Context" heading="The problem" />
-            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: THEME.textSoft, margin: 0 }}>
+            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
               <li>Incident review data is fragmented across logs, captures, and exported files.</li>
               <li>Recorded facts and derived interpretations are often collapsed into one narrative layer.</li>
               <li>Claims, legal, and technical teams rarely anchor decisions on the same canonical object.</li>
@@ -242,8 +239,8 @@ export default function LandingPage() {
           <section
             style={{
               borderRadius: 12,
-              border: `1px solid ${THEME.border}`,
-              background: THEME.panelRaised,
+              border: "1px solid var(--border)",
+              background: "var(--panel-raised)",
               padding: "1.1rem 1.25rem",
               boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             }}
@@ -252,7 +249,7 @@ export default function LandingPage() {
             <div style={{ marginBottom: "0.75rem" }}>
               <CanonicalSpineDiagram />
             </div>
-            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: THEME.textSoft, margin: 0 }}>
+            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
               <li>
                 <strong>Single product:</strong> one canonical event model across Vehicle, Drone, and Robot.
               </li>
@@ -287,8 +284,8 @@ export default function LandingPage() {
               key={v.key}
               style={{
                 borderRadius: 12,
-                border: `1px solid ${THEME.border}`,
-                background: THEME.panel,
+                border: "1px solid var(--border)",
+                background: "var(--panel)",
                 overflow: "hidden",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
               }}
@@ -297,7 +294,7 @@ export default function LandingPage() {
                 style={{
                   position: "relative",
                   aspectRatio: "4/3",
-                  background: THEME.borderMuted,
+                  background: "var(--border-muted)",
                 }}
               >
                 <Image
@@ -308,9 +305,9 @@ export default function LandingPage() {
                   style={{ objectFit: "cover" }}
                 />
               </div>
-              <div style={{ padding: "0.65rem 0.85rem", borderTop: `1px solid ${THEME.borderSoft}` }}>
-                <div style={{ fontSize: "0.85rem", fontWeight: 600, color: THEME.text, marginBottom: "0.2rem", fontFamily: MONO }}>{v.label}</div>
-                <div style={{ fontSize: "0.7rem", color: THEME.textMuted, fontFamily: MONO }}>{v.trace}</div>
+              <div style={{ padding: "0.65rem 0.85rem", borderTop: "1px solid var(--border-soft)" }}>
+                <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)", marginBottom: "0.2rem", fontFamily: MONO }}>{v.label}</div>
+                <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontFamily: MONO }}>{v.trace}</div>
               </div>
             </div>
           ))}
@@ -327,8 +324,8 @@ export default function LandingPage() {
           <section
             style={{
               borderRadius: 12,
-              border: `1px solid ${THEME.border}`,
-              background: THEME.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "1.1rem 1.25rem",
               boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             }}
@@ -337,7 +334,7 @@ export default function LandingPage() {
             <div style={{ marginBottom: "0.75rem" }}>
               <RoleExportDiagram />
             </div>
-            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: THEME.textSoft, margin: 0 }}>
+            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
               <li>
                 <strong>Claims</strong> receives concise dispute-ready summaries tied to canonical references.
               </li>
@@ -352,8 +349,8 @@ export default function LandingPage() {
           <section
             style={{
               borderRadius: 12,
-              border: `1px solid ${THEME.border}`,
-              background: THEME.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "1.1rem 1.25rem",
               boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             }}
@@ -364,12 +361,12 @@ export default function LandingPage() {
                 marginBottom: "0.75rem",
                 borderRadius: 8,
                 overflow: "hidden",
-                border: `1px solid ${THEME.border}`,
+                border: "1px solid var(--border)",
                 boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
                 aspectRatio: "16/9",
                 maxHeight: 200,
                 position: "relative",
-                background: THEME.borderMuted,
+                background: "var(--border-muted)",
               }}
             >
               <Image
@@ -383,10 +380,10 @@ export default function LandingPage() {
             <div style={{ marginBottom: "0.75rem" }}>
               <EvidenceLayerDiagram />
             </div>
-            <p style={{ fontSize: "0.84rem", opacity: 0.9, color: THEME.textSoft, marginTop: 0, marginBottom: "0.45rem" }}>
+            <p style={{ fontSize: "0.84rem", opacity: 0.9, color: "var(--text-soft)", marginTop: 0, marginBottom: "0.45rem" }}>
               Controlled artifact outputs remain role-bounded and trace-linked:
             </p>
-            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: THEME.textSoft, margin: 0 }}>
+            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
               <li>
                 <strong>Claims pack:</strong> JSON/PDF artifact family for claims review posture.
               </li>
@@ -401,8 +398,8 @@ export default function LandingPage() {
         <section
           style={{
             borderRadius: 12,
-            border: `1px solid ${THEME.border}`,
-            background: THEME.panelRaised,
+            border: "1px solid var(--border)",
+            background: "var(--panel-raised)",
             padding: "1.35rem 1.5rem",
             boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
           }}
@@ -420,8 +417,8 @@ export default function LandingPage() {
         <section
           style={{
             borderRadius: 12,
-            border: `1px solid ${THEME.border}`,
-            background: THEME.panel,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
             padding: "1.35rem 1.5rem",
             boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
           }}
@@ -439,8 +436,8 @@ export default function LandingPage() {
         <section
           style={{
             borderRadius: 12,
-            border: `1px solid ${THEME.border}`,
-            background: THEME.panel,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
             padding: "1.1rem 1.25rem",
             boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
           }}
@@ -456,14 +453,14 @@ export default function LandingPage() {
         <section
           style={{
             borderRadius: 12,
-            border: `1px solid ${THEME.border}`,
-            background: THEME.panel,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
             padding: "1.1rem 1.25rem",
             boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
           }}
         >
           <SectionHeader badge="Surfaces" heading="Product surfaces" />
-          <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: THEME.textSoft, marginTop: 0 }}>
+          <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", marginTop: 0 }}>
             <li>
               <strong>Verifier</strong> - primary review station; canonical event inspection and bounded verification
               chain.
@@ -488,9 +485,9 @@ export default function LandingPage() {
               style={{
                 padding: "0.35rem 0.8rem",
                 borderRadius: 999,
-                border: `1px solid ${THEME.border}`,
-                color: THEME.text,
-                background: THEME.accentSoft,
+                border: "1px solid var(--border)",
+                color: "var(--text)",
+                background: "var(--accent-soft)",
               }}
             >
               Verifier (primary)
@@ -499,8 +496,8 @@ export default function LandingPage() {
               style={{
                 padding: "0.35rem 0.8rem",
                 borderRadius: 999,
-                border: `1px solid ${THEME.border}`,
-                color: THEME.textSoft,
+                border: "1px solid var(--border)",
+                color: "var(--text-soft)",
               }}
             >
               Golden (internal reference)
@@ -509,8 +506,8 @@ export default function LandingPage() {
               style={{
                 padding: "0.35rem 0.8rem",
                 borderRadius: 999,
-                border: `1px solid ${THEME.border}`,
-                color: THEME.textSoft,
+                border: "1px solid var(--border)",
+                color: "var(--text-soft)",
               }}
             >
               Console (reserved preparation shell)
@@ -519,8 +516,8 @@ export default function LandingPage() {
               style={{
                 padding: "0.35rem 0.8rem",
                 borderRadius: 999,
-                border: `1px solid ${THEME.border}`,
-                color: THEME.textSoft,
+                border: "1px solid var(--border)",
+                color: "var(--text-soft)",
               }}
             >
               Docs
@@ -529,8 +526,8 @@ export default function LandingPage() {
               style={{
                 padding: "0.35rem 0.8rem",
                 borderRadius: 999,
-                border: `1px solid ${THEME.border}`,
-                color: THEME.textSoft,
+                border: "1px solid var(--border)",
+                color: "var(--text-soft)",
               }}
             >
               Admin (diagnostics-only)
@@ -542,12 +539,12 @@ export default function LandingPage() {
         <section
           style={{
             marginTop: "0.4rem",
-            borderTop: `1px solid ${THEME.border}`,
+            borderTop: "1px solid var(--border)",
             paddingTop: "0.85rem",
             paddingBottom: "0.1rem",
           }}
         >
-          <p style={{ fontSize: "0.75rem", opacity: 0.8, color: THEME.textMuted, maxWidth: 820, lineHeight: 1.6 }}>
+          <p style={{ fontSize: "0.75rem", opacity: 0.8, color: "var(--text-muted)", maxWidth: 820, lineHeight: 1.6 }}>
             QARAQUTU is a dispute-grade evidence system. It is not a liability
             engine, not a judicial decision system, and not a substitute for
             independent legal, claims, or technical judgment. Verifier states
@@ -559,3 +556,6 @@ export default function LandingPage() {
     </main>
   );
 }
+
+
+
