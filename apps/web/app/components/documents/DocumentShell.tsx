@@ -1,10 +1,8 @@
-"use client";
+﻿"use client";
 
 import { ProtocolSeal } from "../ProtocolSeal";
 import { LogoPrimary } from "../LogoPrimary";
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 
 export interface DocumentShellProps {
   /** Document type: Incident Report, Verification Summary, Trace Appendix, Role-based Export. */
@@ -56,10 +54,10 @@ export function DocumentShell({
       style={{
         maxWidth: 800,
         margin: "0 auto",
-        background: UI.panel,
-        color: UI.text,
+        background: "var(--panel)",
+        color: "var(--text)",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        border: `1px solid ${UI.border}`,
+        border: "1px solid var(--border)",
         borderRadius: 4,
         overflow: "hidden",
         boxShadow: "0 2px 16px rgba(0,0,0,0.08)",
@@ -69,8 +67,8 @@ export function DocumentShell({
         <div
           style={{
             padding: "1.85rem 2rem",
-            borderBottom: `1px solid ${UI.border}`,
-            background: UI.panelRaised,
+            borderBottom: "1px solid var(--border)",
+            background: "var(--panel-raised)",
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
@@ -85,7 +83,7 @@ export function DocumentShell({
                 fontSize: "0.7rem",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                color: UI.textMuted,
+                color: "var(--text-muted)",
                 fontFamily: "'JetBrains Mono', monospace",
               }}
             >
@@ -96,7 +94,7 @@ export function DocumentShell({
                 marginTop: "0.35rem",
                 fontSize: "0.9rem",
                 fontFamily: "'JetBrains Mono', monospace",
-                color: UI.text,
+                color: "var(--text)",
                 letterSpacing: "0.04em",
               }}
             >
@@ -107,7 +105,7 @@ export function DocumentShell({
                 style={{
                   marginTop: "0.4rem",
                   fontSize: "0.7rem",
-                  color: UI.textMuted,
+                  color: "var(--text-muted)",
                   fontFamily: "'JetBrains Mono', monospace",
                   letterSpacing: "0.03em",
                 }}
@@ -126,9 +124,9 @@ export function DocumentShell({
         style={{
           padding: "0.8rem 2rem",
           fontSize: "0.67rem",
-          color: UI.textMuted,
-          borderBottom: `1px solid ${UI.border}`,
-          background: UI.panelRaised,
+          color: "var(--text-muted)",
+          borderBottom: "1px solid var(--border)",
+          background: "var(--panel-raised)",
           display: "grid",
           gridTemplateColumns: "1fr auto",
           gap: "0.6rem 2rem",
@@ -158,9 +156,9 @@ export function DocumentShell({
         style={{
           padding: "0.75rem 2rem",
           fontSize: "0.62rem",
-          color: UI.textMuted,
-          borderTop: `1px solid ${UI.border}`,
-          background: UI.panelRaised,
+          color: "var(--text-muted)",
+          borderTop: "1px solid var(--border)",
+          background: "var(--panel-raised)",
           textAlign: "center",
           lineHeight: 1.55,
           fontFamily: "'JetBrains Mono', monospace",
@@ -173,3 +171,4 @@ export function DocumentShell({
     </div>
   );
 }
+

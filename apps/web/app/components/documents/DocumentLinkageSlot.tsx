@@ -1,8 +1,6 @@
-"use client";
+﻿"use client";
 
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 
 export interface DocumentLinkageSlotProps {
   /** Label: QR, Receipt, Manifest, Trace. */
@@ -29,9 +27,9 @@ export function DocumentLinkageSlot({ label, value, refLink, size = 64, children
         alignItems: "center",
         gap: "0.35rem",
         padding: "0.55rem 0.65rem",
-        border: `1px solid ${UI.borderSoft}`,
+        border: "1px solid var(--border-soft)",
         borderRadius: 4,
-        background: UI.panelRaised,
+        background: "var(--panel-raised)",
       }}
     >
       {children ?? (
@@ -39,13 +37,13 @@ export function DocumentLinkageSlot({ label, value, refLink, size = 64, children
           style={{
             width: size,
             height: size,
-            border: `1px dashed ${UI.borderSoft}`,
+            border: `1px dashed ${"var(--border-soft)"}`,
             borderRadius: 4,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             fontSize: "0.6rem",
-            color: UI.textMuted,
+            color: "var(--text-muted)",
             fontFamily: "'JetBrains Mono', monospace",
           }}
         >
@@ -57,20 +55,21 @@ export function DocumentLinkageSlot({ label, value, refLink, size = 64, children
           fontSize: "0.6rem",
           letterSpacing: "0.08em",
           textTransform: "uppercase",
-          color: UI.textMuted,
+          color: "var(--text-muted)",
           fontFamily: "'JetBrains Mono', monospace",
         }}
       >
         {label}
       </div>
       {value && (
-        <div style={{ fontSize: "0.65rem", color: UI.text, fontFamily: "'JetBrains Mono', monospace" }}>{value}</div>
+        <div style={{ fontSize: "0.65rem", color: "var(--text)", fontFamily: "'JetBrains Mono', monospace" }}>{value}</div>
       )}
       {refLink && (
-        <div style={{ fontSize: "0.6rem", color: UI.textMuted, fontFamily: "'JetBrains Mono', monospace" }}>
+        <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", fontFamily: "'JetBrains Mono', monospace" }}>
           {refLink}
         </div>
       )}
     </div>
   );
 }
+

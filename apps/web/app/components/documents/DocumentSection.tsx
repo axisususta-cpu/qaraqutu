@@ -1,8 +1,6 @@
-"use client";
+﻿"use client";
 
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 
 export interface DocumentSectionProps {
   /** Section title (e.g. "Incident Summary", "Verification Trace"). */
@@ -25,19 +23,20 @@ export function DocumentSection({ title, number, children }: DocumentSectionProp
           fontWeight: 600,
           marginBottom: "0.6rem",
           marginTop: 0,
-          color: UI.text,
+          color: "var(--text)",
           fontFamily: "'JetBrains Mono', monospace",
           letterSpacing: "0.06em",
           paddingBottom: "0.35rem",
-          borderBottom: `1px solid ${UI.borderSoft}`,
+          borderBottom: "1px solid var(--border-soft)",
         }}
       >
         {number != null && (
-          <span style={{ color: UI.textMuted, marginRight: "0.5rem", fontWeight: 500 }}>{number}.</span>
+          <span style={{ color: "var(--text-muted)", marginRight: "0.5rem", fontWeight: 500 }}>{number}.</span>
         )}
         {title}
       </h3>
-      <div style={{ fontSize: "0.81rem", lineHeight: 1.65, color: UI.text }}>{children}</div>
+      <div style={{ fontSize: "0.81rem", lineHeight: 1.65, color: "var(--text)" }}>{children}</div>
     </section>
   );
 }
+

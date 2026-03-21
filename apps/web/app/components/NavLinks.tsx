@@ -2,24 +2,29 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLanguage } from "../../lib/LanguageContext";
+import { MSG } from "../../lib/i18n/messages";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 
-const ROUTES: { href: string; label: string; verifierPrimary?: boolean; protected?: boolean }[] = [
-  { href: "/", label: "Home" },
-  { href: "/verifier", label: "Verifier", verifierPrimary: true },
-  { href: "/verifier/golden", label: "Golden (internal)", protected: true },
-  { href: "/console", label: "Console (protected)", protected: true },
-  { href: "/docs", label: "Docs" },
-  { href: "/admin", label: "Admin (protected)", protected: true },
+const ROUTES: { href: string; msgKey: keyof typeof MSG.en; verifierPrimary?: boolean; protected?: boolean }[] = [
+  { href: "/", msgKey: "navHome" },
+  { href: "/verifier", msgKey: "navVerifier", verifierPrimary: true },
+  { href: "/verifier/golden", msgKey: "navGolden", protected: true },
+  { href: "/console", msgKey: "navConsole", protected: true },
+  { href: "/docs", msgKey: "navDocs" },
+  { href: "/admin", msgKey: "navAdmin", protected: true },
 ];
 
 export function NavLinks() {
   const pathname = usePathname() ?? "";
+  const { lang } = useLanguage();
+  const m = MSG[lang];
 
   return (
     <>
-      {ROUTES.map(({ href, label, verifierPrimary, protected: isProtected }) => {
+      {ROUTES.map(({ href, msgKey, verifierPrimary, protected: isProtected }) => {
+        const label = m[msgKey] as string;
         const isActive =
           href === "/"
             ? pathname === "/"

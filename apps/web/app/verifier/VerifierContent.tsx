@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLanguage } from "../../lib/LanguageContext";
 import type {
   CanonicalEvent,
   CreateExportRequest,
@@ -18,7 +19,6 @@ import {
   getArtifactProfile,
   getArtifactProfilesForDomain,
 } from "../../lib/artifact-profiles";
-import { THEME } from "../../lib/theme";
 import { InstitutionalGuidanceStrip } from "../components/institutional/InstitutionalGuidanceStrip";
 import { SectorVerifierStrip } from "../components/sector/SectorVerifierStrip";
 
@@ -34,8 +34,8 @@ const API_BASE =
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
+// UI now uses CSS custom properties; only structural constants kept here
 const UI = {
-  ...THEME,
   radius: { xs: 4, sm: 6, md: 8, lg: 12, xl: 16, pill: 999 },
   sectionGap: "1.75rem",
 } as const;
@@ -300,37 +300,37 @@ function getVisibleUnknownItems(
 function getReviewTone(state: string | null) {
   if (state === "PASS") {
     return {
-      borderColor: UI.success,
-      background: UI.successSoft,
-      color: UI.success,
+      borderColor: "var(--success)",
+      background: "var(--success-soft)",
+      color: "var(--success)",
     };
   }
 
   if (state === "FAIL") {
     return {
-      borderColor: UI.error,
-      background: UI.errorSoft,
-      color: UI.error,
+      borderColor: "var(--error)",
+      background: "var(--error-soft)",
+      color: "var(--error)",
     };
   }
 
   if (state === "UNKNOWN") {
     return {
-      borderColor: UI.warning,
-      background: UI.warningSoft,
-      color: UI.warning,
+      borderColor: "var(--warning)",
+      background: "var(--warning-soft)",
+      color: "var(--warning)",
     };
   }
 
   return {
-    borderColor: UI.borderStrong,
-    background: UI.panelCard,
-    color: UI.textSoft,
+    borderColor: "var(--border-strong)",
+    background: "var(--panel-card)",
+    color: "var(--text-soft)",
   };
 }
 
 export function VerifierContent({ initialEventId }: { initialEventId?: string }) {
-  const [language, setLanguage] = useState<"en" | "tr">("en");
+  const { lang: language, setLang: setLanguage } = useLanguage();
   const [selectedSystem, setSelectedSystem] = useState<MockSystemId>("vehicle");
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -623,16 +623,16 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     <div
       style={{
         minHeight: "100vh",
-        background: UI.bg,
-        color: UI.text,
+        background: "var(--bg)",
+        color: "var(--text)",
         fontFamily: SANS,
       }}
     >
       {/* ── Topbar ── */}
       <div
         style={{
-          borderBottom: `1px solid ${UI.border}`,
-          background: UI.panel,
+          borderBottom: "1px solid var(--border)",
+          background: "var(--panel)",
         }}
       >
         <div
@@ -654,8 +654,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   width: 7,
                   height: 7,
                   borderRadius: "50%",
-                  background: UI.accent,
-                  boxShadow: `0 0 6px ${UI.accent}60`,
+                  background: "var(--accent)",
+                  boxShadow: `0 0 6px ${"var(--accent)"}60`,
                   flexShrink: 0,
                 }}
               />
@@ -664,7 +664,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   fontFamily: MONO,
                   fontSize: "0.72rem",
                   letterSpacing: "0.08em",
-                  color: UI.textMuted,
+                  color: "var(--text-muted)",
                   fontWeight: 500,
                 }}
               >
@@ -675,7 +675,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               style={{
                 width: 1,
                 height: 16,
-                background: UI.border,
+                background: "var(--border)",
               }}
             />
             <span
@@ -683,7 +683,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 fontSize: "0.72rem",
                 letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                color: UI.textDim,
+                color: "var(--text-dim)",
                 fontWeight: 600,
               }}
             >
@@ -701,12 +701,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   gap: "0.5rem",
                   padding: "0.25rem 0.6rem",
                   borderRadius: UI.radius.xs,
-                  border: `1px solid ${UI.border}`,
-                  background: UI.panelCard,
+                  border: "1px solid var(--border)",
+                  background: "var(--panel-card)",
                 }}
               >
-                <span style={{ fontFamily: MONO, fontSize: "0.65rem", color: UI.textDim }}>EVT</span>
-                <span style={{ fontFamily: MONO, fontSize: "0.65rem", color: UI.textMuted, fontWeight: 600 }}>
+                <span style={{ fontFamily: MONO, fontSize: "0.65rem", color: "var(--text-dim)" }}>EVT</span>
+                <span style={{ fontFamily: MONO, fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 600 }}>
                   {selectedEventCard.eventId}
                 </span>
               </div>
@@ -718,8 +718,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 gap: "0.15rem",
                 padding: "0.15rem",
                 borderRadius: UI.radius.xs,
-                border: `1px solid ${UI.border}`,
-                background: UI.bg,
+                border: "1px solid var(--border)",
+                background: "var(--bg)",
               }}
             >
               {(["en", "tr"] as const).map((l) => (
@@ -731,8 +731,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     padding: "0.2rem 0.55rem",
                     borderRadius: UI.radius.xs,
                     border: "none",
-                    background: language === l ? UI.surface : "transparent",
-                    color: language === l ? UI.text : UI.textDim,
+                    background: language === l ? "var(--surface)" : "transparent",
+                    color: language === l ? "var(--text)" : "var(--text-dim)",
                     cursor: "pointer",
                     fontWeight: language === l ? 700 : 400,
                     fontSize: "0.65rem",
@@ -755,8 +755,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       {/* ── Page title area ── */}
       <div
         style={{
-          borderBottom: `1px solid ${UI.border}`,
-          background: UI.panel,
+          borderBottom: "1px solid var(--border)",
+          background: "var(--panel)",
           boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
         }}
       >
@@ -775,9 +775,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               padding: "0.2rem 0.55rem",
               borderRadius: 999,
               marginBottom: "0.5rem",
-              background: UI.chipBg,
-              border: `1px solid ${UI.chipBorder}`,
-              color: UI.chipText,
+              background: "var(--chip-bg)",
+              border: `1px solid ${"var(--chip-border)"}`,
+              color: "var(--chip-text)",
               fontSize: "0.65rem",
               fontWeight: 600,
               letterSpacing: "0.1em",
@@ -793,7 +793,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               fontSize: "1.25rem",
               fontWeight: 700,
               letterSpacing: "-0.015em",
-              color: UI.text,
+              color: "var(--text)",
               lineHeight: 1.3,
             }}
           >
@@ -803,7 +803,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             style={{
               margin: "0.3rem 0 0",
               fontSize: "0.78rem",
-              color: UI.textDim,
+              color: "var(--text-dim)",
               lineHeight: 1.5,
             }}
           >
@@ -830,11 +830,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               <span
                 key={item}
                 style={{
-                  border: `1px solid ${UI.borderMuted}`,
+                  border: `1px solid ${"var(--border-muted)"}`,
                   borderRadius: UI.radius.pill,
                   padding: "0.14rem 0.5rem",
-                  color: UI.textMuted,
-                  background: UI.panelCard,
+                  color: "var(--text-muted)",
+                  background: "var(--panel-card)",
                 }}
               >
                 {item}
@@ -846,8 +846,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               marginTop: "0.5rem",
               padding: "0.45rem 0.6rem",
               borderRadius: UI.radius.xs,
-              border: `1px solid ${UI.borderMuted}`,
-              background: UI.panelCard,
+              border: `1px solid ${"var(--border-muted)"}`,
+              background: "var(--panel-card)",
               display: "grid",
               gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
               gap: "0.4rem",
@@ -855,26 +855,26 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             }}
           >
             <div>
-              <div style={{ fontFamily: MONO, color: UI.textDim, fontSize: "0.58rem", letterSpacing: "0.08em" }}>
+              <div style={{ fontFamily: MONO, color: "var(--text-dim)", fontSize: "0.58rem", letterSpacing: "0.08em" }}>
                 {language === "tr" ? "SEÇİLİ SİSTEM" : "SELECTED SYSTEM"}
               </div>
-              <div style={{ color: UI.textSoft, fontWeight: 600 }}>{selectedSystem.toUpperCase()}</div>
+              <div style={{ color: "var(--text-soft)", fontWeight: 600 }}>{selectedSystem.toUpperCase()}</div>
             </div>
             <div>
-              <div style={{ fontFamily: MONO, color: UI.textDim, fontSize: "0.58rem", letterSpacing: "0.08em" }}>
+              <div style={{ fontFamily: MONO, color: "var(--text-dim)", fontSize: "0.58rem", letterSpacing: "0.08em" }}>
                 {language === "tr" ? "SEÇİLİ SENARYO" : "SELECTED SCENARIO"}
               </div>
-              <div style={{ color: UI.textSoft, fontWeight: 600 }}>
+              <div style={{ color: "var(--text-soft)", fontWeight: 600 }}>
                 {selectedCase?.scenarioFrame ??
                   selectedScenario ??
                   (language === "tr" ? "Seçilmedi" : "Not selected")}
               </div>
             </div>
             <div>
-              <div style={{ fontFamily: MONO, color: UI.textDim, fontSize: "0.58rem", letterSpacing: "0.08em" }}>
+              <div style={{ fontFamily: MONO, color: "var(--text-dim)", fontSize: "0.58rem", letterSpacing: "0.08em" }}>
                 {language === "tr" ? "SEÇİLİ OLAY" : "SELECTED EVENT"}
               </div>
-              <div style={{ color: UI.textSoft, fontWeight: 600 }}>
+              <div style={{ color: "var(--text-soft)", fontWeight: 600 }}>
                 {selectedEventCard?.eventId ?? (language === "tr" ? "Seçilmedi" : "Not selected")}
               </div>
             </div>
@@ -899,9 +899,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               top: "1rem",
               maxHeight: "calc(100vh - 2rem)",
               overflowY: "auto",
-              border: `1px solid ${UI.border}`,
+              border: "1px solid var(--border)",
               borderRadius: UI.radius.lg,
-              background: UI.panel,
+              background: "var(--panel)",
               overflow: "hidden",
             }}
             aria-label={language === "tr" ? "Komut omurgası" : "Command spine"}
@@ -910,8 +910,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <div
               style={{
                 padding: "0.75rem 1rem",
-                borderBottom: `1px solid ${UI.border}`,
-                background: UI.panelRaised,
+                borderBottom: "1px solid var(--border)",
+                background: "var(--panel-raised)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -922,7 +922,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   fontFamily: MONO,
                   fontSize: "0.62rem",
                   letterSpacing: "0.1em",
-                  color: UI.textDim,
+                  color: "var(--text-dim)",
                   fontWeight: 600,
                   textTransform: "uppercase",
                 }}
@@ -933,7 +933,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 style={{
                   fontFamily: MONO,
                   fontSize: "0.6rem",
-                  color: UI.textDim,
+                  color: "var(--text-dim)",
                   letterSpacing: "0.04em",
                 }}
               >
@@ -946,15 +946,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               style={{
                 margin: "0.65rem 0.75rem",
                 padding: "0.5rem 0.65rem",
-                background: UI.accentSoft,
-                border: `1px solid ${UI.accentBorder}40`,
-                borderLeft: `2px solid ${UI.accent}`,
+                background: "var(--accent-soft)",
+                border: `1px solid ${"var(--accent-border)"}40`,
+                borderLeft: "2px solid var(--accent)",
                 borderRadius: UI.radius.xs,
               }}
               role="status"
               aria-live="polite"
             >
-              <div style={{ fontSize: "0.72rem", fontWeight: 600, color: UI.text, lineHeight: 1.4 }}>
+              <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text)", lineHeight: 1.4 }}>
                 {language === "tr"
                   ? "1. Sistem → 2. Senaryo → 3. Olay"
                   : "1. System → 2. Scenario → 3. Event"}
@@ -1025,18 +1025,18 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               return (
                 <div key={section.id}>
                   {showDivider && (
-                    <div style={{ height: 1, background: UI.border, margin: "0.5rem 0" }} />
+                    <div style={{ height: 1, background: "var(--border)", margin: "0.5rem 0" }} />
                   )}
                   <div
                     style={{
                       marginBottom: "0.2rem",
                       borderRadius: UI.radius.xs,
-                      border: isActive ? `1px solid ${UI.borderStrong}` : `1px solid transparent`,
-                      background: isActive ? UI.surface : "transparent",
+                      border: isActive ? "1px solid var(--border-strong)" : `1px solid transparent`,
+                      background: isActive ? "var(--surface)" : "transparent",
                       borderLeft: isActive
-                        ? `3px solid ${UI.accent}`
+                        ? "3px solid var(--accent)"
                         : isStep
-                        ? `3px solid ${UI.border}`
+                        ? `3px solid ${"var(--border)"}`
                         : `3px solid transparent`,
                     }}
                   >
@@ -1049,7 +1049,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       padding: "0.45rem 0.6rem",
                       background: "transparent",
                       border: "none",
-                      color: isActive ? UI.text : UI.textMuted,
+                      color: isActive ? "var(--text)" : "var(--text-muted)",
                       fontSize: "0.75rem",
                       fontWeight: isActive ? 600 : 400,
                       display: "flex",
@@ -1072,7 +1072,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       }}
                     >
                       {section.step != null && (
-                        <span style={{ fontFamily: MONO, fontSize: "0.62rem", color: isActive ? UI.accent : UI.textDim, fontWeight: 700, flexShrink: 0 }}>
+                        <span style={{ fontFamily: MONO, fontSize: "0.62rem", color: isActive ? "var(--accent)" : "var(--text-dim)", fontWeight: 700, flexShrink: 0 }}>
                           {section.step}
                         </span>
                       )}
@@ -1081,7 +1081,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     <span
                       style={{
                         fontSize: "0.55rem",
-                        color: UI.textDim,
+                        color: "var(--text-dim)",
                         fontWeight: 700,
                         fontFamily: MONO,
                         flexShrink: 0,
@@ -1094,7 +1094,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     <div
                       style={{
                         padding: "0.5rem 0.65rem 0.65rem",
-                        borderTop: `1px solid ${UI.borderMuted}`,
+                        borderTop: `1px solid ${"var(--border-muted)"}`,
                         fontSize: "0.74rem",
                       }}
                     >
@@ -1113,11 +1113,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 borderRadius: 4,
                                 border:
                                   selectedSystem === sys.id
-                                    ? `1px solid ${UI.accent}`
-                                    : `1px solid ${UI.border}`,
+                                    ? "1px solid var(--accent)"
+                                    : "1px solid var(--border)",
                                 background:
-                                  selectedSystem === sys.id ? UI.accentSoft : "transparent",
-                                color: UI.text,
+                                  selectedSystem === sys.id ? "var(--accent-soft)" : "transparent",
+                                color: "var(--text)",
                                 cursor: "pointer",
                                 fontSize: "0.8rem",
                               }}
@@ -1144,11 +1144,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 borderRadius: 4,
                                 border:
                                   selectedScenario === name
-                                    ? `1px solid ${UI.accent}`
-                                    : `1px solid ${UI.border}`,
+                                    ? "1px solid var(--accent)"
+                                    : "1px solid var(--border)",
                                 background:
-                                  selectedScenario === name ? UI.accentSoft : "transparent",
-                                color: UI.text,
+                                  selectedScenario === name ? "var(--accent-soft)" : "transparent",
+                                color: "var(--text)",
                                 cursor: "pointer",
                                 fontSize: "0.75rem",
                               }}
@@ -1179,13 +1179,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             displayEvents.map((ev) => {
                               const isSelected = selectedEventId === ev.eventId;
                               const stateColor =
-                                ev.state === "PASS" ? UI.success :
-                                ev.state === "FAIL" ? UI.error :
-                                ev.state === "UNKNOWN" ? UI.warning : UI.textDim;
+                                ev.state === "PASS" ? "var(--success)" :
+                                ev.state === "FAIL" ? "var(--error)" :
+                                ev.state === "UNKNOWN" ? "var(--warning)" : "var(--text-dim)";
                               const stateBg =
-                                ev.state === "PASS" ? UI.successSoft :
-                                ev.state === "FAIL" ? UI.errorSoft :
-                                ev.state === "UNKNOWN" ? UI.warningSoft : `${UI.textDim}10`;
+                                ev.state === "PASS" ? "var(--success-soft)" :
+                                ev.state === "FAIL" ? "var(--error-soft)" :
+                                ev.state === "UNKNOWN" ? "var(--warning-soft)" : `${"var(--text-dim)"}10`;
                               return (
                               <button
                                 key={ev.eventId}
@@ -1196,11 +1196,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                   textAlign: "left",
                                   borderRadius: UI.radius.xs,
                                   border: isSelected
-                                    ? `1px solid ${UI.borderStrong}`
-                                    : `1px solid ${UI.borderMuted}`,
-                                  borderLeft: `3px solid ${isSelected ? UI.accent : UI.borderMuted}`,
-                                  background: isSelected ? UI.surface : UI.panelCard,
-                                  color: UI.text,
+                                    ? "1px solid var(--border-strong)"
+                                    : `1px solid ${"var(--border-muted)"}`,
+                                  borderLeft: `3px solid ${isSelected ? "var(--accent)" : "var(--border-muted)"}`,
+                                  background: isSelected ? "var(--surface)" : "var(--panel-card)",
+                                  color: "var(--text)",
                                   cursor: "pointer",
                                   width: "100%",
                                   display: "block",
@@ -1214,8 +1214,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                     alignItems: "center",
                                     justifyContent: "space-between",
                                     padding: "0.45rem 0.6rem 0.3rem",
-                                    borderBottom: `1px solid ${isSelected ? UI.border : UI.borderMuted}`,
-                                    background: isSelected ? UI.panelRaised : UI.panel,
+                                    borderBottom: `1px solid ${isSelected ? "var(--border)" : "var(--border-muted)"}`,
+                                    background: isSelected ? "var(--panel-raised)" : "var(--panel)",
                                   }}
                                 >
                                   <span
@@ -1223,7 +1223,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                       fontFamily: MONO,
                                       fontSize: "0.65rem",
                                       fontWeight: 600,
-                                      color: isSelected ? UI.text : UI.textMuted,
+                                      color: isSelected ? "var(--text)" : "var(--text-muted)",
                                       letterSpacing: "0.02em",
                                       overflow: "hidden",
                                       textOverflow: "ellipsis",
@@ -1255,10 +1255,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 </div>
                                 {/* card row 2: title + summary */}
                                 <div style={{ padding: "0.35rem 0.6rem 0.45rem" }}>
-                                  <div style={{ fontSize: "0.72rem", color: isSelected ? UI.textSoft : UI.textMuted, fontWeight: isSelected ? 500 : 400, marginBottom: "0.15rem", lineHeight: 1.35 }}>
+                                  <div style={{ fontSize: "0.72rem", color: isSelected ? "var(--text-soft)" : "var(--text-muted)", fontWeight: isSelected ? 500 : 400, marginBottom: "0.15rem", lineHeight: 1.35 }}>
                                     {ev.title}
                                   </div>
-                                  <div style={{ fontFamily: SANS, fontSize: "0.65rem", color: UI.textDim, lineHeight: 1.4 }}>
+                                  <div style={{ fontFamily: SANS, fontSize: "0.65rem", color: "var(--text-dim)", lineHeight: 1.4 }}>
                                     {ev.summary.slice(0, 52)}{ev.summary.length > 52 ? "…" : ""}
                                   </div>
                                 </div>
@@ -1409,30 +1409,30 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     borderRadius: UI.radius.xs,
                     padding: "0.5rem 0.85rem",
                     fontSize: "0.68rem",
-                    background: UI.panelCard,
-                    border: `1px solid ${UI.borderMuted}`,
-                    color: UI.textDim,
+                    background: "var(--panel-card)",
+                    border: `1px solid ${"var(--border-muted)"}`,
+                    color: "var(--text-dim)",
                     display: "flex",
                     alignItems: "center",
                     gap: "0.5rem 1rem",
                     flexWrap: "wrap",
                   }}
                 >
-                  <span style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.1em", textTransform: "uppercase", color: UI.textDim, fontWeight: 600, flexShrink: 0 }}>
+                  <span style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", fontWeight: 600, flexShrink: 0 }}>
                     {language === "tr" ? "DEMO" : "DEMO"}
                   </span>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0 0.6rem", color: UI.textDim }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0 0.6rem", color: "var(--text-dim)" }}>
                     {[
                       language === "tr" ? "Demo senaryo" : "Demo scenario",
                       language === "tr" ? "Kamuya açık" : "Public class",
                       language === "tr" ? "Anonimize" : "Anonymized",
                       language === "tr" ? "Nihai hüküm değildir" : "Not a final determination",
                     ].map((item, i, arr) => (
-                      <span key={i}>{item}{i < arr.length - 1 ? <span style={{ margin: "0 0.25rem", color: UI.textDim }}> ·</span> : null}</span>
+                      <span key={i}>{item}{i < arr.length - 1 ? <span style={{ margin: "0 0.25rem", color: "var(--text-dim)" }}> ·</span> : null}</span>
                     ))}
                   </div>
                   {(selectedCase.demoNoticeTr || selectedCase.demoNoticeEn) && (
-                    <span style={{ color: UI.textDim }}>
+                    <span style={{ color: "var(--text-dim)" }}>
                       {language === "tr" ? selectedCase.demoNoticeTr : selectedCase.demoNoticeEn}
                     </span>
                   )}
@@ -1444,10 +1444,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <section style={{ marginBottom: UI.sectionGap }} aria-labelledby="stage-heading">
               <div
                 style={{
-                  border: `1px solid ${UI.border}`,
+                  border: "1px solid var(--border)",
                   borderRadius: UI.radius.md,
                   borderLeft: `3px solid ${reviewTone.borderColor}`,
-                  background: UI.panel,
+                  background: "var(--panel)",
                   overflow: "hidden",
                 }}
               >
@@ -1455,8 +1455,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 <div
                   style={{
                     padding: "0.75rem 1.25rem",
-                    borderBottom: `1px solid ${UI.borderMuted}`,
-                    background: UI.panelRaised,
+                    borderBottom: `1px solid ${"var(--border-muted)"}`,
+                    background: "var(--panel-raised)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
@@ -1470,7 +1470,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       fontSize: "0.62rem",
                       letterSpacing: "0.1em",
                       textTransform: "uppercase",
-                      color: UI.textDim,
+                      color: "var(--text-dim)",
                       fontWeight: 600,
                     }}
                   >
@@ -1529,12 +1529,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             gap: "0.25rem",
                             padding: "0.2rem 0.5rem",
                             borderRadius: UI.radius.xs,
-                            background: UI.panelCard,
-                            border: `1px solid ${UI.borderMuted}`,
+                            background: "var(--panel-card)",
+                            border: `1px solid ${"var(--border-muted)"}`,
                           }}
                         >
-                          <span style={{ fontFamily: MONO, fontSize: "0.55rem", color: UI.textDim, letterSpacing: "0.08em" }}>{label}</span>
-                          <span style={{ fontFamily: MONO, fontSize: "0.65rem", color: UI.textMuted, fontWeight: 600 }}>{value}</span>
+                          <span style={{ fontFamily: MONO, fontSize: "0.55rem", color: "var(--text-dim)", letterSpacing: "0.08em" }}>{label}</span>
+                          <span style={{ fontFamily: MONO, fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 600 }}>{value}</span>
                         </div>
                       ))}
                     </div>
@@ -1548,25 +1548,25 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <section style={{ marginBottom: UI.sectionGap }}>
               <div
                 style={{
-                  border: `1px solid ${UI.borderMuted}`,
+                  border: `1px solid ${"var(--border-muted)"}`,
                   borderRadius: UI.radius.sm,
-                  background: UI.panelCard,
+                  background: "var(--panel-card)",
                   overflow: "hidden",
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",
                 }}
               >
-                <div style={{ padding: "0.7rem 1rem", borderRight: `1px solid ${UI.borderMuted}` }}>
-                  <div style={{ fontFamily: MONO, fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", color: UI.textDim, marginBottom: "0.25rem" }}>
+                <div style={{ padding: "0.7rem 1rem", borderRight: `1px solid ${"var(--border-muted)"}` }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.25rem" }}>
                     {language === "tr" ? "incident_class" : "incident_class"}
                   </div>
-                  <div style={{ fontSize: "0.8rem", fontWeight: 600, color: UI.textSoft }}>{selectedCase.incidentClass}</div>
+                  <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-soft)" }}>{selectedCase.incidentClass}</div>
                 </div>
                 <div style={{ padding: "0.7rem 1rem" }}>
-                  <div style={{ fontFamily: MONO, fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", color: UI.textDim, marginBottom: "0.25rem" }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.25rem" }}>
                     {language === "tr" ? "scenario_frame" : "scenario_frame"}
                   </div>
-                  <div style={{ fontSize: "0.8rem", fontWeight: 600, color: UI.textSoft }}>{selectedCase.scenarioFrame}</div>
+                  <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-soft)" }}>{selectedCase.scenarioFrame}</div>
                 </div>
               </div>
             </section>
@@ -1576,27 +1576,27 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <section style={{ marginBottom: UI.sectionGap }}>
               <div
                 style={{
-                  border: `1px solid ${UI.borderMuted}`,
+                  border: `1px solid ${"var(--border-muted)"}`,
                   borderRadius: UI.radius.sm,
-                  background: UI.panelCard,
+                  background: "var(--panel-card)",
                   overflow: "hidden",
                 }}
               >
                 <div
                   style={{
                     padding: "0.45rem 0.85rem",
-                    borderBottom: `1px solid ${UI.borderMuted}`,
-                    background: UI.panel,
+                    borderBottom: `1px solid ${"var(--border-muted)"}`,
+                    background: "var(--panel)",
                     display: "flex",
                     alignItems: "center",
                     gap: "0.5rem",
                   }}
                 >
-                  <span style={{ fontFamily: MONO, fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", color: UI.textDim, fontWeight: 600 }}>
+                  <span style={{ fontFamily: MONO, fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", fontWeight: 600 }}>
                     {language === "tr" ? "identity_chain" : "identity_chain"}
                   </span>
                   {!isVehicle && (
-                    <span style={{ fontFamily: MONO, fontSize: "0.55rem", color: UI.textDim, marginLeft: "auto" }}>demo</span>
+                    <span style={{ fontFamily: MONO, fontSize: "0.55rem", color: "var(--text-dim)", marginLeft: "auto" }}>demo</span>
                   )}
                 </div>
                 {selectedEventCard ? (
@@ -1618,23 +1618,23 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         key={item.key}
                         style={{
                           padding: "0.55rem 0.85rem",
-                          borderRight: i % 3 < 2 ? `1px solid ${UI.borderMuted}` : "none",
-                          borderBottom: `1px solid ${UI.borderMuted}`,
+                          borderRight: i % 3 < 2 ? `1px solid ${"var(--border-muted)"}` : "none",
+                          borderBottom: `1px solid ${"var(--border-muted)"}`,
                           minWidth: 0,
                           flex: "1 1 33%",
                         }}
                       >
-                        <div style={{ fontFamily: MONO, fontSize: "0.56rem", letterSpacing: "0.08em", textTransform: "lowercase", color: UI.textDim, marginBottom: "0.15rem" }}>
+                        <div style={{ fontFamily: MONO, fontSize: "0.56rem", letterSpacing: "0.08em", textTransform: "lowercase", color: "var(--text-dim)", marginBottom: "0.15rem" }}>
                           {item.key}
                         </div>
-                        <div style={{ fontFamily: MONO, fontSize: "0.68rem", color: UI.textSoft, fontWeight: 600, wordBreak: "break-all" }}>
+                        <div style={{ fontFamily: MONO, fontSize: "0.68rem", color: "var(--text-soft)", fontWeight: 600, wordBreak: "break-all" }}>
                           {item.value}
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div style={{ padding: "0.75rem 0.85rem", fontSize: "0.78rem", color: UI.textDim }}>
+                  <div style={{ padding: "0.75rem 0.85rem", fontSize: "0.78rem", color: "var(--text-dim)" }}>
                     {language === "tr" ? "Olay seçilmedi." : "No event selected."}
                   </div>
                 )}
@@ -1645,10 +1645,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <section style={{ marginBottom: UI.sectionGap }}>
               <div
                 style={{
-                  border: `1px solid ${UI.border}`,
+                  border: "1px solid var(--border)",
                   borderRadius: UI.radius.md,
-                  borderLeft: `3px solid ${UI.accent}`,
-                  background: UI.panel,
+                  borderLeft: "3px solid var(--accent)",
+                  background: "var(--panel)",
                   overflow: "hidden",
                 }}
               >
@@ -1656,15 +1656,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 <div
                   style={{
                     padding: "0.55rem 1.15rem",
-                    borderBottom: `1px solid ${UI.border}`,
-                    background: UI.panelRaised,
+                    borderBottom: "1px solid var(--border)",
+                    background: "var(--panel-raised)",
                     display: "flex",
                     alignItems: "center",
                     gap: "0.5rem",
                   }}
                 >
-                  <div style={{ width: 3, height: 12, borderRadius: 1, background: UI.accent, flexShrink: 0 }} />
-                  <span style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.1em", textTransform: "uppercase", color: UI.textDim, fontWeight: 600 }}>
+                  <div style={{ width: 3, height: 12, borderRadius: 1, background: "var(--accent)", flexShrink: 0 }} />
+                  <span style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", fontWeight: 600 }}>
                     {language === "tr" ? "incident_summary" : "incident_summary"}
                   </span>
                 </div>
@@ -1682,57 +1682,57 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       <div>
                         {/* Case context — system + scenario frame */}
                         {selectedCase && (
-                          <div style={{ padding: "0.6rem 1.15rem", borderBottom: `1px solid ${UI.borderMuted}`, background: UI.panelCard }}>
-                            <div style={{ fontFamily: MONO, fontSize: "0.54rem", letterSpacing: "0.1em", textTransform: "uppercase", color: UI.textDim, marginBottom: "0.25rem" }}>
+                          <div style={{ padding: "0.6rem 1.15rem", borderBottom: `1px solid ${"var(--border-muted)"}`, background: "var(--panel-card)" }}>
+                            <div style={{ fontFamily: MONO, fontSize: "0.54rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.25rem" }}>
                               {language === "tr" ? "vaka_bağlamı" : "case_context"}
                             </div>
-                            <p style={{ margin: 0, fontSize: "0.78rem", color: UI.textMuted, fontFamily: MONO }}>
+                            <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)", fontFamily: MONO }}>
                               {selectedSystem} · {selectedEventCard.title}
                             </p>
                           </div>
                         )}
                         {/* What happened — full width primary */}
-                        <div style={{ padding: "1rem 1.15rem", borderBottom: `1px solid ${UI.borderMuted}` }}>
-                          <div style={{ fontFamily: MONO, fontSize: "0.56rem", letterSpacing: "0.1em", textTransform: "uppercase", color: UI.textDim, marginBottom: "0.4rem" }}>
+                        <div style={{ padding: "1rem 1.15rem", borderBottom: `1px solid ${"var(--border-muted)"}` }}>
+                          <div style={{ fontFamily: MONO, fontSize: "0.56rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.4rem" }}>
                             {language === "tr" ? "what_happened" : "what_happened"}
                           </div>
-                          <p style={{ margin: 0, lineHeight: 1.6, fontSize: "0.9rem", fontWeight: 500, color: UI.text }}>{sum.what}</p>
+                          <p style={{ margin: 0, lineHeight: 1.6, fontSize: "0.9rem", fontWeight: 500, color: "var(--text)" }}>{sum.what}</p>
                         </div>
                         {/* Why + state in 2 columns */}
                         {(sum.why || sum.state) && (
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: `1px solid ${UI.borderMuted}` }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderBottom: `1px solid ${"var(--border-muted)"}` }}>
                             {sum.why && (
-                              <div style={{ padding: "0.75rem 1.15rem", borderRight: `1px solid ${UI.borderMuted}` }}>
-                                <div style={{ fontFamily: MONO, fontSize: "0.55rem", letterSpacing: "0.08em", textTransform: "uppercase", color: UI.textDim, marginBottom: "0.3rem" }}>
+                              <div style={{ padding: "0.75rem 1.15rem", borderRight: `1px solid ${"var(--border-muted)"}` }}>
+                                <div style={{ fontFamily: MONO, fontSize: "0.55rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.3rem" }}>
                                   {language === "tr" ? "why_under_review" : "why_under_review"}
                                 </div>
-                                <p style={{ margin: 0, lineHeight: 1.5, fontSize: "0.78rem", color: UI.textSoft }}>{sum.why}</p>
+                                <p style={{ margin: 0, lineHeight: 1.5, fontSize: "0.78rem", color: "var(--text-soft)" }}>{sum.why}</p>
                               </div>
                             )}
                             {sum.state && (
                               <div style={{ padding: "0.75rem 1.15rem" }}>
-                                <div style={{ fontFamily: MONO, fontSize: "0.55rem", letterSpacing: "0.08em", textTransform: "uppercase", color: UI.textDim, marginBottom: "0.3rem" }}>
+                                <div style={{ fontFamily: MONO, fontSize: "0.55rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.3rem" }}>
                                   {language === "tr" ? "review_state" : "review_state"}
                                 </div>
-                                <p style={{ margin: 0, lineHeight: 1.5, fontSize: "0.82rem", color: UI.textSoft, fontWeight: 700, fontFamily: MONO }}>{sum.state}</p>
+                                <p style={{ margin: 0, lineHeight: 1.5, fontSize: "0.82rem", color: "var(--text-soft)", fontWeight: 700, fontFamily: MONO }}>{sum.state}</p>
                               </div>
                             )}
                           </div>
                         )}
                         {/* Safe next step */}
                         {sum.next && (
-                          <div style={{ padding: "0.65rem 1.15rem", background: UI.panelCard }}>
-                            <div style={{ fontFamily: MONO, fontSize: "0.55rem", letterSpacing: "0.08em", textTransform: "uppercase", color: UI.textDim, marginBottom: "0.25rem" }}>
+                          <div style={{ padding: "0.65rem 1.15rem", background: "var(--panel-card)" }}>
+                            <div style={{ fontFamily: MONO, fontSize: "0.55rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.25rem" }}>
                               {language === "tr" ? "safe_next_step" : "safe_next_step"}
                             </div>
-                            <p style={{ margin: 0, lineHeight: 1.5, fontSize: "0.76rem", color: UI.textMuted }}>{sum.next}</p>
+                            <p style={{ margin: 0, lineHeight: 1.5, fontSize: "0.76rem", color: "var(--text-muted)" }}>{sum.next}</p>
                           </div>
                         )}
                       </div>
                     );
                   })()
                 ) : (
-                  <div style={{ padding: "1rem 1.15rem", color: UI.textDim, fontSize: "0.8rem", lineHeight: 1.5 }}>
+                  <div style={{ padding: "1rem 1.15rem", color: "var(--text-dim)", fontSize: "0.8rem", lineHeight: 1.5 }}>
                     {language === "tr"
                       ? "Olay özeti için sol omurgadan bir olay seçin. Seçim yapıldığında vaka bağlamı, ne oldu, neden incelemede ve güvenli sonraki adım gösterilir."
                       : "Select an event in the left spine for incident summary. Once selected, case context, what happened, why under review, and safe next step are shown."}
@@ -1744,7 +1744,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             {/* ── Doctrine Spine ── */}
             <div
               style={{
-                borderLeft: `2px solid ${UI.accentBorder}`,
+                borderLeft: `2px solid ${"var(--accent-border)"}`,
                 paddingLeft: "1.25rem",
                 marginLeft: "0.1rem",
               }}
@@ -1754,7 +1754,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 fontSize: "0.58rem",
                 letterSpacing: "0.14em",
                 textTransform: "uppercase",
-                color: UI.accent,
+                color: "var(--accent)",
                 marginBottom: "1.25rem",
                 fontWeight: 700,
                 display: "flex",
@@ -1770,13 +1770,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 style={{
                   padding: "0.45rem 0.8rem",
                   marginBottom: "0.75rem",
-                  background: UI.panelCard,
-                  border: `1px solid ${UI.borderMuted}`,
+                  background: "var(--panel-card)",
+                  border: `1px solid ${"var(--border-muted)"}`,
                   borderRadius: UI.radius.xs,
                   fontFamily: MONO,
                   fontSize: "0.65rem",
                   lineHeight: 1.55,
-                  color: UI.textDim,
+                  color: "var(--text-dim)",
                 }}
               >
                 {language === "tr"
@@ -1788,7 +1788,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   {/* A. Recorded Evidence */}
                   <div
                     style={{
-                      border: `1px solid ${UI.border}`,
+                      border: "1px solid var(--border)",
                       borderRadius: UI.radius.md,
                       overflow: "hidden",
                     }}
@@ -1796,8 +1796,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     <div
                       style={{
                         padding: "0.55rem 1rem",
-                        background: UI.panelRaised,
-                        borderBottom: `1px solid ${UI.border}`,
+                        background: "var(--panel-raised)",
+                        borderBottom: "1px solid var(--border)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
@@ -1805,17 +1805,17 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <div style={{ width: 3, height: 14, borderRadius: 2, background: UI.success, flexShrink: 0 }} />
-                        <span style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.08em", fontWeight: 700, color: UI.textMuted }}>
+                        <div style={{ width: 3, height: 14, borderRadius: 2, background: "var(--success)", flexShrink: 0 }} />
+                        <span style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.08em", fontWeight: 700, color: "var(--text-muted)" }}>
                           {language === "tr" ? "recorded_evidence" : "recorded_evidence"}
                         </span>
                       </div>
-                      <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: UI.textDim }}>
+                      <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: "var(--text-dim)" }}>
                         {language === "tr" ? "ham_katman" : "raw_layer"}
                       </span>
                     </div>
                     <div style={{ padding: "0.85rem 1rem" }}>
-                      <p style={{ margin: "0 0 0.65rem", fontFamily: MONO, fontSize: "0.64rem", color: UI.textDim, lineHeight: 1.55 }}>
+                      <p style={{ margin: "0 0 0.65rem", fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", lineHeight: 1.55 }}>
                         {language === "tr"
                           ? `manifest: ${manifestAnchorId}`
                           : `manifest: ${manifestAnchorId}`}
@@ -1823,7 +1823,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {(() => {
                         if (visibleRecorded.length === 0) {
                           return (
-                            <p style={{ margin: 0, fontSize: "0.78rem", color: UI.textDim }}>
+                            <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-dim)" }}>
                               {language === "tr" ? "Kayıtlı delil yok." : "No recorded evidence."}
                             </p>
                           );
@@ -1831,30 +1831,30 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         return (
                           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                             {visibleRecorded.map((r, i) => (
-                              <div key={i} style={{ borderRadius: UI.radius.xs, border: `1px solid ${UI.borderMuted}`, overflow: "hidden" }}>
-                                <div style={{ padding: "0.4rem 0.65rem", background: UI.panelRaised, borderBottom: `1px solid ${UI.borderMuted}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
-                                  <span style={{ fontSize: "0.76rem", fontWeight: 600, color: UI.textSoft }}>{r.source}</span>
+                              <div key={i} style={{ borderRadius: UI.radius.xs, border: `1px solid ${"var(--border-muted)"}`, overflow: "hidden" }}>
+                                <div style={{ padding: "0.4rem 0.65rem", background: "var(--panel-raised)", borderBottom: `1px solid ${"var(--border-muted)"}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
+                                  <span style={{ fontSize: "0.76rem", fontWeight: 600, color: "var(--text-soft)" }}>{r.source}</span>
                                   <span
                                     style={{
                                       fontFamily: MONO,
                                       fontSize: "0.55rem",
                                       padding: "0.1rem 0.4rem",
                                       borderRadius: UI.radius.xs,
-                                      background: r.status === "verified" ? UI.successSoft : UI.borderSubtle,
-                                      color: r.status === "verified" ? UI.success : UI.textMuted,
+                                      background: r.status === "verified" ? "var(--success-soft)" : UI.borderSubtle,
+                                      color: r.status === "verified" ? "var(--success)" : "var(--text-muted)",
                                       fontWeight: 700,
                                       textTransform: "uppercase",
                                       letterSpacing: "0.06em",
-                                      border: `1px solid ${r.status === "verified" ? UI.successBorder : UI.borderMuted}`,
+                                      border: `1px solid ${r.status === "verified" ? "var(--success-border)" : "var(--border-muted)"}`,
                                       flexShrink: 0,
                                     }}
                                   >
                                     {r.status}
                                   </span>
                                 </div>
-                                <div style={{ padding: "0.4rem 0.65rem", background: UI.bg }}>
-                                  <div style={{ fontSize: "0.75rem", color: UI.textSoft, lineHeight: 1.5, marginBottom: "0.3rem" }}>{r.description}</div>
-                                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem 0.75rem", fontFamily: MONO, fontSize: "0.6rem", color: UI.textDim }}>
+                                <div style={{ padding: "0.4rem 0.65rem", background: "var(--bg)" }}>
+                                  <div style={{ fontSize: "0.75rem", color: "var(--text-soft)", lineHeight: 1.5, marginBottom: "0.3rem" }}>{r.description}</div>
+                                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem 0.75rem", fontFamily: MONO, fontSize: "0.6rem", color: "var(--text-dim)" }}>
                                     <span>ts:{r.timestamp}</span>
                                     <span>ref:{r.referenceId}</span>
                                   </div>
@@ -1869,7 +1869,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   {/* B. Derived Evidence */}
                   <div
                     style={{
-                      border: `1px solid ${UI.border}`,
+                      border: "1px solid var(--border)",
                       borderRadius: UI.radius.md,
                       overflow: "hidden",
                     }}
@@ -1877,8 +1877,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     <div
                       style={{
                         padding: "0.55rem 1rem",
-                        background: UI.panelRaised,
-                        borderBottom: `1px solid ${UI.border}`,
+                        background: "var(--panel-raised)",
+                        borderBottom: "1px solid var(--border)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
@@ -1886,17 +1886,17 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       }}
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <div style={{ width: 3, height: 14, borderRadius: 2, background: UI.warning, flexShrink: 0 }} />
-                        <span style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.08em", fontWeight: 700, color: UI.textMuted }}>
+                        <div style={{ width: 3, height: 14, borderRadius: 2, background: "var(--warning)", flexShrink: 0 }} />
+                        <span style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.08em", fontWeight: 700, color: "var(--text-muted)" }}>
                           {language === "tr" ? "derived_assessment" : "derived_assessment"}
                         </span>
                       </div>
-                      <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: UI.textDim }}>
+                      <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: "var(--text-dim)" }}>
                         {language === "tr" ? "ikinci_katman" : "second_layer"}
                       </span>
                     </div>
                     <div style={{ padding: "0.85rem 1rem" }}>
-                      <p style={{ margin: "0 0 0.65rem", fontFamily: MONO, fontSize: "0.64rem", color: UI.textDim, lineHeight: 1.55 }}>
+                      <p style={{ margin: "0 0 0.65rem", fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", lineHeight: 1.55 }}>
                         {language === "tr"
                           ? "// kayıtlıdan türetilir; yerini almaz; nihai hüküm değildir"
                           : "// derived from recorded; does not replace it; not a determination"}
@@ -1908,7 +1908,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             : [];
                         if (derived.length === 0) {
                           return (
-                            <p style={{ margin: 0, fontSize: "0.78rem", color: UI.textDim }}>
+                            <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-dim)" }}>
                               {language === "tr" ? "Türetilmiş delil yok." : "No derived evidence."}
                             </p>
                           );
@@ -1916,13 +1916,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         return (
                           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                             {derived.map((d, i) => (
-                              <div key={i} style={{ borderRadius: UI.radius.xs, border: `1px solid ${UI.borderMuted}`, overflow: "hidden" }}>
-                                <div style={{ padding: "0.4rem 0.65rem", background: UI.panelRaised, borderBottom: `1px solid ${UI.borderMuted}` }}>
-                                  <span style={{ fontSize: "0.76rem", fontWeight: 600, color: UI.textSoft }}>{d.type}</span>
+                              <div key={i} style={{ borderRadius: UI.radius.xs, border: `1px solid ${"var(--border-muted)"}`, overflow: "hidden" }}>
+                                <div style={{ padding: "0.4rem 0.65rem", background: "var(--panel-raised)", borderBottom: `1px solid ${"var(--border-muted)"}` }}>
+                                  <span style={{ fontSize: "0.76rem", fontWeight: 600, color: "var(--text-soft)" }}>{d.type}</span>
                                 </div>
-                                <div style={{ padding: "0.4rem 0.65rem", background: UI.bg }}>
-                                  <div style={{ fontSize: "0.75rem", color: UI.textSoft, lineHeight: 1.5, marginBottom: "0.3rem" }}>{d.explanation}</div>
-                                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem 0.75rem", fontFamily: MONO, fontSize: "0.6rem", color: UI.textDim }}>
+                                <div style={{ padding: "0.4rem 0.65rem", background: "var(--bg)" }}>
+                                  <div style={{ fontSize: "0.75rem", color: "var(--text-soft)", lineHeight: 1.5, marginBottom: "0.3rem" }}>{d.explanation}</div>
+                                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem 0.75rem", fontFamily: MONO, fontSize: "0.6rem", color: "var(--text-dim)" }}>
                                     <span>basis:{d.basisReferences}</span>
                                     <span>conf:{d.confidence}</span>
                                     <span>profile:{d.profileRelevance}</span>
@@ -1939,12 +1939,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               ) : (
                 <div
                   style={{
-                    border: `1px solid ${UI.border}`,
+                    border: "1px solid var(--border)",
                     borderRadius: UI.radius.md,
                     padding: "0.85rem 1rem",
                     fontSize: "0.8rem",
-                    background: UI.panel,
-                    color: UI.textSoft,
+                    background: "var(--panel)",
+                    color: "var(--text-soft)",
                     lineHeight: 1.55,
                   }}
                 >
@@ -1961,8 +1961,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <section style={{ marginBottom: UI.sectionGap }}>
               <div
                 style={{
-                  border: `1px solid ${UI.border}`,
-                  borderLeft: `3px solid ${UI.error}`,
+                  border: "1px solid var(--border)",
+                  borderLeft: `3px solid ${"var(--error)"}`,
                   borderRadius: UI.radius.md,
                   overflow: "hidden",
                 }}
@@ -1970,8 +1970,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 <div
                   style={{
                     padding: "0.55rem 1rem",
-                    background: UI.panelRaised,
-                    borderBottom: `1px solid ${UI.border}`,
+                    background: "var(--panel-raised)",
+                    borderBottom: "1px solid var(--border)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
@@ -1979,16 +1979,16 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <div style={{ width: 3, height: 14, borderRadius: 2, background: UI.error, flexShrink: 0 }} />
-                    <span style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.08em", fontWeight: 700, color: UI.textMuted }}>
+                    <div style={{ width: 3, height: 14, borderRadius: 2, background: "var(--error)", flexShrink: 0 }} />
+                    <span style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.08em", fontWeight: 700, color: "var(--text-muted)" }}>
                       {language === "tr" ? "unknown_disputed" : "unknown_disputed"}
                     </span>
                   </div>
-                  <span style={{ fontFamily: MONO, fontSize: "0.58rem", color: UI.textDim }}>
+                  <span style={{ fontFamily: MONO, fontSize: "0.58rem", color: "var(--text-dim)" }}>
                     {language === "tr" ? "insan_incelemesi" : "human_review_required"}
                   </span>
                 </div>
-                <div style={{ padding: "0.85rem 1rem", background: UI.panel, fontSize: "0.8rem" }}>
+                <div style={{ padding: "0.85rem 1rem", background: "var(--panel)", fontSize: "0.8rem" }}>
                   {selectedEventCard ? (
                     <>
                       {verificationState === "UNKNOWN" && (
@@ -1996,15 +1996,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           style={{
                             marginBottom: "0.75rem",
                             padding: "0.5rem 0.7rem",
-                            borderLeft: `2px solid ${UI.warning}`,
-                            background: UI.warningSoft,
+                            borderLeft: `2px solid ${"var(--warning)"}`,
+                            background: "var(--warning-soft)",
                             borderRadius: UI.radius.xs,
                           }}
                         >
-                          <div style={{ fontFamily: MONO, fontSize: "0.65rem", fontWeight: 700, color: UI.warning, marginBottom: "0.15rem" }}>
+                          <div style={{ fontFamily: MONO, fontSize: "0.65rem", fontWeight: 700, color: "var(--warning)", marginBottom: "0.15rem" }}>
                             state: UNKNOWN
                           </div>
-                          <div style={{ fontSize: "0.73rem", color: UI.textMuted }}>
+                          <div style={{ fontSize: "0.73rem", color: "var(--text-muted)" }}>
                             {language === "tr" ? "İnsan incelemesi gerekir." : "Requires human review."}
                           </div>
                         </div>
@@ -2012,25 +2012,25 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                         {visibleUnknownItems.length ? (
                           visibleUnknownItems.map((item, i) => (
-                            <div key={i} style={{ borderRadius: UI.radius.xs, border: `1px solid ${UI.borderMuted}`, overflow: "hidden" }}>
-                              <div style={{ padding: "0.45rem 0.65rem", background: UI.bg }}>
-                                <div style={{ fontSize: "0.78rem", lineHeight: 1.55, color: UI.textSoft }}>{item}</div>
+                            <div key={i} style={{ borderRadius: UI.radius.xs, border: `1px solid ${"var(--border-muted)"}`, overflow: "hidden" }}>
+                              <div style={{ padding: "0.45rem 0.65rem", background: "var(--bg)" }}>
+                                <div style={{ fontSize: "0.78rem", lineHeight: 1.55, color: "var(--text-soft)" }}>{item}</div>
                               </div>
-                              <div style={{ padding: "0.25rem 0.65rem", background: UI.panelCard, borderTop: `1px solid ${UI.borderMuted}` }}>
-                                <span style={{ fontFamily: MONO, fontSize: "0.58rem", color: UI.textDim }}>
+                              <div style={{ padding: "0.25rem 0.65rem", background: "var(--panel-card)", borderTop: `1px solid ${"var(--border-muted)"}` }}>
+                                <span style={{ fontFamily: MONO, fontSize: "0.58rem", color: "var(--text-dim)" }}>
                                   {language === "tr" ? "requires: human_review" : "requires: human_review"}
                                 </span>
                               </div>
                             </div>
                           ))
                         ) : verificationState === "UNKNOWN" ? (
-                          <div style={{ fontSize: "0.78rem", color: UI.textMuted }}>
+                          <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
                             {language === "tr"
                               ? "Bu çalıştırma için doğrulama sonucu belirsiz; insan incelemesi gerekir."
                               : "Verification outcome unknown for this run; requires human review."}
                           </div>
                         ) : (
-                          <div style={{ fontFamily: MONO, fontSize: "0.68rem", color: UI.textDim, lineHeight: 1.5 }}>
+                          <div style={{ fontFamily: MONO, fontSize: "0.68rem", color: "var(--text-dim)", lineHeight: 1.5 }}>
                             {language === "tr"
                               ? "Bu vaka için çözülmemiş madde yok; iz ve issuance insan incelemesi gerektiğinde buna koşullu kalır."
                               : "No unresolved items for this case; trace and issuance remain conditioned on human review where applicable."}
@@ -2039,7 +2039,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       </div>
                     </>
                   ) : (
-                    <div style={{ fontFamily: MONO, fontSize: "0.68rem", color: UI.textDim, lineHeight: 1.5 }}>
+                    <div style={{ fontFamily: MONO, fontSize: "0.68rem", color: "var(--text-dim)", lineHeight: 1.5 }}>
                       {language === "tr"
                         ? "Bilinmeyen / çekişmeli alanı için sol omurgadan bir olay seçin."
                         : "Select an event in the left spine for unknown / disputed items."}
@@ -2053,8 +2053,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <section style={{ marginBottom: UI.sectionGap }} aria-labelledby="verification-trace-heading">
               <div
                 style={{
-                  border: `1px solid ${UI.border}`,
-                  borderLeft: `3px solid ${UI.blue}`,
+                  border: "1px solid var(--border)",
+                  borderLeft: `3px solid ${"var(--blue)"}`,
                   borderRadius: UI.radius.md,
                   overflow: "hidden",
                 }}
@@ -2062,8 +2062,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 <div
                   style={{
                     padding: "0.55rem 1rem",
-                    background: UI.panelRaised,
-                    borderBottom: `1px solid ${UI.border}`,
+                    background: "var(--panel-raised)",
+                    borderBottom: "1px solid var(--border)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
@@ -2071,12 +2071,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <div style={{ width: 3, height: 14, borderRadius: 2, background: UI.blue, flexShrink: 0 }} />
-                    <span id="verification-trace-heading" style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.08em", fontWeight: 700, color: UI.textMuted }}>
+                    <div style={{ width: 3, height: 14, borderRadius: 2, background: "var(--blue)", flexShrink: 0 }} />
+                    <span id="verification-trace-heading" style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.08em", fontWeight: 700, color: "var(--text-muted)" }}>
                       {language === "tr" ? "verification_trace" : "verification_trace"}
                     </span>
                   </div>
-                  <span style={{ fontFamily: MONO, fontSize: "0.58rem", color: UI.textDim }}>
+                  <span style={{ fontFamily: MONO, fontSize: "0.58rem", color: "var(--text-dim)" }}>
                     {language === "tr" ? "nihai_hüküm_değildir" : "not_a_determination"}
                   </span>
                 </div>
@@ -2094,11 +2094,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         <div
                           style={{
                             padding: "0.45rem 1rem",
-                            borderBottom: `1px solid ${UI.borderMuted}`,
+                            borderBottom: `1px solid ${"var(--border-muted)"}`,
                             fontFamily: MONO,
                             fontSize: "0.62rem",
-                            color: UI.textDim,
-                            background: UI.panelCard,
+                            color: "var(--text-dim)",
+                            background: "var(--panel-card)",
                             lineHeight: 1.6,
                           }}
                         >
@@ -2107,10 +2107,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         <div
                           style={{
                             padding: "0.35rem 1rem",
-                            borderBottom: `1px solid ${UI.borderMuted}`,
+                            borderBottom: `1px solid ${"var(--border-muted)"}`,
                             fontSize: "0.7rem",
-                            color: UI.textMuted,
-                            background: UI.panel,
+                            color: "var(--text-muted)",
+                            background: "var(--panel)",
                             lineHeight: 1.5,
                           }}
                         >
@@ -2119,35 +2119,35 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             : "Case-bound examination steps; outcome is not truth or verdict."}
                         </div>
                         {/* Trace step rows */}
-                        <div style={{ background: UI.panel }}>
+                        <div style={{ background: "var(--panel)" }}>
                           {traceStepRows.map((row, i) => {
                             const { text, honesty } = normalizeResult(row.status);
                             const stateLabel = honesty === "pass" ? "pass" : honesty === "unresolved" ? "unresolved" : "partial";
-                            const stepColor = honesty === "unresolved" ? UI.warning : honesty === "partial" ? "#F59E0B" : UI.success;
-                            const stepBg = honesty === "unresolved" ? UI.warningSoft : honesty === "partial" ? "rgba(245, 158, 11, 0.08)" : UI.successSoft;
+                            const stepColor = honesty === "unresolved" ? "var(--warning)" : honesty === "partial" ? "#F59E0B" : "var(--success)";
+                            const stepBg = honesty === "unresolved" ? "var(--warning-soft)" : honesty === "partial" ? "rgba(245, 158, 11, 0.08)" : "var(--success-soft)";
                             return (
                               <div
                                 key={i}
                                 style={{
                                   padding: "0.55rem 1rem",
-                                  borderBottom: i < traceStepRows.length - 1 ? `1px solid ${UI.borderMuted}` : "none",
+                                  borderBottom: i < traceStepRows.length - 1 ? `1px solid ${"var(--border-muted)"}` : "none",
                                   display: "grid",
                                   gridTemplateColumns: "1fr auto",
                                   gap: "0.25rem 1rem",
                                   alignItems: "center",
-                                  background: i % 2 === 0 ? UI.panel : UI.panelCard,
+                                  background: i % 2 === 0 ? "var(--panel)" : "var(--panel-card)",
                                 }}
                               >
                                 <div>
-                                  <div style={{ fontFamily: SANS, fontSize: "0.78rem", fontWeight: 500, color: UI.textSoft }}>{row.label}</div>
+                                  <div style={{ fontFamily: SANS, fontSize: "0.78rem", fontWeight: 500, color: "var(--text-soft)" }}>{row.label}</div>
                                   {row.note && (
-                                    <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: UI.textDim, marginTop: "0.15rem" }}>
+                                    <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginTop: "0.15rem" }}>
                                       {row.note}
                                     </div>
                                   )}
                                 </div>
                                 <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                                  <span style={{ fontFamily: MONO, fontSize: "0.65rem", color: UI.textMuted }}>{text}</span>
+                                  <span style={{ fontFamily: MONO, fontSize: "0.65rem", color: "var(--text-muted)" }}>{text}</span>
                                   <span
                                     style={{
                                       fontFamily: MONO,
@@ -2174,11 +2174,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         <div
                           style={{
                             padding: "0.45rem 1rem",
-                            borderTop: `1px solid ${UI.borderMuted}`,
+                            borderTop: `1px solid ${"var(--border-muted)"}`,
                             fontFamily: MONO,
                             fontSize: "0.6rem",
-                            color: UI.textDim,
-                            background: UI.panelCard,
+                            color: "var(--text-dim)",
+                            background: "var(--panel-card)",
                             lineHeight: 1.5,
                           }}
                         >
@@ -2190,7 +2190,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     );
                   })()
                 ) : (
-                  <div style={{ padding: "0.75rem 1rem", fontFamily: MONO, fontSize: "0.68rem", color: UI.textDim, lineHeight: 1.5 }}>
+                  <div style={{ padding: "0.75rem 1rem", fontFamily: MONO, fontSize: "0.68rem", color: "var(--text-dim)", lineHeight: 1.5 }}>
                     {language === "tr"
                       ? "Doğrulama izi için sol omurgadan bir olay seçin. İz, kayıtlı ve türetilmiş zincirle bağlıdır; nihai hüküm değildir."
                       : "Select an event in the left spine for verification trace. Trace is bound to recorded and derived chain; not a determination."}
@@ -2206,13 +2206,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <section style={{ marginBottom: UI.sectionGap }}>
               <div
                 style={{
-                  border: `1px solid ${UI.borderMuted}`,
+                  border: `1px solid ${"var(--border-muted)"}`,
                   borderRadius: UI.radius.xs,
                   padding: "0.4rem 0.85rem",
-                  background: UI.panelCard,
+                  background: "var(--panel-card)",
                   fontFamily: MONO,
                   fontSize: "0.62rem",
-                  color: UI.textDim,
+                  color: "var(--text-dim)",
                 }}
               >
                 {`// review_assistant: reserved | not_active_in_current_release`}
@@ -2222,16 +2222,16 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             {/* 7) Verification / export flow */}
             <section style={{ marginBottom: UI.sectionGap }}>
               {selectedEventCard && (
-                <div style={{ fontSize: "0.76rem", color: UI.textMuted, marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <div style={{ fontSize: "0.76rem", color: "var(--text-muted)", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   <span>{language === "tr" ? "Seçili:" : "Selected:"}</span>
-                  <span style={{ fontWeight: 700, color: UI.textSoft, fontFamily: "monospace", fontSize: "0.74rem" }}>{selectedEventCard.eventId}</span>
-                  <span style={{ color: UI.textDim }}>— {selectedEventCard.title}</span>
+                  <span style={{ fontWeight: 700, color: "var(--text-soft)", fontFamily: "monospace", fontSize: "0.74rem" }}>{selectedEventCard.eventId}</span>
+                  <span style={{ color: "var(--text-dim)" }}>— {selectedEventCard.title}</span>
                 </div>
               )}
               {selectedCase && (() => {
                 const gate = evaluateGoldenAcceptance(selectedCase);
                 return (
-                  <div style={{ fontSize: "0.68rem", color: UI.textDim, marginBottom: "0.5rem" }}>
+                  <div style={{ fontSize: "0.68rem", color: "var(--text-dim)", marginBottom: "0.5rem" }}>
                     {language === "tr" ? "Golden kabul:" : "Golden acceptance:"} {gate.passed}/{gate.total}
                   </div>
                 );
@@ -2251,9 +2251,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     style={{
                       marginTop: "0.5rem",
                       padding: "0.4rem 0.6rem",
-                      background: UI.panel,
-                      color: UI.text,
-                      border: `1px solid ${UI.border}`,
+                      background: "var(--panel)",
+                      color: "var(--text)",
+                      border: "1px solid var(--border)",
                       borderRadius: 4,
                       fontSize: "0.85rem",
                     }}
@@ -2274,9 +2274,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           fontSize: "0.85rem",
                           padding: "0.5rem 1rem",
                           borderRadius: 4,
-                          border: loading ? `1px solid ${UI.borderStrong}` : `1px solid ${UI.accent}`,
-                          background: loading ? UI.panelCard : UI.accentSoft,
-                          color: UI.text,
+                          border: loading ? "1px solid var(--border-strong)" : "1px solid var(--accent)",
+                          background: loading ? "var(--panel-card)" : "var(--accent-soft)",
+                          color: "var(--text)",
                           cursor: loading ? "wait" : "pointer",
                           opacity: !selectedId ? 0.6 : 1,
                           transition: "background 0.2s ease, border-color 0.2s ease",
@@ -2290,7 +2290,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             style={{
                               width: 14,
                               height: 14,
-                              border: `2px solid ${UI.textMuted}`,
+                              border: `2px solid ${"var(--text-muted)"}`,
                               borderTopColor: "transparent",
                               borderRadius: "50%",
                               animation: "spin 0.7s linear infinite",
@@ -2309,7 +2309,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         <span
                           style={{
                             fontSize: "0.8rem",
-                            color: UI.textMuted,
+                            color: "var(--text-muted)",
                             fontWeight: 500,
                           }}
                         >
@@ -2326,7 +2326,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     >
                       {loading && (language === "tr" ? "İşleniyor — sonuç aşağıda güncellenecek." : "Processing — result will update below.")}
                       {!loading && verificationError && (language === "tr" ? "Hata: " : "Error: ")}
-                      {!loading && verificationError && <strong style={{ color: UI.error }}>{verificationError}</strong>}
+                      {!loading && verificationError && <strong style={{ color: "var(--error)" }}>{verificationError}</strong>}
                       {!loading && !verificationError && verificationState && (language === "tr" ? "Durum: " : "Status: ")}
                       {!loading && !verificationError && verificationState && <strong>{verificationState}</strong>}
                       {!loading && !verificationError && !verificationState && selectedId && (language === "tr" ? "Doğrulama bekleniyor." : "Verification pending.")}
@@ -2339,11 +2339,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   style={{
                     marginTop: "0.5rem",
                     padding: "0.6rem 0.75rem",
-                    border: `1px solid ${UI.border}`,
+                    border: "1px solid var(--border)",
                     borderRadius: 4,
                     fontSize: "0.8rem",
-                    background: UI.panelRaised,
-                    color: UI.textSoft,
+                    background: "var(--panel-raised)",
+                    color: "var(--text-soft)",
                   }}
                 >
                   {language === "tr"
@@ -2356,10 +2356,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             {isVehicle && (
             <section
               style={{
-                border: loading ? `1px solid ${UI.accent}` : undefined,
+                border: loading ? "1px solid var(--accent)" : undefined,
                 borderRadius: 6,
                 padding: loading ? "0.75rem 1rem" : undefined,
-                background: loading ? UI.accentSoft : undefined,
+                background: loading ? "var(--accent-soft)" : undefined,
                 transition: "border-color 0.2s ease, background 0.2s ease",
                 marginTop: "1rem",
               }}
@@ -2377,7 +2377,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     gap: "0.5rem",
                     padding: "0.5rem 0",
                     fontSize: "0.85rem",
-                    color: UI.textMuted,
+                    color: "var(--text-muted)",
                   }}
                   role="status"
                   aria-live="polite"
@@ -2386,7 +2386,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     style={{
                       width: 14,
                       height: 14,
-                      border: `2px solid ${UI.textMuted}`,
+                      border: `2px solid ${"var(--text-muted)"}`,
                       borderTopColor: "transparent",
                       borderRadius: "50%",
                       animation: "spin 0.7s linear infinite",
@@ -2408,12 +2408,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               {verificationState && identity && (
                 <div
                   style={{
-                    border: verificationJustCompleted ? `1px solid ${UI.success}` : `1px solid ${UI.border}`,
+                    border: verificationJustCompleted ? "1px solid var(--success)" : "1px solid var(--border)",
                     borderRadius: 6,
                     padding: "0.75rem 1rem",
                     marginBottom: "1rem",
                     transition: "border-color 0.3s ease",
-                    boxShadow: verificationJustCompleted ? `0 0 0 1px ${UI.successBorder}` : undefined,
+                    boxShadow: verificationJustCompleted ? `0 0 0 1px ${"var(--success-border)"}` : undefined,
                   }}
                 >
                   <div
@@ -2513,10 +2513,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
                 <div
                   style={{
-                    border: `1px solid ${UI.border}`,
+                    border: "1px solid var(--border)",
                     borderRadius: 6,
                     overflow: "hidden",
-                    background: UI.panelRaised,
+                    background: "var(--panel-raised)",
                   }}
                 >
                   {selectedCase.axisusStates.map((s, idx) => (
@@ -2525,15 +2525,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       style={{
                         padding: "0.5rem 0.75rem",
                         borderBottom:
-                          idx < selectedCase.axisusStates!.length - 1 ? `1px solid ${UI.borderSoft}` : "none",
+                          idx < selectedCase.axisusStates!.length - 1 ? "1px solid var(--border-soft)" : "none",
                         fontSize: "0.78rem",
-                        color: UI.text,
+                        color: "var(--text)",
                         borderLeft:
                           s.severity === "handoff"
-                            ? `3px solid ${UI.borderStrong}`
+                            ? `3px solid ${"var(--border-strong)"}`
                             : s.severity === "limit"
-                            ? `3px solid ${UI.border}`
-                            : `3px solid ${UI.accent}`,
+                            ? `3px solid ${"var(--border)"}`
+                            : "3px solid var(--accent)",
                       }}
                     >
                       <div style={{ fontWeight: 600, marginBottom: "0.25rem" }}>
@@ -2554,14 +2554,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             ) : null}
 
             {/* 8) Artifact Issuance */}
-            <div style={{ borderLeft: `2px solid ${UI.accentBorder}`, paddingLeft: "1.25rem", marginLeft: "0.1rem", marginTop: "0.5rem" }}>
+            <div style={{ borderLeft: `2px solid ${"var(--accent-border)"}`, paddingLeft: "1.25rem", marginLeft: "0.1rem", marginTop: "0.5rem" }}>
             <section style={{ marginBottom: UI.sectionGap }}>
               <div
                 style={{
                   fontFamily: MONO,
                   fontSize: "0.6rem",
                   letterSpacing: "0.1em",
-                  color: UI.accent,
+                  color: "var(--accent)",
                   marginBottom: "0.65rem",
                   fontWeight: 700,
                   opacity: 0.85,
@@ -2573,13 +2573,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 style={{
                   fontFamily: MONO,
                   fontSize: "0.62rem",
-                  color: UI.textDim,
+                  color: "var(--text-dim)",
                   marginBottom: "0.75rem",
                   lineHeight: 1.6,
                   padding: "0.4rem 0.75rem",
-                  background: UI.panelCard,
+                  background: "var(--panel-card)",
                   borderRadius: UI.radius.xs,
-                  border: `1px solid ${UI.borderMuted}`,
+                  border: `1px solid ${"var(--border-muted)"}`,
                 }}
               >
                 {language === "tr"
@@ -2589,12 +2589,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               {!selectedCase ? (
                 <div
                   style={{
-                    border: `1px solid ${UI.border}`,
+                    border: "1px solid var(--border)",
                     borderRadius: UI.radius.md,
                     padding: "0.85rem 1rem",
                     fontSize: "0.8rem",
-                    background: UI.panel,
-                    color: UI.textSoft,
+                    background: "var(--panel)",
+                    color: "var(--text-soft)",
                     lineHeight: 1.55,
                   }}
                 >
@@ -2603,15 +2603,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       ? "Belge üretimi için sol omurgadan bir olay seçin."
                       : "Select an event in the left spine for artifact issuance."}
                   </p>
-                  <p style={{ margin: 0, fontSize: "0.75rem", color: UI.textMuted }}>
+                  <p style={{ margin: 0, fontSize: "0.75rem", color: "var(--text-muted)" }}>
                     {language === "tr"
                       ? "Issuance rol ve iz ile sınırlıdır; bilinmeyen/çekişmeli alanın veya nihai hükmün yerini almaz."
                       : "Issuance is role- and trace-bound; it does not override unknown/disputed or produce a final ruling."}
                   </p>
                 </div>
               ) : selectedCase.artifactProfiles && selectedCase.artifactProfiles.length > 0 ? (
-                <div style={{ border: `1px solid ${UI.border}`, borderRadius: 6, padding: "1rem", background: UI.panelRaised }}>
-                  <p style={{ fontSize: "0.72rem", color: UI.textMuted, marginBottom: "0.75rem" }}>
+                <div style={{ border: "1px solid var(--border)", borderRadius: 6, padding: "1rem", background: "var(--panel-raised)" }}>
+                  <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.75rem" }}>
                     {language === "tr"
                       ? "Bu çıktı nihai hukukî veya olgusal hüküm değildir. Issuance kullanılabilirliği, gerçeklik iddiası anlamına gelmez."
                       : "This output is not a final legal or factual determination. Issuance availability does not imply a truth claim."}
@@ -2620,12 +2620,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       style={{
                         marginBottom: "0.85rem",
                         padding: "0.65rem 0.75rem",
-                        border: `1px solid ${UI.border}`,
+                        border: "1px solid var(--border)",
                         borderRadius: 6,
-                        background: UI.panelCard,
+                        background: "var(--panel-card)",
                         fontSize: "0.76rem",
                         lineHeight: 1.5,
-                        color: UI.text,
+                        color: "var(--text)",
                       }}
                     >
                     <div>
@@ -2655,10 +2655,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontFamily: MONO,
                         fontSize: "0.6rem",
                         letterSpacing: "0.08em",
-                        color: UI.textDim,
-                        background: UI.panelCard,
+                        color: "var(--text-dim)",
+                        background: "var(--panel-card)",
                         borderRadius: UI.radius.xs,
-                        border: `1px solid ${UI.borderMuted}`,
+                        border: `1px solid ${"var(--border-muted)"}`,
                         lineHeight: 1.5,
                       }}
                     >
@@ -2692,9 +2692,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         <div
                           key={ap.profileCode}
                           style={{
-                            borderLeft: `2px solid ${UI.border}`,
+                            borderLeft: `2px solid ${"var(--border)"}`,
                             padding: "0.5rem 0.6rem",
-                            background: UI.panelCard,
+                            background: "var(--panel-card)",
                             borderRadius: 4,
                             fontSize: "0.8rem",
                           }}
@@ -2707,7 +2707,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     })}
                   </div>
                   {isVehicle && selected && selectedCase.artifactProfiles.some((ap) => ap.enabled && ap.apiBacked && (ap.profileCode === "claims" || ap.profileCode === "legal")) ? (
-                    <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: `1px solid ${UI.border}` }}>
+                    <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border)" }}>
                       <div style={{ fontSize: "0.8rem", marginBottom: "0.25rem", display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
                         <span style={{ opacity: 0.8 }}>{language === "tr" ? "Issuance profili:" : "Issuance profile:"}</span>
                         {selectedCase.artifactProfiles.some((ap) => ap.profileCode === "claims" && ap.enabled && ap.apiBacked) && (
@@ -2719,9 +2719,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               fontSize: "0.8rem",
                               padding: "0.35rem 0.75rem",
                               borderRadius: 999,
-                              border: exportProfile === "claims" ? `1px solid ${UI.accentBorder}` : `1px solid ${UI.border}`,
-                              background: exportProfile === "claims" ? UI.accentSoft : UI.panel,
-                              color: UI.text,
+                              border: exportProfile === "claims" ? `1px solid ${"var(--accent-border)"}` : "1px solid var(--border)",
+                              background: exportProfile === "claims" ? "var(--accent-soft)" : "var(--panel)",
+                              color: "var(--text)",
                               cursor: exportLoading ? "not-allowed" : "pointer",
                               opacity: exportLoading ? 0.6 : 1,
                               fontWeight: exportProfile === "claims" ? 700 : 500,
@@ -2739,9 +2739,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               fontSize: "0.8rem",
                               padding: "0.35rem 0.75rem",
                               borderRadius: 999,
-                              border: exportProfile === "legal" ? `1px solid ${UI.accentBorder}` : `1px solid ${UI.border}`,
-                              background: exportProfile === "legal" ? UI.accentSoft : UI.panel,
-                              color: UI.text,
+                              border: exportProfile === "legal" ? `1px solid ${"var(--accent-border)"}` : "1px solid var(--border)",
+                              background: exportProfile === "legal" ? "var(--accent-soft)" : "var(--panel)",
+                              color: "var(--text)",
                               cursor: exportLoading ? "not-allowed" : "pointer",
                               opacity: exportLoading ? 0.6 : 1,
                               fontWeight: exportProfile === "legal" ? 700 : 500,
@@ -2751,7 +2751,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           </button>
                         )}
                       </div>
-                      <p style={{ fontSize: "0.72rem", color: UI.textMuted, margin: "0.5rem 0 0.35rem", lineHeight: 1.5 }}>
+                      <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: "0.5rem 0 0.35rem", lineHeight: 1.5 }}>
                         {language === "tr"
                           ? "Kontrollü issuance: artifact manifest ve iz ile sınırlı kalır; suçlama veya nihai hüküm değildir."
                           : "Controlled issuance: artifact remains bound to manifest and trace; not a blame or final verdict."}
@@ -2765,9 +2765,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             fontSize: "0.85rem",
                             padding: "0.55rem 0.95rem",
                             borderRadius: 8,
-                            border: `1px solid ${UI.border}`,
-                            background: UI.panel,
-                            color: UI.text,
+                            border: "1px solid var(--border)",
+                            background: "var(--panel)",
+                            color: "var(--text)",
                             cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
                             opacity: !selectedId || exportLoading ? 0.6 : 1,
                             minWidth: 176,
@@ -2786,9 +2786,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             fontSize: "0.85rem",
                             padding: "0.55rem 0.95rem",
                             borderRadius: 8,
-                            border: `1px solid ${UI.border}`,
-                            background: UI.panel,
-                            color: UI.text,
+                            border: "1px solid var(--border)",
+                            background: "var(--panel)",
+                            color: "var(--text)",
                             cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
                             opacity: !selectedId || exportLoading ? 0.6 : 1,
                             minWidth: 176,
@@ -2801,7 +2801,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         </button>
                       </div>
                       {(identity?.bundle_id ?? selected?.bundleId) && (
-                        <div style={{ fontSize: "0.72rem", color: UI.textMuted, marginTop: "0.65rem", lineHeight: 1.5 }}>
+                        <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.65rem", lineHeight: 1.5 }}>
                           Bundle ID: {identity?.bundle_id ?? selected?.bundleId} · Manifest ID: {identity?.manifest_id ?? selected?.manifestId ?? "—"} · {language === "tr" ? "Trace" : "Trace"}: {transcriptId ?? (language === "tr" ? "hazırlanmadı" : "pending")}
                         </div>
                       )}
@@ -2813,15 +2813,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             borderRadius: 10,
                             border:
                               issuanceState === "success"
-                                ? `1px solid ${UI.success}`
+                                ? "1px solid var(--success)"
                                 : issuanceState === "error"
-                                ? `1px solid ${UI.error}`
-                                : `1px solid ${UI.borderStrong}`,
+                                ? "1px solid var(--error)"
+                                : "1px solid var(--border-strong)",
                             background:
                               issuanceState === "success"
-                                ? UI.successSoft
+                                ? "var(--success-soft)"
                                 : issuanceState === "error"
-                                ? UI.errorSoft
+                                ? "var(--error-soft)"
                                 : "rgba(148, 163, 184, 0.08)",
                           }}
                         >
@@ -2832,10 +2832,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               marginBottom: "0.3rem",
                               color:
                                 issuanceState === "success"
-                                  ? UI.success
+                                  ? "var(--success)"
                                   : issuanceState === "error"
-                                  ? UI.error
-                                  : UI.textSoft,
+                                  ? "var(--error)"
+                                  : "var(--text-soft)",
                             }}
                           >
                             {issuanceState === "success"
@@ -2854,7 +2854,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             style={{
                               margin: 0,
                               fontSize: "0.78rem",
-                              color: UI.textSoft,
+                              color: "var(--text-soft)",
                               lineHeight: 1.5,
                             }}
                           >
@@ -2907,7 +2907,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                       fontSize: "0.68rem",
                                       letterSpacing: "0.08em",
                                       textTransform: "uppercase",
-                                      color: UI.textMuted,
+                                      color: "var(--text-muted)",
                                       marginBottom: "0.18rem",
                                     }}
                                   >
@@ -2928,7 +2928,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             </div>
                           )}
                           {exportError && (
-                            <p style={{ fontSize: "0.8rem", margin: "0.65rem 0 0", color: UI.error }}>
+                            <p style={{ fontSize: "0.8rem", margin: "0.65rem 0 0", color: "var(--error)" }}>
                               {exportError}
                             </p>
                           )}
@@ -2938,7 +2938,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   ) : null}
                 </div>
               ) : selectedCase?.artifactIssuance?.available && selectedCase?.artifactIssuance?.apiBacked && selected ? (
-                <div style={{ border: `1px solid ${UI.border}`, borderRadius: 6, padding: "1rem", background: UI.panelRaised }}>
+                <div style={{ border: "1px solid var(--border)", borderRadius: 6, padding: "1rem", background: "var(--panel-raised)" }}>
                   <p style={{ fontSize: "0.72rem", opacity: 0.75, marginBottom: "0.5rem" }}>
                     {language === "tr" ? "Bu çıktı nihai hukukî veya olgusal hüküm değildir." : "This output is not a final legal or factual determination."}
                   </p>
@@ -2955,9 +2955,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontSize: "0.8rem",
                         padding: "0.25rem 0.6rem",
                         borderRadius: 4,
-                        border: exportProfile === "claims" ? `1px solid ${UI.accent}` : `1px solid ${UI.border}`,
-                        background: exportProfile === "claims" ? UI.accentSoft : UI.panel,
-                        color: UI.text,
+                        border: exportProfile === "claims" ? "1px solid var(--accent)" : "1px solid var(--border)",
+                        background: exportProfile === "claims" ? "var(--accent-soft)" : "var(--panel)",
+                        color: "var(--text)",
                         cursor: exportLoading ? "not-allowed" : "pointer",
                         opacity: exportLoading ? 0.6 : 1,
                       }}
@@ -2972,9 +2972,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontSize: "0.8rem",
                         padding: "0.25rem 0.6rem",
                         borderRadius: 4,
-                        border: exportProfile === "legal" ? `1px solid ${UI.accent}` : `1px solid ${UI.border}`,
-                        background: exportProfile === "legal" ? UI.accentSoft : UI.panel,
-                        color: UI.text,
+                        border: exportProfile === "legal" ? "1px solid var(--accent)" : "1px solid var(--border)",
+                        background: exportProfile === "legal" ? "var(--accent-soft)" : "var(--panel)",
+                        color: "var(--text)",
                         cursor: exportLoading ? "not-allowed" : "pointer",
                         opacity: exportLoading ? 0.6 : 1,
                       }}
@@ -2991,9 +2991,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontSize: "0.85rem",
                         padding: "0.4rem 0.8rem",
                         borderRadius: 4,
-                        border: `1px solid ${UI.border}`,
-                        background: UI.panel,
-                        color: UI.text,
+                        border: "1px solid var(--border)",
+                        background: "var(--panel)",
+                        color: "var(--text)",
                         cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
                         opacity: !selectedId || exportLoading ? 0.6 : 1,
                       }}
@@ -3008,9 +3008,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontSize: "0.85rem",
                         padding: "0.4rem 0.8rem",
                         borderRadius: 4,
-                        border: `1px solid ${UI.border}`,
-                        background: UI.panel,
-                        color: UI.text,
+                        border: "1px solid var(--border)",
+                        background: "var(--panel)",
+                        color: "var(--text)",
                         cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
                         opacity: !selectedId || exportLoading ? 0.6 : 1,
                       }}
@@ -3018,10 +3018,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {exportLoading === "pdf" ? (language === "tr" ? "Hazırlanıyor…" : "Preparing…") : language === "tr" ? "Issuance — PDF" : "Issue as PDF"}
                     </button>
                   </div>
-                  {exportError && <p style={{ fontSize: "0.8rem", marginTop: "0.5rem", color: UI.error }}>{exportError}</p>}
+                  {exportError && <p style={{ fontSize: "0.8rem", marginTop: "0.5rem", color: "var(--error)" }}>{exportError}</p>}
                 </div>
               ) : (
-                <div style={{ border: `1px solid ${UI.border}`, borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.8rem", color: UI.textMuted }}>
+                <div style={{ border: "1px solid var(--border)", borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>
                   {!isVehicle ? (
                     <div>
                       <p style={{ margin: "0 0 0.5rem" }}>
@@ -3063,13 +3063,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <section style={{ marginTop: UI.sectionGap, marginBottom: UI.sectionGap }}>
               <div
                 style={{
-                  border: `1px solid ${UI.border}`,
+                  border: "1px solid var(--border)",
                   borderRadius: UI.radius.md,
                   overflow: "hidden",
                 }}
               >
-                <div style={{ padding: "0.5rem 1rem", background: UI.panelRaised, borderBottom: `1px solid ${UI.borderMuted}` }}>
-                  <span style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.08em", color: UI.textDim, fontWeight: 600 }}>
+                <div style={{ padding: "0.5rem 1rem", background: "var(--panel-raised)", borderBottom: `1px solid ${"var(--border-muted)"}` }}>
+                  <span style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.08em", color: "var(--text-dim)", fontWeight: 600 }}>
                     {language === "tr" ? "// why_qaraqutu_is_inevitable" : "// why_qaraqutu_is_inevitable"}
                   </span>
                 </div>
@@ -3078,8 +3078,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   padding: "1rem 1.15rem",
                   fontSize: "0.82rem",
                   lineHeight: 1.6,
-                  background: UI.panel,
-                  color: UI.textSoft,
+                  background: "var(--panel)",
+                  color: "var(--text-soft)",
                 }}
               >
                 {selectedEventCard ? (
@@ -3090,7 +3090,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         : "Without event-bound verifiable record, derived assessment, and verification trace, liability, insurance, and compliance disputes remain unresolved. QARAQUTU addresses Vehicle, Drone, and Robot events in one product and one framework, providing evidence integrity and traceability—hence inevitable in the context of this case.")}
                   </p>
                 ) : (
-                  <p style={{ margin: 0, color: UI.textMuted }}>
+                  <p style={{ margin: 0, color: "var(--text-muted)" }}>
                     {language === "tr"
                       ? "Sol omurgadan bir olay seçin."
                       : "Select an event in the left spine."}
@@ -3105,4 +3105,5 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     </div>
   );
 }
+
 

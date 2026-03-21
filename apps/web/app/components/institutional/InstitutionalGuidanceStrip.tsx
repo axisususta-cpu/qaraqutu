@@ -1,10 +1,8 @@
-"use client";
+﻿"use client";
 
 import { getInstitutionalRole } from "../../../lib/institutional-roles";
 import type { InstitutionalRoleId } from "../../../lib/institutional-roles";
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 
 const DISPLAY_ROLES: InstitutionalRoleId[] = ["legal", "field", "technical", "claims"];
 
@@ -17,8 +15,8 @@ export function InstitutionalGuidanceStrip() {
     <div
       style={{
         padding: "0.45rem 2.5rem",
-        borderBottom: `1px solid ${UI.borderSoft}`,
-        background: UI.panelRaised,
+        borderBottom: "1px solid var(--border-soft)",
+        background: "var(--panel-raised)",
         fontSize: "0.68rem",
         maxWidth: 1400,
         margin: "0 auto",
@@ -30,12 +28,12 @@ export function InstitutionalGuidanceStrip() {
             fontFamily: "'JetBrains Mono', monospace",
             letterSpacing: "0.06em",
             textTransform: "uppercase",
-            color: UI.chipText,
+            color: "var(--chip-text)",
             marginRight: "0.5rem",
             padding: "0.1rem 0.4rem",
             borderRadius: 4,
-            background: UI.chipBg,
-            border: `1px solid ${UI.chipBorder}`,
+            background: "var(--chip-bg)",
+            border: `1px solid ${"var(--chip-border)"}`,
           }}
         >
           By role:
@@ -47,14 +45,14 @@ export function InstitutionalGuidanceStrip() {
             <span
               key={id}
               style={{
-                color: UI.textSoft,
+                color: "var(--text-soft)",
                 display: "inline-flex",
                 alignItems: "baseline",
                 gap: "0.3rem",
               }}
             >
-              <span style={{ fontWeight: 600, color: UI.text }}>{role.labelEn}</span>
-              <span style={{ color: UI.textMuted }}>—</span>
+              <span style={{ fontWeight: 600, color: "var(--text)" }}>{role.labelEn}</span>
+              <span style={{ color: "var(--text-muted)" }}>—</span>
               <span>{role.shortPurposeEn}</span>
             </span>
           );
@@ -63,3 +61,4 @@ export function InstitutionalGuidanceStrip() {
     </div>
   );
 }
+

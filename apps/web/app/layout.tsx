@@ -5,6 +5,8 @@ import { NavLinks } from "./components/NavLinks";
 import { LogoPrimary } from "./components/LogoPrimary";
 import { ThemeProvider } from "../lib/ThemeContext";
 import { ThemeToggle } from "./components/ThemeToggle";
+import { LanguageProvider } from "../lib/LanguageContext";
+import { LanguageToggle } from "./components/LanguageToggle";
 import { BRAND } from "../lib/brand";
 
 export const metadata = {
@@ -52,6 +54,7 @@ export default function RootLayout({
       </head>
       <body style={{ margin: 0, background: "var(--bg)", color: "var(--text)", fontFamily: SANS }}>
         <ThemeProvider>
+        <LanguageProvider>
           <header
             style={{
               background: "var(--header-bg)",
@@ -101,6 +104,7 @@ export default function RootLayout({
                 }}
               >
                 <NavLinks />
+                <LanguageToggle />
                 <ThemeToggle />
               </nav>
             </div>
@@ -130,6 +134,7 @@ export default function RootLayout({
               {webBuildMeta.app} @ {shortSha} · {webBuildMeta.buildTime}
             </span>
           </footer>
+        </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

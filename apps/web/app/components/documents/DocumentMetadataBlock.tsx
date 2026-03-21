@@ -1,8 +1,6 @@
-"use client";
+﻿"use client";
 
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 
 export interface DocumentMetadataBlockProps {
   /** Label (e.g. "Recorded", "Derived", "Unknown / Disputed"). */
@@ -21,23 +19,23 @@ export function DocumentMetadataBlock({ label, note, children }: DocumentMetadat
     <div
       style={{
         marginBottom: "1.25rem",
-        border: `1px solid ${UI.borderSoft}`,
+        border: "1px solid var(--border-soft)",
         borderRadius: 4,
         overflow: "hidden",
-        background: UI.panelRaised,
+        background: "var(--panel-raised)",
       }}
     >
       <div
         style={{
           padding: "0.6rem 0.95rem",
-          background: UI.borderMuted,
-          borderBottom: `1px solid ${UI.borderSoft}`,
+          background: "var(--border-muted)",
+          borderBottom: "1px solid var(--border-soft)",
           fontSize: "0.72rem",
           fontWeight: 600,
           fontFamily: "'JetBrains Mono', monospace",
           letterSpacing: "0.1em",
           textTransform: "uppercase",
-          color: UI.text,
+          color: "var(--text)",
         }}
       >
         {label}
@@ -47,9 +45,9 @@ export function DocumentMetadataBlock({ label, note, children }: DocumentMetadat
           style={{
             padding: "0.4rem 0.9rem",
             fontSize: "0.65rem",
-            color: UI.textMuted,
+            color: "var(--text-muted)",
             fontStyle: "italic",
-            borderBottom: `1px solid ${UI.borderSoft}`,
+            borderBottom: "1px solid var(--border-soft)",
           }}
         >
           {note}
@@ -59,7 +57,7 @@ export function DocumentMetadataBlock({ label, note, children }: DocumentMetadat
         style={{
           padding: "0.95rem 1.05rem",
           fontSize: "0.8rem",
-          color: UI.text,
+          color: "var(--text)",
           lineHeight: 1.6,
         }}
       >
@@ -68,3 +66,4 @@ export function DocumentMetadataBlock({ label, note, children }: DocumentMetadat
     </div>
   );
 }
+

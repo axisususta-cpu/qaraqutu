@@ -1,12 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
-import { THEME } from "../../lib/theme";
+import { useLanguage } from "../../lib/LanguageContext";
+import { MSG } from "../../lib/i18n/messages";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-
-const UI = { ...THEME };
 
 function safeNext(next: string | null): string {
   if (!next) return "/";
@@ -20,6 +19,8 @@ export default function AccessPage({
 }: {
   searchParams: { next?: string };
 }) {
+  const { lang } = useLanguage();
+  const m = MSG[lang];
   const [token, setToken] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,8 +54,8 @@ export default function AccessPage({
     <div
       style={{
         minHeight: "100vh",
-        background: UI.bg,
-        color: UI.text,
+        background: "var(--bg)",
+        color: "var(--text)",
         padding: "2.2rem 2rem",
         fontFamily: SANS,
       }}
@@ -67,17 +68,17 @@ export default function AccessPage({
               fontSize: "0.74rem",
               letterSpacing: "0.14em",
               textTransform: "uppercase",
-              color: UI.textMuted,
+              color: "var(--text-muted)",
               marginBottom: "0.35rem",
             }}
           >
-            Access gate
+            {m.accessGateLabel}
           </div>
           <h1 style={{ fontSize: "1.35rem", margin: 0, marginBottom: "0.55rem" }}>
-            Authorized access required
+            {m.accessTitle}
           </h1>
-          <p style={{ fontSize: "0.86rem", color: UI.textSoft, margin: 0, lineHeight: 1.65, maxWidth: 720 }}>
-            QARAQUTU’s protected surfaces are intentionally bounded. Enter an authorized access token to continue.
+          <p style={{ fontSize: "0.86rem", color: "var(--text-soft)", margin: 0, lineHeight: 1.65, maxWidth: 720 }}>
+            QARAQUTU’s protected surfaces are intentionally bounded. Enter an authorized {m.accessTokenLabel} to continue.
           </p>
         </div>
 
@@ -85,13 +86,13 @@ export default function AccessPage({
           onSubmit={onSubmit}
           style={{
             borderRadius: 12,
-            border: `1px solid ${UI.border}`,
-            background: UI.panel,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
             padding: "1.05rem 1.1rem",
           }}
         >
-          <label style={{ display: "block", fontSize: "0.78rem", color: UI.textMuted, marginBottom: "0.35rem" }}>
-            Access token
+          <label style={{ display: "block", fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "0.35rem" }}>
+            {m.accessTokenLabel}
           </label>
           <input
             value={token}
@@ -104,14 +105,14 @@ export default function AccessPage({
               boxSizing: "border-box",
               padding: "0.6rem 0.7rem",
               borderRadius: 10,
-              border: `1px solid ${UI.border}`,
-              background: UI.panelCard,
-              color: UI.text,
+              border: "1px solid var(--border)",
+              background: "var(--panel-card)",
+              color: "var(--text)",
               outline: "none",
               fontFamily: MONO,
               fontSize: "0.84rem",
             }}
-            placeholder="Authorized token"
+            placeholder={m.accessTokenPlaceholder}
           />
 
           {error ? (
@@ -119,11 +120,11 @@ export default function AccessPage({
               style={{
                 marginTop: "0.75rem",
                 borderRadius: 10,
-                border: `1px solid ${UI.error}`,
-                background: UI.errorSoft,
+                border: "1px solid var(--error)",
+                background: "var(--error-soft)",
                 padding: "0.55rem 0.7rem",
                 fontSize: "0.82rem",
-                color: UI.text,
+                color: "var(--text)",
               }}
               role="status"
               aria-live="polite"
@@ -140,9 +141,9 @@ export default function AccessPage({
                 cursor: submitting ? "not-allowed" : "pointer",
                 padding: "0.55rem 0.8rem",
                 borderRadius: 10,
-                border: `1px solid ${UI.accent}`,
-                background: UI.accentSoft,
-                color: UI.text,
+                border: "1px solid var(--accent)",
+                background: "var(--accent-soft)",
+                color: "var(--text)",
                 fontSize: "0.85rem",
                 fontWeight: 600,
               }}
@@ -157,8 +158,8 @@ export default function AccessPage({
                 justifyContent: "center",
                 padding: "0.55rem 0.8rem",
                 borderRadius: 10,
-                border: `1px solid ${UI.border}`,
-                color: UI.textSoft,
+                border: "1px solid var(--border)",
+                color: "var(--text-soft)",
                 textDecoration: "none",
                 fontSize: "0.85rem",
               }}
@@ -167,13 +168,14 @@ export default function AccessPage({
             </a>
           </div>
 
-          <p style={{ marginTop: "0.9rem", marginBottom: 0, fontSize: "0.78rem", color: UI.textMuted, lineHeight: 1.6 }}>
-            This gate is a minimal protection layer for the current acceptance slice. Full tenant IAM / RBAC is a later
-            sprint.
+          <p style={{ marginTop: "0.9rem", marginBottom: 0, fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
+            {m.accessNote}
           </p>
         </form>
       </div>
     </div>
   );
 }
+
+
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import Link from "next/link";
@@ -7,12 +7,9 @@ import {
   evaluateGoldenAcceptance,
   GOLDEN_ACCEPTANCE_RUBRIC_LABELS,
 } from "../../../lib/canonical-spine";
-import { THEME } from "../../../lib/theme";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-
-const UI = { ...THEME };
 
 /**
  * Golden is not a separate product; it is the canonical quality bar for the verifier.
@@ -27,8 +24,8 @@ export default function VerifierGoldenPage() {
     <div
       style={{
         minHeight: "100vh",
-        background: UI.bg,
-        color: UI.text,
+        background: "var(--bg)",
+        color: "var(--text)",
         padding: "1.75rem 2rem 2.1rem",
         fontFamily: SANS,
       }}
@@ -41,7 +38,7 @@ export default function VerifierGoldenPage() {
             textTransform: "uppercase",
             opacity: 0.75,
             marginBottom: "0.25rem",
-            color: UI.textMuted,
+            color: "var(--text-muted)",
             fontFamily: MONO,
           }}
         >
@@ -50,7 +47,7 @@ export default function VerifierGoldenPage() {
         <h1 style={{ fontSize: "1.3rem", marginBottom: "0.5rem", fontWeight: 600 }}>
           Golden rubric (verifier quality bar)
         </h1>
-        <p style={{ fontSize: "0.88rem", opacity: 0.95, lineHeight: 1.6, marginBottom: "1.4rem", color: UI.textSoft }}>
+        <p style={{ fontSize: "0.88rem", opacity: 0.95, lineHeight: 1.6, marginBottom: "1.4rem", color: "var(--text-soft)" }}>
           Golden is not a separate product or primary surface. It is the internal quality bar and reference
           for the main Verifier. Every case in the spine is evaluated against the acceptance rubric below. Use the main Verifier for review.
         </p>
@@ -59,8 +56,8 @@ export default function VerifierGoldenPage() {
           style={{
             marginBottom: "1.5rem",
             borderRadius: 10,
-            border: `1px solid ${UI.border}`,
-            background: UI.panel,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
             padding: "0.9rem 1.05rem 1.05rem",
           }}
         >
@@ -73,10 +70,10 @@ export default function VerifierGoldenPage() {
               padding: 0,
               margin: 0,
               fontSize: "0.85rem",
-              border: `1px solid ${UI.border}`,
+              border: "1px solid var(--border)",
               borderRadius: 6,
               overflow: "hidden",
-              background: UI.panelRaised,
+              background: "var(--panel-raised)",
             }}
           >
             {GOLDEN_ACCEPTANCE_RUBRIC_LABELS.map((label, i) => (
@@ -84,15 +81,15 @@ export default function VerifierGoldenPage() {
                 key={i}
                 style={{
                   padding: "0.5rem 0.85rem",
-                  borderBottom: i < GOLDEN_ACCEPTANCE_RUBRIC_LABELS.length - 1 ? `1px solid ${UI.borderSoft}` : "none",
-                  color: UI.text,
+                  borderBottom: i < GOLDEN_ACCEPTANCE_RUBRIC_LABELS.length - 1 ? "1px solid var(--border-soft)" : "none",
+                  color: "var(--text)",
                 }}
               >
                 {label}
               </li>
             ))}
           </ul>
-          <p style={{ fontSize: "0.8rem", opacity: 0.8, marginTop: "0.5rem", color: UI.textMuted }}>
+          <p style={{ fontSize: "0.8rem", opacity: 0.8, marginTop: "0.5rem", color: "var(--text-muted)" }}>
             Each case in the canonical spine is evaluated against these {rubricTotal} criteria.
           </p>
         </section>
@@ -101,8 +98,8 @@ export default function VerifierGoldenPage() {
           style={{
             marginBottom: "1.5rem",
             borderRadius: 10,
-            border: `1px solid ${UI.border}`,
-            background: UI.panel,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
             padding: "0.9rem 1.05rem 1.05rem",
           }}
         >
@@ -111,12 +108,12 @@ export default function VerifierGoldenPage() {
           </h2>
           <div
             style={{
-              border: `1px solid ${UI.border}`,
+              border: "1px solid var(--border)",
               borderRadius: 6,
               padding: "0.75rem 1rem",
               fontSize: "0.8rem",
-              background: UI.panelRaised,
-              color: UI.text,
+              background: "var(--panel-raised)",
+              color: "var(--text)",
             }}
           >
             <p style={{ margin: "0 0 0.5rem" }}>
@@ -132,8 +129,8 @@ export default function VerifierGoldenPage() {
           style={{
             marginBottom: "1.5rem",
             borderRadius: 10,
-            border: `1px solid ${UI.border}`,
-            background: UI.panel,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
             padding: "0.9rem 1.05rem 1.05rem",
           }}
         >
@@ -142,12 +139,12 @@ export default function VerifierGoldenPage() {
           </h2>
           <div
             style={{
-              border: `1px solid ${UI.border}`,
+              border: "1px solid var(--border)",
               borderRadius: 6,
               padding: "0.75rem 1rem",
               fontSize: "0.8rem",
-              background: allPass ? UI.successSoft : UI.panelRaised,
-              color: UI.text,
+              background: allPass ? "var(--success-soft)" : "var(--panel-raised)",
+              color: "var(--text)",
             }}
           >
             {caseResults.map(({ case: c, result }, idx) => (
@@ -158,7 +155,7 @@ export default function VerifierGoldenPage() {
                   justifyContent: "space-between",
                   alignItems: "center",
                   padding: "0.35rem 0",
-                  borderBottom: idx < caseResults.length - 1 ? `1px solid ${UI.borderSoft}` : "none",
+                  borderBottom: idx < caseResults.length - 1 ? "1px solid var(--border-soft)" : "none",
                 }}
               >
                 <span>
@@ -175,8 +172,8 @@ export default function VerifierGoldenPage() {
         <div
           style={{
             borderRadius: 10,
-            border: `1px solid ${UI.border}`,
-            background: UI.panel,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
             padding: "0.95rem 1.1rem 1.1rem",
             marginBottom: "1.5rem",
             fontSize: "0.85rem",
@@ -190,12 +187,12 @@ export default function VerifierGoldenPage() {
             style={{
               display: "inline-block",
               padding: "0.5rem 1rem",
-              background: UI.accentSoft,
-              color: UI.text,
+              background: "var(--accent-soft)",
+              color: "var(--text)",
               borderRadius: 4,
               textDecoration: "none",
               fontSize: "0.85rem",
-              border: `1px solid ${UI.accent}`,
+              border: "1px solid var(--accent)",
               fontWeight: 600,
             }}
           >
@@ -206,3 +203,4 @@ export default function VerifierGoldenPage() {
     </div>
   );
 }
+

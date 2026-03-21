@@ -1,12 +1,10 @@
-"use client";
+﻿"use client";
 
 /**
  * Canonical review spine — System → Scenario → Event → Review.
  * Wire/protocol trace language.
  */
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 
 const NODES = [
   { id: "system", label: "System" },
@@ -19,10 +17,10 @@ export function CanonicalSpineDiagram() {
   return (
     <div
       style={{
-        border: `1px solid ${UI.border}`,
+        border: "1px solid var(--border)",
         borderRadius: 8,
         padding: "1.15rem 1.35rem",
-        background: UI.panel,
+        background: "var(--panel)",
       }}
     >
       <div
@@ -30,7 +28,7 @@ export function CanonicalSpineDiagram() {
           fontSize: "0.7rem",
           letterSpacing: "0.12em",
           textTransform: "uppercase",
-          color: UI.textMuted,
+          color: "var(--text-muted)",
           marginBottom: "0.85rem",
           fontFamily: "'JetBrains Mono', monospace",
         }}
@@ -49,14 +47,14 @@ export function CanonicalSpineDiagram() {
           <div key={node.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <div
               style={{
-                border: `1px solid ${UI.border}`,
+                border: "1px solid var(--border)",
                 padding: "0.4rem 0.7rem",
                 borderRadius: 4,
                 fontSize: "0.8rem",
                 fontFamily: "'JetBrains Mono', monospace",
-                color: UI.text,
+                color: "var(--text)",
                 background: node.id === "review" ? "rgba(212, 86, 26, 0.08)" : "transparent",
-                borderColor: node.id === "review" ? UI.accent : undefined,
+                borderColor: node.id === "review" ? "var(--accent)" : undefined,
               }}
             >
               {node.label}
@@ -64,7 +62,7 @@ export function CanonicalSpineDiagram() {
             {i < NODES.length - 1 ? (
               <span
                 style={{
-                  color: UI.textMuted,
+                  color: "var(--text-muted)",
                   fontSize: "0.7rem",
                 }}
               >
@@ -77,3 +75,4 @@ export function CanonicalSpineDiagram() {
     </div>
   );
 }
+

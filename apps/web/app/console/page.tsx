@@ -1,11 +1,10 @@
-"use client";
+﻿"use client";
 
-import { THEME } from "../../lib/theme";
+import { useLanguage } from "../../lib/LanguageContext";
+import { MSG } from "../../lib/i18n/messages";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-
-const UI = { ...THEME };
 
 const SHELL_LANES = [
   {
@@ -41,12 +40,14 @@ const SHELL_LANES = [
 ] as const;
 
 export default function ConsolePage() {
+  const { lang } = useLanguage();
+  const m = MSG[lang];
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: UI.bg,
-        color: UI.text,
+        background: "var(--bg)",
+        color: "var(--text)",
         padding: "1.75rem 2rem",
         fontFamily: SANS,
       }}
@@ -55,17 +56,16 @@ export default function ConsolePage() {
         <section
           style={{
             borderRadius: 12,
-            border: `1px solid ${UI.border}`,
-            background: UI.panel,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
             padding: "1rem 1.1rem 1.15rem",
           }}
         >
           <h1 style={{ fontSize: "1.35rem", margin: 0, marginBottom: "0.45rem" }}>
-            Console — controlled protocol shell preparation
+            {m.consoleTitle}
           </h1>
-          <p style={{ fontSize: "0.84rem", color: UI.textSoft, maxWidth: 820, lineHeight: 1.6, margin: 0 }}>
-            Reserved internal surface for shaping future bounded protocol operations. This page is not public, not a
-            free-form execution terminal, and not an operations dashboard.
+          <p style={{ fontSize: "0.84rem", color: "var(--text-soft)", maxWidth: 820, lineHeight: 1.6, margin: 0 }}>
+            {m.consoleBody}
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem", marginTop: "0.85rem" }}>
             {["Reserved surface", "Controlled shell", "Authorized access required", "Protocol evolution"].map((pill) => (
@@ -73,9 +73,9 @@ export default function ConsolePage() {
                 key={pill}
                 style={{
                   fontSize: "0.74rem",
-                  border: `1px solid ${UI.border}`,
-                  background: UI.accentSoft,
-                  color: UI.textSoft,
+                  border: "1px solid var(--border)",
+                  background: "var(--accent-soft)",
+                  color: "var(--text-soft)",
                   borderRadius: 999,
                   padding: "0.15rem 0.55rem",
                   fontFamily: MONO,
@@ -99,8 +99,8 @@ export default function ConsolePage() {
           <div
             style={{
               borderRadius: 12,
-              border: `1px solid ${UI.border}`,
-              background: UI.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "1rem 1.1rem 1.15rem",
             }}
           >
@@ -109,7 +109,7 @@ export default function ConsolePage() {
                 fontSize: "0.78rem",
                 textTransform: "uppercase",
                 letterSpacing: "0.16em",
-                color: UI.textMuted,
+                color: "var(--text-muted)",
                 marginBottom: "0.45rem",
                 fontFamily: MONO,
               }}
@@ -119,7 +119,7 @@ export default function ConsolePage() {
             <p
               style={{
                 fontSize: "0.84rem",
-                color: UI.textSoft,
+                color: "var(--text-soft)",
                 margin: 0,
                 marginBottom: "0.45rem",
                 lineHeight: 1.6,
@@ -128,7 +128,7 @@ export default function ConsolePage() {
               This shell is intentionally non-active. It prepares bounded protocol lanes for later internal capability,
               without exposing free-form execution or replacing verifier inspection flow.
             </p>
-            <ul style={{ fontSize: "0.8rem", color: UI.textSoft, margin: 0, paddingLeft: "1.05rem", lineHeight: 1.6 }}>
+            <ul style={{ fontSize: "0.8rem", color: "var(--text-soft)", margin: 0, paddingLeft: "1.05rem", lineHeight: 1.6 }}>
               <li>Not a verifier alternative: canonical review stays in verifier inspection station.</li>
               <li>Not an admin diagnostics board: diagnostics remain in admin workbench.</li>
               <li>Not an execution terminal: no open command entry and no ad-hoc operational actions.</li>
@@ -138,8 +138,8 @@ export default function ConsolePage() {
           <div
             style={{
               borderRadius: 12,
-              border: `1px solid ${UI.border}`,
-              background: UI.panelRaised,
+              border: "1px solid var(--border)",
+              background: "var(--panel-raised)",
               padding: "1rem 1.1rem 1.15rem",
             }}
           >
@@ -147,7 +147,7 @@ export default function ConsolePage() {
             <p
               style={{
                 fontSize: "0.82rem",
-                color: UI.textMuted,
+                color: "var(--text-muted)",
                 margin: 0,
                 lineHeight: 1.6,
               }}
@@ -159,17 +159,17 @@ export default function ConsolePage() {
             style={{
               marginTop: "0.75rem",
               borderRadius: 8,
-              border: `1px dashed ${UI.border}`,
+              border: `1px dashed ${"var(--border)"}`,
               padding: "0.7rem 0.8rem",
               fontSize: "0.8rem",
               lineHeight: 1.6,
-              background: UI.panelCard,
+              background: "var(--panel-card)",
             }}
           >
-            <div style={{ color: UI.textSoft, marginBottom: "0.2rem" }}>
+            <div style={{ color: "var(--text-soft)", marginBottom: "0.2rem" }}>
               <strong>Current mode:</strong> reserved preparation shell
             </div>
-            <div style={{ color: UI.textMuted }}>
+            <div style={{ color: "var(--text-muted)" }}>
               No command runner, no production operation trigger, and no expanded operator privileges are enabled in
               this stage.
             </div>
@@ -180,8 +180,8 @@ export default function ConsolePage() {
         <section
           style={{
             borderRadius: 12,
-            border: `1px solid ${UI.border}`,
-            background: UI.panel,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
             padding: "1rem 1.1rem 1.15rem",
           }}
         >
@@ -198,8 +198,8 @@ export default function ConsolePage() {
                 key={lane.title}
                 style={{
                   borderRadius: 10,
-                  border: `1px solid ${UI.border}`,
-                  background: UI.panelRaised,
+                  border: "1px solid var(--border)",
+                  background: "var(--panel-raised)",
                   padding: "0.75rem 0.8rem",
                 }}
               >
@@ -207,7 +207,7 @@ export default function ConsolePage() {
                   style={{
                     fontFamily: MONO,
                     fontSize: "0.75rem",
-                    color: UI.accent,
+                    color: "var(--accent)",
                     textTransform: "uppercase",
                     letterSpacing: "0.08em",
                     marginBottom: "0.25rem",
@@ -215,7 +215,7 @@ export default function ConsolePage() {
                 >
                   {lane.title}
                 </div>
-                <p style={{ margin: 0, fontSize: "0.8rem", lineHeight: 1.55, color: UI.textSoft }}>{lane.detail}</p>
+                <p style={{ margin: 0, fontSize: "0.8rem", lineHeight: 1.55, color: "var(--text-soft)" }}>{lane.detail}</p>
               </div>
             ))}
           </div>
@@ -224,4 +224,5 @@ export default function ConsolePage() {
     </div>
   );
 }
+
 

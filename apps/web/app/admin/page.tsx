@@ -1,11 +1,9 @@
-import { headers } from "next/headers";
+﻿import { headers } from "next/headers";
 import { CANONICAL_CASES, getCanonicalCases } from "../../lib/canonical-spine";
-import { THEME } from "../../lib/theme";
+import { AdminPageHeader, AdminPageChips } from "./AdminPageHeader";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-
-const UI = { ...THEME };
 
 interface Diagnostics {
   environment: string;
@@ -91,22 +89,22 @@ export default async function AdminPage() {
       <div
         style={{
           minHeight: "100vh",
-          background: UI.bg,
-          color: UI.text,
+          background: "var(--bg)",
+          color: "var(--text)",
           padding: "1.75rem 2rem",
           fontFamily: SANS,
         }}
       >
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <h1 style={{ fontSize: "1.35rem", marginBottom: "0.5rem" }}>System diagnostics</h1>
-          <p style={{ fontSize: "0.85rem", color: UI.error, marginBottom: "0.8rem" }}>
+          <AdminPageHeader />
+          <p style={{ fontSize: "0.85rem", color: "var(--error)", marginBottom: "0.8rem" }}>
             Diagnostics only — not an operations dashboard.
           </p>
           <div
             style={{
               borderRadius: 10,
-              border: `1px solid ${UI.errorBorder}`,
-              background: UI.errorSoft,
+              border: `1px solid ${"var(--error-border)"}`,
+              background: "var(--error-soft)",
               padding: "0.75rem 1rem",
               fontSize: "0.8rem",
             }}
@@ -123,8 +121,8 @@ export default async function AdminPage() {
     <div
       style={{
         minHeight: "100vh",
-        background: UI.bg,
-        color: UI.text,
+        background: "var(--bg)",
+        color: "var(--text)",
         padding: "1.75rem 2rem 2.1rem",
         fontFamily: SANS,
       }}
@@ -132,51 +130,9 @@ export default async function AdminPage() {
       <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: "1.7rem" }}>
         <header style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
           <div>
-            <h1 style={{ fontSize: "1.35rem", margin: 0, marginBottom: "0.25rem" }}>System diagnostics</h1>
-            <p
-              style={{
-                fontSize: "0.84rem",
-                color: UI.textSoft,
-                margin: 0,
-                lineHeight: 1.5,
-              }}
-            >
-              Internal diagnostics surface for verifier-first operations. Bounded review of environment, verifier spine,
-              and issuance pathways — not an operations dashboard or business console.
-            </p>
+          <AdminPageHeader />
           </div>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "0.5rem",
-              marginTop: "0.15rem",
-              fontSize: "0.75rem",
-              color: UI.textMuted,
-            }}
-          >
-            <span
-              style={{
-                borderRadius: 999,
-                border: `1px solid ${UI.border}`,
-                padding: "0.15rem 0.55rem",
-                fontFamily: MONO,
-                letterSpacing: "0.09em",
-                textTransform: "uppercase",
-              }}
-            >
-              Diagnostics only
-            </span>
-            <span
-              style={{
-                borderRadius: 999,
-                border: `1px solid ${UI.border}`,
-                padding: "0.15rem 0.55rem",
-              }}
-            >
-              Protected surface · authorized access required
-            </span>
-          </div>
+          <AdminPageChips />
         </header>
 
         {/* Top-level status spine: environment + verifier + access boundary */}
@@ -191,8 +147,8 @@ export default async function AdminPage() {
           <div
             style={{
               borderRadius: 10,
-              border: `1px solid ${UI.border}`,
-              background: UI.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
@@ -200,7 +156,7 @@ export default async function AdminPage() {
             <p
               style={{
                 fontSize: "0.8rem",
-                color: UI.textSoft,
+                color: "var(--text-soft)",
                 margin: 0,
                 marginBottom: "0.45rem",
               }}
@@ -217,34 +173,34 @@ export default async function AdminPage() {
             >
               <ul style={{ listStyle: "none", padding: 0, margin: 0, lineHeight: 1.6 }}>
                 <li>
-                  <span style={{ color: UI.textMuted }}>Environment:</span>{" "}
+                  <span style={{ color: "var(--text-muted)" }}>Environment:</span>{" "}
                   <span style={{ fontFamily: MONO }}>{diagnostics.environment}</span>
                 </li>
                 <li>
-                  <span style={{ color: UI.textMuted }}>Dataset:</span>{" "}
+                  <span style={{ color: "var(--text-muted)" }}>Dataset:</span>{" "}
                   <span style={{ fontFamily: MONO }}>{diagnostics.dataset_version}</span>
                 </li>
                 <li>
-                  <span style={{ color: UI.textMuted }}>Schema:</span>{" "}
+                  <span style={{ color: "var(--text-muted)" }}>Schema:</span>{" "}
                   <span style={{ fontFamily: MONO }}>{diagnostics.schema_version}</span>
                 </li>
                 <li>
-                  <span style={{ color: UI.textMuted }}>Build:</span>{" "}
+                  <span style={{ color: "var(--text-muted)" }}>Build:</span>{" "}
                   <span style={{ fontFamily: MONO }}>{diagnostics.build_version}</span>
                 </li>
               </ul>
               <div
                 style={{
                   borderRadius: 8,
-                  border: `1px dashed ${UI.border}`,
+                  border: `1px dashed ${"var(--border)"}`,
                   padding: "0.55rem 0.7rem",
-                  background: UI.panelRaised,
+                  background: "var(--panel-raised)",
                 }}
               >
                 <div
                   style={{
                     fontSize: "0.75rem",
-                    color: UI.textMuted,
+                    color: "var(--text-muted)",
                     marginBottom: "0.25rem",
                     textTransform: "uppercase",
                     letterSpacing: "0.09em",
@@ -252,7 +208,7 @@ export default async function AdminPage() {
                 >
                   Verifier pipeline
                 </div>
-                <p style={{ fontSize: "0.78rem", color: UI.textSoft, margin: 0, lineHeight: 1.5 }}>
+                <p style={{ fontSize: "0.78rem", color: "var(--text-soft)", margin: 0, lineHeight: 1.5 }}>
                   Recent verifier runs and issuance paths are tracked for integrity. This view reports spine health, not
                   business throughput.
                 </p>
@@ -264,8 +220,8 @@ export default async function AdminPage() {
           <div
             style={{
               borderRadius: 10,
-              border: `1px solid ${UI.border}`,
-              background: UI.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
@@ -273,7 +229,7 @@ export default async function AdminPage() {
             <p
               style={{
                 fontSize: "0.8rem",
-                color: UI.textSoft,
+                color: "var(--text-soft)",
                 margin: 0,
                 marginBottom: "0.45rem",
               }}
@@ -310,8 +266,8 @@ export default async function AdminPage() {
           <div
             style={{
               borderRadius: 10,
-              border: `1px solid ${UI.border}`,
-              background: UI.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "0.95rem 1.05rem 1.05rem",
             }}
           >
@@ -319,7 +275,7 @@ export default async function AdminPage() {
             <p
               style={{
                 fontSize: "0.8rem",
-                color: UI.textSoft,
+                color: "var(--text-soft)",
                 margin: 0,
                 marginBottom: "0.5rem",
               }}
@@ -337,8 +293,8 @@ export default async function AdminPage() {
           <div
             style={{
               borderRadius: 10,
-              border: `1px solid ${UI.border}`,
-              background: UI.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "0.95rem 1.05rem 1.05rem",
             }}
           >
@@ -346,7 +302,7 @@ export default async function AdminPage() {
             <p
               style={{
                 fontSize: "0.8rem",
-                color: UI.textSoft,
+                color: "var(--text-soft)",
                 margin: 0,
                 marginBottom: "0.5rem",
               }}
@@ -401,8 +357,8 @@ export default async function AdminPage() {
           <div
             style={{
               borderRadius: 10,
-              border: `1px solid ${UI.border}`,
-              background: UI.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
@@ -418,13 +374,13 @@ export default async function AdminPage() {
           <div
             style={{
               borderRadius: 10,
-              border: `1px solid ${UI.border}`,
-              background: UI.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
             <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Export profiles</h2>
-            <p style={{ fontSize: "0.8rem", color: UI.textSoft, margin: 0 }}>
+            <p style={{ fontSize: "0.8rem", color: "var(--text-soft)", margin: 0 }}>
               {diagnostics.supported_export_profiles?.length
                 ? `Supported: ${diagnostics.supported_export_profiles.join(", ")}`
                 : "Supported: claims, legal"}
@@ -443,8 +399,8 @@ export default async function AdminPage() {
           <div
             style={{
               borderRadius: 10,
-              border: `1px solid ${UI.border}`,
-              background: UI.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
@@ -454,7 +410,7 @@ export default async function AdminPage() {
             <p
               style={{
                 fontSize: "0.78rem",
-                color: UI.textMuted,
+                color: "var(--text-muted)",
                 margin: 0,
                 marginBottom: "0.5rem",
               }}
@@ -478,15 +434,15 @@ export default async function AdminPage() {
                 ))}
               </ul>
             ) : (
-              <p style={{ fontSize: "0.8rem", color: UI.textMuted, margin: 0 }}>No export activity yet.</p>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>No export activity yet.</p>
             )}
           </div>
 
           <div
             style={{
               borderRadius: 10,
-              border: `1px solid ${UI.border}`,
-              background: UI.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
@@ -496,7 +452,7 @@ export default async function AdminPage() {
             <p
               style={{
                 fontSize: "0.78rem",
-                color: UI.textMuted,
+                color: "var(--text-muted)",
                 margin: 0,
                 marginBottom: "0.5rem",
               }}
@@ -520,7 +476,7 @@ export default async function AdminPage() {
                 ))}
               </ul>
             ) : (
-              <p style={{ fontSize: "0.8rem", color: UI.textMuted, margin: 0 }}>No verification activity yet.</p>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>No verification activity yet.</p>
             )}
           </div>
         </section>
@@ -536,8 +492,8 @@ export default async function AdminPage() {
           <div
             style={{
               borderRadius: 10,
-              border: `1px solid ${UI.border}`,
-              background: UI.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
@@ -555,7 +511,7 @@ export default async function AdminPage() {
                     <p
                       style={{
                         fontSize: "0.76rem",
-                        color: UI.textMuted,
+                        color: "var(--text-muted)",
                         marginTop: "0.45rem",
                         marginBottom: "0.25rem",
                       }}
@@ -580,15 +536,15 @@ export default async function AdminPage() {
                 ) : null}
               </div>
             ) : (
-              <p style={{ fontSize: "0.8rem", color: UI.textMuted, margin: 0 }}>No verification runs yet.</p>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>No verification runs yet.</p>
             )}
           </div>
 
           <div
             style={{
               borderRadius: 10,
-              border: `1px solid ${UI.border}`,
-              background: UI.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
@@ -609,7 +565,7 @@ export default async function AdminPage() {
                 ))}
               </ul>
             ) : (
-              <p style={{ fontSize: "0.8rem", color: UI.textMuted, margin: 0 }}>No smoke runs yet.</p>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>No smoke runs yet.</p>
             )}
           </div>
         </section>
@@ -619,8 +575,8 @@ export default async function AdminPage() {
           <div
             style={{
               borderRadius: 10,
-              border: `1px solid ${UI.border}`,
-              background: UI.panel,
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
@@ -643,7 +599,7 @@ export default async function AdminPage() {
                 </p>
               </div>
             ) : (
-              <p style={{ fontSize: "0.8rem", color: UI.textMuted, margin: 0 }}>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>
                 No tenant policy record surfaced in diagnostics.
               </p>
             )}
@@ -653,3 +609,4 @@ export default async function AdminPage() {
     </div>
   );
 }
+

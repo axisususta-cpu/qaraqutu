@@ -1,6 +1,5 @@
-"use client";
+﻿"use client";
 
-import { THEME } from "../../../lib/theme";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 
@@ -24,7 +23,7 @@ export function SectionHeader({ badge, heading, accentWord, subtitle }: SectionH
     accentWord && heading.includes(accentWord) ? (
       <>
         {heading.split(accentWord)[0]}
-        <span style={{ color: THEME.accent }}>{accentWord}</span>
+        <span style={{ color: "var(--accent)" }}>{accentWord}</span>
         {heading.split(accentWord)[1]}
       </>
     ) : (
@@ -42,9 +41,9 @@ export function SectionHeader({ badge, heading, accentWord, subtitle }: SectionH
             padding: "0.25rem 0.6rem",
             borderRadius: 999,
             marginBottom: "0.5rem",
-            background: THEME.chipBg,
-            border: `1px solid ${THEME.chipBorder}`,
-            color: THEME.chipText,
+            background: "var(--chip-bg)",
+            border: `1px solid ${"var(--chip-border)"}`,
+            color: "var(--chip-text)",
             fontSize: "0.7rem",
             fontWeight: 600,
             letterSpacing: "0.1em",
@@ -61,7 +60,7 @@ export function SectionHeader({ badge, heading, accentWord, subtitle }: SectionH
           fontWeight: 600,
           margin: 0,
           lineHeight: 1.3,
-          color: THEME.text,
+          color: "var(--text)",
         }}
       >
         {headingContent}
@@ -70,7 +69,7 @@ export function SectionHeader({ badge, heading, accentWord, subtitle }: SectionH
         <p
           style={{
             fontSize: "0.85rem",
-            color: THEME.textSoft,
+            color: "var(--text-soft)",
             lineHeight: 1.55,
             marginTop: "0.4rem",
             marginBottom: 0,
@@ -82,3 +81,4 @@ export function SectionHeader({ badge, heading, accentWord, subtitle }: SectionH
     </div>
   );
 }
+

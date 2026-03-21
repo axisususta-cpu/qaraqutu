@@ -1,12 +1,10 @@
-"use client";
+﻿"use client";
 
 /**
  * Evidence layer discipline — Recorded, Derived, Unknown/Disputed, Verification Trace, Artifact Issuance.
  * Doctrine-preserving visual.
  */
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 
 const LAYERS = [
   { id: "recorded", label: "Recorded", note: "Source-origin, directly captured" },
@@ -20,10 +18,10 @@ export function EvidenceLayerDiagram() {
   return (
     <div
       style={{
-        border: `1px solid ${UI.border}`,
+        border: "1px solid var(--border)",
         borderRadius: 8,
         padding: "1.15rem 1.35rem",
-        background: UI.panel,
+        background: "var(--panel)",
       }}
     >
       <div
@@ -31,7 +29,7 @@ export function EvidenceLayerDiagram() {
           fontSize: "0.7rem",
           letterSpacing: "0.12em",
           textTransform: "uppercase",
-          color: UI.textMuted,
+          color: "var(--text-muted)",
           marginBottom: "0.85rem",
           fontFamily: "'JetBrains Mono', monospace",
         }}
@@ -49,7 +47,7 @@ export function EvidenceLayerDiagram() {
               padding: "0.35rem 0",
               borderBottom:
                 layer.id !== LAYERS[LAYERS.length - 1].id
-                  ? `1px solid ${UI.borderSoft}`
+                  ? "1px solid var(--border-soft)"
                   : "none",
             }}
           >
@@ -57,7 +55,7 @@ export function EvidenceLayerDiagram() {
               style={{
                 width: 4,
                 height: 20,
-                background: layer.id === "issuance" ? UI.accent : UI.border,
+                background: layer.id === "issuance" ? "var(--accent)" : "var(--border)",
                 borderRadius: 2,
               }}
             />
@@ -66,7 +64,7 @@ export function EvidenceLayerDiagram() {
                 style={{
                   fontSize: "0.8rem",
                   fontWeight: 600,
-                  color: UI.text,
+                  color: "var(--text)",
                   fontFamily: "'JetBrains Mono', monospace",
                 }}
               >
@@ -75,7 +73,7 @@ export function EvidenceLayerDiagram() {
               <span
                 style={{
                   fontSize: "0.72rem",
-                  color: UI.textMuted,
+                  color: "var(--text-muted)",
                   marginLeft: "0.5rem",
                 }}
               >
@@ -88,3 +86,4 @@ export function EvidenceLayerDiagram() {
     </div>
   );
 }
+

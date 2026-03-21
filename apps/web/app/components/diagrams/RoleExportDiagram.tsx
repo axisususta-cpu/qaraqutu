@@ -1,12 +1,10 @@
-"use client";
+﻿"use client";
 
 /**
  * Role-based export family — claims, legal, technical.
  * Protocol-grade, not generic SaaS.
  */
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 
 const ROLES = [
   { id: "claims", label: "Claims", pack: "Dispute-ready summaries, canonical refs" },
@@ -18,10 +16,10 @@ export function RoleExportDiagram() {
   return (
     <div
       style={{
-        border: `1px solid ${UI.border}`,
+        border: "1px solid var(--border)",
         borderRadius: 8,
         padding: "1.15rem 1.35rem",
-        background: UI.panel,
+        background: "var(--panel)",
       }}
     >
       <div
@@ -29,7 +27,7 @@ export function RoleExportDiagram() {
           fontSize: "0.7rem",
           letterSpacing: "0.12em",
           textTransform: "uppercase",
-          color: UI.textMuted,
+          color: "var(--text-muted)",
           marginBottom: "0.85rem",
           fontFamily: "'JetBrains Mono', monospace",
         }}
@@ -47,7 +45,7 @@ export function RoleExportDiagram() {
           <div
             key={r.id}
             style={{
-              border: `1px solid ${UI.borderSoft}`,
+              border: "1px solid var(--border-soft)",
               borderRadius: 6,
               padding: "0.65rem 0.85rem",
             }}
@@ -56,7 +54,7 @@ export function RoleExportDiagram() {
               style={{
                 fontSize: "0.8rem",
                 fontWeight: 600,
-                color: UI.text,
+                color: "var(--text)",
                 marginBottom: "0.2rem",
                 fontFamily: "'JetBrains Mono', monospace",
               }}
@@ -66,7 +64,7 @@ export function RoleExportDiagram() {
             <div
               style={{
                 fontSize: "0.7rem",
-                color: UI.textMuted,
+                color: "var(--text-muted)",
                 lineHeight: 1.4,
               }}
             >
@@ -78,3 +76,4 @@ export function RoleExportDiagram() {
     </div>
   );
 }
+

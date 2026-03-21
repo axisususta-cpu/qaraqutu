@@ -1,11 +1,9 @@
-"use client";
+﻿"use client";
 
 import type { SectorScenario } from "../../../lib/sector-demo-scenarios";
 import { DOCUMENT_FAMILY_MAP } from "../../../lib/document-family-map";
 import { getInstitutionalRole } from "../../../lib/institutional-roles";
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 const MONO = "'JetBrains Mono', 'Fira Code', monospace";
 
 /**
@@ -33,12 +31,12 @@ export function SectorScenarioDetail({ scenario, lang = "en" }: { scenario: Sect
   return (
     <div
       style={{
-        border: `1px solid ${UI.border}`,
+        border: "1px solid var(--border)",
         borderRadius: 8,
         padding: "1rem 1.2rem",
-        background: UI.panel,
+        background: "var(--panel)",
         marginBottom: "1rem",
-        borderLeft: `4px solid ${UI.accent}`,
+        borderLeft: `4px solid ${"var(--accent)"}`,
       }}
     >
       <div
@@ -46,7 +44,7 @@ export function SectorScenarioDetail({ scenario, lang = "en" }: { scenario: Sect
           fontSize: "0.7rem",
           letterSpacing: "0.12em",
           textTransform: "uppercase",
-          color: UI.textMuted,
+          color: "var(--text-muted)",
           marginBottom: "0.35rem",
           fontFamily: MONO,
         }}
@@ -57,16 +55,16 @@ export function SectorScenarioDetail({ scenario, lang = "en" }: { scenario: Sect
 
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", fontSize: "0.8rem" }}>
         <div>
-          <span style={{ color: UI.textMuted, fontFamily: MONO, fontSize: "0.7rem" }}>Incident</span>
-          <p style={{ margin: "0.2rem 0 0", color: UI.textSoft, lineHeight: 1.5 }}>{incident}</p>
+          <span style={{ color: "var(--text-muted)", fontFamily: MONO, fontSize: "0.7rem" }}>Incident</span>
+          <p style={{ margin: "0.2rem 0 0", color: "var(--text-soft)", lineHeight: 1.5 }}>{incident}</p>
         </div>
         <div>
-          <span style={{ color: UI.textMuted, fontFamily: MONO, fontSize: "0.7rem" }}>Institutional risk</span>
-          <p style={{ margin: "0.2rem 0 0", color: UI.textSoft, lineHeight: 1.5 }}>{risk}</p>
+          <span style={{ color: "var(--text-muted)", fontFamily: MONO, fontSize: "0.7rem" }}>Institutional risk</span>
+          <p style={{ margin: "0.2rem 0 0", color: "var(--text-soft)", lineHeight: 1.5 }}>{risk}</p>
         </div>
         <div>
-          <span style={{ color: UI.textMuted, fontFamily: MONO, fontSize: "0.7rem" }}>QARAQUTU response</span>
-          <p style={{ margin: "0.2rem 0 0", color: UI.text, lineHeight: 1.5 }}>{response}</p>
+          <span style={{ color: "var(--text-muted)", fontFamily: MONO, fontSize: "0.7rem" }}>QARAQUTU response</span>
+          <p style={{ margin: "0.2rem 0 0", color: "var(--text)", lineHeight: 1.5 }}>{response}</p>
         </div>
         <div
           style={{
@@ -75,17 +73,17 @@ export function SectorScenarioDetail({ scenario, lang = "en" }: { scenario: Sect
             gap: "0.5rem",
             marginTop: "0.35rem",
             paddingTop: "0.5rem",
-            borderTop: `1px solid ${UI.borderSoft}`,
+            borderTop: "1px solid var(--border-soft)",
           }}
         >
           <span
             style={{
               padding: "0.25rem 0.5rem",
               borderRadius: 4,
-              background: UI.accentSoft,
+              background: "var(--accent-soft)",
               fontSize: "0.7rem",
               fontFamily: MONO,
-              color: UI.text,
+              color: "var(--text)",
             }}
           >
             Doc: {familyLabels}
@@ -94,10 +92,10 @@ export function SectorScenarioDetail({ scenario, lang = "en" }: { scenario: Sect
             style={{
               padding: "0.25rem 0.5rem",
               borderRadius: 4,
-              border: `1px solid ${UI.border}`,
+              border: "1px solid var(--border)",
               fontSize: "0.7rem",
               fontFamily: MONO,
-              color: UI.textSoft,
+              color: "var(--text-soft)",
             }}
           >
             Role: {roleLabels}
@@ -107,7 +105,7 @@ export function SectorScenarioDetail({ scenario, lang = "en" }: { scenario: Sect
           style={{
             margin: "0.5rem 0 0",
             fontSize: "0.75rem",
-            color: UI.textMuted,
+            color: "var(--text-muted)",
             fontStyle: "italic",
             lineHeight: 1.5,
           }}
@@ -118,3 +116,4 @@ export function SectorScenarioDetail({ scenario, lang = "en" }: { scenario: Sect
     </div>
   );
 }
+

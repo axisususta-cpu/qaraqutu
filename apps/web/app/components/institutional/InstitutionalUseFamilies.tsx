@@ -1,9 +1,7 @@
-"use client";
+﻿"use client";
 
 import { getInstitutionalRolesBySidebarOrder } from "../../../lib/institutional-roles";
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 
 /**
  * Institutional Use Families — visible role cards.
@@ -15,10 +13,10 @@ export function InstitutionalUseFamilies() {
   return (
     <div
       style={{
-        border: `1px solid ${UI.border}`,
+        border: "1px solid var(--border)",
         borderRadius: 6,
         padding: "1.1rem 1.35rem",
-        background: UI.panel,
+        background: "var(--panel)",
       }}
     >
       <div
@@ -32,10 +30,10 @@ export function InstitutionalUseFamilies() {
           <div
             key={r.id}
             style={{
-              border: `1px solid ${UI.borderSoft}`,
+              border: "1px solid var(--border-soft)",
               borderRadius: 6,
               padding: "0.6rem 0.75rem",
-              borderLeft: `3px solid ${UI.accent}`,
+              borderLeft: "3px solid var(--accent)",
               minHeight: 56,
             }}
           >
@@ -43,14 +41,14 @@ export function InstitutionalUseFamilies() {
               style={{
                 fontSize: "0.8rem",
                 fontWeight: 600,
-                color: UI.text,
+                color: "var(--text)",
                 marginBottom: "0.25rem",
                 fontFamily: "'JetBrains Mono', monospace",
               }}
             >
               {r.labelEn}
             </div>
-            <div style={{ fontSize: "0.7rem", color: UI.textMuted, lineHeight: 1.4 }}>
+            <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
               {r.shortPurposeEn}
             </div>
           </div>
@@ -59,3 +57,4 @@ export function InstitutionalUseFamilies() {
     </div>
   );
 }
+

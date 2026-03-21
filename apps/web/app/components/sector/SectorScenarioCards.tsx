@@ -1,10 +1,8 @@
-"use client";
+﻿"use client";
 
 import { getAllSectorScenarios } from "../../../lib/sector-demo-scenarios";
 import { DOCUMENT_FAMILY_MAP } from "../../../lib/document-family-map";
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 const MONO = "'JetBrains Mono', 'Fira Code', monospace";
 
 /**
@@ -32,11 +30,11 @@ export function SectorScenarioCards() {
           <div
             key={s.id}
             style={{
-              border: `1px solid ${UI.border}`,
+              border: "1px solid var(--border)",
               borderRadius: 8,
               padding: "0.75rem 0.9rem",
-              background: UI.panel,
-              borderLeft: `3px solid ${UI.accent}`,
+              background: "var(--panel)",
+              borderLeft: "3px solid var(--accent)",
             }}
           >
             <div
@@ -44,7 +42,7 @@ export function SectorScenarioCards() {
                 fontSize: "0.72rem",
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: UI.textMuted,
+                color: "var(--text-muted)",
                 marginBottom: "0.35rem",
                 fontFamily: MONO,
               }}
@@ -55,7 +53,7 @@ export function SectorScenarioCards() {
               style={{
                 fontSize: "0.8rem",
                 fontWeight: 600,
-                color: UI.text,
+                color: "var(--text)",
                 marginBottom: "0.4rem",
               }}
             >
@@ -64,7 +62,7 @@ export function SectorScenarioCards() {
             <p
               style={{
                 fontSize: "0.74rem",
-                color: UI.textSoft,
+                color: "var(--text-soft)",
                 lineHeight: 1.45,
                 margin: 0,
                 marginBottom: "0.5rem",
@@ -75,7 +73,7 @@ export function SectorScenarioCards() {
             <div
               style={{
                 fontSize: "0.68rem",
-                color: UI.textMuted,
+                color: "var(--text-muted)",
                 fontFamily: MONO,
               }}
             >
@@ -87,3 +85,4 @@ export function SectorScenarioCards() {
     </div>
   );
 }
+

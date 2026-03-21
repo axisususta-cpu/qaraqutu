@@ -1,9 +1,7 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 
 /**
  * How this system applies across sectors — compact strip for Verifier context.
@@ -14,8 +12,8 @@ export function SectorVerifierStrip() {
     <div
       style={{
         padding: "0.35rem 2.5rem",
-        borderBottom: `1px solid ${UI.borderSoft}`,
-        background: UI.panel,
+        borderBottom: "1px solid var(--border-soft)",
+        background: "var(--panel)",
         fontSize: "0.68rem",
         maxWidth: 1400,
         margin: "0 auto",
@@ -27,40 +25,40 @@ export function SectorVerifierStrip() {
             fontFamily: "'JetBrains Mono', monospace",
             letterSpacing: "0.06em",
             textTransform: "uppercase",
-            color: UI.chipText,
+            color: "var(--chip-text)",
             marginRight: "0.35rem",
             padding: "0.1rem 0.4rem",
             borderRadius: 4,
-            background: UI.chipBg,
-            border: `1px solid ${UI.chipBorder}`,
+            background: "var(--chip-bg)",
+            border: `1px solid ${"var(--chip-border)"}`,
           }}
         >
           By sector:
         </span>
-        <span style={{ color: UI.textSoft }}>
+        <span style={{ color: "var(--text-soft)" }}>
           Insurance → Claims pack
         </span>
-        <span style={{ color: UI.textMuted }}>|</span>
-        <span style={{ color: UI.textSoft }}>
+        <span style={{ color: "var(--text-muted)" }}>|</span>
+        <span style={{ color: "var(--text-soft)" }}>
           Notary / IP → Authenticity, Trace
         </span>
-        <span style={{ color: UI.textMuted }}>|</span>
-        <span style={{ color: UI.textSoft }}>
+        <span style={{ color: "var(--text-muted)" }}>|</span>
+        <span style={{ color: "var(--text-soft)" }}>
           Municipality → Administrative packet
         </span>
-        <span style={{ color: UI.textMuted }}>|</span>
-        <span style={{ color: UI.textSoft }}>
+        <span style={{ color: "var(--text-muted)" }}>|</span>
+        <span style={{ color: "var(--text-soft)" }}>
           Police / Field → Incident, Trace
         </span>
-        <span style={{ color: UI.textMuted }}>|</span>
-        <span style={{ color: UI.textSoft }}>
+        <span style={{ color: "var(--text-muted)" }}>|</span>
+        <span style={{ color: "var(--text-soft)" }}>
           Technical → Technical pack
         </span>
-        <span style={{ color: UI.textMuted, marginLeft: "0.5rem" }}>—</span>
+        <span style={{ color: "var(--text-muted)", marginLeft: "0.5rem" }}>—</span>
         <Link
           href="/docs#sector-specific-witness-scenarios"
           style={{
-            color: UI.accent,
+            color: "var(--accent)",
             textDecoration: "none",
             fontWeight: 500,
           }}
@@ -71,3 +69,4 @@ export function SectorVerifierStrip() {
     </div>
   );
 }
+

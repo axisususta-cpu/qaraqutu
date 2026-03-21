@@ -1,11 +1,9 @@
-"use client";
+﻿"use client";
 
 import { DOCUMENT_FAMILY_MAP } from "../../../lib/document-family-map";
 import { getInstitutionalRole } from "../../../lib/institutional-roles";
 
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 
 /**
  * Document family → Role mapping — visible matrix.
@@ -14,10 +12,10 @@ export function DocumentFamilyRoleMatrix() {
   return (
     <div
       style={{
-        border: `1px solid ${UI.border}`,
+        border: "1px solid var(--border)",
         borderRadius: 8,
         padding: "1.15rem 1.35rem",
-        background: UI.panel,
+        background: "var(--panel)",
       }}
     >
       <div
@@ -25,7 +23,7 @@ export function DocumentFamilyRoleMatrix() {
           fontSize: "0.7rem",
           letterSpacing: "0.12em",
           textTransform: "uppercase",
-          color: UI.textMuted,
+          color: "var(--text-muted)",
           marginBottom: "0.75rem",
           fontFamily: "'JetBrains Mono', monospace",
         }}
@@ -45,7 +43,7 @@ export function DocumentFamilyRoleMatrix() {
                 alignItems: "center",
                 gap: "0.75rem",
                 padding: "0.35rem 0",
-                borderBottom: `1px solid ${UI.borderSoft}`,
+                borderBottom: "1px solid var(--border-soft)",
               }}
             >
               <div
@@ -53,13 +51,13 @@ export function DocumentFamilyRoleMatrix() {
                   minWidth: 170,
                   fontSize: "0.75rem",
                   fontWeight: 600,
-                  color: UI.text,
+                  color: "var(--text)",
                   fontFamily: "'JetBrains Mono', monospace",
                 }}
               >
                 {d.labelEn}
               </div>
-              <div style={{ fontSize: "0.72rem", color: UI.textMuted }}>{roleLabels}</div>
+              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{roleLabels}</div>
             </div>
           );
         })}
@@ -67,3 +65,4 @@ export function DocumentFamilyRoleMatrix() {
     </div>
   );
 }
+

@@ -1,17 +1,15 @@
-"use client";
+﻿"use client";
 
-import { THEME } from "../../../lib/theme";
 
-const UI = THEME;
 
 export function VerticalsDiagram() {
   return (
     <div
       style={{
-        border: `1px solid ${UI.border}`,
+        border: "1px solid var(--border)",
         borderRadius: 8,
         padding: "1.15rem 1.35rem",
-        background: UI.panel,
+        background: "var(--panel)",
       }}
     >
       <div
@@ -19,7 +17,7 @@ export function VerticalsDiagram() {
           fontSize: "0.7rem",
           letterSpacing: "0.12em",
           textTransform: "uppercase",
-          color: UI.textMuted,
+          color: "var(--text-muted)",
           marginBottom: "0.85rem",
           fontFamily: "'JetBrains Mono', monospace",
         }}
@@ -41,17 +39,17 @@ export function VerticalsDiagram() {
           <div
             key={v.id}
             style={{
-              border: `1px solid ${UI.borderSoft}`,
+              border: "1px solid var(--border-soft)",
               borderRadius: 6,
               padding: "0.65rem 0.85rem",
-              borderLeft: `3px solid ${UI.accent}`,
+              borderLeft: "3px solid var(--accent)",
             }}
           >
             <div
               style={{
                 fontSize: "0.85rem",
                 fontWeight: 600,
-                color: UI.text,
+                color: "var(--text)",
                 marginBottom: "0.25rem",
               }}
             >
@@ -60,7 +58,7 @@ export function VerticalsDiagram() {
             <div
               style={{
                 fontSize: "0.7rem",
-                color: UI.textMuted,
+                color: "var(--text-muted)",
                 fontFamily: "'JetBrains Mono', monospace",
               }}
             >
@@ -72,3 +70,4 @@ export function VerticalsDiagram() {
     </div>
   );
 }
+
