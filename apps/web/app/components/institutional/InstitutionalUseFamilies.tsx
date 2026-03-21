@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { getInstitutionalRolesBySidebarOrder } from "../../../lib/institutional-roles";
 
@@ -7,7 +7,8 @@ import { getInstitutionalRolesBySidebarOrder } from "../../../lib/institutional-
  * Institutional Use Families — visible role cards.
  * Protocol-grade, severe. One canonical event core, many institutional shells.
  */
-export function InstitutionalUseFamilies() {
+export function InstitutionalUseFamilies({ lang = "en" }: { lang?: "en" | "tr" }) {
+  const isTr = lang === "tr";
   const roles = getInstitutionalRolesBySidebarOrder();
 
   return (
@@ -46,10 +47,10 @@ export function InstitutionalUseFamilies() {
                 fontFamily: "'JetBrains Mono', monospace",
               }}
             >
-              {r.labelEn}
+              {isTr ? r.labelTr : r.labelEn}
             </div>
             <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
-              {r.shortPurposeEn}
+              {isTr ? r.shortPurposeTr : r.shortPurposeEn}
             </div>
           </div>
         ))}

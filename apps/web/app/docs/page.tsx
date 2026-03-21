@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { LogoPrimary } from "../components/LogoPrimary";
 import { SectionHeader } from "../components/ui/SectionHeader";
@@ -12,6 +12,7 @@ import { MSG } from "../../lib/i18n/messages";
 export default function DocsPage() {
   const { lang } = useLanguage();
   const m = MSG[lang];
+  const isTr = lang === "tr";
   return (
     <div
       style={{
@@ -49,7 +50,7 @@ export default function DocsPage() {
 
         <section style={{ marginBottom: "1.75rem" }}>
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
-            Product scope
+            {isTr ? "Ürün kapsamı" : "Product scope"}
           </h2>
           <p style={{ fontSize: "0.85rem", color: "var(--text-soft)", lineHeight: 1.6 }}>
             QARAQUTU currently focuses on vehicle incident, fleet, insurance,
@@ -64,7 +65,7 @@ export default function DocsPage() {
 
         <section style={{ marginBottom: "1.75rem" }}>
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
-            Canonical model summary
+            {isTr ? "Kanonik model özeti" : "Canonical model summary"}
           </h2>
           <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
             <li>
@@ -119,7 +120,7 @@ export default function DocsPage() {
 
         <section style={{ marginBottom: "1.75rem" }}>
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
-            Verification semantics
+            {isTr ? "Doğrulama semantiği" : "Verification semantics"}
           </h2>
           <p style={{ fontSize: "0.85rem", color: "var(--text-soft)", lineHeight: 1.6 }}>
             Verification is a bounded assessment of a referenced event package.
@@ -132,19 +133,23 @@ export default function DocsPage() {
 
         <section id="sector-specific-witness-scenarios" style={{ marginBottom: "1.75rem" }}>
           <SectionHeader
-            badge="Sectors"
-            heading="Sector-specific witness scenarios"
-            accentWord="scenarios"
-            subtitle="Each sector scenario defines: incident, institutional risk, role shell, document family, and doctrine-safe output. The Verifier applies the same inspection structure across insurance, legal, technical, and administrative contexts."
+            badge={isTr ? "Sektörler" : "Sectors"}
+            heading={isTr ? "Sektöre özgü tanıklık senaryoları" : "Sector-specific witness scenarios"}
+            accentWord={isTr ? "senaryolar" : "scenarios"}
+            subtitle={
+              isTr
+                ? "Her sektör senaryosu; olay, kurumsal risk, rol kabuğu, belge ailesi ve doktrin-güvenli çıktıyı tanımlar. Doğrulayıcı, sigorta, hukuk, teknik ve idari bağlamlarda aynı inceleme yapısını uygular."
+                : "Each sector scenario defines: incident, institutional risk, role shell, document family, and doctrine-safe output. The Verifier applies the same inspection structure across insurance, legal, technical, and administrative contexts."
+            }
           />
           {getAllSectorScenarios().map((s) => (
-            <SectorScenarioDetail key={s.id} scenario={s} lang="en" />
+            <SectorScenarioDetail key={s.id} scenario={s} lang={lang} />
           ))}
         </section>
 
         <section style={{ marginBottom: "1.75rem" }}>
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
-            Document / artifact family
+            {isTr ? "Belge / artefakt ailesi" : "Document / artifact family"}
           </h2>
           <p style={{ fontSize: "0.85rem", color: "var(--text-soft)", marginBottom: "0.5rem" }}>
             Shared design system for protocol-grade evidence documents. Doctrine preserved:
@@ -171,7 +176,9 @@ export default function DocsPage() {
 
         <section style={{ marginBottom: "1.75rem" }}>
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
-            Institutional use families — Role-based review and export mapping
+            {isTr
+              ? "Kurumsal kullanım aileleri — role dayalı inceleme ve dışa aktarma eşleşmesi"
+              : "Institutional use families — Role-based review and export mapping"}
           </h2>
           <p style={{ fontSize: "0.85rem", color: "var(--text-soft)", marginBottom: "0.5rem" }}>
             One canonical event core, many institutional shells. The same event spine (Event ID, Bundle ID, Manifest ID,
@@ -198,7 +205,7 @@ export default function DocsPage() {
 
         <section style={{ marginBottom: "1.75rem" }}>
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
-            Export profiles
+            {isTr ? "Dışa aktarma profilleri" : "Export profiles"}
           </h2>
           <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
             <li>
@@ -219,7 +226,7 @@ export default function DocsPage() {
 
         <section style={{ marginBottom: "1.75rem" }}>
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
-            Visibility classes & redaction
+            {isTr ? "Görünürlük sınıfları ve redaksiyon" : "Visibility classes & redaction"}
           </h2>
           <p style={{ fontSize: "0.85rem", color: "var(--text-soft)", lineHeight: 1.6 }}>
             Evidence items may carry a visibility class. The current demo
@@ -236,7 +243,7 @@ export default function DocsPage() {
 
         <section style={{ marginBottom: "1.75rem" }}>
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
-            Doctrine vs implementation language
+            {isTr ? "Doktrin ve uygulama dili" : "Doctrine vs implementation language"}
           </h2>
           <p style={{ fontSize: "0.85rem", color: "var(--text-soft)", lineHeight: 1.6 }}>
             Public product identity remains verifier-first witness protocol.
@@ -248,7 +255,7 @@ export default function DocsPage() {
 
         <section style={{ marginBottom: "1.75rem" }}>
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
-            Current API routes
+            {isTr ? "Mevcut API rotaları" : "Current API routes"}
           </h2>
           <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
             <li>
@@ -302,7 +309,7 @@ export default function DocsPage() {
 
         <section style={{ marginBottom: "1.75rem" }}>
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
-            Diagnostics and smoke
+            {isTr ? "Tanılama ve smoke" : "Diagnostics and smoke"}
           </h2>
           <p style={{ fontSize: "0.85rem", color: "var(--text-soft)", lineHeight: 1.6 }}>
             Diagnostics are exposed via the <code>/v1/system/diagnostics</code>{" "}
@@ -321,7 +328,7 @@ export default function DocsPage() {
 
         <section style={{ marginBottom: "1.75rem" }}>
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
-            Current limitations
+            {isTr ? "Güncel sınırlamalar" : "Current limitations"}
           </h2>
           <ul style={{ fontSize: "0.8rem", paddingLeft: "1rem" }}>
             <li>

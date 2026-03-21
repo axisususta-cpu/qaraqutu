@@ -22,10 +22,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem("qaraqutu-theme") as ThemeMode | null;
-    const resolved: ThemeMode = stored === "dark" ? "dark" : "light";
+    const domTheme = document.documentElement.getAttribute("data-theme");
+    const resolved: ThemeMode =
+      stored === "dark" || (stored !== "light" && domTheme === "dark") ? "dark" : "light";
     setMode(resolved);
     document.documentElement.setAttribute("data-theme", resolved);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", mode);
+  }, [mode]);
 
   const toggle = useCallback(() => {
     setMode((prev) => {

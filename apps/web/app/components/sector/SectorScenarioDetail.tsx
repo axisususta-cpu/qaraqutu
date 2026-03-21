@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import type { SectorScenario } from "../../../lib/sector-demo-scenarios";
 import { DOCUMENT_FAMILY_MAP } from "../../../lib/document-family-map";
@@ -21,11 +21,17 @@ export function SectorScenarioDetail({ scenario, lang = "en" }: { scenario: Sect
   const whyInevitable = isTr ? scenario.whyInevitableTr : scenario.whyInevitableEn;
 
   const familyLabels = scenario.preferredDocumentFamily
-    .map((c) => DOCUMENT_FAMILY_MAP.find((d) => d.code === c)?.labelEn ?? c)
+    .map((c) => {
+      const family = DOCUMENT_FAMILY_MAP.find((d) => d.code === c);
+      return isTr ? (family?.labelTr ?? c) : (family?.labelEn ?? c);
+    })
     .join(", ");
 
   const roleLabels = scenario.roleShellAlignment
-    .map((id) => getInstitutionalRole(id)?.labelEn ?? id)
+    .map((id) => {
+      const role = getInstitutionalRole(id);
+      return isTr ? (role?.labelTr ?? id) : (role?.labelEn ?? id);
+    })
     .join(", ");
 
   return (
@@ -55,15 +61,15 @@ export function SectorScenarioDetail({ scenario, lang = "en" }: { scenario: Sect
 
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", fontSize: "0.8rem" }}>
         <div>
-          <span style={{ color: "var(--text-muted)", fontFamily: MONO, fontSize: "0.7rem" }}>Incident</span>
+          <span style={{ color: "var(--text-muted)", fontFamily: MONO, fontSize: "0.7rem" }}>{isTr ? "Olay" : "Incident"}</span>
           <p style={{ margin: "0.2rem 0 0", color: "var(--text-soft)", lineHeight: 1.5 }}>{incident}</p>
         </div>
         <div>
-          <span style={{ color: "var(--text-muted)", fontFamily: MONO, fontSize: "0.7rem" }}>Institutional risk</span>
+          <span style={{ color: "var(--text-muted)", fontFamily: MONO, fontSize: "0.7rem" }}>{isTr ? "Kurumsal risk" : "Institutional risk"}</span>
           <p style={{ margin: "0.2rem 0 0", color: "var(--text-soft)", lineHeight: 1.5 }}>{risk}</p>
         </div>
         <div>
-          <span style={{ color: "var(--text-muted)", fontFamily: MONO, fontSize: "0.7rem" }}>QARAQUTU response</span>
+          <span style={{ color: "var(--text-muted)", fontFamily: MONO, fontSize: "0.7rem" }}>{isTr ? "QARAQUTU yanıtı" : "QARAQUTU response"}</span>
           <p style={{ margin: "0.2rem 0 0", color: "var(--text)", lineHeight: 1.5 }}>{response}</p>
         </div>
         <div
@@ -86,7 +92,7 @@ export function SectorScenarioDetail({ scenario, lang = "en" }: { scenario: Sect
               color: "var(--text)",
             }}
           >
-            Doc: {familyLabels}
+            {isTr ? "Belge: " : "Doc: "}{familyLabels}
           </span>
           <span
             style={{
@@ -98,7 +104,7 @@ export function SectorScenarioDetail({ scenario, lang = "en" }: { scenario: Sect
               color: "var(--text-soft)",
             }}
           >
-            Role: {roleLabels}
+            {isTr ? "Rol: " : "Role: "}{roleLabels}
           </span>
         </div>
         <p

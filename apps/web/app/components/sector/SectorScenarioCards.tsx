@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { getAllSectorScenarios } from "../../../lib/sector-demo-scenarios";
 import { DOCUMENT_FAMILY_MAP } from "../../../lib/document-family-map";
@@ -9,7 +9,8 @@ const MONO = "'JetBrains Mono', 'Fira Code', monospace";
  * Sector Demo Scenarios — compact cards for Home.
  * Institutional, protocol-grade. One glance: why each sector needs QARAQUTU.
  */
-export function SectorScenarioCards() {
+export function SectorScenarioCards({ lang = "en" }: { lang?: "en" | "tr" }) {
+  const isTr = lang === "tr";
   const scenarios = getAllSectorScenarios();
 
   return (
@@ -24,7 +25,7 @@ export function SectorScenarioCards() {
       {scenarios.map((s) => {
         const primaryFamily = s.preferredDocumentFamily[0];
         const familyMeta = DOCUMENT_FAMILY_MAP.find((d) => d.code === primaryFamily);
-        const familyLabel = familyMeta?.labelEn ?? primaryFamily;
+        const familyLabel = isTr ? (familyMeta?.labelTr ?? primaryFamily) : (familyMeta?.labelEn ?? primaryFamily);
 
         return (
           <div
@@ -47,7 +48,7 @@ export function SectorScenarioCards() {
                 fontFamily: MONO,
               }}
             >
-              {s.sectorLabelEn}
+              {isTr ? s.sectorLabelTr : s.sectorLabelEn}
             </div>
             <div
               style={{
@@ -57,7 +58,7 @@ export function SectorScenarioCards() {
                 marginBottom: "0.4rem",
               }}
             >
-              {s.scenarioTitleEn}
+              {isTr ? s.scenarioTitleTr : s.scenarioTitleEn}
             </div>
             <p
               style={{
@@ -68,7 +69,7 @@ export function SectorScenarioCards() {
                 marginBottom: "0.5rem",
               }}
             >
-              {s.whyItMattersEn}
+              {isTr ? s.whyItMattersTr : s.whyItMattersEn}
             </p>
             <div
               style={{
@@ -77,7 +78,7 @@ export function SectorScenarioCards() {
                 fontFamily: MONO,
               }}
             >
-              → {familyLabel}
+              {isTr ? "→ Belge: " : "→ "}{familyLabel}
             </div>
           </div>
         );

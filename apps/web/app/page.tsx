@@ -210,8 +210,9 @@ export default function LandingPage() {
                 lineHeight: 1.5,
               }}
             >
-              Protocol position: QARAQUTU preserves chain-of-review integrity; it does not act as a liability engine or
-              judicial substitute.
+              {lang === "tr"
+                ? "Protokol konumu: QARAQUTU, inceleme zinciri bütünlüğünü korur; sorumluluk motoru veya yargısal ikame değildir."
+                : "Protocol position: QARAQUTU preserves chain-of-review integrity; it does not act as a liability engine or judicial substitute."}
             </div>
           </div>
         </section>
@@ -236,9 +237,9 @@ export default function LandingPage() {
           >
             <SectionHeader badge={lang === "tr" ? "Ba\u011flam" : "Context"} heading={m.sectionProblem} />
             <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
-              <li>Incident review data is fragmented across logs, captures, and exported files.</li>
-              <li>Recorded facts and derived interpretations are often collapsed into one narrative layer.</li>
-              <li>Claims, legal, and technical teams rarely anchor decisions on the same canonical object.</li>
+              <li>{lang === "tr" ? "Olay inceleme verisi log, kayıt ve dışa aktarımlara dağılır." : "Incident review data is fragmented across logs, captures, and exported files."}</li>
+              <li>{lang === "tr" ? "Kayıtlı olgular ile türetilmiş yorumlar sıkça tek anlatı katmanına sıkıştırılır." : "Recorded facts and derived interpretations are often collapsed into one narrative layer."}</li>
+              <li>{lang === "tr" ? "Hasar, hukuk ve teknik ekipler çoğu zaman aynı kanonik nesneye bağlanmaz." : "Claims, legal, and technical teams rarely anchor decisions on the same canonical object."}</li>
             </ul>
           </section>
 
@@ -258,16 +259,16 @@ export default function LandingPage() {
             </div>
             <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
               <li>
-                <strong>Single product:</strong> one canonical event model across Vehicle, Drone, and Robot.
+                <strong>{lang === "tr" ? "Tek ürün:" : "Single product:"}</strong> {lang === "tr" ? "Araç, İHA ve Robot genelinde tek kanonik olay modeli." : "one canonical event model across Vehicle, Drone, and Robot."}
               </li>
               <li>
-                <strong>Verifier:</strong> primary review station with bounded protocol states, not liability judgement.
+                <strong>{lang === "tr" ? "Doğrulayıcı:" : "Verifier:"}</strong> {lang === "tr" ? "sorumluluk hükmü üretmeyen, sınırlı protokol durumlarına sahip ana inceleme istasyonu." : "primary review station with bounded protocol states, not liability judgement."}
               </li>
               <li>
-                <strong>Golden:</strong> internal quality reference for verifier continuity, not an independent product.
+                <strong>Golden:</strong> {lang === "tr" ? "doğrulayıcı sürekliliği için dahili kalite referansı; bağımsız ürün değil." : "internal quality reference for verifier continuity, not an independent product."}
               </li>
               <li>
-                <strong>Issuance family:</strong> role-aware claims/legal artifacts tied to receipts and manifest linkage.
+                <strong>{lang === "tr" ? "Belge ailesi:" : "Issuance family:"}</strong> {lang === "tr" ? "makbuz ve manifest bağlantısına bağlı, role duyarlı hasar/hukuk artefaktları." : "role-aware claims/legal artifacts tied to receipts and manifest linkage."}
               </li>
             </ul>
           </section>
@@ -412,12 +413,12 @@ export default function LandingPage() {
           }}
         >
           <SectionHeader
-            badge="Institutional"
-            heading="Institutional use families"
-            accentWord="families"
-            subtitle="One canonical event core, many institutional shells. The same event spine is preserved; only priority, visibility, and document recommendation vary by role."
+            badge={lang === "tr" ? "Kurumsal" : "Institutional"}
+            heading={lang === "tr" ? "Kurumsal kullanım aileleri" : "Institutional use families"}
+            accentWord={lang === "tr" ? "aileleri" : "families"}
+            subtitle={lang === "tr" ? "Tek kanonik olay çekirdeği, çok sayıda kurumsal kabuk. Aynı olay omurgası korunur; yalnız öncelik, görünürlük ve belge önerisi role göre değişir." : "One canonical event core, many institutional shells. The same event spine is preserved; only priority, visibility, and document recommendation vary by role."}
           />
-          <InstitutionalUseFamilies />
+          <InstitutionalUseFamilies lang={lang} />
         </section>
 
         {/* Sector demo scenarios */}
@@ -431,12 +432,12 @@ export default function LandingPage() {
           }}
         >
           <SectionHeader
-            badge="Sectors"
-            heading="Sector demo scenarios"
-            accentWord="scenarios"
-            subtitle="Why each sector needs QARAQUTU: incident, institutional risk, trace-linked response, and preferred document family."
+            badge={lang === "tr" ? "Sektörler" : "Sectors"}
+            heading={lang === "tr" ? "Sektör demo senaryoları" : "Sector demo scenarios"}
+            accentWord={lang === "tr" ? "senaryolar" : "scenarios"}
+            subtitle={lang === "tr" ? "Her sektörün neden QARAQUTU'ya ihtiyaç duyduğu: olay, kurumsal risk, iz-bağlı yanıt ve tercih edilen belge ailesi." : "Why each sector needs QARAQUTU: incident, institutional risk, trace-linked response, and preferred document family."}
           />
-          <SectorScenarioCards />
+          <SectorScenarioCards lang={lang} />
         </section>
 
         {/* Verification summary */}
@@ -450,9 +451,9 @@ export default function LandingPage() {
           }}
         >
           <SectionHeader
-            badge="Doctrine"
-            heading="Verification"
-            subtitle="Verification remains a bounded package assessment. States (PASS, FAIL, UNKNOWN, UNVERIFIED) represent review posture, not judicial truth, not liability assignment, and not a substitute for independent legal or expert judgement."
+            badge={lang === "tr" ? "Doktrin" : "Doctrine"}
+            heading={lang === "tr" ? "Doğrulama" : "Verification"}
+            subtitle={lang === "tr" ? "Doğrulama, paket üzerinde sınırlı bir değerlendirmedir. Durumlar (PASS, FAIL, UNKNOWN, UNVERIFIED) inceleme duruşunu temsil eder; yargısal gerçeklik, sorumluluk ataması veya bağımsız hukuk/uzman yargısının yerine geçmez." : "Verification remains a bounded package assessment. States (PASS, FAIL, UNKNOWN, UNVERIFIED) represent review posture, not judicial truth, not liability assignment, and not a substitute for independent legal or expert judgement."}
           />
         </section>
 

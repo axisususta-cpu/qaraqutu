@@ -548,7 +548,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         method: "POST",
       });
       const json = (await res.json().catch(() => ({}))) as
-        | Partial<VerificationRunResponse>
+        | (Partial<VerificationRunResponse> & { local_preview?: boolean; preview_reason?: string })
         | { error?: string; message?: string };
       if (!res.ok) {
         const errorPayload = json as { error?: string; message?: string };
@@ -556,6 +556,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         return;
       }
       const successPayload = json as Partial<VerificationRunResponse>;
+      const verificationLocalPreview =
+        (json as { local_preview?: boolean }).local_preview === true;
+      const localPreviewReason = (json as { preview_reason?: string }).preview_reason;
       setVerificationState(successPayload.verification_state as VerificationState);
       setTranscript(successPayload.transcript_summary ?? null);
       setIdentity({
@@ -566,6 +569,29 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       if (successPayload.verification_run_id) setVerificationRunId(successPayload.verification_run_id);
       if (successPayload.transcript_id) setTranscriptId(successPayload.transcript_id);
       setVerificationJustCompleted(true);
+
+      if (verificationLocalPreview && process.env.NODE_ENV !== "production") {
+        const nowIso = new Date().toISOString();
+        setLastIssuedAtIso(nowIso);
+        setLastIssuedArtifact({
+          format: "pdf",
+          localPreview: true,
+          previewReason: localPreviewReason ?? "upstream_unreachable",
+          meta: {
+            export_id: `LOCAL-PREVIEW-${(selectedId ?? "EVENT").replace(/[^A-Z0-9-]/gi, "").slice(0, 24)}`,
+            receipt_id: `LPR-${Date.now().toString(36).toUpperCase()}`,
+            event_id: successPayload.event_id ?? selectedId ?? "LOCAL-PREVIEW-EVENT",
+            bundle_id: successPayload.bundle_id ?? "LOCAL-PREVIEW-BUNDLE",
+            manifest_id: successPayload.manifest_id ?? "LOCAL-PREVIEW-MANIFEST",
+            verification_state:
+              (successPayload.verification_state as VerificationState | undefined) ?? "UNVERIFIED",
+            export_profile: exportProfile,
+            export_purpose: selectedPurpose,
+            schema_version: "preview.local.v1",
+            download_url: "#local-preview",
+          },
+        });
+      }
     } catch (err) {
       setVerificationError(err instanceof Error ? err.message : "Verification failed");
     } finally {
@@ -2973,7 +2999,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               ))}
                             </div>
                           )}
-                          {lastIssuedArtifact && issuanceState === "success"
+                          {lastIssuedArtifact
                             ? (() => {
                                 const m = MSG[language];
                                 const meta = lastIssuedArtifact.meta;
@@ -3000,6 +3026,20 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                     >
                                       {m.verifierIssuancePreviewTitle}
                                     </div>
+                                    {lastIssuedArtifact.localPreview ? (
+                                      <p
+                                        style={{
+                                          margin: "0 0 0.55rem",
+                                          fontSize: "0.72rem",
+                                          color: "var(--warning)",
+                                          lineHeight: 1.5,
+                                        }}
+                                      >
+                                        {language === "tr"
+                                          ? "Yerel önizleme modu: Bu belge görsel kabul için render edilir; nihai backend doğrulaması iddiası taşımaz."
+                                          : "Local preview mode: this document is rendered for visual acceptance and does not claim final backend verification."}
+                                      </p>
+                                    ) : null}
                                     <label
                                       style={{
                                         display: "block",

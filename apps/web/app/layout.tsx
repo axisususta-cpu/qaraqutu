@@ -47,7 +47,7 @@ export default function RootLayout({
         {/* Prevent theme flash: apply saved theme before first paint */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('qaraqutu-theme');if(t==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem('qaraqutu-theme');var m=t==='dark'?'dark':'light';document.documentElement.setAttribute('data-theme',m)}catch(e){document.documentElement.setAttribute('data-theme','light')}})()`,
           }}
         />
         {gitCommitSha !== "unknown" ? <meta name="vercel:git-commit-sha" content={gitCommitSha} /> : null}
