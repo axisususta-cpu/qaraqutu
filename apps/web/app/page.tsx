@@ -6,6 +6,7 @@ import { CanonicalSpineDiagram } from "./components/diagrams/CanonicalSpineDiagr
 import { EvidenceLayerDiagram } from "./components/diagrams/EvidenceLayerDiagram";
 import { RoleExportDiagram } from "./components/diagrams/RoleExportDiagram";
 import { InstitutionalUseFamilies } from "./components/institutional/InstitutionalUseFamilies";
+import { SectorScenarioCards } from "./components/sector/SectorScenarioCards";
 import { THEME } from "../lib/theme";
 
 const MEDIA = {
@@ -376,6 +377,22 @@ export default function LandingPage() {
             visibility, and document recommendation vary by role.
           </p>
           <InstitutionalUseFamilies />
+        </section>
+
+        {/* Sector demo scenarios */}
+        <section
+          style={{
+            borderRadius: 10,
+            border: `1px solid ${THEME.border}`,
+            background: THEME.panel,
+            padding: "1.25rem 1.35rem",
+          }}
+        >
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.4rem", marginTop: 0, fontWeight: 600 }}>Sector demo scenarios</h2>
+          <p style={{ fontSize: "0.85rem", opacity: 0.92, color: THEME.textSoft, marginTop: 0, marginBottom: "1rem", lineHeight: 1.55 }}>
+            Why each sector needs QARAQUTU: incident, institutional risk, trace-linked response, and preferred document family.
+          </p>
+          <SectorScenarioCards />
         </section>
 
         {/* Verification summary */}

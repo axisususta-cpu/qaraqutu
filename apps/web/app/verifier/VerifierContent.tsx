@@ -20,6 +20,7 @@ import {
 } from "../../lib/artifact-profiles";
 import { THEME } from "../../lib/theme";
 import { InstitutionalGuidanceStrip } from "../components/institutional/InstitutionalGuidanceStrip";
+import { SectorVerifierStrip } from "../components/sector/SectorVerifierStrip";
 
 const DEFAULT_API_BASE =
   process.env.NODE_ENV === "production"
@@ -749,6 +750,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       </div>
 
       <InstitutionalGuidanceStrip />
+      <SectorVerifierStrip />
 
       {/* ── Page title area ── */}
       <div

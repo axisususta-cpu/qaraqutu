@@ -3,6 +3,8 @@
 import { LogoPrimary } from "../components/LogoPrimary";
 import { RoleDocumentMapping } from "../components/institutional/RoleDocumentMapping";
 import { DocumentFamilyRoleMatrix } from "../components/institutional/DocumentFamilyRoleMatrix";
+import { SectorScenarioDetail } from "../components/sector/SectorScenarioDetail";
+import { getAllSectorScenarios } from "../../lib/sector-demo-scenarios";
 import { THEME } from "../../lib/theme";
 
 export default function DocsPage() {
@@ -104,6 +106,19 @@ export default function DocsPage() {
             liability determination, guilt finding, or judicial decision; it is
             an integrity and linkage assessment over the evidence package.
           </p>
+        </section>
+
+        <section id="sector-specific-witness-scenarios" style={{ marginBottom: "1.75rem" }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
+            Sector-specific witness scenarios
+          </h2>
+          <p style={{ fontSize: "0.85rem", color: THEME.textSoft, marginBottom: "0.75rem", lineHeight: 1.6 }}>
+            Each sector scenario defines: incident, institutional risk, role shell, document family, and doctrine-safe output.
+            The Verifier applies the same inspection structure across insurance, legal, technical, and administrative contexts.
+          </p>
+          {getAllSectorScenarios().map((s) => (
+            <SectorScenarioDetail key={s.id} scenario={s} lang="en" />
+          ))}
         </section>
 
         <section style={{ marginBottom: "1.75rem" }}>

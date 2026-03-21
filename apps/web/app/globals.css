@@ -34,3 +34,15 @@ body {
   }
 }
 
+/* Sector scenario cards — 2 cols on medium, 1 on narrow */
+@media (max-width: 700px) {
+  .home-sector-scenarios-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+@media (min-width: 701px) and (max-width: 900px) {
+  .home-sector-scenarios-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
