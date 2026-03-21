@@ -58,6 +58,8 @@ type TranscriptStep = VerificationTranscriptEntry;
 interface IssuanceRecord {
   format: ExportFormat;
   meta: ExportArtifactResponse;
+  localPreview?: boolean;
+  previewReason?: string;
 }
 
 // Phase 1 mock data scaffolding for future workstation wiring.
@@ -593,14 +595,17 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         body: JSON.stringify(requestBody),
       });
       const json = (await res.json().catch(() => ({}))) as
-        | Partial<ExportArtifactResponse>
+        | (Partial<ExportArtifactResponse> & { local_preview?: boolean; preview_reason?: string })
         | { error?: string };
       const errorPayload = json as { error?: string };
-      const successPayload = json as Partial<ExportArtifactResponse>;
+      const successPayload = json as Partial<ExportArtifactResponse> & {
+        local_preview?: boolean;
+        preview_reason?: string;
+      };
+      const isLocalPreview = successPayload.local_preview === true;
 
       if (
         !res.ok ||
-        !successPayload.download_url ||
         !successPayload.export_id ||
         !successPayload.receipt_id ||
         !successPayload.bundle_id ||
@@ -614,14 +619,19 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       const meta = successPayload as ExportArtifactResponse;
       setIssuanceState("success");
       setLastIssuedAtIso(new Date().toISOString());
-      setLastIssuedArtifact({ format, meta });
+      setLastIssuedArtifact({
+        format,
+        meta,
+        localPreview: isLocalPreview,
+        previewReason: successPayload.preview_reason,
+      });
       setIdentity({
         event_id: meta.event_id,
         bundle_id: meta.bundle_id,
         manifest_id: meta.manifest_id,
       });
 
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && !isLocalPreview) {
         const href = `/api/exports/${meta.export_id}/download`;
         window.open(href, "_blank");
       }
@@ -2892,6 +2902,20 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               ? `Seçili ${selectedProfileLabel} profili için ${selectedFormat?.toUpperCase() ?? "artifact"} hazırlanıyor.`
                               : `Preparing ${selectedFormat?.toUpperCase() ?? "artifact"} for the selected ${selectedProfileLabel} profile.`}
                           </p>
+                          {lastIssuedArtifact?.localPreview ? (
+                            <p
+                              style={{
+                                margin: "0.45rem 0 0",
+                                fontSize: "0.74rem",
+                                color: "var(--warning)",
+                                lineHeight: 1.55,
+                              }}
+                            >
+                              {language === "tr"
+                                ? `Yerel önizleme fallback aktif (${lastIssuedArtifact.previewReason ?? "backend_unreachable"}). Bu çıktı görsel kabul içindir; backend doğrulaması iddiası taşımaz.`
+                                : `Local preview fallback active (${lastIssuedArtifact.previewReason ?? "backend_unreachable"}). This output is for visual acceptance only and does not claim backend verification.`}
+                            </p>
+                          ) : null}
                           {lastIssuedArtifact && (
                             <div
                               style={{

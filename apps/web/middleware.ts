@@ -60,6 +60,7 @@ function restrictedRedirect(req: NextRequest, surface: string): NextResponse {
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const isDevLocal = process.env.NODE_ENV !== "production";
 
   // Allow public access tooling.
   if (pathname === "/access" || pathname === "/restricted" || pathname.startsWith("/api/access")) {
@@ -73,7 +74,7 @@ export function middleware(req: NextRequest) {
     pathname === "/console" ||
     pathname === "/verifier/golden" ||
     pathname.startsWith("/api/diagnostics") ||
-    pathname.includes("/api/events/") && pathname.endsWith("/exports") ||
+    (!isDevLocal && pathname.includes("/api/events/") && pathname.endsWith("/exports")) ||
     pathname.startsWith("/api/exports/") && pathname.endsWith("/download");
 
   if (protectedSurface && !hasValidAccess(req)) {
