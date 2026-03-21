@@ -7,6 +7,10 @@
 export const BRAND = {
   name: "QARAQUTU",
   tagline: "Witness · Verifier · Trace · Issuance",
+  /** Primary brand motto — EN surface. */
+  motto: "Does not judge. It witnesses.",
+  /** Primary brand motto — TR. */
+  mottoTr: "Hüküm vermez. Şahitlik eder.",
   description:
     "Verifier-first witness protocol for dispute-grade event packages across Vehicle, Drone, and Robot.",
 } as const;

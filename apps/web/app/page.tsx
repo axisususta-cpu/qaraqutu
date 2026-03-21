@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { LogoPrimary } from "./components/LogoPrimary";
+import { BRAND } from "../lib/brand";
 import { SectionHeader } from "./components/ui/SectionHeader";
 import { VerticalsDiagram } from "./components/diagrams/VerticalsDiagram";
 import { CanonicalSpineDiagram } from "./components/diagrams/CanonicalSpineDiagram";
@@ -46,9 +47,23 @@ export default function LandingPage() {
           }}
         >
           <div>
-            <div style={{ marginBottom: "1rem" }}>
+            <div style={{ marginBottom: "0.55rem" }}>
               <LogoPrimary href="/" height={44} />
             </div>
+            <p
+              style={{
+                margin: "0 0 0.85rem 0",
+                fontSize: "1.05rem",
+                fontStyle: "italic",
+                fontWeight: 400,
+                color: THEME.textSoft,
+                letterSpacing: "0.01em",
+                lineHeight: 1.4,
+                fontFamily: SANS,
+              }}
+            >
+              {BRAND.motto}
+            </p>
             <div
               style={{
                 display: "inline-flex",
