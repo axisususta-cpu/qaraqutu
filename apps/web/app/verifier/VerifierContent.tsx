@@ -532,6 +532,33 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     : exportProfile;
   const visibleReviewState = verificationState ?? selectedEventCard?.state ?? null;
   const reviewTone = getReviewTone(visibleReviewState);
+  const canUseLocalPreviewFallbackArtifact =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+  const issuedArtifact: IssuanceRecord | null =
+    lastIssuedArtifact ??
+    (canUseLocalPreviewFallbackArtifact &&
+    verificationState === "UNVERIFIED" &&
+    (transcript?.some((s) => s.check === "local_preview_fallback") ||
+      identity?.manifest_id?.includes("LOCAL-PREVIEW"))
+      ? {
+          format: "pdf",
+          localPreview: true,
+          previewReason: "upstream_unreachable",
+          meta: {
+            export_id: `LOCAL-PREVIEW-${(selectedId ?? "EVENT").replace(/[^A-Z0-9-]/gi, "").slice(0, 24)}`,
+            receipt_id: `LPR-${(selectedId ?? "EVENT").slice(-8).toUpperCase()}`,
+            event_id: identity?.event_id ?? selectedId ?? "LOCAL-PREVIEW-EVENT",
+            bundle_id: identity?.bundle_id ?? "LOCAL-PREVIEW-BUNDLE",
+            manifest_id: identity?.manifest_id ?? "LOCAL-PREVIEW-MANIFEST",
+            verification_state: "UNVERIFIED",
+            export_profile: exportProfile,
+            export_purpose: selectedPurpose,
+            schema_version: "preview.local.v1",
+            download_url: "#local-preview",
+          },
+        }
+      : null);
 
   async function runVerification() {
     if (!selectedId) return;
@@ -2865,20 +2892,20 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           {language === "tr" ? "Paket ID" : "Bundle ID"}: {identity?.bundle_id ?? selected?.bundleId} · {language === "tr" ? "Manifest ID" : "Manifest ID"}: {identity?.manifest_id ?? selected?.manifestId ?? "—"} · {language === "tr" ? "İz" : "Trace"}: {transcriptId ?? (language === "tr" ? "hazırlanmadı" : "pending")}
                         </div>
                       )}
-                      {(issuanceState !== "idle" || !!lastIssuedArtifact) && (
+                      {(issuanceState !== "idle" || !!issuedArtifact) && (
                         <div
                           style={{
                             marginTop: "0.85rem",
                             padding: "0.8rem 0.9rem",
                             borderRadius: 10,
                             border:
-                              (issuanceState === "success" || (issuanceState === "idle" && !!lastIssuedArtifact))
+                              (issuanceState === "success" || (issuanceState === "idle" && !!issuedArtifact))
                                 ? "1px solid var(--success)"
                                 : issuanceState === "error"
                                 ? "1px solid var(--error)"
                                 : "1px solid var(--border-strong)",
                             background:
-                              (issuanceState === "success" || (issuanceState === "idle" && !!lastIssuedArtifact))
+                              (issuanceState === "success" || (issuanceState === "idle" && !!issuedArtifact))
                                 ? "var(--success-soft)"
                                 : issuanceState === "error"
                                 ? "var(--error-soft)"
@@ -2891,14 +2918,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               fontWeight: 700,
                               marginBottom: "0.3rem",
                               color:
-                                (issuanceState === "success" || (issuanceState === "idle" && !!lastIssuedArtifact))
+                                (issuanceState === "success" || (issuanceState === "idle" && !!issuedArtifact))
                                   ? "var(--success)"
                                   : issuanceState === "error"
                                   ? "var(--error)"
                                   : "var(--text-soft)",
                             }}
                           >
-                            {(issuanceState === "success" || (issuanceState === "idle" && !!lastIssuedArtifact))
+                            {(issuanceState === "success" || (issuanceState === "idle" && !!issuedArtifact))
                               ? language === "tr"
                                 ? "Bounded issuance hazır"
                                 : "Bounded issuance ready"
@@ -2918,7 +2945,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               lineHeight: 1.5,
                             }}
                           >
-                            {(issuanceState === "success" || (issuanceState === "idle" && !!lastIssuedArtifact))
+                            {(issuanceState === "success" || (issuanceState === "idle" && !!issuedArtifact))
                               ? language === "tr"
                                 ? `Seçili ${selectedProfileLabel} profili için artifact zincire bağlı olarak üretildi. Kimlik ve purpose alanları aşağıda görünür. Artifact doğrulama izi ve manifeste bağlıdır; bilinmeyen/çekişmeli alanın yerini almaz.`
                                 : `The selected ${selectedProfileLabel} artifact was issued while staying bound to the chain. Identity and purpose fields are visible below. Artifact is bound to the verification trace and manifest; it does not replace or outrank unknown/disputed items.`
@@ -2930,7 +2957,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               ? `Seçili ${selectedProfileLabel} profili için ${selectedFormat?.toUpperCase() ?? "artifact"} hazırlanıyor.`
                               : `Preparing ${selectedFormat?.toUpperCase() ?? "artifact"} for the selected ${selectedProfileLabel} profile.`}
                           </p>
-                          {lastIssuedArtifact?.localPreview ? (
+                          {issuedArtifact?.localPreview ? (
                             <p
                               style={{
                                 margin: "0.45rem 0 0",
@@ -2940,11 +2967,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               }}
                             >
                               {language === "tr"
-                                ? `Yerel önizleme fallback aktif (${lastIssuedArtifact.previewReason ?? "backend_unreachable"}). Bu çıktı görsel kabul içindir; backend doğrulaması iddiası taşımaz.`
-                                : `Local preview fallback active (${lastIssuedArtifact.previewReason ?? "backend_unreachable"}). This output is for visual acceptance only and does not claim backend verification.`}
+                                ? `Yerel önizleme fallback aktif (${issuedArtifact.previewReason ?? "backend_unreachable"}). Bu çıktı görsel kabul içindir; backend doğrulaması iddiası taşımaz.`
+                                : `Local preview fallback active (${issuedArtifact.previewReason ?? "backend_unreachable"}). This output is for visual acceptance only and does not claim backend verification.`}
                             </p>
                           ) : null}
-                          {lastIssuedArtifact && (
+                          {issuedArtifact && (
                             <div
                               style={{
                                 marginTop: "0.7rem",
@@ -2956,23 +2983,23 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               {[
                                 {
                                   label: language === "tr" ? "Profil" : "Profile",
-                                  value: lastIssuedArtifact.meta.export_profile,
+                                  value: issuedArtifact.meta.export_profile,
                                 },
                                 {
                                   label: language === "tr" ? "Biçim" : "Format",
-                                  value: lastIssuedArtifact.format,
+                                  value: issuedArtifact.format,
                                 },
                                 {
                                   label: language === "tr" ? "Dışa Aktarım ID" : "Export ID",
-                                  value: lastIssuedArtifact.meta.export_id,
+                                  value: issuedArtifact.meta.export_id,
                                 },
                                 {
                                   label: language === "tr" ? "Makbuz ID" : "Receipt ID",
-                                  value: lastIssuedArtifact.meta.receipt_id,
+                                  value: issuedArtifact.meta.receipt_id,
                                 },
                                 {
                                   label: language === "tr" ? "Amaç" : "Purpose",
-                                  value: lastIssuedArtifact.meta.export_purpose,
+                                  value: issuedArtifact.meta.export_purpose,
                                 },
                               ].map((item) => (
                                 <div key={item.label} style={{ minWidth: 0 }}>
@@ -3001,10 +3028,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               ))}
                             </div>
                           )}
-                          {lastIssuedArtifact
+                          {issuedArtifact
                             ? (() => {
                                 const m = MSG[language];
-                                const meta = lastIssuedArtifact.meta;
+                                const meta = issuedArtifact.meta;
                                 const { primary } = resolveIssuanceDocumentFamilies(
                                   meta.export_profile,
                                   selectedSystem
@@ -3028,7 +3055,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                     >
                                       {m.verifierIssuancePreviewTitle}
                                     </div>
-                                    {lastIssuedArtifact.localPreview ? (
+                                    {issuedArtifact.localPreview ? (
                                       <p
                                         style={{
                                           margin: "0 0 0.55rem",
@@ -3246,9 +3273,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     </button>
                   </div>
                   {exportError && <p style={{ fontSize: "0.8rem", marginTop: "0.5rem", color: "var(--error)" }}>{exportError}</p>}
-                  {lastIssuedArtifact ? (() => {
+                  {issuedArtifact ? (() => {
                     const m = MSG[language];
-                    const meta = lastIssuedArtifact.meta;
+                    const meta = issuedArtifact.meta;
                     const { primary } = resolveIssuanceDocumentFamilies(meta.export_profile, selectedSystem);
                     const framing = getInstitutionFraming(issuanceAudience, language);
                     const traceDisplay =
@@ -3262,7 +3289,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         <div style={{ fontSize: "0.72rem", fontWeight: 600, marginBottom: "0.45rem", fontFamily: MONO }}>
                           {m.verifierIssuancePreviewTitle}
                         </div>
-                        {lastIssuedArtifact.localPreview ? (
+                        {issuedArtifact.localPreview ? (
                           <p style={{ margin: "0 0 0.55rem", fontSize: "0.72rem", color: "var(--warning)", lineHeight: 1.5 }}>
                             {language === "tr"
                               ? "Yerel önizleme modu: Bu belge görsel kabul için render edilir; nihai backend doğrulaması iddiası taşımaz."
