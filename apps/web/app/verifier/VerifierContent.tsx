@@ -755,17 +755,38 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       {/* ── Page title area ── */}
       <div
         style={{
-          borderBottom: `1px solid ${UI.borderMuted}`,
+          borderBottom: `1px solid ${UI.border}`,
           background: UI.panel,
+          boxShadow: "0 1px 3px rgba(0,0,0,0.03)",
         }}
       >
         <div
           style={{
             maxWidth: 1400,
             margin: "0 auto",
-            padding: "1.25rem 2.5rem",
+            padding: "1.35rem 2.5rem",
           }}
         >
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.35rem",
+              padding: "0.2rem 0.55rem",
+              borderRadius: 999,
+              marginBottom: "0.5rem",
+              background: UI.chipBg,
+              border: `1px solid ${UI.chipBorder}`,
+              color: UI.chipText,
+              fontSize: "0.65rem",
+              fontWeight: 600,
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              fontFamily: MONO,
+            }}
+          >
+            {language === "tr" ? "İnceleme İstasyonu" : "Inspection Station"}
+          </div>
           <h1
             style={{
               margin: 0,

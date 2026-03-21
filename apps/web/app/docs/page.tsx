@@ -1,6 +1,7 @@
 "use client";
 
 import { LogoPrimary } from "../components/LogoPrimary";
+import { SectionHeader } from "../components/ui/SectionHeader";
 import { RoleDocumentMapping } from "../components/institutional/RoleDocumentMapping";
 import { DocumentFamilyRoleMatrix } from "../components/institutional/DocumentFamilyRoleMatrix";
 import { SectorScenarioDetail } from "../components/sector/SectorScenarioDetail";
@@ -20,6 +21,24 @@ export default function DocsPage() {
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
         <div style={{ marginBottom: "1.5rem" }}>
           <LogoPrimary href="/" height={36} />
+        </div>
+        <div
+          style={{
+            display: "inline-flex",
+            padding: "0.2rem 0.55rem",
+            borderRadius: 999,
+            marginBottom: "0.5rem",
+            background: THEME.chipBg,
+            border: `1px solid ${THEME.chipBorder}`,
+            color: THEME.chipText,
+            fontSize: "0.65rem",
+            fontWeight: 600,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            fontFamily: "'JetBrains Mono', monospace",
+          }}
+        >
+          Protocol & API
         </div>
         <h1 style={{ fontSize: "1.5rem", marginBottom: "1.25rem", fontWeight: 600 }}>
           QARAQUTU Docs / API
@@ -109,13 +128,12 @@ export default function DocsPage() {
         </section>
 
         <section id="sector-specific-witness-scenarios" style={{ marginBottom: "1.75rem" }}>
-          <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
-            Sector-specific witness scenarios
-          </h2>
-          <p style={{ fontSize: "0.85rem", color: THEME.textSoft, marginBottom: "0.75rem", lineHeight: 1.6 }}>
-            Each sector scenario defines: incident, institutional risk, role shell, document family, and doctrine-safe output.
-            The Verifier applies the same inspection structure across insurance, legal, technical, and administrative contexts.
-          </p>
+          <SectionHeader
+            badge="Sectors"
+            heading="Sector-specific witness scenarios"
+            accentWord="scenarios"
+            subtitle="Each sector scenario defines: incident, institutional risk, role shell, document family, and doctrine-safe output. The Verifier applies the same inspection structure across insurance, legal, technical, and administrative contexts."
+          />
           {getAllSectorScenarios().map((s) => (
             <SectorScenarioDetail key={s.id} scenario={s} lang="en" />
           ))}

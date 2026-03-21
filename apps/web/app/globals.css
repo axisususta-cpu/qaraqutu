@@ -46,3 +46,10 @@ body {
   }
 }
 
+/* Home hero — subtle grid background (reference grammar) */
+.home-hero-with-grid {
+  background-image: linear-gradient(rgba(212, 86, 26, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 86, 26, 0.03) 1px, transparent 1px) !important;
+  background-size: 48px 48px !important;
+}
+

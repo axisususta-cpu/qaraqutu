@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { LogoPrimary } from "./components/LogoPrimary";
+import { SectionHeader } from "./components/ui/SectionHeader";
 import { VerticalsDiagram } from "./components/diagrams/VerticalsDiagram";
 import { CanonicalSpineDiagram } from "./components/diagrams/CanonicalSpineDiagram";
 import { EvidenceLayerDiagram } from "./components/diagrams/EvidenceLayerDiagram";
@@ -23,9 +24,11 @@ const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
 export default function LandingPage() {
   return (
     <main
+      className="home-hero-with-grid"
       style={{
         minHeight: "100vh",
         background: THEME.bg,
+        backgroundPosition: "0 0",
         color: THEME.text,
         padding: "1.75rem 2rem 2.25rem",
         fontFamily: SANS,
@@ -48,18 +51,26 @@ export default function LandingPage() {
             </div>
             <div
               style={{
-                fontSize: "0.78rem",
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-                color: THEME.textMuted,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+                padding: "0.25rem 0.6rem",
+                borderRadius: 999,
                 marginBottom: "0.65rem",
+                background: THEME.chipBg,
+                border: `1px solid ${THEME.chipBorder}`,
+                color: THEME.chipText,
+                fontSize: "0.7rem",
+                fontWeight: 600,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
                 fontFamily: MONO,
               }}
             >
               Witness protocol
             </div>
             <h1 style={{ fontSize: "2.2rem", margin: 0, lineHeight: 1.25, fontWeight: 600 }}>
-              One product. Verifier-first. Three verticals.
+              One product. <span style={{ color: THEME.accent }}>Verifier-first.</span> Three verticals.
             </h1>
             <p
               style={{
@@ -118,12 +129,13 @@ export default function LandingPage() {
               <Link
                 href="/verifier"
                 style={{
-                  padding: "0.55rem 1.2rem",
-                  borderRadius: 999,
-                  border: `1px solid ${THEME.accent}`,
-                  background: THEME.accentSoft,
+                  padding: "0.6rem 1.35rem",
+                  borderRadius: 12,
+                  border: "none",
+                  background: THEME.ctaGradient,
+                  boxShadow: THEME.ctaShadow,
                   textDecoration: "none",
-                  color: THEME.text,
+                  color: "#ffffff",
                   fontWeight: 600,
                   fontFamily: MONO,
                   letterSpacing: "0.08em",
@@ -135,9 +147,10 @@ export default function LandingPage() {
               <Link
                 href="/docs"
                 style={{
-                  padding: "0.5rem 1rem",
-                  borderRadius: 999,
+                  padding: "0.55rem 1.1rem",
+                  borderRadius: 12,
                   border: `1px solid ${THEME.border}`,
+                  background: THEME.panel,
                   textDecoration: "none",
                   color: THEME.textSoft,
                 }}
@@ -150,7 +163,7 @@ export default function LandingPage() {
             <div
               style={{
                 position: "relative",
-                borderRadius: 10,
+                borderRadius: 12,
                 overflow: "hidden",
                 border: `1px solid ${THEME.border}`,
                 boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
@@ -170,9 +183,9 @@ export default function LandingPage() {
             <VerticalsDiagram />
             <div
               style={{
-                borderRadius: 8,
+                borderRadius: 10,
                 border: `1px dashed ${THEME.border}`,
-                padding: "0.5rem 0.6rem",
+                padding: "0.55rem 0.7rem",
                 fontSize: "0.77rem",
                 color: THEME.textMuted,
                 lineHeight: 1.5,
@@ -195,13 +208,14 @@ export default function LandingPage() {
           {/* Problem statement */}
           <section
             style={{
-              borderRadius: 10,
+              borderRadius: 12,
               border: `1px solid ${THEME.border}`,
               background: THEME.panel,
-              padding: "1rem 1.1rem",
+              padding: "1.1rem 1.25rem",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             }}
           >
-            <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>The problem</h2>
+            <SectionHeader badge="Context" heading="The problem" />
             <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: THEME.textSoft, margin: 0 }}>
               <li>Incident review data is fragmented across logs, captures, and exported files.</li>
               <li>Recorded facts and derived interpretations are often collapsed into one narrative layer.</li>
@@ -212,13 +226,14 @@ export default function LandingPage() {
           {/* Product system summary */}
           <section
             style={{
-              borderRadius: 10,
+              borderRadius: 12,
               border: `1px solid ${THEME.border}`,
               background: THEME.panelRaised,
-              padding: "1rem 1.1rem",
+              padding: "1.1rem 1.25rem",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             }}
           >
-            <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Product system</h2>
+            <SectionHeader badge="Architecture" heading="Product system" />
             <div style={{ marginBottom: "0.75rem" }}>
               <CanonicalSpineDiagram />
             </div>
@@ -256,11 +271,11 @@ export default function LandingPage() {
             <div
               key={v.key}
               style={{
-                borderRadius: 10,
+                borderRadius: 12,
                 border: `1px solid ${THEME.border}`,
                 background: THEME.panel,
                 overflow: "hidden",
-                boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
               }}
             >
               <div
@@ -296,13 +311,14 @@ export default function LandingPage() {
         >
           <section
             style={{
-              borderRadius: 10,
+              borderRadius: 12,
               border: `1px solid ${THEME.border}`,
               background: THEME.panel,
-              padding: "1rem 1.1rem",
+              padding: "1.1rem 1.25rem",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             }}
           >
-            <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Role-aware review flow</h2>
+            <SectionHeader badge="Roles" heading="Role-aware review flow" />
             <div style={{ marginBottom: "0.75rem" }}>
               <RoleExportDiagram />
             </div>
@@ -320,13 +336,14 @@ export default function LandingPage() {
           </section>
           <section
             style={{
-              borderRadius: 10,
+              borderRadius: 12,
               border: `1px solid ${THEME.border}`,
               background: THEME.panel,
-              padding: "1rem 1.1rem",
+              padding: "1.1rem 1.25rem",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
             }}
           >
-            <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Evidence layer discipline</h2>
+            <SectionHeader badge="Discipline" heading="Evidence layer discipline" />
             <div
               style={{
                 marginBottom: "0.75rem",
@@ -368,63 +385,69 @@ export default function LandingPage() {
         {/* Institutional use families */}
         <section
           style={{
-            borderRadius: 10,
+            borderRadius: 12,
             border: `1px solid ${THEME.border}`,
             background: THEME.panelRaised,
-            padding: "1.25rem 1.35rem",
+            padding: "1.35rem 1.5rem",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
           }}
         >
-          <h2 style={{ fontSize: "1rem", marginBottom: "0.4rem", marginTop: 0, fontWeight: 600 }}>Institutional use families</h2>
-          <p style={{ fontSize: "0.85rem", opacity: 0.92, color: THEME.textSoft, marginTop: 0, marginBottom: "1rem", lineHeight: 1.55 }}>
-            One canonical event core, many institutional shells. The same event spine is preserved; only priority,
-            visibility, and document recommendation vary by role.
-          </p>
+          <SectionHeader
+            badge="Institutional"
+            heading="Institutional use families"
+            accentWord="families"
+            subtitle="One canonical event core, many institutional shells. The same event spine is preserved; only priority, visibility, and document recommendation vary by role."
+          />
           <InstitutionalUseFamilies />
         </section>
 
         {/* Sector demo scenarios */}
         <section
           style={{
-            borderRadius: 10,
+            borderRadius: 12,
             border: `1px solid ${THEME.border}`,
             background: THEME.panel,
-            padding: "1.25rem 1.35rem",
+            padding: "1.35rem 1.5rem",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
           }}
         >
-          <h2 style={{ fontSize: "1rem", marginBottom: "0.4rem", marginTop: 0, fontWeight: 600 }}>Sector demo scenarios</h2>
-          <p style={{ fontSize: "0.85rem", opacity: 0.92, color: THEME.textSoft, marginTop: 0, marginBottom: "1rem", lineHeight: 1.55 }}>
-            Why each sector needs QARAQUTU: incident, institutional risk, trace-linked response, and preferred document family.
-          </p>
+          <SectionHeader
+            badge="Sectors"
+            heading="Sector demo scenarios"
+            accentWord="scenarios"
+            subtitle="Why each sector needs QARAQUTU: incident, institutional risk, trace-linked response, and preferred document family."
+          />
           <SectorScenarioCards />
         </section>
 
         {/* Verification summary */}
         <section
           style={{
-            borderRadius: 10,
+            borderRadius: 12,
             border: `1px solid ${THEME.border}`,
             background: THEME.panel,
-            padding: "1rem 1.1rem 1.1rem",
+            padding: "1.1rem 1.25rem",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
           }}
         >
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Verification</h2>
-          <p style={{ fontSize: "0.84rem", opacity: 0.9, color: THEME.textSoft, margin: 0 }}>
-            Verification remains a bounded package assessment. States (PASS, FAIL, UNKNOWN, UNVERIFIED) represent review
-            posture, not judicial truth, not liability assignment, and not a substitute for independent legal or expert
-            judgement.
-          </p>
+          <SectionHeader
+            badge="Doctrine"
+            heading="Verification"
+            subtitle="Verification remains a bounded package assessment. States (PASS, FAIL, UNKNOWN, UNVERIFIED) represent review posture, not judicial truth, not liability assignment, and not a substitute for independent legal or expert judgement."
+          />
         </section>
 
         {/* Surfaces + CTAs */}
         <section
           style={{
-            borderRadius: 10,
+            borderRadius: 12,
             border: `1px solid ${THEME.border}`,
             background: THEME.panel,
-            padding: "1rem 1.1rem 1.1rem",
+            padding: "1.1rem 1.25rem",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
           }}
         >
-          <h2 style={{ fontSize: "0.95rem", marginBottom: "0.5rem", marginTop: 0 }}>Product surfaces</h2>
+          <SectionHeader badge="Surfaces" heading="Product surfaces" />
           <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: THEME.textSoft, marginTop: 0 }}>
             <li>
               <strong>Verifier</strong> - primary review station; canonical event inspection and bounded verification

@@ -27,8 +27,12 @@ export function SectorVerifierStrip() {
             fontFamily: "'JetBrains Mono', monospace",
             letterSpacing: "0.06em",
             textTransform: "uppercase",
-            color: UI.textMuted,
+            color: UI.chipText,
             marginRight: "0.35rem",
+            padding: "0.1rem 0.4rem",
+            borderRadius: 4,
+            background: UI.chipBg,
+            border: `1px solid ${UI.chipBorder}`,
           }}
         >
           By sector:

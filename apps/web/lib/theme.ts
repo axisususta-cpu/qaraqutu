@@ -34,6 +34,13 @@ export const THEME = {
   accentHover: "rgba(212, 86, 26, 0.14)",
   /** Active/hover states. */
   activeBg: "rgba(212, 86, 26, 0.08)",
+  /** Orange chip/badge — protocol-grade emphasis, use sparingly. */
+  chipBg: "rgba(212, 86, 26, 0.1)",
+  chipBorder: "rgba(212, 86, 26, 0.22)",
+  chipText: "#D4561A",
+  /** CTA gradient — primary action only. */
+  ctaGradient: "linear-gradient(135deg, #D4561A, #B54516)",
+  ctaShadow: "0 2px 12px rgba(212, 86, 26, 0.2)",
   /** Protocol state colors (doctrine-preserving). */
   success: "#059669",
   successSoft: "rgba(5, 150, 105, 0.08)",
