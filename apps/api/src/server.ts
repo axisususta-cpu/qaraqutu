@@ -646,6 +646,27 @@ fastify.get<{
       (exp as any).redactedItemCount ?? 0;
     const redactionBasis =
       (exp as any).redactionBasis ?? null;
+
+    const latestRun = await prisma.verificationRun.findFirst({
+      where: { eventId: event.id },
+      orderBy: { createdAt: "desc" },
+      include: {
+        transcript: {
+          include: { steps: { orderBy: { stepIndex: "asc" } } },
+        },
+      },
+    });
+
+    const transcriptId = latestRun?.transcript?.transcriptId ?? null;
+    const verificationRunId = latestRun?.verificationRunId ?? null;
+    const verificationTrace =
+      latestRun?.transcript?.steps?.map((s) => ({
+        step: s.stepIndex,
+        check: s.check,
+        result: s.result,
+        note: s.note,
+      })) ?? [];
+
     const identity: DocumentIdentity = {
       eventId: event.eventId,
       bundleId: exp.bundleId,
@@ -661,6 +682,8 @@ fastify.get<{
       redactionApplied,
       redactedItemCount,
       redactionBasis,
+      transcriptId,
+      verificationRunId,
     };
 
     const canonicalEvent: CanonicalEvent = {
@@ -678,6 +701,7 @@ fastify.get<{
       verificationState: exp.verificationState as VerificationState,
       recordedEvidence: JSON.parse(JSON.stringify(recorded)) as CanonicalEvent["recordedEvidence"],
       derivedEvidence: JSON.parse(JSON.stringify(derived)) as CanonicalEvent["derivedEvidence"],
+      verificationTrace,
     };
 
     let pdf: InstanceType<typeof PDFDocument>;

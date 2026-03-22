@@ -70,6 +70,13 @@ export interface DerivedEvidenceItem {
   sourceDependencies: string[];
 }
 
+export interface PdfVerificationTraceStep {
+  step: number;
+  check: string;
+  result: string;
+  note: string;
+}
+
 export interface CanonicalEvent {
   eventId: string;
   bundleId: string;
@@ -85,4 +92,8 @@ export interface CanonicalEvent {
   summary: string;
   recordedEvidence: RecordedEvidenceItem[];
   derivedEvidence: DerivedEvidenceItem[];
+  /** When attached for PDF (e.g. from latest verification run). */
+  verificationTrace?: PdfVerificationTraceStep[];
+  /** Optional unknown/disputed lines when present on canonical snapshot. */
+  unknownDisputed?: string[];
 }

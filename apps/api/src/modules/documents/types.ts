@@ -13,9 +13,13 @@ export interface DocumentIdentity {
   exportPurpose: string;
   schemaVersion: string;
   tenantId?: string;
-   redactionApplied?: boolean;
-   redactedItemCount?: number;
-   redactionBasis?: string | null;
+  redactionApplied?: boolean;
+  redactedItemCount?: number;
+  redactionBasis?: string | null;
+  /** Latest verification transcript id when linked at export time. */
+  transcriptId?: string | null;
+  /** Latest verification run id when linked at export time. */
+  verificationRunId?: string | null;
 }
 
 export interface LayoutContext {

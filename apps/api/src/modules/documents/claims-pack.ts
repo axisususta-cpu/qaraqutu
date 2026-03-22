@@ -1,15 +1,20 @@
 import type { CanonicalEvent, RecordedEvidenceItem, DerivedEvidenceItem } from "../../contracts";
 import PDFDocument from "pdfkit";
 import {
+  attachFooterIdentity,
   buildLayoutContext,
   createDocument,
   drawBulletList,
-  drawDocumentTitle,
+  drawCoverHeaderBand,
+  drawExportMetadataGrid,
+  drawIdentityChain,
+  drawIssuanceNotice,
   drawKeyValueRows,
   drawParagraph,
   drawSectionHeading,
-  drawNoticeSection,
-  attachFooterIdentity,
+  drawEvidenceStackedPanels,
+  drawUnknownDisputedBlock,
+  drawVerificationTraceTable,
   ensurePageSpace,
 } from "./layout";
 import type { DocumentIdentity } from "./types";
@@ -26,100 +31,60 @@ export function renderClaimsPdf(
   const doc = createDocument();
   const ctx = buildLayoutContext(doc, identity, event as any);
 
-  const footerText = `Event ID: ${identity.eventId} | Export ID: ${identity.exportId} | Receipt ID: ${
-    identity.receiptId ?? "N/A"
-  }`;
+  const footerText = `Event ${identity.eventId} · Export ${identity.exportId} · Receipt ${identity.receiptId ?? "N/A"}`;
   attachFooterIdentity(doc, footerText);
 
-  // 1. Title
-  drawDocumentTitle(ctx, "Claims Review Evidence Pack");
+  drawCoverHeaderBand(doc, "Claims Review Evidence Pack", identity);
 
-  // 2. Identification
-  ensurePageSpace(ctx, 120);
-  drawSectionHeading(ctx, "Identification");
-  drawKeyValueRows(ctx, [
-    { label: "Event ID", value: identity.eventId },
-    { label: "Bundle ID", value: identity.bundleId },
-    { label: "Manifest ID", value: identity.manifestId },
-    { label: "Export ID", value: identity.exportId },
-    { label: "Receipt ID", value: identity.receiptId },
-    { label: "Verification State", value: identity.verificationState },
-    { label: "Generated At", value: identity.generatedAt },
-    { label: "Export Purpose", value: identity.exportPurpose },
-  ]);
+  ensurePageSpace(ctx, 80);
+  drawExportMetadataGrid(ctx);
+  drawIdentityChain(ctx);
 
-  // 3. Event Summary
-  ensurePageSpace(ctx, 120);
-  drawSectionHeading(ctx, "Event Summary");
+  ensurePageSpace(ctx, 100);
+  drawSectionHeading(ctx, "Incident summary");
+  drawParagraph(
+    ctx,
+    "Short institutional summary of the referenced event package. Review posture is bounded; this export does not establish fault or coverage outcome."
+  );
   drawParagraph(ctx, event.summary);
 
-  // 4. Asset & Context
-  ensurePageSpace(ctx, 160);
-  drawSectionHeading(ctx, "Asset & Context");
+  ensurePageSpace(ctx, 90);
+  drawSectionHeading(ctx, "Review posture & next step");
+  drawBulletList(ctx, ["Use this pack for dispute-grade reference against canonical IDs.", "Escalate open unknowns through the verifier inspection surface, not by merging layers."], "");
+
+  const recordedItems = (event.recordedEvidence ?? []).map((item: RecordedEvidenceItem) => {
+    const parts = [item.displayLabel, item.contentType, item.sourceId, item.capturedAt].filter(Boolean);
+    return parts.join(" · ");
+  });
+  const derivedItems = (event.derivedEvidence ?? []).map((item: DerivedEvidenceItem) => {
+    const parts = [item.displayLabel, item.humanSummary, item.derivationNote].filter(Boolean);
+    return parts.join(" — ");
+  });
+  drawEvidenceStackedPanels(
+    ctx,
+    recordedItems,
+    derivedItems,
+    "No recorded evidence items were included in this export snapshot.",
+    "No derived evidence items were included in this export snapshot."
+  );
+
+  drawUnknownDisputedBlock(ctx, event.unknownDisputed);
+  drawVerificationTraceTable(ctx, event.verificationTrace ?? []);
+
+  ensurePageSpace(ctx, 120);
+  drawSectionHeading(ctx, "Asset & context");
   drawKeyValueRows(ctx, [
     { label: "Vehicle VIN", value: event.vehicleVin },
     { label: "Fleet", value: event.fleetId },
     { label: "Policy / Claim", value: event.policyOrClaimRef },
     { label: "Location", value: event.incidentLocation },
-    { label: "Event Class", value: event.eventClass },
-    { label: "Scenario Key", value: event.scenarioKey },
-    {
-      label: "Occurred At",
-      value: new Date(event.occurredAt).toISOString(),
-    },
+    { label: "Event class", value: event.eventClass },
+    { label: "Scenario key", value: event.scenarioKey },
+    { label: "Occurred at", value: new Date(event.occurredAt).toISOString() },
   ]);
 
-  // 5. Recorded Evidence
-  ensurePageSpace(ctx, 160);
-  drawSectionHeading(ctx, "Recorded Evidence");
-  const recordedItems = (event.recordedEvidence ?? []).map((item: RecordedEvidenceItem) => {
-    const parts = [
-      item.displayLabel,
-      item.contentType,
-      item.sourceId,
-      item.capturedAt,
-    ].filter(Boolean);
-    return parts.join(" • ");
-  });
-  drawBulletList(
-    ctx,
-    recordedItems,
-    "No recorded evidence items were included in this export."
-  );
-
-  // 6. Derived Evidence
-  ensurePageSpace(ctx, 160);
-  drawSectionHeading(ctx, "Derived Evidence");
-  const derivedItems = (event.derivedEvidence ?? []).map((item: DerivedEvidenceItem) => {
-    const parts = [
-      item.displayLabel,
-      item.humanSummary,
-      item.derivationNote,
-    ].filter(Boolean);
-    return parts.join(" — ");
-  });
-  drawBulletList(
-    ctx,
-    derivedItems,
-    "No derived evidence items were included in this export."
-  );
-
-  // 7. Manifest & Receipt
-  ensurePageSpace(ctx, 120);
-  drawSectionHeading(ctx, "Manifest & Receipt");
-  drawKeyValueRows(ctx, [
-    { label: "Manifest ID", value: identity.manifestId },
-    { label: "Receipt ID", value: identity.receiptId },
-    { label: "Export Profile", value: identity.exportProfile },
-    {
-      label: "Verification State Snapshot",
-      value: identity.verificationState,
-    },
-  ]);
-
-  // 8. Redactions & Exclusions
-  ensurePageSpace(ctx, 120);
-  drawSectionHeading(ctx, "Redactions & Exclusions");
+  ensurePageSpace(ctx, 100);
+  drawSectionHeading(ctx, "Redactions & exclusions");
   if (identity.redactionApplied) {
     const basis =
       identity.redactionBasis ??
@@ -127,25 +92,17 @@ export function renderClaimsPdf(
     drawParagraph(
       ctx,
       `${basis} Redacted or excluded items: ${
-        typeof identity.redactedItemCount === "number"
-          ? identity.redactedItemCount
-          : "at least one"
+        typeof identity.redactedItemCount === "number" ? identity.redactedItemCount : "at least one"
       }.`
     );
   } else {
-    drawParagraph(
-      ctx,
-      "No policy-driven redactions or exclusions were applied in this claims export."
-    );
+    drawParagraph(ctx, "No policy-driven redactions or exclusions were applied in this claims export.");
   }
 
-  // 9. Notice
-  ensurePageSpace(ctx, 120);
-  drawNoticeSection(
+  drawIssuanceNotice(
     ctx,
-    "This claims evidence pack is a role-appropriate presentation of a canonical event. The canonical system record remains authoritative. Recorded and derived materials remain distinct, and this document does not constitute a liability or legal decision."
+    "This Claims Evidence Pack is a role-appropriate presentation of a canonical event. The canonical system record remains authoritative. It is not a liability decision, coverage determination, or substitute for independent claims investigation."
   );
 
   return doc;
 }
-

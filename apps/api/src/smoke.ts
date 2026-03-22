@@ -153,6 +153,8 @@ export function registerSmokeRoutes(app: FastifyInstance) {
       exportPurpose: "internal_pdf_fixture",
       schemaVersion: "v1",
       tenantId: "TENANT-SMOKE",
+      transcriptId: "QTR-FIXTURE-SYNTH",
+      verificationRunId: "QVR-FIXTURE-SYNTH",
     };
 
     const recordedEvidence = Array.from({ length: 80 }).map((_, idx) => ({
@@ -204,6 +206,13 @@ export function registerSmokeRoutes(app: FastifyInstance) {
       verificationState: identity.verificationState,
       recordedEvidence,
       derivedEvidence,
+      verificationTrace: [
+        { step: 0, check: "Manifest hash binding", result: "PASS", note: "Fixture step — not a live verifier outcome." },
+        { step: 1, check: "Evidence inventory parity", result: "UNKNOWN", note: "Synthetic open item for layout." },
+      ],
+      unknownDisputed: [
+        "Fixture: scope of derived summaries vs. raw telemetry not adjudicated in this export.",
+      ],
     };
 
     const pdf = renderClaimsPdf(identity, event);

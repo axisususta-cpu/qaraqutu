@@ -4,12 +4,16 @@ import {
   attachFooterIdentity,
   buildLayoutContext,
   createDocument,
-  drawBulletList,
-  drawDocumentTitle,
+  drawCoverHeaderBand,
+  drawExportMetadataGrid,
+  drawIdentityChain,
+  drawIssuanceNotice,
   drawKeyValueRows,
-  drawNoticeSection,
   drawParagraph,
   drawSectionHeading,
+  drawEvidenceStackedPanels,
+  drawUnknownDisputedBlock,
+  drawVerificationTraceTable,
   ensurePageSpace,
 } from "./layout";
 import type { DocumentIdentity } from "./types";
@@ -26,111 +30,69 @@ export function renderLegalPdf(
   const doc = createDocument();
   const ctx = buildLayoutContext(doc, identity, event as any);
 
-  const footerText = `Event ID: ${identity.eventId} | Export ID: ${identity.exportId} | Receipt ID: ${
-    identity.receiptId ?? "N/A"
-  }`;
+  const footerText = `Event ${identity.eventId} · Export ${identity.exportId} · Receipt ${identity.receiptId ?? "N/A"}`;
   attachFooterIdentity(doc, footerText);
 
-  // 1. Title
-  drawDocumentTitle(ctx, "Legal Review Evidence Pack");
+  drawCoverHeaderBand(doc, "Legal Review Evidence Pack", identity);
 
-  // 2. Identification
-  ensurePageSpace(ctx, 140);
-  drawSectionHeading(ctx, "Identification");
-  drawKeyValueRows(ctx, [
-    { label: "Event ID", value: identity.eventId },
-    { label: "Bundle ID", value: identity.bundleId },
-    { label: "Manifest ID", value: identity.manifestId },
-    { label: "Export ID", value: identity.exportId },
-    { label: "Receipt ID", value: identity.receiptId },
-    { label: "Verification State", value: identity.verificationState },
-    { label: "Generated At", value: identity.generatedAt },
-    { label: "Export Purpose", value: identity.exportPurpose },
-    { label: "Schema Version", value: identity.schemaVersion },
-    { label: "Tenant ID", value: identity.tenantId ?? "N/A" },
-  ]);
+  ensurePageSpace(ctx, 80);
+  drawExportMetadataGrid(ctx);
+  drawIdentityChain(ctx);
 
-  // 3. Event Summary
-  ensurePageSpace(ctx, 120);
-  drawSectionHeading(ctx, "Event Summary");
+  ensurePageSpace(ctx, 100);
+  drawSectionHeading(ctx, "Incident summary");
+  drawParagraph(
+    ctx,
+    "Concise narrative bound to the export snapshot. This text does not carry judicial weight and does not merge recorded and derived layers."
+  );
   drawParagraph(ctx, event.summary);
 
-  // 4. Canonical Chain
-  ensurePageSpace(ctx, 160);
-  drawSectionHeading(ctx, "Canonical Chain");
+  ensurePageSpace(ctx, 100);
+  drawSectionHeading(ctx, "Canonical chain reference");
   drawParagraph(
     ctx,
-    "This export is a presentation artifact linked to a canonical event record. The canonical event, bundle, manifest, export, and receipt together form the authoritative evidence chain."
+    "This export is a presentation artifact linked to a canonical event record. Event, bundle, manifest, export, and receipt identifiers form the authoritative reference chain for downstream review."
   );
   drawKeyValueRows(ctx, [
-    { label: "Canonical Event ID", value: identity.eventId },
-    { label: "Canonical Bundle ID", value: identity.bundleId },
-    { label: "Canonical Manifest ID", value: identity.manifestId },
-    { label: "Canonical Export ID", value: identity.exportId },
-    { label: "Canonical Receipt ID", value: identity.receiptId },
+    { label: "Canonical event", value: identity.eventId },
+    { label: "Canonical bundle", value: identity.bundleId },
+    { label: "Canonical manifest", value: identity.manifestId },
+    { label: "Canonical export", value: identity.exportId },
+    { label: "Canonical receipt", value: identity.receiptId },
   ]);
 
-  // 5. Verification & Transcript Reference
-  ensurePageSpace(ctx, 160);
-  drawSectionHeading(ctx, "Verification & Transcript Reference");
-  drawKeyValueRows(ctx, [
-    { label: "Verification State", value: identity.verificationState },
-  ]);
-  drawParagraph(
-    ctx,
-    "Verification is a bounded assessment of the referenced event package. This export profile includes a verification state summary only and does not include a full verification transcript artifact."
-  );
-
-  // 6. Recorded Evidence
-  ensurePageSpace(ctx, 160);
-  drawSectionHeading(ctx, "Recorded Evidence");
   const recordedItems = (event.recordedEvidence ?? []).map((item: RecordedEvidenceItem) => {
-    const parts = [
-      item.displayLabel,
-      item.contentType,
-      item.sourceId,
-      item.capturedAt,
-    ].filter(Boolean);
-    return parts.join(" • ");
+    const parts = [item.displayLabel, item.contentType, item.sourceId, item.capturedAt].filter(Boolean);
+    return parts.join(" · ");
   });
-  drawBulletList(
-    ctx,
-    recordedItems,
-    "No recorded evidence items were included in this export."
-  );
-
-  // 7. Derived Analysis
-  ensurePageSpace(ctx, 160);
-  drawSectionHeading(ctx, "Derived Analysis");
   const derivedItems = (event.derivedEvidence ?? []).map((item: DerivedEvidenceItem) => {
-    const parts = [
-      `${item.displayLabel} (derived)`,
-      item.humanSummary,
-      item.derivationNote,
-    ].filter(Boolean);
+    const parts = [`${item.displayLabel} (derived)`, item.humanSummary, item.derivationNote].filter(Boolean);
     return parts.join(" — ");
   });
-  drawBulletList(
+  drawEvidenceStackedPanels(
     ctx,
+    recordedItems,
     derivedItems,
-    "No derived analysis items were included in this export."
+    "No recorded evidence items were included in this export snapshot.",
+    "No derived analysis items were included in this export snapshot."
   );
 
-  // 8. Data Provenance & Manifest
-  ensurePageSpace(ctx, 160);
-  drawSectionHeading(ctx, "Data Provenance & Manifest");
+  drawUnknownDisputedBlock(ctx, event.unknownDisputed);
+  drawVerificationTraceTable(ctx, event.verificationTrace ?? []);
+
+  ensurePageSpace(ctx, 90);
+  drawSectionHeading(ctx, "Data provenance");
   drawKeyValueRows(ctx, [
     { label: "Manifest ID", value: identity.manifestId },
-    { label: "Source Tenant ID", value: identity.tenantId ?? "N/A" },
+    { label: "Source tenant", value: identity.tenantId ?? "—" },
   ]);
   drawParagraph(
     ctx,
-    "Data in this export is derived from the canonical manifest and associated event materials. The manifest defines the authoritative inventory of evidence objects."
+    "Data in this export reflects the manifest inventory and associated materials at generation time. Provenance is trace-linked; it is not a guarantee of completeness for all possible proceedings."
   );
 
-  // 9. Redactions & Exclusions
-  ensurePageSpace(ctx, 120);
-  drawSectionHeading(ctx, "Redactions & Exclusions");
+  ensurePageSpace(ctx, 100);
+  drawSectionHeading(ctx, "Redactions & exclusions");
   if (identity.redactionApplied) {
     const basis =
       identity.redactionBasis ??
@@ -138,25 +100,18 @@ export function renderLegalPdf(
     drawParagraph(
       ctx,
       `${basis} Redacted or excluded items: ${
-        typeof identity.redactedItemCount === "number"
-          ? identity.redactedItemCount
-          : "at least one"
+        typeof identity.redactedItemCount === "number" ? identity.redactedItemCount : "at least one"
       }.`
     );
   } else {
-    drawParagraph(
-      ctx,
-      "No policy-driven redactions or exclusions were applied in this legal review export."
-    );
+    drawParagraph(ctx, "No policy-driven redactions or exclusions were applied in this legal review export.");
   }
 
-  // 10. Legal Notice
-  ensurePageSpace(ctx, 140);
-  drawNoticeSection(
+  drawIssuanceNotice(
     ctx,
-    "This legal review evidence pack does not constitute a judicial finding, liability determination, or a substitute for independent legal review. The canonical system record remains authoritative. Recorded and derived materials remain distinct, and interpretations in this document are bounded by the available evidence at the time of export."
+    "This Legal Review Evidence Pack supports counsel-facing review of chain-bound references. It does not constitute a judicial finding, liability determination, or substitute for independent legal judgement.",
+    ["Interpretations remain bounded by evidence available at export time."]
   );
 
   return doc;
 }
-
