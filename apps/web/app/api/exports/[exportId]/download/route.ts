@@ -12,8 +12,8 @@ function isSafeExportId(value: string): boolean {
 }
 
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ exportId: string }> }) {
-  const token = process.env.QARAQUTU_ACCESS_TOKEN;
-  if (!token || token.trim().length < 12) {
+  const token = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
+  if (token.length < 12) {
     return NextResponse.json({ error: "ACCESS_GATE_NOT_CONFIGURED" }, { status: 503 });
   }
 
@@ -23,7 +23,10 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ exportId: 
   }
 
   const res = await fetch(`${API_BASE}/v1/exports/${exportId}/download`, {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "x-qaraqutu-access": token,
+    },
     cache: "no-store",
   });
 

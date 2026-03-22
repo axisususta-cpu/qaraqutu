@@ -41,14 +41,19 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ eventId: 
   }
 
   try {
-    const token = process.env.QARAQUTU_ACCESS_TOKEN;
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (token && token.trim().length >= 12) {
+    // Production Fastify/Vercel: POST with no body → 415; Content-Type: application/json with *empty* body → 400
+    // (parse error → REQUEST_REJECTED). Valid empty JSON object is accepted (same as a minimal JSON payload).
+    const token = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (token.length >= 12) {
       headers.Authorization = `Bearer ${token}`;
     }
     const res = await fetch(`${API_BASE}/v1/events/${eventId}/verify`, {
       method: "POST",
       headers,
+      body: "{}",
       cache: "no-store",
     });
     const json = await res.json().catch(() => ({}));

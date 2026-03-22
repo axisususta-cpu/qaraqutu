@@ -34,7 +34,7 @@ function localPreviewExport(eventId: string, body: Record<string, unknown> | nul
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ eventId: string }> }) {
-  const token = process.env.QARAQUTU_ACCESS_TOKEN;
+  const token = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
   const { eventId } = await ctx.params;
   if (!isSafeId(eventId)) {
     return NextResponse.json({ error: "INVALID_EVENT_ID" }, { status: 400 });
@@ -45,10 +45,10 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ eventId: s
     return NextResponse.json({ error: "INVALID_REQUEST_BODY" }, { status: 400 });
   }
 
-  if ((!token || token.trim().length < 12) && process.env.NODE_ENV !== "production") {
+  if (token.length < 12 && process.env.NODE_ENV !== "production") {
     return NextResponse.json(localPreviewExport(eventId, body, "access_gate_not_configured"), { status: 200 });
   }
-  if (!token || token.trim().length < 12) {
+  if (token.length < 12) {
     return NextResponse.json({ error: "ACCESS_GATE_NOT_CONFIGURED" }, { status: 503 });
   }
 
@@ -58,6 +58,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ eventId: s
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
+        "x-qaraqutu-access": token,
       },
       body: JSON.stringify(body),
       cache: "no-store",

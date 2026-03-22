@@ -10,8 +10,8 @@ function safeNext(next: unknown): string {
 }
 
 export async function POST(req: NextRequest) {
-  const expected = process.env.QARAQUTU_ACCESS_TOKEN;
-  if (!expected || expected.trim().length < 12) {
+  const expected = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
+  if (expected.length < 12) {
     return NextResponse.json(
       {
         error: "ACCESS_GATE_NOT_CONFIGURED",
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   const token = typeof body?.token === "string" ? body.token.trim() : "";
   const next = safeNext(body?.next);
 
-  if (!token || token !== expected) {
+  if (!token || token.trim() !== expected) {
     return NextResponse.json(
       { error: "ACCESS_DENIED", message: "Not authorized for this restricted surface." },
       { status: 403 }

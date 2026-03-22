@@ -41,10 +41,10 @@ function applySecurityHeaders(res: NextResponse) {
 }
 
 function hasValidAccess(req: NextRequest): boolean {
-  const token = process.env.QARAQUTU_ACCESS_TOKEN;
-  if (!token || token.trim().length < 12) return false;
-  const cookieToken = req.cookies.get(ACCESS_COOKIE)?.value;
-  const headerToken = req.headers.get("x-qaraqutu-access");
+  const token = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
+  if (token.length < 12) return false;
+  const cookieToken = req.cookies.get(ACCESS_COOKIE)?.value?.trim() ?? "";
+  const headerToken = req.headers.get("x-qaraqutu-access")?.trim() ?? "";
   return cookieToken === token || headerToken === token;
 }
 

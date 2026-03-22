@@ -9,10 +9,10 @@ const API_BASE =
 /** Server-side proxy for /v1/system/diagnostics so the browser does not hit the API cross-origin. */
 export async function GET() {
   try {
-    const token = process.env.QARAQUTU_ACCESS_TOKEN;
+    const token = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
     const res = await fetch(`${API_BASE}/v1/system/diagnostics`, {
       next: { revalidate: 10 },
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      headers: token.length >= 12 ? { Authorization: `Bearer ${token}` } : undefined,
     });
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });

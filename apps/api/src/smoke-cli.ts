@@ -6,6 +6,13 @@ const prisma = new PrismaClient();
 
 const BASE_URL = process.env.SMOKE_BASE_URL ?? "http://localhost:4100";
 
+/** Vercel-hosted Fastify: bare POST can be 415; Content-Type json with zero-length body is 400. */
+const verifyPostJsonEmpty: RequestInit = {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: "{}",
+};
+
 type SmokeCategory = "passing_path" | "failing_path";
 
 async function check(
@@ -143,7 +150,7 @@ async function main() {
         `${BASE_URL}/v1/events/${encodeURIComponent(
           sampleEventId as string
         )}/verify`,
-        { method: "POST" }
+        verifyPostJsonEmpty
       );
       if (!res.ok) throw new Error(`verify status ${res.status}`);
       const json = await res.json();
@@ -171,7 +178,7 @@ async function main() {
         `${BASE_URL}/v1/events/${encodeURIComponent(
           sampleEventId as string
         )}/verify`,
-        { method: "POST" }
+        verifyPostJsonEmpty
       );
       if (!res.ok) throw new Error(`verify status ${res.status}`);
       const json = await res.json();
@@ -379,7 +386,7 @@ async function main() {
       const beforeRuns = await prisma.verificationRun.count();
       const res = await fetch(
         `${BASE_URL}/v1/events/INVALID-EVENT-ID/verify`,
-        { method: "POST" }
+        verifyPostJsonEmpty
       );
       if (res.status !== 404) {
         throw new Error(`expected 404, got ${res.status}`);
@@ -936,7 +943,7 @@ async function main() {
         `${BASE_URL}/v1/events/${encodeURIComponent(
           sampleEventId as string
         )}/verify`,
-        { method: "POST" }
+        verifyPostJsonEmpty
       );
       if (!res.ok) throw new Error(`verify status ${res.status}`);
       const json = await res.json();
