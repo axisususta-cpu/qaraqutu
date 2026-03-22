@@ -1,16 +1,20 @@
-﻿"use client";
+"use client";
 
 import { getInstitutionalRole } from "../../../lib/institutional-roles";
 import type { InstitutionalRoleId } from "../../../lib/institutional-roles";
-
+import { useLanguage } from "../../../lib/LanguageContext";
+import { MSG } from "../../../lib/i18n/messages";
 
 const DISPLAY_ROLES: InstitutionalRoleId[] = ["legal", "field", "technical", "claims"];
 
 /**
- * "How this review reads by role" — static explanatory strip.
+ * How this review reads by role — static explanatory strip.
  * No backend role switching; guidance only.
  */
 export function InstitutionalGuidanceStrip() {
+  const { lang } = useLanguage();
+  const msg = MSG[lang];
+
   return (
     <div
       style={{
@@ -36,11 +40,13 @@ export function InstitutionalGuidanceStrip() {
             border: `1px solid ${"var(--chip-border)"}`,
           }}
         >
-          By role:
+          {msg.verifierRoleStripBadge}
         </span>
         {DISPLAY_ROLES.map((id) => {
           const role = getInstitutionalRole(id);
           if (!role) return null;
+          const label = lang === "tr" ? role.labelTr : role.labelEn;
+          const purpose = lang === "tr" ? role.shortPurposeTr : role.shortPurposeEn;
           return (
             <span
               key={id}
@@ -51,9 +57,9 @@ export function InstitutionalGuidanceStrip() {
                 gap: "0.3rem",
               }}
             >
-              <span style={{ fontWeight: 600, color: "var(--text)" }}>{role.labelEn}</span>
+              <span style={{ fontWeight: 600, color: "var(--text)" }}>{label}</span>
               <span style={{ color: "var(--text-muted)" }}>—</span>
-              <span>{role.shortPurposeEn}</span>
+              <span>{purpose}</span>
             </span>
           );
         })}
@@ -61,4 +67,3 @@ export function InstitutionalGuidanceStrip() {
     </div>
   );
 }
-

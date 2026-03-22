@@ -9,7 +9,7 @@ interface LanguageContextValue {
 }
 
 const LanguageContext = createContext<LanguageContextValue>({
-  lang: "en",
+  lang: "tr",
   setLang: () => {},
 });
 
@@ -20,18 +20,18 @@ export function useLanguage(): LanguageContextValue {
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // Fixed SSR/CSR initial value so the first client render matches the server (avoids hydration mismatch).
   // Inline script in layout + this effect apply saved language right after hydration.
-  const [lang, setLangState] = useState<Lang>("en");
+  const [lang, setLangState] = useState<Lang>("tr");
 
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem("qaraqutu-lang");
       const domLang = document.documentElement.getAttribute("data-lang");
       const next: Lang =
-        stored === "tr" || stored === "en"
+        stored === "en" || stored === "tr"
           ? stored
-          : domLang === "tr"
-            ? "tr"
-            : "en";
+          : domLang === "en"
+            ? "en"
+            : "tr";
       setLangState(next);
     } catch {
       /* ignore */

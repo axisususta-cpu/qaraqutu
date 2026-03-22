@@ -1,13 +1,25 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
-
+import { useLanguage } from "../../../lib/LanguageContext";
+import { MSG } from "../../../lib/i18n/messages";
 
 /**
  * How this system applies across sectors — compact strip for Verifier context.
  * Does not add new Verifier features; explanatory link only.
  */
 export function SectorVerifierStrip() {
+  const { lang } = useLanguage();
+  const msg = MSG[lang];
+
+  const segments = [
+    msg.verifierSectorStripClaims,
+    msg.verifierSectorStripNotary,
+    msg.verifierSectorStripMuni,
+    msg.verifierSectorStripField,
+    msg.verifierSectorStripTechnical,
+  ];
+
   return (
     <div
       style={{
@@ -33,27 +45,14 @@ export function SectorVerifierStrip() {
             border: `1px solid ${"var(--chip-border)"}`,
           }}
         >
-          By sector:
+          {msg.verifierSectorStripBadge}
         </span>
-        <span style={{ color: "var(--text-soft)" }}>
-          Insurance → Claims pack
-        </span>
-        <span style={{ color: "var(--text-muted)" }}>|</span>
-        <span style={{ color: "var(--text-soft)" }}>
-          Notary / IP → Authenticity, Trace
-        </span>
-        <span style={{ color: "var(--text-muted)" }}>|</span>
-        <span style={{ color: "var(--text-soft)" }}>
-          Municipality → Administrative packet
-        </span>
-        <span style={{ color: "var(--text-muted)" }}>|</span>
-        <span style={{ color: "var(--text-soft)" }}>
-          Police / Field → Incident, Trace
-        </span>
-        <span style={{ color: "var(--text-muted)" }}>|</span>
-        <span style={{ color: "var(--text-soft)" }}>
-          Technical → Technical pack
-        </span>
+        {segments.map((text, i) => (
+          <span key={i} style={{ display: "inline-flex", alignItems: "baseline", gap: "0.35rem" }}>
+            {i > 0 ? <span style={{ color: "var(--text-muted)" }}>|</span> : null}
+            <span style={{ color: "var(--text-soft)" }}>{text}</span>
+          </span>
+        ))}
         <span style={{ color: "var(--text-muted)", marginLeft: "0.5rem" }}>—</span>
         <Link
           href="/docs#sector-specific-witness-scenarios"
@@ -63,10 +62,9 @@ export function SectorVerifierStrip() {
             fontWeight: 500,
           }}
         >
-          Sector scenarios
+          {msg.verifierSectorScenariosLink}
         </Link>
       </div>
     </div>
   );
 }
-

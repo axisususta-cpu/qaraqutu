@@ -19,7 +19,7 @@ export function LanguageToggle() {
       role="group"
       aria-label="Language selector"
     >
-      {(["en", "tr"] as const).map((l) => (
+      {(["tr", "en"] as const).map((l) => (
         <button
           key={l}
           onClick={() => setLang(l)}

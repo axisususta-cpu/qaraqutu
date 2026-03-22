@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { useLanguage } from "../../lib/LanguageContext";
 import type {
   CanonicalEvent,
@@ -154,11 +154,11 @@ function getIncidentSummary(
         nextFromCase ??
         (verificationState === "UNVERIFIED" || verificationState === "UNKNOWN"
           ? language === "tr"
-            ? "Doğrulamayı çalıştırın veya kontrollü artifact başlatın."
+            ? "Doğrulamayı çalıştırın veya kontrollü belge çıktısı başlatın."
             : "Run verification or start controlled artifact."
           : language === "tr"
-          ? "İz özetini inceleyin veya artifact issuance başlatın."
-          : "Review trace summary or start artifact issuance."),
+          ? "İz özetini inceleyin veya sınırlı belge düzenlemesi başlatın."
+          : "Review trace summary or start bounded artifact issuance."),
     };
   }
   if ((system === "drone" || system === "robot") && verificationState) {
@@ -180,11 +180,11 @@ function getIncidentSummary(
         nextFromCase ??
         (verificationState === "UNVERIFIED" || verificationState === "UNKNOWN"
           ? language === "tr"
-            ? "Doğrulamayı çalıştırın veya kontrollü artifact başlatın."
+            ? "Doğrulamayı çalıştırın veya kontrollü belge çıktısı başlatın."
             : "Run verification or start controlled artifact."
           : language === "tr"
-          ? "İz özetini inceleyin veya artifact issuance başlatın."
-          : "Review trace summary or start artifact issuance."),
+          ? "İz özetini inceleyin veya sınırlı belge düzenlemesi başlatın."
+          : "Review trace summary or start bounded artifact issuance."),
     };
   }
   if (system === "vehicle") {
@@ -361,10 +361,82 @@ function getReviewTone(state: string | null) {
     };
   }
 
+  if (state === "DISPUTED") {
+    return {
+      borderColor: "#b45309",
+      background: "rgba(180, 83, 9, 0.12)",
+      color: "#9a3412",
+    };
+  }
+
   return {
     borderColor: "var(--border-strong)",
     background: "var(--panel-card)",
     color: "var(--text-soft)",
+  };
+}
+
+/** User-facing protocol state: API may emit UNVERIFIED; surface shows UNREVIEWED. */
+function displayProtocolState(raw: string | null | undefined): string {
+  if (raw == null || raw === "") return "UNREVIEWED";
+  if (raw === "UNVERIFIED") return "UNREVIEWED";
+  return raw;
+}
+
+function protocolStatePillStyle(label: string): CSSProperties {
+  const key = label.toUpperCase();
+  const base: CSSProperties = {
+    fontFamily: MONO,
+    fontSize: "0.62rem",
+    fontWeight: 700,
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    padding: "0.38rem 0.75rem",
+    borderRadius: 6,
+    border: "2px solid",
+    display: "inline-block",
+    minWidth: "7.75rem",
+    textAlign: "center",
+    lineHeight: 1.2,
+  };
+  if (key === "PASS") {
+    return {
+      ...base,
+      borderColor: "var(--success)",
+      background: "var(--success-soft)",
+      color: "var(--success)",
+      boxShadow: "inset 0 0 0 1px rgba(5, 150, 105, 0.2)",
+    };
+  }
+  if (key === "FAIL") {
+    return {
+      ...base,
+      borderColor: "var(--error)",
+      background: "var(--error-soft)",
+      color: "var(--error)",
+    };
+  }
+  if (key === "UNKNOWN") {
+    return {
+      ...base,
+      borderColor: "var(--warning)",
+      background: "var(--warning-soft)",
+      color: "var(--warning)",
+    };
+  }
+  if (key === "DISPUTED") {
+    return {
+      ...base,
+      borderColor: "#b45309",
+      background: "rgba(180, 83, 9, 0.12)",
+      color: "#9a3412",
+    };
+  }
+  return {
+    ...base,
+    borderColor: "var(--border-strong)",
+    background: "var(--panel-raised)",
+    color: "var(--text-muted)",
   };
 }
 
@@ -563,6 +635,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       : selectedProfileMeta.labelEn
     : exportProfile;
   const visibleReviewState = verificationState ?? selectedEventCard?.state ?? null;
+  const displayedReviewState = displayProtocolState(visibleReviewState);
   const reviewTone = getReviewTone(visibleReviewState);
   const canUseLocalPreviewFallbackArtifact =
     typeof window !== "undefined" &&
@@ -808,7 +881,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 fontWeight: 600,
               }}
             >
-              {language === "tr" ? "Doğrulama İstasyonu" : "Verification Station"}
+              {msg.verifierStation}
             </span>
           </div>
           {/* Right controls */}
@@ -824,7 +897,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 background: "var(--bg)",
               }}
             >
-              {(["en", "tr"] as const).map((l) => (
+              {(["tr", "en"] as const).map((l) => (
                 <button
                   key={l}
                   type="button"
@@ -887,7 +960,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               fontFamily: MONO,
             }}
           >
-            {language === "tr" ? "İnceleme İstasyonu" : "Inspection Station"}
+            {msg.verifierInspection}
           </div>
           <h1
             style={{
@@ -899,7 +972,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               lineHeight: 1.3,
             }}
           >
-            {language === "tr" ? "Olay Paketi Doğrulaması" : "Event Package Verification"}
+            {msg.verifierTitle}
           </h1>
           <p
             style={{
@@ -909,9 +982,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               lineHeight: 1.5,
             }}
           >
-            {language === "tr"
-              ? "Seçili olay paketinin sınırlı değerlendirmesi. Sorumluluk veya kusur tespiti yapmaz."
-              : "Bounded assessment of the selected event package. Does not make liability or guilt determinations."}
+            {msg.verifierSubtitle}
           </p>
           <div
             style={{
@@ -922,13 +993,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               fontSize: "0.7rem",
             }}
           >
-            {[
-              language === "tr" ? "Sıra: 1) Sistem 2) Senaryo 3) Olay" : "Order: 1) System 2) Scenario 3) Event",
-              language === "tr" ? "Katman: Recorded ayrı, Derived ayrı" : "Layering: Recorded separate, Derived separate",
-              language === "tr"
-                ? "Bilinmeyen/Tartışmalı ve Trace issuance üstüne yazılmaz"
-                : "Unknown/Disputed and Trace are not overridden by issuance",
-            ].map((item) => (
+            {[msg.verifierOrder, msg.verifierLayering, msg.verifierNoOverride].map((item) => (
               <span
                 key={item}
                 style={{
@@ -976,7 +1041,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 },
                 {
                   k: language === "tr" ? "STATE" : "STATE",
-                  v: visibleReviewState ?? "—",
+                  v: visibleReviewState != null ? displayedReviewState : "—",
                 },
                 {
                   k: "BUNDLE",
@@ -1161,12 +1226,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 label: language === "tr" ? "Belge Üretimi" : "Artifact Issuance",
                 group: "review" as const,
               },
-              {
-                id: "whyInevitable",
-                step: null,
-                label: language === "tr" ? "Neden QARAQUTU kaçınılmaz" : "Why QARAQUTU is inevitable",
-                group: "review" as const,
-              },
             ].map((section, idx, arr) => {
               const isActive = activeSpineSection === section.id;
               const isStep = section.step != null;
@@ -1340,9 +1399,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 background: "var(--panel-card)",
                               }}
                             >
-                              <div style={{ fontFamily: MONO, fontSize: "0.55rem", color: "var(--text-dim)", marginBottom: "0.35rem" }}>
-                                {language === "tr" ? "// empty_event_catalog" : "// empty_event_catalog"}
-                              </div>
                               <p style={{ margin: 0, fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
                                 {selectedScenario ? msg.verifierEmptyEventCatalog : msg.verifierPickScenarioFirst}
                               </p>
@@ -1350,14 +1406,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           ) : (
                             displayEvents.map((ev) => {
                               const isSelected = selectedEventId === ev.eventId;
-                              const stateColor =
-                                ev.state === "PASS" ? "var(--success)" :
-                                ev.state === "FAIL" ? "var(--error)" :
-                                ev.state === "UNKNOWN" ? "var(--warning)" : "var(--text-dim)";
-                              const stateBg =
-                                ev.state === "PASS" ? "var(--success-soft)" :
-                                ev.state === "FAIL" ? "var(--error-soft)" :
-                                ev.state === "UNKNOWN" ? "var(--warning-soft)" : `${"var(--text-dim)"}10`;
+                              const protocolLabel = displayProtocolState(ev.state);
                               return (
                               <button
                                 key={ev.eventId}
@@ -1408,21 +1457,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                   </span>
                                   <span
                                     style={{
-                                      fontFamily: MONO,
-                                      fontSize: "0.55rem",
-                                      padding: "0.1rem 0.35rem",
-                                      borderRadius: UI.radius.xs,
-                                      background: stateBg,
-                                      color: stateColor,
-                                      fontWeight: 700,
-                                      letterSpacing: "0.06em",
-                                      textTransform: "uppercase",
-                                      border: `1px solid ${stateColor}25`,
+                                      ...protocolStatePillStyle(protocolLabel),
                                       flexShrink: 0,
                                       marginLeft: "0.4rem",
+                                      minWidth: "5.5rem",
+                                      padding: "0.28rem 0.5rem",
+                                      fontSize: "0.55rem",
                                     }}
                                   >
-                                    {ev.state}
+                                    {protocolLabel}
                                   </span>
                                 </div>
                                 {/* card row 2: title + summary */}
@@ -1518,48 +1561,21 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               );
                             })()
                           ) : (
-                            <p style={{ margin: 0 }}>
-                              {language === "tr"
-                                ? "Olay özeti için bir olay seçin."
-                                : "Select an event for incident summary."}
-                            </p>
+                            <p style={{ margin: 0 }}>{msg.verifierEmptySummaryPanel}</p>
                           )}
                         </div>
                       )}
                       {section.id === "evidence" && (
-                        <p style={{ margin: 0 }}>
-                          {language === "tr"
-                            ? "Kayıtlı delil ve türetilmiş değerlendirme sağdaki Delil Katmanları bloğunda gösterilir."
-                            : "Recorded evidence and derived evidence are shown in the Evidence Layers block on the right."}
-                        </p>
+                        <p style={{ margin: 0 }}>{msg.verifierSpineBlurbEvidence}</p>
                       )}
                       {section.id === "unknownDisputed" && (
-                        <p style={{ margin: 0 }}>
-                          {language === "tr"
-                            ? "Bilinmeyen veya taraflar arasında tartışmalı noktalar sağdaki panelde listelenir."
-                            : "Unknown or disputed items between parties are listed in the panel on the right."}
-                        </p>
+                        <p style={{ margin: 0 }}>{msg.verifierSpineBlurbUnknown}</p>
                       )}
                       {section.id === "transcript" && (
-                        <p style={{ margin: 0 }}>
-                          {language === "tr"
-                            ? "İnceleme adımları ve sonuçları sağdaki Doğrulama İzi bloğunda gösterilir; nihai hüküm değildir."
-                            : "Examination steps and outcomes are shown in the Verification Trace block on the right; not a final determination."}
-                        </p>
+                        <p style={{ margin: 0 }}>{msg.verifierSpineBlurbTrace}</p>
                       )}
                       {section.id === "issuance" && (
-                        <p style={{ margin: 0 }}>
-                          {language === "tr"
-                            ? "Çıktı profili, biçim ve belge üretimi sağdaki Belge Üretimi panelinde yönetilir."
-                            : "Output profile, format, and artifact issuance are managed in the Artifact Issuance panel on the right."}
-                        </p>
-                      )}
-                      {section.id === "whyInevitable" && (
-                        <p style={{ margin: 0 }}>
-                          {language === "tr"
-                            ? "Neden QARAQUTU kaçınılmaz: sağdaki blokta bu olay bağlamında açıklanır."
-                            : "Why QARAQUTU is inevitable: explained in context of this case in the block on the right."}
-                        </p>
+                        <p style={{ margin: 0 }}>{msg.verifierSpineBlurbIssuance}</p>
                       )}
                     </div>
                   )}
@@ -1623,14 +1639,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     {language === "tr" ? "DEMO" : "DEMO"}
                   </span>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0 0.6rem", color: "var(--text-dim)" }}>
-                    {[
-                      language === "tr" ? "Demo senaryo" : "Demo scenario",
-                      language === "tr" ? "Kamuya açık" : "Public class",
-                      language === "tr" ? "Anonimize" : "Anonymized",
-                      language === "tr" ? "Nihai hüküm değildir" : "Not a final determination",
-                    ].map((item, i, arr) => (
-                      <span key={i}>{item}{i < arr.length - 1 ? <span style={{ margin: "0 0.25rem", color: "var(--text-dim)" }}> ·</span> : null}</span>
-                    ))}
+                    <span>{msg.verifierDemoLabel}</span>
                   </div>
                   {(selectedCase.demoNoticeTr || selectedCase.demoNoticeEn) && (
                     <span style={{ color: "var(--text-dim)" }}>
@@ -1677,35 +1686,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   >
                     {msg.verifierReviewStage}
                   </span>
-                  {/* State badge */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.4rem",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: "50%",
-                        background: reviewTone.borderColor,
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontFamily: MONO,
-                        fontSize: "0.65rem",
-                        fontWeight: 700,
-                        color: reviewTone.color,
-                        letterSpacing: "0.06em",
-                        textTransform: "uppercase",
-                      }}
-                    >
-                      {visibleReviewState ?? "UNREVIEWED"}
-                    </span>
-                  </div>
+                  {/* State badge — protocol object */}
+                  <span style={protocolStatePillStyle(displayedReviewState)}>{displayedReviewState}</span>
                 </div>
                 {/* Stage body */}
                 <div style={{ padding: "1rem 1.25rem" }}>
@@ -1945,10 +1927,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     );
                   })()
                 ) : (
-                  <div style={{ padding: "1rem 1.15rem", color: "var(--text-dim)", fontSize: "0.8rem", lineHeight: 1.5 }}>
-                    {language === "tr"
-                      ? "Olay özeti için sol omurgadan bir olay seçin. Seçim yapıldığında vaka bağlamı, ne oldu, neden incelemede ve güvenli sonraki adım gösterilir."
-                      : "Select an event in the left spine for incident summary. Once selected, case context, what happened, why under review, and safe next step are shown."}
+                  <div style={{ padding: "1rem 1.15rem", color: "var(--text-muted)", fontSize: "0.8rem", lineHeight: 1.55 }}>
+                    {msg.verifierEmptySummaryPanel}
                   </div>
                 )}
               </div>
@@ -1975,7 +1955,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 gap: "0.5rem",
                 opacity: 0.85,
               }}>
-                {language === "tr" ? "// doctrine_spine" : "// doctrine_spine"}
+                {msg.verifierProtocolSpineLabel}
               </div>
             {/* 5) Evidence Layers */}
             <section style={{ marginBottom: UI.sectionGap }}>
@@ -1986,15 +1966,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   background: "var(--panel-card)",
                   border: `1px solid ${"var(--border-muted)"}`,
                   borderRadius: UI.radius.xs,
-                  fontFamily: MONO,
-                  fontSize: "0.65rem",
+                  fontFamily: SANS,
+                  fontSize: "0.72rem",
                   lineHeight: 1.55,
-                  color: "var(--text-dim)",
+                  color: "var(--text-muted)",
                 }}
               >
-                {language === "tr"
-                  ? "// recorded: ham kayıt katmanı | derived: ikinci katman | karıştırılmaz"
-                  : "// recorded: raw layer | derived: second layer | not blended"}
+                {msg.verifierLayerDisciplineNote}
               </div>
               {selectedEventCard ? (
                 <div className="verifier-evidence-split">
@@ -2162,11 +2140,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     lineHeight: 1.55,
                   }}
                 >
-                  <p style={{ margin: 0 }}>
-                    {language === "tr"
-                      ? "Kayıtlı ve türetilmiş delil katmanları için sol omurgadan bir olay seçin. Katmanlar karıştırılmaz; doğrulama izi ve issuance buna bağlıdır."
-                      : "Select an event in the left spine to view recorded and derived evidence layers. Layers are not blended; verification trace and issuance depend on them."}
-                  </p>
+                  <p style={{ margin: 0 }}>{msg.verifierSelectEvent}</p>
                 </div>
               )}
             </section>
@@ -2218,12 +2192,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             borderRadius: UI.radius.xs,
                           }}
                         >
-                          <div style={{ fontFamily: MONO, fontSize: "0.65rem", fontWeight: 700, color: "var(--warning)", marginBottom: "0.15rem" }}>
-                            state: UNKNOWN
+                          <div style={{ marginBottom: "0.35rem" }}>
+                            <span style={protocolStatePillStyle("UNKNOWN")}>UNKNOWN</span>
                           </div>
-                          <div style={{ fontSize: "0.73rem", color: "var(--text-muted)" }}>
-                            {language === "tr" ? "İnsan incelemesi gerekir." : "Requires human review."}
-                          </div>
+                          <div style={{ fontSize: "0.73rem", color: "var(--text-muted)" }}>{msg.verifierHumanReviewTag}</div>
                         </div>
                       )}
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
@@ -2234,8 +2206,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 <div style={{ fontSize: "0.78rem", lineHeight: 1.55, color: "var(--text-soft)" }}>{item}</div>
                               </div>
                               <div style={{ padding: "0.25rem 0.65rem", background: "var(--panel-card)", borderTop: `1px solid ${"var(--border-muted)"}` }}>
-                                <span style={{ fontFamily: MONO, fontSize: "0.58rem", color: "var(--text-dim)" }}>
-                                  {language === "tr" ? "requires: human_review" : "requires: human_review"}
+                                <span style={{ fontFamily: SANS, fontSize: "0.62rem", color: "var(--text-dim)" }}>
+                                  {msg.verifierHumanReviewTag}
                                 </span>
                               </div>
                             </div>
@@ -2256,10 +2228,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       </div>
                     </>
                   ) : (
-                    <div style={{ fontFamily: MONO, fontSize: "0.68rem", color: "var(--text-dim)", lineHeight: 1.5 }}>
-                      {language === "tr"
-                        ? "Bilinmeyen / çekişmeli alanı için sol omurgadan bir olay seçin."
-                        : "Select an event in the left spine for unknown / disputed items."}
+                    <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.55 }}>
+                      {msg.verifierEmptyUnknownPanel}
                     </div>
                   )}
                 </div>
@@ -2293,8 +2263,19 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {msg.verifierVerificationTraceHeader}
                     </span>
                   </div>
-                  <span style={{ fontFamily: MONO, fontSize: "0.58rem", color: "var(--text-dim)" }}>
-                    {language === "tr" ? "nihai_hüküm_değildir" : "not_a_determination"}
+                  <span
+                    style={{
+                      fontFamily: SANS,
+                      fontSize: "0.62rem",
+                      fontWeight: 600,
+                      color: "var(--text-dim)",
+                      padding: "0.2rem 0.45rem",
+                      borderRadius: UI.radius.xs,
+                      border: `1px solid ${"var(--border-muted)"}`,
+                      background: "var(--panel-card)",
+                    }}
+                  >
+                    {msg.verifierTraceRibbonNotDetermination}
                   </span>
                 </div>
                 {selectedEventCard ? (
@@ -2312,14 +2293,24 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           style={{
                             padding: "0.45rem 1rem",
                             borderBottom: `1px solid ${"var(--border-muted)"}`,
-                            fontFamily: MONO,
-                            fontSize: "0.62rem",
-                            color: "var(--text-dim)",
+                            fontFamily: SANS,
+                            fontSize: "0.68rem",
+                            color: "var(--text-muted)",
                             background: "var(--panel-card)",
                             lineHeight: 1.6,
                           }}
                         >
-                          {`manifest:${manifestAnchorId} → trace:${transcriptId ?? "pending"} → ${hasConnectedIssuanceProfile ? "bounded_issuance:available" : "issuance:not_connected"}`}
+                          {language === "tr"
+                            ? `Yapısal zincir: manifest ${manifestAnchorId} · doğrulama izi ${
+                                transcriptId ?? "beklemede"
+                              } · belge düzenlemesi: ${
+                                hasConnectedIssuanceProfile ? "sınırlı profil hazır" : "profil bağlantısı yok"
+                              }`
+                            : `Binding chain: manifest ${manifestAnchorId} · verification trace ${
+                                transcriptId ?? "pending"
+                              } · issuance: ${
+                                hasConnectedIssuanceProfile ? "bounded profile ready" : "profile not connected"
+                              }`}
                         </div>
                         <div
                           style={{
@@ -2390,25 +2381,21 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           style={{
                             padding: "0.45rem 1rem",
                             borderTop: `1px solid ${"var(--border-muted)"}`,
-                            fontFamily: MONO,
-                            fontSize: "0.6rem",
-                            color: "var(--text-dim)",
+                            fontFamily: SANS,
+                            fontSize: "0.68rem",
+                            color: "var(--text-muted)",
                             background: "var(--panel-card)",
                             lineHeight: 1.5,
                           }}
                         >
-                          {language === "tr"
-                            ? "// manifest_bound | unknown/disputed üstünde değil | nihai_hüküm_değildir"
-                            : "// manifest_bound | does_not_outrank_unknown | not_a_determination"}
+                          {msg.verifierTraceFooterNote}
                         </div>
                       </>
                     );
                   })()
                 ) : (
-                  <div style={{ padding: "0.75rem 1rem", fontFamily: MONO, fontSize: "0.68rem", color: "var(--text-dim)", lineHeight: 1.5 }}>
-                    {language === "tr"
-                      ? "Doğrulama izi için sol omurgadan bir olay seçin. İz, kayıtlı ve türetilmiş zincirle bağlıdır; nihai hüküm değildir."
-                      : "Select an event in the left spine for verification trace. Trace is bound to recorded and derived chain; not a determination."}
+                  <div style={{ padding: "0.75rem 1rem", fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.55 }}>
+                    {msg.verifierEmptyTracePanel}
                   </div>
                 )}
               </div>
@@ -2423,14 +2410,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 style={{
                   border: `1px solid ${"var(--border-muted)"}`,
                   borderRadius: UI.radius.xs,
-                  padding: "0.4rem 0.85rem",
+                  padding: "0.55rem 0.85rem",
                   background: "var(--panel-card)",
-                  fontFamily: MONO,
-                  fontSize: "0.62rem",
-                  color: "var(--text-dim)",
+                  fontFamily: SANS,
+                  fontSize: "0.72rem",
+                  color: "var(--text-muted)",
+                  lineHeight: 1.55,
                 }}
               >
-                {`// review_assistant: reserved | not_active_in_current_release`}
+                {msg.verifierReviewAssistantInactive}
               </div>
             </section>
 
@@ -2495,7 +2483,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {!loading && verificationError && (language === "tr" ? "Hata: " : "Error: ")}
                       {!loading && verificationError && <strong style={{ color: "var(--error)" }}>{verificationError}</strong>}
                       {!loading && !verificationError && verificationState && (language === "tr" ? "Durum: " : "Status: ")}
-                      {!loading && !verificationError && verificationState && <strong>{verificationState}</strong>}
+                      {!loading && !verificationError && verificationState && (
+                        <strong>{displayProtocolState(verificationState)}</strong>
+                      )}
                       {!loading && !verificationError && !verificationState && selectedId && (language === "tr" ? "Doğrulama bekleniyor." : "Verification pending.")}
                     </div>
                   </div>
@@ -2575,8 +2565,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       ? "Doğrulama Durumu"
                       : "Verification State"}
                   </div>
-                  <div style={{ fontSize: "0.95rem", fontWeight: 600 }}>
-                    {verificationState}
+                  <div style={{ marginTop: "0.35rem" }}>
+                    <span style={protocolStatePillStyle(displayProtocolState(verificationState))}>
+                      {displayProtocolState(verificationState)}
+                    </span>
                   </div>
                   {(verificationRunId || transcriptId) && (
                     <div
@@ -2729,6 +2721,20 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 }}
               >
                 {msg.verifierIssuancePanelLead}
+              </div>
+              <div
+                style={{
+                  marginBottom: "0.75rem",
+                  padding: "0.55rem 0.75rem",
+                  borderRadius: UI.radius.xs,
+                  border: `1px dashed ${"var(--border-strong)"}`,
+                  background: "var(--accent-soft)",
+                  fontSize: "0.72rem",
+                  lineHeight: 1.55,
+                  color: "var(--text-soft)",
+                }}
+              >
+                {msg.verifierIssuanceDependencyBanner}
               </div>
               {!selectedCase ? (
                 <div
@@ -3534,47 +3540,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 : null}
             </section>
             </div>
-
-            {/* 9) Why QARAQUTU is inevitable */}
-            <section style={{ marginTop: UI.sectionGap, marginBottom: UI.sectionGap }}>
-              <div
-                style={{
-                  border: "1px solid var(--border)",
-                  borderRadius: UI.radius.md,
-                  overflow: "hidden",
-                }}
-              >
-                <div style={{ padding: "0.5rem 1rem", background: "var(--panel-raised)", borderBottom: `1px solid ${"var(--border-muted)"}` }}>
-                  <span style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.08em", color: "var(--text-dim)", fontWeight: 600 }}>
-                    {language === "tr" ? "// why_qaraqutu_is_inevitable" : "// why_qaraqutu_is_inevitable"}
-                  </span>
-                </div>
-              <div
-                style={{
-                  padding: "1rem 1.15rem",
-                  fontSize: "0.82rem",
-                  lineHeight: 1.6,
-                  background: "var(--panel)",
-                  color: "var(--text-soft)",
-                }}
-              >
-                {selectedEventCard ? (
-                  <p style={{ margin: 0 }}>
-                    {selectedCase?.whyInevitable ??
-                      (language === "tr"
-                        ? "Olay tabanlı doğrulanabilir kayıt, türetilmiş değerlendirme ve doğrulama izi olmadan yük, sigorta ve uyumluluk tartışmaları belirsiz kalır. QARAQUTU, tek bir ürün olarak Vehicle / Drone / Robot olaylarını aynı çerçevede ele alarak kanıt bütünlüğü ve izlenebilirliği sağlar; bu nedenle bu olay bağlamında kaçınılmazdır."
-                        : "Without event-bound verifiable record, derived assessment, and verification trace, liability, insurance, and compliance disputes remain unresolved. QARAQUTU addresses Vehicle, Drone, and Robot events in one product and one framework, providing evidence integrity and traceability—hence inevitable in the context of this case.")}
-                  </p>
-                ) : (
-                  <p style={{ margin: 0, color: "var(--text-muted)" }}>
-                    {language === "tr"
-                      ? "Sol omurgadan bir olay seçin."
-                      : "Select an event in the left spine."}
-                  </p>
-                )}
-              </div>
-              </div>
-            </section>
           </main>
         </div>
       </div>

@@ -7,13 +7,10 @@ import { MSG } from "../../lib/i18n/messages";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 
-const ROUTES: { href: string; msgKey: keyof typeof MSG.en; verifierPrimary?: boolean; protected?: boolean }[] = [
+const ROUTES: { href: string; msgKey: keyof typeof MSG.en; verifierPrimary?: boolean }[] = [
   { href: "/", msgKey: "navHome" },
   { href: "/verifier", msgKey: "navVerifier", verifierPrimary: true },
-  { href: "/verifier/golden", msgKey: "navGolden", protected: true },
-  { href: "/console", msgKey: "navConsole", protected: true },
   { href: "/docs", msgKey: "navDocs" },
-  { href: "/admin", msgKey: "navAdmin", protected: true },
 ];
 
 export function NavLinks() {
@@ -23,7 +20,7 @@ export function NavLinks() {
 
   return (
     <>
-      {ROUTES.map(({ href, msgKey, verifierPrimary, protected: isProtected }) => {
+      {ROUTES.map(({ href, msgKey, verifierPrimary }) => {
         const label = m[msgKey] as string;
         const isActive =
           href === "/"
@@ -32,7 +29,7 @@ export function NavLinks() {
             ? pathname === "/verifier"
             : pathname === href || (href !== "/" && pathname.startsWith(href + "/"));
         const isVerifierActive = href === "/verifier" && pathname === "/verifier";
-        const linkHref = isProtected ? `/access?next=${encodeURIComponent(href)}` : href;
+        const linkHref = href;
 
         return (
           <Link
@@ -49,7 +46,7 @@ export function NavLinks() {
                 ? "1px solid var(--border)"
                 : "1px solid var(--border-soft)",
               background: isVerifierActive ? "var(--accent-soft)" : isActive ? "var(--active-bg)" : "transparent",
-              fontSize: href === "/verifier/golden" || href === "/console" || href === "/admin" ? "0.78rem" : "0.8rem",
+              fontSize: "0.8rem",
               fontWeight: isVerifierActive ? 600 : isActive ? 500 : 400,
               fontFamily: isVerifierActive ? MONO : undefined,
               letterSpacing: isVerifierActive ? "0.08em" : undefined,

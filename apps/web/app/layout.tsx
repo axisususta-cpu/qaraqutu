@@ -7,27 +7,32 @@ import { ThemeProvider } from "../lib/ThemeContext";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { LanguageProvider } from "../lib/LanguageContext";
 import { LanguageToggle } from "./components/LanguageToggle";
-import { BRAND } from "../lib/brand";
 import { FooterDoctrine } from "./components/FooterDoctrine";
+import { BrandTagline } from "./components/BrandTagline";
+import { NavInternalLinks } from "./components/NavInternalLinks";
+
+const SITE_TITLE_TR = "QARAQUTU — Doğrulayıcı-öncelikli tanık protokolü";
+const SITE_DESC_TR =
+  "Araç, İHA ve Robot için uyuşmazlık düzeyinde olay paketleri: doğrulayıcı-öncelikli tanık protokolü, sınırlı inceleme yüzeyi ve izlenebilir belge düzenlemesi.";
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://qaraqutu-web.vercel.app"),
-  title: "QARAQUTU — Verifier-first witness protocol",
-  description: BRAND.description,
+  title: SITE_TITLE_TR,
+  description: SITE_DESC_TR,
   icons: {
     icon: "/brand/logo-icon-square-light.svg",
     apple: "/brand/logo-icon-square-light.svg",
   },
   openGraph: {
-    title: "QARAQUTU — Verifier-first witness protocol",
-    description: BRAND.description,
+    title: SITE_TITLE_TR,
+    description: SITE_DESC_TR,
     type: "website",
     images: [{ url: "/brand/og-image.png", width: 1200, height: 630, alt: "QARAQUTU" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "QARAQUTU — Verifier-first witness protocol",
-    description: BRAND.description,
+    title: SITE_TITLE_TR,
+    description: SITE_DESC_TR,
   },
   manifest: "/manifest.json",
 };
@@ -43,7 +48,7 @@ export default function RootLayout({
   const gitCommitSha = webBuildMeta.commitSha;
   const shortSha = gitCommitSha === "unknown" ? "unknown" : gitCommitSha.slice(0, 7);
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="tr" suppressHydrationWarning>
       <head>
         {/* Prevent theme flash: apply saved theme before first paint */}
         <script
@@ -53,7 +58,7 @@ export default function RootLayout({
         />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var l=localStorage.getItem('qaraqutu-lang');var n=l==='tr'?'tr':'en';document.documentElement.setAttribute('data-lang',n);document.documentElement.lang=n}catch(e){document.documentElement.setAttribute('data-lang','en');document.documentElement.lang='en'}})()`,
+            __html: `(function(){try{var l=localStorage.getItem('qaraqutu-lang');var n=l==='en'?'en':'tr';document.documentElement.setAttribute('data-lang',n);document.documentElement.lang=n}catch(e){document.documentElement.setAttribute('data-lang','tr');document.documentElement.lang='tr'}})()`,
           }}
         />
         {gitCommitSha !== "unknown" ? <meta name="vercel:git-commit-sha" content={gitCommitSha} /> : null}
@@ -88,31 +93,33 @@ export default function RootLayout({
                 }}
               >
                 <LogoPrimary href="/" height={36} />
-                <div
-                  style={{
-                    fontSize: "0.68rem",
-                    color: "var(--text-muted)",
-                    letterSpacing: "0.14em",
-                    textTransform: "uppercase",
-                    fontFamily: MONO,
-                  }}
-                >
-                  {BRAND.tagline}
-                </div>
+                <BrandTagline />
               </div>
-              <nav
-                aria-label="Primary"
+              <div
                 style={{
                   display: "flex",
-                  gap: "0.75rem",
-                  fontSize: "0.8rem",
-                  alignItems: "center",
+                  flexDirection: "column",
+                  alignItems: "flex-end",
+                  gap: "0.35rem",
                 }}
               >
-                <NavLinks />
-                <LanguageToggle />
-                <ThemeToggle />
-              </nav>
+                <nav
+                  aria-label="Primary"
+                  style={{
+                    display: "flex",
+                    gap: "0.75rem",
+                    fontSize: "0.8rem",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <NavLinks />
+                  <LanguageToggle />
+                  <ThemeToggle />
+                </nav>
+                <NavInternalLinks />
+              </div>
             </div>
           </header>
           {children}

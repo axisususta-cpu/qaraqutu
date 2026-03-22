@@ -18,6 +18,7 @@ const en = {
   navGolden: "Golden (internal)",
   navConsole: "Console (protected)",
   navAdmin: "Admin (protected)",
+  navInternalStrip: "Internal",
 
   // Brand
   tagline: "Witness · Verifier · Trace · Issuance",
@@ -44,16 +45,17 @@ const en = {
   homeHowStep3: "Verify / trace — bounded checks produce an audit trace; trace supports review, not final truth.",
   homeHowStep4: "Issue bounded artifact — claims/legal outputs tied to manifest, bundle, and receipt chain.",
   homeHowStep5: "Route to role-specific review — each institution receives a shell aligned to its evidence need.",
-  homeProblemIntro: "Dispute-grade incidents break down when evidence is scattered or conflated.",
-  homeProblemCard1Title: "Logs, exports, and review drift apart",
+  homeProblemIntro:
+    "When high-stakes reviews rely on fragmented exports and mixed narratives, institutions cannot agree on what was witnessed versus what was inferred.",
+  homeProblemCard1Title: "Operational evidence threads do not meet in one file",
   homeProblemCard1Body:
-    "Incident material spreads across logs, ad-hoc exports, and disconnected review threads. No single canonical object anchors decisions.",
-  homeProblemCard2Title: "Recorded vs derived collapse",
+    "Logs, ticketing, body-cam extracts, and ad-hoc PDFs circulate in parallel. Underwriting, legal, and field teams each hold a partial thread—without one tamper-evident package anchor.",
+  homeProblemCard2Title: "Recorded signal and derived narrative are conflated",
   homeProblemCard2Body:
-    "Raw captures and later interpretation are often merged into one narrative. That erodes chain-of-review integrity and role-appropriate reading.",
-  homeProblemCard3Title: "Role-specific evidence needs stay unlinked",
+    "Raw telemetry and later reconstruction are pasted into the same storyline. That collapses the boundary between witness material and interpretation—precisely where disputes ignite.",
+  homeProblemCard3Title: "Each role needs a different read on the same spine",
   homeProblemCard3Body:
-    "Insurance, legal, field, and technical stakeholders rarely reference the same bounded package. Each role needs its own shell on one spine.",
+    "Claims, counsel, municipality, and engineering each require a disciplined view—without inventing parallel truths. The same canonical event must support distinct, bounded shells.",
   homeDemoDoctrineTitle: "Why a canonical witness layer is inevitable",
   homeDemoDoctrineSubtitle:
     "Doctrine-safe demo scenarios — illustrative classes only; no named real-world incidents embedded in the product.",
@@ -79,7 +81,8 @@ const en = {
   homeRoleOversightTitle: "Oversight / compliance orientation",
   homeRoleOversightBody: "Access, export, and issuance history views for bounded governance — policy limits still apply.",
   footerWitnessLine1: "Witness, not judgement.",
-  footerWitnessLine2: "QARAQUTU preserves separation of recorded evidence, derived assessment, verification trace, and bounded issuance.",
+  footerWitnessLine2:
+    "QARAQUTU maintains strict separation between recorded evidence, derived assessment, verification trace, and bounded issuance. It does not substitute for independent legal, insurance, or technical judgement.",
   verifierMainNavLabel: "Inspection panels",
   verifierUnknownIntro:
     "Explicitly bounded uncertainty: items here are unresolved or disputed between parties — not missing fields awaiting casual data entry.",
@@ -90,9 +93,9 @@ const en = {
   verifierRoleContextLabel: "Role context",
   verifierRoleContextBody:
     "Recipient framing and export profile gate which artifacts may be prepared. This does not change the canonical package or the trace.",
-  verifierWaitingSelectionTitle: "Waiting for bounded selection",
+  verifierWaitingSelectionTitle: "No active event package",
   verifierWaitingSelectionBody:
-    "Choose system, scenario, and event in the command spine. The inspection station loads one canonical package at a time — no dashboard aggregation.",
+    "This inspection surface does not populate until you bind a canonical event package via the command spine: system, scenario, then event. One package at a time—this is not a dashboard rollup.",
   verifierEvidenceRecordedCaption: "Witness material as captured — sensors, logs, payloads. Not interpretation.",
   verifierEvidenceDerivedCaption: "Reconstruction and synthesis from recorded items — does not replace or erase the raw layer.",
   verifierActionBarDoctrineTrace: "trace ≠ truth",
@@ -100,8 +103,46 @@ const en = {
   verifierReviewStage: "Review stage",
   verifierVerificationTraceHeader: "Verification trace",
   verifierArtifactIssuanceHeader: "Artifact issuance",
-  verifierEmptyEventCatalog: "No event cards for this scenario.",
-  verifierPickScenarioFirst: "Choose a scenario first; events are listed per scenario.",
+  verifierEmptyEventCatalog: "No events are registered for this scenario in the demo catalog.",
+  verifierPickScenarioFirst: "Select a scenario first; events are listed per scenario frame.",
+  verifierProtocolSpineLabel: "Protocol evidence spine",
+  verifierLayerDisciplineNote:
+    "Recorded layer: witness material as captured. Derived layer: reconstruction and synthesis. The two are not merged in display or in issuance.",
+  verifierTraceFooterNote:
+    "Bound to manifest and bundle references. Does not outrank unknown or disputed items. Not a determination of truth.",
+  verifierReviewAssistantInactive:
+    "Review assistant: reserved for a future bounded release. Not active in this build; does not affect verification or issuance.",
+  verifierIssuanceDependencyBanner:
+    "Issuance is gated by role profile, export policy, and an up-to-date verification trace. It does not bypass open unknowns or disputed items.",
+  verifierEmptySummaryPanel:
+    "Bind an event package in the command spine to load case context, incident narrative, review posture, and the next bounded step.",
+  verifierEmptyEvidencePanel:
+    "Evidence layers render only when an event package is bound. Recorded and derived remain strictly separated.",
+  verifierEmptyTracePanel:
+    "The verification trace lists checks for this run once an event package is bound. The trace supports audit; it is not a claim of absolute truth.",
+  verifierEmptyIssuancePanel:
+    "Bounded JSON/PDF preparation appears here after trace and role context are available. Issuance does not assign blame.",
+  verifierSpineBlurbEvidence:
+    "Recorded and derived layers are shown in the main evidence panels when a package is bound.",
+  verifierSpineBlurbUnknown:
+    "Unresolved or party-disputed items appear in the dedicated panel; they are explicit uncertainty, not missing form fields.",
+  verifierSpineBlurbTrace:
+    "Step-by-step checks for this run; supports institutional review without substituting for final judgement.",
+  verifierSpineBlurbIssuance:
+    "Profile, format, and export controls—conditioned on trace and role framing.",
+  verifierSectorStripBadge: "By sector",
+  verifierRoleStripBadge: "By role",
+  verifierSectorScenariosLink: "Sector scenarios (docs)",
+  verifierDisputedBadge: "Disputed",
+  verifierTraceRibbonNotDetermination: "Not a determination",
+  verifierEmptyUnknownPanel:
+    "The unknown/disputed register opens only when an event package is bound in the command spine.",
+  verifierHumanReviewTag: "Human review required",
+  verifierSectorStripClaims: "Insurance → claims pack",
+  verifierSectorStripNotary: "Notary / IP → authenticity, trace",
+  verifierSectorStripMuni: "Municipality → administrative packet",
+  verifierSectorStripField: "Police / field → incident, trace",
+  verifierSectorStripTechnical: "Technical → technical pack",
 
   // Section headers
   sectionProblem: "The problem",
@@ -135,22 +176,22 @@ const en = {
     unknownDisputed: "Unknown / Disputed",
     verificationTrace: "Verification Trace",
     artifactIssuance: "Artifact Issuance",
-    whyInevitable: "Why QARAQUTU is inevitable",
   },
   verifierRecorded: "Recorded evidence",
   verifierDerived: "Derived assessment",
   verifierRawLayer: "Raw layer",
   verifierSecondLayer: "Second layer",
-  verifierDoctrine: "// doctrine_spine",
   verifierNoRecorded: "No recorded evidence.",
   verifierNoDerived: "No derived evidence.",
   verifierNoEvent: "No event selected.",
   verifierNoScenario: "No scenario selected.",
   verifierResultTitle: "Verification result (this run)",
-  verifierNoResult: "No verification has been run yet. Select an event and start verification to see its current state and verification trace summary.",
-  verifierIssuanceNote: "Select an event in the left spine for artifact issuance.",
+  verifierNoResult:
+    "No verification run is recorded for this session. Bind an event package and start verification from the action bar to populate state and trace.",
+  verifierIssuanceNote: "Bind an event package in the command spine to enable bounded issuance controls.",
   verifierIssuanceDoctrine: "Issuance is role- and trace-bound; it does not override unknown/disputed or produce a final ruling.",
-  verifierSelectEvent: "Select an event in the left spine to view recorded and derived evidence layers. Layers are not blended; verification trace and issuance depend on them.",
+  verifierSelectEvent:
+    "Recorded and derived evidence render only after an event package is bound. Layers are never blended; trace and issuance depend on that separation.",
   verifierDemoLabel: "Demo scenario · Public class · Anonymized · Not a final determination",
   verifierWhatHappened: "What happened",
   verifierWhyUnderReview: "Why under review",
@@ -244,12 +285,13 @@ const en = {
 
 const tr = {
   // Navigation
-  navHome: "Home",
+  navHome: "Ana Sayfa",
   navVerifier: "Doğrulayıcı",
   navDocs: "Belgeler",
   navGolden: "Golden (dahili)",
   navConsole: "Konsol (korumalı)",
   navAdmin: "Admin (korumalı)",
+  navInternalStrip: "Sistem içi",
 
   // Brand
   tagline: "Tanık · Doğrulayıcı · İz · Belgeleme",
@@ -276,16 +318,17 @@ const tr = {
   homeHowStep3: "Doğrulama / iz — sınırlı kontroller denetim izi üretir; iz incelemeyi destekler, nihai gerçek değildir.",
   homeHowStep4: "Sınırlı artefakt düzenleme — hasar/hukuk çıktıları manifest, paket ve makbuz zincirine bağlıdır.",
   homeHowStep5: "Role özgü incelemeye yönlendirme — sigorta, hukuk, saha, teknik; her biri tek omurga üzerinde disiplinli kabuk alır.",
-  homeProblemIntro: "Uyuşmazlık düzeyinde olaylarda kanıt dağıldığında veya birbirine karıştığında zincir çöker.",
-  homeProblemCard1Title: "Log, dışa aktarım ve inceleme birbirinden kopar",
+  homeProblemIntro:
+    "Yüksek riskli incelemeler parça parça dışa aktarımlara ve iç içe geçmiş anlatılara dayandığında, kurumlar “neyin tanıklandı” ile “neyin yorumlandığını” aynı çerçevede kilitleyemez.",
+  homeProblemCard1Title: "Operasyonel kanıt ipleri tek dosyada buluşmuyor",
   homeProblemCard1Body:
-    "Olay verisi loglara, düzensiz dışa aktarımlara ve kopuk inceleme iplerine yayılır. Tekil kanonik nesne kararları sabitlemez.",
-  homeProblemCard2Title: "Kayıtlı ile türetilmiş iç içe geçer",
+    "Loglar, kayıt sistemleri, gövde kamerası çıktıları ve düzensiz PDF’ler paralel dolaşır. Hasar, hukuk ve saha ekipleri her biri eksik bir ipe tutunur; tek, değiştirilemez paket omurgası yoktur.",
+  homeProblemCard2Title: "Kayıtlı sinyal ile türetilmiş anlatı aynı metne sıkışıyor",
   homeProblemCard2Body:
-    "Ham yakalama ile sonradan yorum tek anlatıda birleşir; inceleme zinciri bütünlüğü ve role uygun okuma zayıflar.",
-  homeProblemCard3Title: "Role özgü kanıt ihtiyaçları bağlanmaz",
+    "Ham telemetri ile sonradan yapılan rekonstrüksiyon aynı hikâyede birleştirilir. Tanık materyali ile yorum sınırı silindiğinde ihtilafın kıvılcımı burada çıkar.",
+  homeProblemCard3Title: "Her rol aynı omurga üzerinde farklı okuma ister",
   homeProblemCard3Body:
-    "Sigorta, hukuk, saha ve teknik taraflar çoğu kez aynı sınırlı pakete bağlanmaz; her rol tek omurgada kendi kabuğunu görmelidir.",
+    "Sigorta, vekil, idare ve mühendislik aynı kanonik olaydan disiplinli kabuklar ister; paralel gerçeklik üretmeden, tek çekirdek üzerinden.",
   homeDemoDoctrineTitle: "Neden kanonik tanık katmanı kaçınılmaz",
   homeDemoDoctrineSubtitle:
     "Doktrin güvenli demo senaryolar — yalnızca sınıf örnekleri; ürüne gerçek adlı olay gömülmez.",
@@ -311,7 +354,8 @@ const tr = {
   homeRoleOversightTitle: "Gözetim / uyum yönelimi",
   homeRoleOversightBody: "Sınırlı yönetişim için erişim, dışa aktarım ve düzenleme geçmişi görünümleri — politika sınırları geçerlidir.",
   footerWitnessLine1: "Tanıklık eder; hüküm vermez.",
-  footerWitnessLine2: "QARAQUTU; kayıtlı kanıt, türetilmiş değerlendirme, doğrulama izi ve sınırlı düzenlemeyi ayrı tutar.",
+  footerWitnessLine2:
+    "QARAQUTU; kayıtlı kanıt, türetilmiş değerlendirme, doğrulama izi ve sınırlı belge düzenlemesini birbirinden ayırır. Bağımsız hukukî, sigorta veya teknik yargının yerini almaz.",
   verifierMainNavLabel: "İnceleme panelleri",
   verifierUnknownIntro:
     "Açıkça sınırlanmış belirsizlik: buradaki maddeler taraflar arasında çözülmemiş veya tartışmalıdır — eksik alan doldurma formu değildir.",
@@ -322,18 +366,56 @@ const tr = {
   verifierRoleContextLabel: "Rol bağlamı",
   verifierRoleContextBody:
     "Muhatap çerçevesi ve dışa aktarım profili hangi artefaktların hazırlanabileceğini belirler; kanonik paketi veya izi değiştirmez.",
-  verifierWaitingSelectionTitle: "Sınırlı seçim bekleniyor",
+  verifierWaitingSelectionTitle: "Aktif olay paketi yok",
   verifierWaitingSelectionBody:
-    "Komut omurgasında sistem, senaryo ve olay seçin. İnceleme istasyonu aynı anda tek kanonik paket yükler — gösterge paneli toplaması değildir.",
+    "Bu inceleme yüzeyi, komut omurgasında sistem → senaryo → olay zinciriyle bağlanmış bir olay paketi seçilene kadar doldurulmaz. Aynı anda tek kanonik paket; gösterge paneli toplaması değildir.",
   verifierEvidenceRecordedCaption: "Yakalandığı haliyle tanık materyali — sensör, günlük, yük. Yorum değildir.",
   verifierEvidenceDerivedCaption: "Kayıtlı öğelerden rekonstrüksiyon ve sentez — ham katmanın yerini almaz ve silmez.",
   verifierActionBarDoctrineTrace: "iz ≠ nihai gerçek",
   verifierActionBarDoctrineIssuance: "düzenleme ≠ suçlama",
   verifierReviewStage: "İnceleme aşaması",
-  verifierVerificationTraceHeader: "Doğrulama izi",
-  verifierArtifactIssuanceHeader: "Belge düzenlemesi",
-  verifierEmptyEventCatalog: "Bu senaryo için olay kartı yok.",
-  verifierPickScenarioFirst: "Önce senaryo seçin; olaylar senaryoya göre listelenir.",
+  verifierVerificationTraceHeader: "Doğrulama izi · Verification trace",
+  verifierArtifactIssuanceHeader: "Belge düzenlemesi · Artifact issuance",
+  verifierEmptyEventCatalog: "Bu senaryo çerçevesinde demo kataloğunda kayıtlı olay yok.",
+  verifierPickScenarioFirst: "Önce senaryoyu seçin; olaylar senaryo çerçevesine göre listelenir.",
+  verifierProtocolSpineLabel: "Protokol kanıt omurgası",
+  verifierLayerDisciplineNote:
+    "Kayıtlı katman: yakalandığı haliyle tanık materyali. Türetilmiş katman: rekonstrüksiyon ve sentez. Görünümde ve düzenlemede birleştirilmez.",
+  verifierTraceFooterNote:
+    "Manifest ve paket referanslarına bağlıdır. Bilinmeyen veya tartışmalı maddelerin üzerinde yer almaz. Nihai gerçeklik veya hüküm iddiası taşımaz.",
+  verifierReviewAssistantInactive:
+    "İnceleme yardımcısı: gelecekteki sınırlı bir sürüm için ayrılmıştır. Bu yapıda etkin değildir; doğrulama veya düzenlemeyi etkilemez.",
+  verifierIssuanceDependencyBanner:
+    "Belge düzenlemesi; rol profili, dışa aktarım politikası ve güncel doğrulama izine bağlıdır. Açık bilinmeyenleri veya tartışmalı maddeleri atlamaz.",
+  verifierEmptySummaryPanel:
+    "Olay özetini görmek için komut omurgasında bir olay paketi bağlayın: vaka bağlamı, anlatı, inceleme duruşu ve sınırlı sonraki adım burada açılır.",
+  verifierEmptyEvidencePanel:
+    "Kanıt katmanları yalnızca olay paketi bağlandığında dolar. Kayıtlı ve türetilmiş katmanlar kesin biçimde ayrı kalır.",
+  verifierEmptyTracePanel:
+    "Doğrulama izi, paket bağlandıktan ve doğrulama çalıştırıldıktan sonra bu çalıştırmaya özgü adımları listeler. Denetimi destekler; mutlak gerçeklik iddiası değildir.",
+  verifierEmptyIssuancePanel:
+    "Sınırlı JSON/PDF hazırlığı, iz ve rol çerçevesi hazır olduğunda bu panelde yönetilir. Düzenleme suçlama veya hüküm değildir.",
+  verifierSpineBlurbEvidence:
+    "Kayıtlı ve türetilmiş katmanlar, paket bağlandığında ana kanıt panellerinde gösterilir.",
+  verifierSpineBlurbUnknown:
+    "Taraflar arası çözülmemiş veya tartışmalı maddeler ayrı panelde listelenir; eksik form alanı değil, açıkça çerçevelenmiş belirsizliktir.",
+  verifierSpineBlurbTrace:
+    "Bu çalıştırmadaki adım adım kontroller; kurumsal incelemeyi destekler, nihai yargı ikamesi değildir.",
+  verifierSpineBlurbIssuance:
+    "Profil, biçim ve dışa aktarım denetimleri — iz ve rol çerçevesine bağlıdır.",
+  verifierSectorStripBadge: "Sektöre göre",
+  verifierRoleStripBadge: "Rol bağlamına göre",
+  verifierSectorScenariosLink: "Sektör senaryoları (belgeler)",
+  verifierDisputedBadge: "Tartışmalı",
+  verifierTraceRibbonNotDetermination: "Nihai hüküm değildir",
+  verifierEmptyUnknownPanel:
+    "Bilinmeyen/tartışmalı defter yalnızca komut omurgasında olay paketi bağlandığında açılır.",
+  verifierHumanReviewTag: "İnsan incelemesi gerekir",
+  verifierSectorStripClaims: "Sigorta → hasar paketi",
+  verifierSectorStripNotary: "Noter / fikri mülkiyet → özgünlük, iz",
+  verifierSectorStripMuni: "Belediye / idari → idari paket",
+  verifierSectorStripField: "Polis / saha → olay, iz",
+  verifierSectorStripTechnical: "Teknik → teknik paket",
 
   // Section headers
   sectionProblem: "Sorun",
@@ -348,7 +430,7 @@ const tr = {
   // Verifier
   verifierStation: "Doğrulama İstasyonu",
   verifierInspection: "İnceleme İstasyonu",
-  verifierTitle: "Olay Paketi Doğrulaması",
+  verifierTitle: "Olay Paketi Doğrulaması · Event package",
   verifierSubtitle: "Seçili olay paketinin sınırlı değerlendirmesi. Hukuki sorumluluk veya suç tespiti yapılmaz.",
   verifierSelectedSystem: "Seçili Sistem",
   verifierSelectedScenario: "Seçili Senaryo",
@@ -367,22 +449,22 @@ const tr = {
     unknownDisputed: "Bilinmeyen / Tartışmalı",
     verificationTrace: "Doğrulama İzi",
     artifactIssuance: "Belge Düzenlemesi",
-    whyInevitable: "Neden QARAQUTU vazgeçilmez",
   },
   verifierRecorded: "Kayıtlı kanıt",
   verifierDerived: "Türetilmiş değerlendirme",
   verifierRawLayer: "Ham katman",
   verifierSecondLayer: "İkinci katman",
-  verifierDoctrine: "// doktrin_omurgası",
   verifierNoRecorded: "Kayıtlı kanıt yok.",
   verifierNoDerived: "Türetilmiş kanıt yok.",
   verifierNoEvent: "Henüz olay seçilmedi.",
   verifierNoScenario: "Senaryo seçilmedi.",
   verifierResultTitle: "Doğrulama sonucu (bu çalışma)",
-  verifierNoResult: "Henüz doğrulama çalıştırılmadı. Bir olay seçin ve doğrulamayı başlatın.",
-  verifierIssuanceNote: "Belge düzenlemesi için sol omurgadan bir olay seçin.",
+  verifierNoResult:
+    "Bu oturumda doğrulama çalıştırması kaydı yok. Olay paketini bağlayıp alt eylem çubuğundan doğrulamayı başlattığınızda durum ve iz burada oluşur.",
+  verifierIssuanceNote: "Sınırlı belge düzenlemesi için komut omurgasında olay paketini bağlayın.",
   verifierIssuanceDoctrine: "Belgeleme role ve ize bağlıdır; bilinmeyen/tartışmalı durumları geçersiz kılmaz.",
-  verifierSelectEvent: "Kayıtlı ve türetilmiş kanıt katmanlarını görmek için sol omurgadan bir olay seçin.",
+  verifierSelectEvent:
+    "Kayıtlı ve türetilmiş kanıtlar yalnızca olay paketi bağlandığında görüntülenir. Katmanlar asla birleştirilmez; iz ve düzenleme bu ayrıma bağlıdır.",
   verifierDemoLabel: "Demo senaryo · Kamuya açık · Anonimize · Nihai hüküm değildir",
   verifierWhatHappened: "Ne oldu",
   verifierWhyUnderReview: "İnceleme gerekçesi",
