@@ -196,6 +196,17 @@ body {
   }
 }
 
+/* Verifier chassis — stack spine above main on narrow widths */
+.verifier-chassis-grid {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .verifier-chassis-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* ── Protocol document shell — print / filing posture (no PDF engine; layout only) ── */
 @media print {
   .qaraqutu-document-shell {

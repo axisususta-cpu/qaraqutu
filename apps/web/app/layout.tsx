@@ -1,15 +1,10 @@
 import "./globals.css";
 import React from "react";
 import { webBuildMeta } from "./build-meta";
-import { NavLinks } from "./components/NavLinks";
-import { LogoPrimary } from "./components/LogoPrimary";
 import { ThemeProvider } from "../lib/ThemeContext";
-import { ThemeToggle } from "./components/ThemeToggle";
 import { LanguageProvider } from "../lib/LanguageContext";
-import { LanguageToggle } from "./components/LanguageToggle";
-import { FooterDoctrine } from "./components/FooterDoctrine";
-import { BrandTagline } from "./components/BrandTagline";
-import { NavInternalLinks } from "./components/NavInternalLinks";
+import { ConditionalSiteHeader } from "./components/ConditionalSiteHeader";
+import { ConditionalSiteFooter } from "./components/ConditionalSiteFooter";
 
 const SITE_TITLE_TR = "QARAQUTU — Doğrulayıcı-öncelikli tanık protokolü";
 const SITE_DESC_TR =
@@ -66,87 +61,9 @@ export default function RootLayout({
       <body style={{ margin: 0, background: "var(--bg)", color: "var(--text)", fontFamily: SANS }}>
         <ThemeProvider>
         <LanguageProvider>
-          <header
-            style={{
-              background: "var(--header-bg)",
-              color: "var(--text)",
-              borderBottom: "1px solid var(--border-soft)",
-            }}
-          >
-            <div
-              style={{
-                maxWidth: 1100,
-                margin: "0 auto",
-                padding: "0.85rem 2rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "1.5rem",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 5,
-                  alignItems: "flex-start",
-                }}
-              >
-                <LogoPrimary href="/" height={36} />
-                <BrandTagline />
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-end",
-                  gap: "0.35rem",
-                }}
-              >
-                <nav
-                  aria-label="Primary"
-                  style={{
-                    display: "flex",
-                    gap: "0.75rem",
-                    fontSize: "0.8rem",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    justifyContent: "flex-end",
-                  }}
-                >
-                  <NavLinks />
-                  <LanguageToggle />
-                  <ThemeToggle />
-                </nav>
-                <NavInternalLinks />
-              </div>
-            </div>
-          </header>
+          <ConditionalSiteHeader />
           {children}
-          <FooterDoctrine />
-          <footer
-            style={{
-              padding: "0.55rem 2rem 0.85rem",
-              fontSize: "0.66rem",
-              color: "var(--text-muted)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: "0.6rem",
-              letterSpacing: "0.05em",
-              borderTop: "1px solid var(--border-soft)",
-              background: "var(--panel)",
-            }}
-          >
-            <LogoPrimary href="/" height={18} />
-            <span
-              style={{ fontFamily: MONO }}
-              title={`${webBuildMeta.app} @ ${gitCommitSha} · ${webBuildMeta.buildTime}`}
-            >
-              {webBuildMeta.app} @ {shortSha} · {webBuildMeta.buildTime}
-            </span>
-          </footer>
+          <ConditionalSiteFooter />
         </LanguageProvider>
         </ThemeProvider>
       </body>
