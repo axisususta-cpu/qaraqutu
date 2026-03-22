@@ -24,7 +24,8 @@ export const PDF_COLORS = {
 } as const;
 
 export const PAGE_SIZE = "A4" as const;
-export const MARGINS = { top: 52, right: 48, bottom: 72, left: 48 };
+/** Must match PDFDocument `margin` — bottom leaves room for doctrine band (drawn in margin strip). */
+export const MARGINS = { top: 48, right: 48, bottom: 56, left: 48 };
 export const CONTENT_WIDTH = 595 - MARGINS.left - MARGINS.right;
 
 export const FONT_SIZES = {
@@ -39,10 +40,57 @@ export const FONT_SIZES = {
   badge: 7.5,
 } as const;
 
-export const SPACING = { section: 14, bulletIndent: 14, rowPad: 5 };
+export const SPACING = { section: 10, bulletIndent: 12, rowPad: 4 };
 
-const COVER_BAND_H = 108;
-const THIN_HEADER_H = 34;
+const COVER_BAND_H = 92;
+const THIN_HEADER_H = 28;
+const KV_ROW_H = 17;
+
+/** Single-line cell text to avoid PDFKit line_wrapper page storms on long IDs / ISO timestamps. */
+function truncateToOneLine(doc: InstanceType<typeof PDFDocument>, text: string, maxW: number): string {
+  const raw = text.length ? text : "—";
+  if (doc.widthOfString(raw) <= maxW) return raw;
+  let lo = 0;
+  let hi = raw.length;
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2);
+    const candidate = `${raw.slice(0, mid)}…`;
+    if (doc.widthOfString(candidate) <= maxW) lo = mid;
+    else hi = mid - 1;
+  }
+  return `${raw.slice(0, Math.max(0, lo))}…`;
+}
+
+/** Word-wrap for footer copy without PDFKit `width` flow (which paginates when y > maxY). */
+function wrapLinesToWidth(doc: InstanceType<typeof PDFDocument>, text: string, maxW: number, maxLines: number): string[] {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let cur = "";
+  for (const w of words) {
+    const next = cur ? `${cur} ${w}` : w;
+    if (doc.widthOfString(next) <= maxW) cur = next;
+    else {
+      if (cur) lines.push(cur);
+      cur = w;
+      if (lines.length >= maxLines) return lines.slice(0, maxLines);
+    }
+  }
+  if (cur) lines.push(cur);
+  return lines.slice(0, maxLines);
+}
+
+function drawCenteredNoWrapLine(
+  doc: InstanceType<typeof PDFDocument>,
+  line: string,
+  y: number,
+  fill: string,
+  fontSize: number
+) {
+  doc.fillColor(fill).font("Courier").fontSize(fontSize);
+  const w = doc.widthOfString(line);
+  const x = MARGINS.left + Math.max(0, (CONTENT_WIDTH - w) / 2);
+  doc.text(line, x, y, { lineBreak: false, lineGap: 0 });
+}
 
 function stateColors(state: string): { bg: string; border: string; fg: string } {
   const s = state.toUpperCase();
@@ -71,25 +119,35 @@ function patchDocumentForFooters(doc: InstanceType<typeof PDFDocument>) {
 function drawDoctrineFooterBand(doc: InstanceType<typeof PDFDocument>) {
   const pw = doc.page.width;
   const ph = doc.page.height;
-  const bandH = 42;
+  const bandH = 44;
   const y0 = ph - bandH;
+  const fs = 6.5;
   doc.save();
   doc.rect(0, y0, pw, bandH).fill(PDF_COLORS.footerBand);
+  doc.font("Courier").fontSize(fs);
+
+  let yy = y0 + 5;
+  const identity = (doc as any).__qaraqutuFooterIdentity as string | undefined;
+  if (identity) {
+    const idLine = truncateToOneLine(doc, identity, CONTENT_WIDTH);
+    drawCenteredNoWrapLine(doc, idLine, yy, PDF_COLORS.footerText, fs);
+    yy += 10;
+  }
+
   const doctrine =
     "Witness protocol · Recorded ≠ Derived · Derived ≠ Verdict · Trace ≠ truth · Issuance ≠ blame · Not a court ruling.";
-  doc
-    .fillColor(PDF_COLORS.footerMuted)
-    .font("Courier")
-    .fontSize(FONT_SIZES.footer)
-    .text(doctrine, MARGINS.left, y0 + 8, { width: CONTENT_WIDTH, align: "center", lineGap: 1 });
-  doc
-    .fillColor(PDF_COLORS.footerText)
-    .font("Courier")
-    .fontSize(FONT_SIZES.footer - 0.5)
-    .text(`QARAQUTU · protocol-grade export · ${new Date().toISOString().slice(0, 10)}`, MARGINS.left, y0 + 24, {
-      width: CONTENT_WIDTH,
-      align: "center",
-    });
+  const doctrineLines = wrapLinesToWidth(doc, doctrine, CONTENT_WIDTH, 2);
+  for (let i = 0; i < doctrineLines.length; i++) {
+    drawCenteredNoWrapLine(doc, doctrineLines[i], yy + i * 9, PDF_COLORS.footerMuted, fs);
+  }
+  yy += Math.max(doctrineLines.length, 1) * 9 + 2;
+
+  const dateLine = truncateToOneLine(
+    doc,
+    `QARAQUTU · protocol-grade export · ${new Date().toISOString().slice(0, 10)}`,
+    CONTENT_WIDTH
+  );
+  drawCenteredNoWrapLine(doc, dateLine, yy, PDF_COLORS.footerText, fs);
   doc.restore();
 }
 
@@ -97,14 +155,14 @@ function drawThinPageHeader(doc: InstanceType<typeof PDFDocument>) {
   const pw = doc.page.width;
   doc.save();
   doc.rect(0, 0, pw, THIN_HEADER_H).fill(PDF_COLORS.headerBand);
-  doc.fillColor(PDF_COLORS.headerMuted).font("Courier").fontSize(7.5).text("QARAQUTU", MARGINS.left, 12);
+  doc.fillColor(PDF_COLORS.headerMuted).font("Courier").fontSize(7).text("QARAQUTU", MARGINS.left, 10);
   doc.restore();
-  doc.y = THIN_HEADER_H + 12;
+  doc.y = THIN_HEADER_H + 8;
 }
 
 export function createDocument(): InstanceType<typeof PDFDocument> {
   const doc = new PDFDocument({
-    margin: MARGINS.top,
+    margin: MARGINS as any,
     size: PAGE_SIZE,
     bufferPages: true,
     info: { Producer: "QARAQUTU API", Creator: "QARAQUTU" },
@@ -123,20 +181,20 @@ export function drawCoverHeaderBand(
   doc.save();
   doc.rect(0, 0, pw, COVER_BAND_H).fill(PDF_COLORS.headerBand);
 
-  doc.fillColor(PDF_COLORS.headerText).font("Helvetica-Bold").fontSize(FONT_SIZES.coverBrand).text("QARAQUTU", MARGINS.left, 28);
+  doc.fillColor(PDF_COLORS.headerText).font("Helvetica-Bold").fontSize(18).text("QARAQUTU", MARGINS.left, 24);
 
   doc
     .fillColor(PDF_COLORS.accent)
     .font("Courier-Bold")
-    .fontSize(9)
-    .text(documentFamilyTitle.toUpperCase(), MARGINS.left, 54);
+    .fontSize(8.5)
+    .text(documentFamilyTitle.toUpperCase(), MARGINS.left, 46);
 
   const profileLine = `ISSUANCE PROFILE · ${identity.exportProfile.toUpperCase()} · ${identity.exportPurpose}`;
-  doc.fillColor(PDF_COLORS.headerMuted).font("Courier").fontSize(FONT_SIZES.coverMeta).text(profileLine, MARGINS.left, 70, {
+  doc.fillColor(PDF_COLORS.headerMuted).font("Courier").fontSize(7.5).text(profileLine, MARGINS.left, 60, {
     width: CONTENT_WIDTH,
   });
 
-  const metaY = 86;
+  const metaY = 74;
   doc.fillColor(PDF_COLORS.headerText).font("Courier").fontSize(8).text(`EVENT  ${identity.eventId}`, MARGINS.left, metaY);
 
   const badge = stateColors(identity.verificationState);
@@ -149,12 +207,13 @@ export function drawCoverHeaderBand(
     .text(identity.verificationState, bx, metaY + 3, { width: 110, align: "center" });
 
   doc.restore();
-  doc.y = COVER_BAND_H + 16;
+  doc.x = MARGINS.left;
+  doc.y = COVER_BAND_H + 10;
 }
 
 export function drawSectionHeading(ctx: LayoutContext, label: string) {
   const { doc } = ctx;
-  ensurePageSpace(ctx, 44);
+  ensurePageSpace(ctx, 30);
   const y0 = doc.y;
   doc.save();
   doc.fillColor(PDF_COLORS.accent).rect(MARGINS.left, y0, 3, 11).fill();
@@ -164,66 +223,90 @@ export function drawSectionHeading(ctx: LayoutContext, label: string) {
     .fontSize(FONT_SIZES.sectionMono)
     .text(label.toUpperCase(), MARGINS.left + 10, y0 - 1, { width: CONTENT_WIDTH - 12 });
   doc.restore();
-  doc.y = y0 + 14;
+  doc.x = MARGINS.left;
+  doc.y = y0 + 12;
   doc
     .moveTo(MARGINS.left, doc.y)
     .lineTo(MARGINS.left + CONTENT_WIDTH, doc.y)
     .strokeColor(PDF_COLORS.borderStrong)
     .lineWidth(0.75)
     .stroke();
-  doc.moveDown(0.55);
+  doc.x = MARGINS.left;
+  doc.moveDown(0.35);
 }
 
 export function drawDocumentTitle(ctx: LayoutContext, title: string) {
   drawSectionHeading(ctx, title);
 }
 
+const PAGE_BREAK_SLACK = 3;
+
 export function ensurePageSpace(ctx: LayoutContext, minHeight: number) {
-  const reservedFooter = 52;
-  const remaining = ctx.doc.page.height - MARGINS.bottom - reservedFooter - (ctx.doc.y ?? 0);
-  if (remaining < minHeight) {
+  const maxY = ctx.doc.page.maxY();
+  const y = ctx.doc.y ?? 0;
+  const available = maxY - y;
+  if (available + PAGE_BREAK_SLACK < minHeight) {
     ctx.doc.addPage();
     ctx.doc.fillColor(PDF_COLORS.text);
   }
 }
 
+/**
+ * Key/value rows with **measured** row height. Fixed shallow rows caused PDFKit to wrap long
+ * values (export IDs, ISO timestamps) past the painted rect; line_wrapper then fired
+ * `continueOnNewPage` for each wrapped line — exploding page count.
+ */
 export function drawKeyValueTable(
-  doc: InstanceType<typeof PDFDocument>,
+  ctx: LayoutContext,
   rows: { label: string; value: string | null | undefined }[]
 ) {
+  const { doc } = ctx;
   const labelW = 130;
   const x0 = MARGINS.left;
   const x1 = x0 + labelW;
+  const valueW = CONTENT_WIDTH - labelW - SPACING.rowPad * 2;
   rows.forEach((row) => {
+    const valueStr = String(row.value ?? "—");
+    const prevX = doc.x;
+    const prevY = doc.y;
+    doc.font("Courier").fontSize(FONT_SIZES.label);
+    const labelLine = truncateToOneLine(doc, row.label, labelW - SPACING.rowPad * 2);
+    doc.font("Helvetica").fontSize(FONT_SIZES.value);
+    const valueLine = truncateToOneLine(doc, valueStr, valueW);
+    doc.x = prevX;
+    doc.y = prevY;
+
+    const rowH = KV_ROW_H;
+    ensurePageSpace(ctx, rowH + 2);
     const y = doc.y;
-    doc.rect(x0, y, CONTENT_WIDTH, 20).stroke(PDF_COLORS.border);
+    doc.rect(x0, y, CONTENT_WIDTH, rowH).stroke(PDF_COLORS.border);
     doc
       .fillColor(PDF_COLORS.textMuted)
       .font("Courier")
       .fontSize(FONT_SIZES.label)
-      .text(row.label, x0 + SPACING.rowPad, y + 5, { width: labelW - SPACING.rowPad * 2 });
+      .text(labelLine, x0 + SPACING.rowPad, y + 3, { lineGap: 0 });
     doc
       .fillColor(PDF_COLORS.text)
       .font("Helvetica")
       .fontSize(FONT_SIZES.value)
-      .text(String(row.value ?? "—"), x1 + SPACING.rowPad, y + 4, {
-        width: CONTENT_WIDTH - labelW - SPACING.rowPad * 2,
-      });
-    doc.y = y + 20;
+      .text(valueLine, x1 + SPACING.rowPad, y + 3, { lineGap: 0 });
+    doc.x = MARGINS.left;
+    doc.y = y + rowH;
   });
-  doc.moveDown(0.45);
+  doc.x = MARGINS.left;
+  doc.moveDown(0.3);
 }
 
 export function drawKeyValueRows(
   ctx: LayoutContext,
   rows: { label: string; value: string | null | undefined }[]
 ) {
-  drawKeyValueTable(ctx.doc, rows);
+  drawKeyValueTable(ctx, rows);
 }
 
 export function drawExportMetadataGrid(ctx: LayoutContext) {
   drawSectionHeading(ctx, "Export metadata");
-  drawKeyValueTable(ctx.doc, [
+  drawKeyValueTable(ctx, [
     { label: "EXPORT ID", value: ctx.identity.exportId },
     { label: "RECEIPT ID", value: ctx.identity.receiptId ?? "—" },
     { label: "GENERATED", value: ctx.identity.generatedAt },
@@ -234,7 +317,24 @@ export function drawExportMetadataGrid(ctx: LayoutContext) {
 
 export function drawIdentityChain(ctx: LayoutContext) {
   drawSectionHeading(ctx, "Identity chain");
-  drawKeyValueTable(ctx.doc, [
+  drawKeyValueTable(ctx, [
+    { label: "EVENT", value: ctx.identity.eventId },
+    { label: "BUNDLE", value: ctx.identity.bundleId },
+    { label: "MANIFEST", value: ctx.identity.manifestId },
+    { label: "TRANSCRIPT", value: ctx.identity.transcriptId ?? "—" },
+    { label: "VERIFICATION RUN", value: ctx.identity.verificationRunId ?? "—" },
+  ]);
+}
+
+/** Single heading + table: saves vertical space vs separate export + identity sections. */
+export function drawExportAndIdentityGrid(ctx: LayoutContext) {
+  drawSectionHeading(ctx, "Export & identity");
+  drawKeyValueTable(ctx, [
+    { label: "EXPORT ID", value: ctx.identity.exportId },
+    { label: "RECEIPT ID", value: ctx.identity.receiptId ?? "—" },
+    { label: "GENERATED", value: ctx.identity.generatedAt },
+    { label: "SCHEMA", value: ctx.identity.schemaVersion },
+    { label: "TENANT", value: ctx.identity.tenantId ?? "—" },
     { label: "EVENT", value: ctx.identity.eventId },
     { label: "BUNDLE", value: ctx.identity.bundleId },
     { label: "MANIFEST", value: ctx.identity.manifestId },
@@ -244,27 +344,33 @@ export function drawIdentityChain(ctx: LayoutContext) {
 }
 
 export function drawParagraph(ctx: LayoutContext, text: string) {
-  ctx.doc.fillColor(PDF_COLORS.text).font("Helvetica").fontSize(FONT_SIZES.body).text(text, {
+  const { doc } = ctx;
+  doc.x = MARGINS.left;
+  doc.fillColor(PDF_COLORS.text).font("Helvetica").fontSize(FONT_SIZES.body).text(text, {
     width: CONTENT_WIDTH,
     lineGap: 2,
   });
-  ctx.doc.moveDown(0.4);
+  doc.x = MARGINS.left;
+  doc.moveDown(0.28);
 }
 
 export function drawBulletList(ctx: LayoutContext, items: string[], emptyFallback: string) {
-  ctx.doc.font("Helvetica").fontSize(FONT_SIZES.body);
+  const { doc } = ctx;
+  doc.x = MARGINS.left;
+  doc.font("Helvetica").fontSize(FONT_SIZES.body);
   if (items.length === 0) {
-    ctx.doc.fillColor(PDF_COLORS.textMuted).text(emptyFallback, { width: CONTENT_WIDTH, lineGap: 2 });
+    doc.fillColor(PDF_COLORS.textMuted).text(emptyFallback, { width: CONTENT_WIDTH, lineGap: 2 });
   } else {
     items.forEach((item) => {
-      ctx.doc.fillColor(PDF_COLORS.text).text(`·  ${item}`, {
-        indent: SPACING.bulletIndent,
-        width: CONTENT_WIDTH - SPACING.bulletIndent,
+      doc.x = MARGINS.left;
+      doc.fillColor(PDF_COLORS.text).text(`·  ${item}`, {
+        width: CONTENT_WIDTH,
         lineGap: 2,
       });
     });
   }
-  ctx.doc.moveDown(0.4);
+  doc.x = MARGINS.left;
+  doc.moveDown(0.28);
 }
 
 export function drawEvidenceStackedPanels(
@@ -274,33 +380,44 @@ export function drawEvidenceStackedPanels(
   emptyRecorded: string,
   emptyDerived: string
 ) {
-  ensurePageSpace(ctx, 120);
   drawSectionHeading(ctx, "Evidence layers");
-  ctx.doc
-    .fillColor(PDF_COLORS.textMuted)
-    .font("Courier")
-    .fontSize(FONT_SIZES.small)
-    .text(
-      "Recorded witness material is separate from derived synthesis. Layers are not merged in this export.",
-      { width: CONTENT_WIDTH, lineGap: 1 }
-    );
-  ctx.doc.moveDown(0.35);
+  ctx.doc.x = MARGINS.left;
+  ctx.doc.font("Courier").fontSize(FONT_SIZES.small);
+  const introLine = truncateToOneLine(
+    ctx.doc,
+    "Recorded and derived layers are not merged in this export.",
+    CONTENT_WIDTH
+  );
+  const introY = ctx.doc.y;
+  ctx.doc.fillColor(PDF_COLORS.textMuted).text(introLine, MARGINS.left, introY);
+  ctx.doc.y = introY + ctx.doc.currentLineHeight(true) + 4;
+  ctx.doc.x = MARGINS.left;
 
   const drawPanel = (title: string, accent: string, lines: string[], empty: string) => {
-    const y0 = ctx.doc.y;
-    ctx.doc.save();
-    ctx.doc.font("Helvetica").fontSize(FONT_SIZES.body);
-    const bodyText =
-      lines.length > 0 ? lines.map((l) => `·  ${l}`).join("\n") : empty;
-    const bodyH = ctx.doc.heightOfString(bodyText, { width: CONTENT_WIDTH - 24, lineGap: 2 });
-    const totalH = 22 + Math.max(bodyH + 16, 32);
-    ctx.doc.rect(MARGINS.left, y0, CONTENT_WIDTH, totalH).stroke(accent).lineWidth(1.1);
-    ctx.doc.rect(MARGINS.left, y0, CONTENT_WIDTH, 22).fill(PDF_COLORS.tableHeaderBg);
-    ctx.doc.fillColor(PDF_COLORS.text).font("Courier-Bold").fontSize(8).text(title, MARGINS.left + 8, y0 + 7);
-    ctx.doc.fillColor(PDF_COLORS.text).font("Helvetica").fontSize(FONT_SIZES.body);
-    ctx.doc.text(bodyText, MARGINS.left + 8, y0 + 26, { width: CONTENT_WIDTH - 16, lineGap: 2 });
-    ctx.doc.restore();
-    ctx.doc.y = y0 + totalH + 10;
+    const { doc } = ctx;
+    const rawLines = lines.length > 0 ? lines.map((l) => `·  ${l}`) : [empty];
+    doc.save();
+    doc.font("Helvetica").fontSize(FONT_SIZES.body);
+    const lh = doc.currentLineHeight(true) + 2;
+    const innerH = rawLines.length * lh + 8;
+    const totalH = 20 + Math.max(innerH, 36);
+    doc.restore();
+    ensurePageSpace(ctx, totalH + 8);
+    const y0 = doc.y;
+    doc.save();
+    doc.rect(MARGINS.left, y0, CONTENT_WIDTH, totalH).stroke(accent).lineWidth(1.1);
+    doc.rect(MARGINS.left, y0, CONTENT_WIDTH, 20).fill(PDF_COLORS.tableHeaderBg);
+    doc.fillColor(PDF_COLORS.text).font("Courier-Bold").fontSize(7.5).text(title, MARGINS.left + 6, y0 + 6);
+    doc.fillColor(PDF_COLORS.text).font("Helvetica").fontSize(FONT_SIZES.body);
+    let yy = y0 + 22;
+    rawLines.forEach((ln) => {
+      const one = truncateToOneLine(doc, ln, CONTENT_WIDTH - 12);
+      doc.text(one, MARGINS.left + 6, yy);
+      yy += lh;
+    });
+    doc.restore();
+    doc.y = y0 + totalH + 6;
+    doc.x = MARGINS.left;
   };
 
   drawPanel("RECORDED", PDF_COLORS.accent, recordedLines, emptyRecorded);
@@ -308,37 +425,42 @@ export function drawEvidenceStackedPanels(
 }
 
 export function drawUnknownDisputedBlock(ctx: LayoutContext, items: string[] | undefined) {
-  ensurePageSpace(ctx, 80);
   drawSectionHeading(ctx, "Unknown / disputed");
-  ctx.doc
-    .fillColor(PDF_COLORS.textMuted)
-    .font("Helvetica")
-    .fontSize(FONT_SIZES.small)
-    .text(
-      "Unresolved items and scope limits appear when present in the snapshot. This section documents uncertainty — it is not a determination.",
-      { width: CONTENT_WIDTH, lineGap: 2 }
-    );
-  ctx.doc.moveDown(0.35);
+  const { doc } = ctx;
+  doc.x = MARGINS.left;
+  doc.font("Helvetica").fontSize(FONT_SIZES.small);
+  const uIntro = truncateToOneLine(
+    doc,
+    "Open items and scope limits when present; documents uncertainty, not a determination.",
+    CONTENT_WIDTH
+  );
+  const uy = doc.y;
+  doc.fillColor(PDF_COLORS.textMuted).text(uIntro, MARGINS.left, uy);
+  doc.y = uy + doc.currentLineHeight(true) + 4;
+  doc.x = MARGINS.left;
   if (items && items.length > 0) {
     items.forEach((item) => {
-      ensurePageSpace(ctx, 36);
-      const y = ctx.doc.y;
-      ctx.doc.rect(MARGINS.left, y, CONTENT_WIDTH, 32).stroke(PDF_COLORS.borderStrong).lineWidth(0.9);
-      ctx.doc.fillColor(PDF_COLORS.unknown).font("Courier-Bold").fontSize(7.5).text("OPEN", MARGINS.left + 8, y + 10);
-      ctx.doc
-        .fillColor(PDF_COLORS.text)
-        .font("Helvetica")
-        .fontSize(FONT_SIZES.body)
-        .text(item, MARGINS.left + 48, y + 6, { width: CONTENT_WIDTH - 56, lineGap: 2 });
-      ctx.doc.y = y + 36;
+      ensurePageSpace(ctx, 34);
+      const y = doc.y;
+      doc.rect(MARGINS.left, y, CONTENT_WIDTH, 32).stroke(PDF_COLORS.borderStrong).lineWidth(0.9);
+      doc.fillColor(PDF_COLORS.unknown).font("Courier-Bold").fontSize(7.5).text("OPEN", MARGINS.left + 8, y + 10);
+      doc.font("Helvetica").fontSize(FONT_SIZES.body);
+      const itemLine = truncateToOneLine(doc, item, CONTENT_WIDTH - 56);
+      doc.fillColor(PDF_COLORS.text).text(itemLine, MARGINS.left + 48, y + 8);
+      doc.y = y + 36;
+      doc.x = MARGINS.left;
     });
   } else {
-    ctx.doc
-      .fillColor(PDF_COLORS.textSoft)
-      .font("Helvetica")
-      .fontSize(FONT_SIZES.body)
-      .text("No unknown or disputed items were attached to this export snapshot.", { width: CONTENT_WIDTH });
-    ctx.doc.moveDown(0.35);
+    doc.font("Helvetica").fontSize(FONT_SIZES.body);
+    const none = truncateToOneLine(
+      doc,
+      "No unknown or disputed items were attached to this export snapshot.",
+      CONTENT_WIDTH
+    );
+    const ny = doc.y;
+    doc.fillColor(PDF_COLORS.textSoft).text(none, MARGINS.left, ny);
+    doc.y = ny + doc.currentLineHeight(true) + 4;
+    doc.x = MARGINS.left;
   }
 }
 
@@ -346,76 +468,73 @@ export function drawVerificationTraceTable(
   ctx: LayoutContext,
   steps: { step: number; check: string; result: string; note: string }[]
 ) {
-  ensurePageSpace(ctx, 100);
   drawSectionHeading(ctx, "Verification trace");
-  ctx.doc
-    .fillColor(PDF_COLORS.textMuted)
-    .font("Helvetica")
-    .fontSize(FONT_SIZES.small)
-    .text(
-      "Each row is a bounded check from a verification run. The trace supports audit; it is not a claim of absolute truth.",
-      { width: CONTENT_WIDTH, lineGap: 2 }
-    );
-  ctx.doc.moveDown(0.4);
-
   if (steps.length === 0) {
-    ctx.doc
-      .fillColor(PDF_COLORS.textSoft)
-      .font("Helvetica")
-      .fontSize(FONT_SIZES.body)
-      .text("No verification transcript steps were linked to this export.", { width: CONTENT_WIDTH });
-    ctx.doc.moveDown(0.45);
+    const { doc } = ctx;
+    doc.x = MARGINS.left;
+    doc.font("Helvetica").fontSize(FONT_SIZES.body);
+    const none = truncateToOneLine(doc, "No verification transcript steps were linked to this export.", CONTENT_WIDTH);
+    const zy = doc.y;
+    doc.fillColor(PDF_COLORS.textSoft).text(none, MARGINS.left, zy);
+    doc.y = zy + doc.currentLineHeight(true) + 4;
+    doc.x = MARGINS.left;
     return;
   }
 
+  const traceRowH = 40;
   steps.forEach((s) => {
-    ensurePageSpace(ctx, 52);
-    const y = ctx.doc.y;
-    ctx.doc.rect(MARGINS.left, y, CONTENT_WIDTH, 46).stroke(PDF_COLORS.border).lineWidth(0.85);
-    ctx.doc.fillColor(PDF_COLORS.textMuted).font("Courier").fontSize(7.5).text(`STEP ${s.step}`, MARGINS.left + 8, y + 6);
-    ctx.doc.fillColor(PDF_COLORS.text).font("Helvetica-Bold").fontSize(FONT_SIZES.value).text(s.check, MARGINS.left + 8, y + 16, {
-      width: CONTENT_WIDTH - 100,
-    });
+    const { doc } = ctx;
+    ensurePageSpace(ctx, traceRowH + 4);
+    const y = doc.y;
+    doc.rect(MARGINS.left, y, CONTENT_WIDTH, traceRowH).stroke(PDF_COLORS.border).lineWidth(0.85);
+    doc.fillColor(PDF_COLORS.textMuted).font("Courier").fontSize(7.5).text(`STEP ${s.step}`, MARGINS.left + 8, y + 4);
+    doc.font("Helvetica-Bold").fontSize(FONT_SIZES.value);
+    const checkOne = truncateToOneLine(doc, s.check, CONTENT_WIDTH - 100);
+    doc.fillColor(PDF_COLORS.text).text(checkOne, MARGINS.left + 8, y + 13);
     const rc = stateColors(s.result);
-    ctx.doc.roundedRect(MARGINS.left + CONTENT_WIDTH - 88, y + 6, 80, 16, 2).fillAndStroke(rc.bg, rc.border);
-    ctx.doc
+    doc.roundedRect(MARGINS.left + CONTENT_WIDTH - 88, y + 4, 80, 16, 2).fillAndStroke(rc.bg, rc.border);
+    doc
       .fillColor(rc.fg)
       .font("Courier-Bold")
       .fontSize(7.5)
-      .text(s.result, MARGINS.left + CONTENT_WIDTH - 88, y + 9, { width: 80, align: "center" });
-    ctx.doc
-      .fillColor(PDF_COLORS.textMuted)
-      .font("Helvetica")
-      .fontSize(FONT_SIZES.small)
-      .text(s.note, MARGINS.left + 8, y + 30, { width: CONTENT_WIDTH - 16, lineGap: 1 });
-    ctx.doc.y = y + 50;
+      .text(s.result, MARGINS.left + CONTENT_WIDTH - 88, y + 7, { width: 80, align: "center" });
+    doc.font("Helvetica").fontSize(FONT_SIZES.small);
+    const noteOne = truncateToOneLine(doc, s.note, CONTENT_WIDTH - 16);
+    doc.fillColor(PDF_COLORS.textMuted).text(noteOne, MARGINS.left + 8, y + 26);
+    doc.y = y + traceRowH;
+    doc.x = MARGINS.left;
   });
   ctx.doc.moveDown(0.2);
 }
 
 export function drawIssuanceNotice(ctx: LayoutContext, profileLead: string, extraBullets: string[] = []) {
-  ensurePageSpace(ctx, 120);
   drawSectionHeading(ctx, "Issuance & bounded notice");
-  drawParagraph(ctx, profileLead);
   const bullets = [
     "This pack is a bounded institutional artifact — not marketing material.",
     "Recorded ≠ derived; derived ≠ verdict; trace ≠ final truth; issuance ≠ blame.",
     "Does not replace court, regulator, or independent expert judgement.",
     ...extraBullets,
   ];
-  drawBulletList(ctx, bullets, "");
+  const lines = [profileLead, "", ...bullets.map((b) => `·  ${b}`)];
+  const { doc } = ctx;
+  doc.fillColor(PDF_COLORS.text).font("Helvetica").fontSize(FONT_SIZES.body);
+  for (const ln of lines) {
+    if (ln.trim() === "") {
+      doc.y += 3;
+      continue;
+    }
+    doc.x = MARGINS.left;
+    const one = truncateToOneLine(doc, ln, CONTENT_WIDTH);
+    const yy = doc.y;
+    doc.text(one, MARGINS.left, yy);
+    doc.y = yy + doc.currentLineHeight(true) + 2;
+  }
+  doc.x = MARGINS.left;
 }
 
+/** Stored for doctrine band (drawn on `end`); avoids drawing inside PDFKit maxY and triggering spurious `continueOnNewPage`. */
 export function attachFooterIdentity(doc: InstanceType<typeof PDFDocument>, footerText: string) {
-  const ph = doc.page.height;
-  const y = ph - MARGINS.bottom + 6;
-  doc.save();
-  doc
-    .fillColor(PDF_COLORS.textMuted)
-    .font("Courier")
-    .fontSize(FONT_SIZES.footer)
-    .text(footerText, MARGINS.left, y, { width: CONTENT_WIDTH, align: "center" });
-  doc.restore();
+  (doc as any).__qaraqutuFooterIdentity = footerText;
 }
 
 export function buildLayoutContext(

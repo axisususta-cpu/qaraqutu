@@ -24,6 +24,7 @@
   "devDependencies": {
     "@types/pdfkit": "latest",
     "cross-env": "latest",
+    "pdf-parse": "^1.1.1",
     "prisma": "6",
     "ts-node": "latest",
     "ts-node-dev": "latest",

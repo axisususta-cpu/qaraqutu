@@ -5,13 +5,12 @@ import {
   buildLayoutContext,
   createDocument,
   drawCoverHeaderBand,
-  drawExportMetadataGrid,
-  drawIdentityChain,
+  drawEvidenceStackedPanels,
+  drawExportAndIdentityGrid,
   drawIssuanceNotice,
   drawKeyValueRows,
   drawParagraph,
   drawSectionHeading,
-  drawEvidenceStackedPanels,
   drawUnknownDisputedBlock,
   drawVerificationTraceTable,
   ensurePageSpace,
@@ -35,31 +34,14 @@ export function renderLegalPdf(
 
   drawCoverHeaderBand(doc, "Legal Review Evidence Pack", identity);
 
-  ensurePageSpace(ctx, 80);
-  drawExportMetadataGrid(ctx);
-  drawIdentityChain(ctx);
+  drawExportAndIdentityGrid(ctx);
 
-  ensurePageSpace(ctx, 100);
   drawSectionHeading(ctx, "Incident summary");
   drawParagraph(
     ctx,
-    "Concise narrative bound to the export snapshot. This text does not carry judicial weight and does not merge recorded and derived layers."
+    "Narrative bound to this export snapshot; not judicial weight; recorded and derived stay separated."
   );
   drawParagraph(ctx, event.summary);
-
-  ensurePageSpace(ctx, 100);
-  drawSectionHeading(ctx, "Canonical chain reference");
-  drawParagraph(
-    ctx,
-    "This export is a presentation artifact linked to a canonical event record. Event, bundle, manifest, export, and receipt identifiers form the authoritative reference chain for downstream review."
-  );
-  drawKeyValueRows(ctx, [
-    { label: "Canonical event", value: identity.eventId },
-    { label: "Canonical bundle", value: identity.bundleId },
-    { label: "Canonical manifest", value: identity.manifestId },
-    { label: "Canonical export", value: identity.exportId },
-    { label: "Canonical receipt", value: identity.receiptId },
-  ]);
 
   const recordedItems = (event.recordedEvidence ?? []).map((item: RecordedEvidenceItem) => {
     const parts = [item.displayLabel, item.contentType, item.sourceId, item.capturedAt].filter(Boolean);
@@ -80,7 +62,6 @@ export function renderLegalPdf(
   drawUnknownDisputedBlock(ctx, event.unknownDisputed);
   drawVerificationTraceTable(ctx, event.verificationTrace ?? []);
 
-  ensurePageSpace(ctx, 90);
   drawSectionHeading(ctx, "Data provenance");
   drawKeyValueRows(ctx, [
     { label: "Manifest ID", value: identity.manifestId },
@@ -88,10 +69,9 @@ export function renderLegalPdf(
   ]);
   drawParagraph(
     ctx,
-    "Data in this export reflects the manifest inventory and associated materials at generation time. Provenance is trace-linked; it is not a guarantee of completeness for all possible proceedings."
+    "Reflects manifest inventory at generation time; trace-linked provenance, not a completeness guarantee for all proceedings."
   );
 
-  ensurePageSpace(ctx, 100);
   drawSectionHeading(ctx, "Redactions & exclusions");
   if (identity.redactionApplied) {
     const basis =
@@ -107,10 +87,11 @@ export function renderLegalPdf(
     drawParagraph(ctx, "No policy-driven redactions or exclusions were applied in this legal review export.");
   }
 
+  ensurePageSpace(ctx, 200);
   drawIssuanceNotice(
     ctx,
-    "This Legal Review Evidence Pack supports counsel-facing review of chain-bound references. It does not constitute a judicial finding, liability determination, or substitute for independent legal judgement.",
-    ["Interpretations remain bounded by evidence available at export time."]
+    "Counsel-facing chain-bound reference; not a judicial finding, liability determination, or substitute for independent legal judgement.",
+    ["Interpretations stay bounded by evidence available at export time."]
   );
 
   return doc;

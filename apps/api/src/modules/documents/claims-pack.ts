@@ -4,15 +4,13 @@ import {
   attachFooterIdentity,
   buildLayoutContext,
   createDocument,
-  drawBulletList,
   drawCoverHeaderBand,
-  drawExportMetadataGrid,
-  drawIdentityChain,
+  drawEvidenceStackedPanels,
+  drawExportAndIdentityGrid,
   drawIssuanceNotice,
   drawKeyValueRows,
   drawParagraph,
   drawSectionHeading,
-  drawEvidenceStackedPanels,
   drawUnknownDisputedBlock,
   drawVerificationTraceTable,
   ensurePageSpace,
@@ -36,21 +34,20 @@ export function renderClaimsPdf(
 
   drawCoverHeaderBand(doc, "Claims Review Evidence Pack", identity);
 
-  ensurePageSpace(ctx, 80);
-  drawExportMetadataGrid(ctx);
-  drawIdentityChain(ctx);
+  drawExportAndIdentityGrid(ctx);
 
-  ensurePageSpace(ctx, 100);
   drawSectionHeading(ctx, "Incident summary");
   drawParagraph(
     ctx,
-    "Short institutional summary of the referenced event package. Review posture is bounded; this export does not establish fault or coverage outcome."
+    "Bounded snapshot of the referenced event; does not establish fault, coverage, or final outcome."
   );
   drawParagraph(ctx, event.summary);
 
-  ensurePageSpace(ctx, 90);
   drawSectionHeading(ctx, "Review posture & next step");
-  drawBulletList(ctx, ["Use this pack for dispute-grade reference against canonical IDs.", "Escalate open unknowns through the verifier inspection surface, not by merging layers."], "");
+  drawParagraph(
+    ctx,
+    "·  Use for dispute-grade reference against canonical IDs.\n·  Escalate unknowns via verifier inspection; do not merge evidence layers."
+  );
 
   const recordedItems = (event.recordedEvidence ?? []).map((item: RecordedEvidenceItem) => {
     const parts = [item.displayLabel, item.contentType, item.sourceId, item.capturedAt].filter(Boolean);
@@ -71,7 +68,6 @@ export function renderClaimsPdf(
   drawUnknownDisputedBlock(ctx, event.unknownDisputed);
   drawVerificationTraceTable(ctx, event.verificationTrace ?? []);
 
-  ensurePageSpace(ctx, 120);
   drawSectionHeading(ctx, "Asset & context");
   drawKeyValueRows(ctx, [
     { label: "Vehicle VIN", value: event.vehicleVin },
@@ -83,7 +79,6 @@ export function renderClaimsPdf(
     { label: "Occurred at", value: new Date(event.occurredAt).toISOString() },
   ]);
 
-  ensurePageSpace(ctx, 100);
   drawSectionHeading(ctx, "Redactions & exclusions");
   if (identity.redactionApplied) {
     const basis =
@@ -99,9 +94,10 @@ export function renderClaimsPdf(
     drawParagraph(ctx, "No policy-driven redactions or exclusions were applied in this claims export.");
   }
 
+  ensurePageSpace(ctx, 200);
   drawIssuanceNotice(
     ctx,
-    "This Claims Evidence Pack is a role-appropriate presentation of a canonical event. The canonical system record remains authoritative. It is not a liability decision, coverage determination, or substitute for independent claims investigation."
+    "Presentation of a canonical event; the system record is authoritative. Not a liability decision, coverage determination, or substitute for investigation."
   );
 
   return doc;
