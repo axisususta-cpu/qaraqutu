@@ -745,6 +745,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         background: "var(--bg)",
         color: "var(--text)",
         fontFamily: SANS,
+        paddingBottom: "calc(4.75rem + env(safe-area-inset-bottom, 0px))",
       }}
     >
       {/* ── Topbar ── */}
@@ -811,25 +812,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           </div>
           {/* Right controls */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            {/* Selected event indicator */}
-            {selectedEventCard && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.25rem 0.6rem",
-                  borderRadius: UI.radius.xs,
-                  border: "1px solid var(--border)",
-                  background: "var(--panel-card)",
-                }}
-              >
-                <span style={{ fontFamily: MONO, fontSize: "0.65rem", color: "var(--text-dim)" }}>EVT</span>
-                <span style={{ fontFamily: MONO, fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 600 }}>
-                  {selectedEventCard.eventId}
-                </span>
-              </div>
-            )}
             {/* Language switcher */}
             <div
               style={{
@@ -960,43 +942,79 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               </span>
             ))}
           </div>
+          {/* Top identity row — inspection station anchor (mono-dense) */}
           <div
             style={{
-              marginTop: "0.5rem",
-              padding: "0.45rem 0.6rem",
-              borderRadius: UI.radius.xs,
-              border: `1px solid ${"var(--border-muted)"}`,
-              background: "var(--panel-card)",
+              marginTop: "0.65rem",
+              padding: "0.5rem 0.65rem",
+              borderRadius: UI.radius.sm,
+              border: `1px solid ${"var(--border-strong)"}`,
+              background: "var(--panel-raised)",
               display: "grid",
-              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              gap: "0.4rem",
-              fontSize: "0.72rem",
+              gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+              gap: "0.45rem 0.75rem",
             }}
+            aria-label={language === "tr" ? "Paket kimliği özeti" : "Package identity summary"}
           >
-            <div>
-              <div style={{ fontFamily: MONO, color: "var(--text-dim)", fontSize: "0.58rem", letterSpacing: "0.08em" }}>
-                {language === "tr" ? "SEÇİLİ SİSTEM" : "SELECTED SYSTEM"}
+            {(
+              [
+                {
+                  k: language === "tr" ? "EVENT_ID" : "EVENT_ID",
+                  v: selectedEventCard?.eventId ?? selectedId ?? "—",
+                },
+                {
+                  k: language === "tr" ? "TITLE" : "TITLE",
+                  v:
+                    selectedEventCard?.title ??
+                    selectedCase?.scenarioFrame ??
+                    (language === "tr" ? "Seçilmedi" : "Not selected"),
+                },
+                {
+                  k: language === "tr" ? "VERTICAL" : "VERTICAL",
+                  v: selectedSystem.toUpperCase(),
+                },
+                {
+                  k: language === "tr" ? "STATE" : "STATE",
+                  v: visibleReviewState ?? "—",
+                },
+                {
+                  k: "BUNDLE",
+                  v: bundleAnchorId.length > 18 ? `${bundleAnchorId.slice(0, 16)}…` : bundleAnchorId,
+                },
+                {
+                  k: "MANIFEST",
+                  v: manifestAnchorId.length > 18 ? `${manifestAnchorId.slice(0, 16)}…` : manifestAnchorId,
+                },
+              ] as { k: string; v: string }[]
+            ).map((cell) => (
+              <div key={cell.k} style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: MONO,
+                    fontSize: "0.52rem",
+                    letterSpacing: "0.12em",
+                    color: "var(--text-dim)",
+                    fontWeight: 700,
+                    marginBottom: "0.12rem",
+                  }}
+                >
+                  {cell.k}
+                </div>
+                <div
+                  style={{
+                    fontFamily: MONO,
+                    fontSize: "0.62rem",
+                    color: "var(--text-soft)",
+                    fontWeight: 600,
+                    lineHeight: 1.35,
+                    wordBreak: "break-word",
+                  }}
+                  title={cell.v}
+                >
+                  {cell.v}
+                </div>
               </div>
-              <div style={{ color: "var(--text-soft)", fontWeight: 600 }}>{selectedSystem.toUpperCase()}</div>
-            </div>
-            <div>
-              <div style={{ fontFamily: MONO, color: "var(--text-dim)", fontSize: "0.58rem", letterSpacing: "0.08em" }}>
-                {language === "tr" ? "SEÇİLİ SENARYO" : "SELECTED SCENARIO"}
-              </div>
-              <div style={{ color: "var(--text-soft)", fontWeight: 600 }}>
-                {selectedCase?.scenarioFrame ??
-                  selectedScenario ??
-                  (language === "tr" ? "Seçilmedi" : "Not selected")}
-              </div>
-            </div>
-            <div>
-              <div style={{ fontFamily: MONO, color: "var(--text-dim)", fontSize: "0.58rem", letterSpacing: "0.08em" }}>
-                {language === "tr" ? "SEÇİLİ OLAY" : "SELECTED EVENT"}
-              </div>
-              <div style={{ color: "var(--text-soft)", fontWeight: 600 }}>
-                {selectedEventCard?.eventId ?? (language === "tr" ? "Seçilmedi" : "Not selected")}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
@@ -1081,6 +1099,18 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             </div>
 
             <div style={{ padding: "0 0.75rem 0.75rem" }}>
+            <div
+              style={{
+                fontFamily: MONO,
+                fontSize: "0.52rem",
+                letterSpacing: "0.16em",
+                color: "var(--text-dim)",
+                fontWeight: 700,
+                margin: "0 0.15rem 0.4rem",
+              }}
+            >
+              {language === "tr" ? "SEÇİM" : "SELECT"}
+            </div>
             {[
               {
                 id: "system",
@@ -1144,7 +1174,21 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               return (
                 <div key={section.id}>
                   {showDivider && (
-                    <div style={{ height: 1, background: "var(--border)", margin: "0.5rem 0" }} />
+                    <div style={{ marginTop: "0.35rem" }}>
+                      <div
+                        style={{
+                          fontFamily: MONO,
+                          fontSize: "0.52rem",
+                          letterSpacing: "0.16em",
+                          color: "var(--text-dim)",
+                          fontWeight: 700,
+                          margin: "0 0.15rem 0.35rem",
+                        }}
+                      >
+                        {language === "tr" ? "İNCELEME" : "REVIEW"}
+                      </div>
+                      <div style={{ height: 1, background: "var(--border)" }} />
+                    </div>
                   )}
                   <div
                     style={{
@@ -1285,15 +1329,29 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           }}
                         >
                           {displayEvents.length === 0 ? (
-                            <p style={{ margin: 0, fontSize: "0.75rem" }}>
-                              {language === "tr"
-                                ? selectedScenario
-                                  ? "Olay bulunamadı."
-                                  : "Önce bir senaryo seçin."
-                                : selectedScenario
-                                ? "No events available."
-                                : "Select a scenario first."}
-                            </p>
+                            <div
+                              role="status"
+                              style={{
+                                margin: 0,
+                                padding: "0.55rem 0.65rem",
+                                borderRadius: UI.radius.xs,
+                                border: `1px dashed ${"var(--border-strong)"}`,
+                                background: "var(--panel-card)",
+                              }}
+                            >
+                              <div style={{ fontFamily: MONO, fontSize: "0.55rem", color: "var(--text-dim)", marginBottom: "0.35rem" }}>
+                                {language === "tr" ? "// empty_event_catalog" : "// empty_event_catalog"}
+                              </div>
+                              <p style={{ margin: 0, fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
+                                {language === "tr"
+                                  ? selectedScenario
+                                    ? "Bu senaryo için olay kartı yok."
+                                    : "Önce senaryo seçin; olaylar senaryoya göre listelenir."
+                                  : selectedScenario
+                                  ? "No event cards for this scenario."
+                                  : "Choose a scenario first; events are listed per scenario."}
+                              </p>
+                            </div>
                           ) : (
                             displayEvents.map((ev) => {
                               const isSelected = selectedEventId === ev.eventId;
@@ -3512,6 +3570,133 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             </section>
           </main>
         </div>
+      </div>
+
+      {/* Fixed primary actions — mirrors in-flow controls; doctrine copy unchanged */}
+      <div
+        role="toolbar"
+        aria-label={language === "tr" ? "Paket eylemleri" : "Package actions"}
+        style={{
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 50,
+          borderTop: "1px solid var(--border)",
+          background: "var(--panel)",
+          boxShadow: "0 -6px 28px rgba(0,0,0,0.06)",
+          padding: "0.45rem max(1rem, env(safe-area-inset-right)) calc(0.45rem + env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left))",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1400,
+            margin: "0 auto",
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.45rem 0.65rem",
+          }}
+        >
+          <span style={{ fontFamily: MONO, fontSize: "0.52rem", letterSpacing: "0.1em", color: "var(--text-dim)", flex: "1 1 120px", minWidth: 0 }}>
+            {language === "tr" ? "// pack_actions · trace≠truth · issuance≠blame" : "// pack_actions · trace≠truth · issuance≠blame"}
+          </span>
+          <button
+            type="button"
+            onClick={runVerification}
+            disabled={!selectedId || loading}
+            style={{
+              fontFamily: MONO,
+              fontSize: "0.62rem",
+              letterSpacing: "0.06em",
+              padding: "0.45rem 0.85rem",
+              borderRadius: UI.radius.xs,
+              border: loading ? "1px solid var(--border-strong)" : "1px solid var(--accent)",
+              background: loading ? "var(--panel-card)" : "var(--accent-soft)",
+              color: "var(--text)",
+              cursor: loading ? "wait" : !selectedId ? "not-allowed" : "pointer",
+              opacity: !selectedId ? 0.55 : 1,
+              fontWeight: 700,
+            }}
+          >
+            {loading
+              ? language === "tr"
+                ? "DOĞRULANIYOR…"
+                : "VERIFYING…"
+              : language === "tr"
+              ? "OLAYI DOĞRULA"
+              : "VERIFY PACKAGE"}
+          </button>
+          {hasConnectedApiIssuanceProfile ? (
+            <>
+              <button
+                type="button"
+                onClick={runExportJson}
+                disabled={!selectedId || !!exportLoading}
+                style={{
+                  fontFamily: MONO,
+                  fontSize: "0.6rem",
+                  padding: "0.42rem 0.75rem",
+                  borderRadius: UI.radius.xs,
+                  border: "1px solid var(--border)",
+                  background: "var(--panel-card)",
+                  color: "var(--text)",
+                  cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
+                  opacity: !selectedId || exportLoading ? 0.55 : 1,
+                  fontWeight: 600,
+                }}
+              >
+                {exportLoading === "json"
+                  ? language === "tr"
+                    ? "JSON…"
+                    : "JSON…"
+                  : language === "tr"
+                  ? "BOUNDED JSON"
+                  : "BOUNDED JSON"}
+              </button>
+              <button
+                type="button"
+                onClick={runExportPdf}
+                disabled={!selectedId || !!exportLoading}
+                style={{
+                  fontFamily: MONO,
+                  fontSize: "0.6rem",
+                  padding: "0.42rem 0.75rem",
+                  borderRadius: UI.radius.xs,
+                  border: "1px solid var(--border)",
+                  background: "var(--panel-card)",
+                  color: "var(--text)",
+                  cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
+                  opacity: !selectedId || exportLoading ? 0.55 : 1,
+                  fontWeight: 600,
+                }}
+              >
+                {exportLoading === "pdf"
+                  ? language === "tr"
+                    ? "PDF…"
+                    : "PDF…"
+                  : language === "tr"
+                  ? "BOUNDED PDF"
+                  : "BOUNDED PDF"}
+              </button>
+            </>
+          ) : null}
+        </div>
+        {exportError ? (
+          <div
+            style={{
+              maxWidth: 1400,
+              margin: "0.15rem auto 0",
+              textAlign: "center",
+              fontFamily: MONO,
+              fontSize: "0.55rem",
+              color: "var(--error)",
+            }}
+          >
+            {exportError}
+          </div>
+        ) : null}
       </div>
     </div>
   );
