@@ -1,19 +1,17 @@
-﻿"use client";
+"use client";
 
-/**
- * Canonical review spine — System → Scenario → Event → Review.
- * Wire/protocol trace language.
- */
+import type { Lang } from "../../../lib/i18n/messages";
+import { MSG } from "../../../lib/i18n/messages";
 
+export function CanonicalSpineDiagram({ lang }: { lang: Lang }) {
+  const m = MSG[lang];
+  const NODES = [
+    { id: "system", label: m.homeFlowNodeSystem },
+    { id: "scenario", label: m.homeFlowNodeScenario },
+    { id: "event", label: m.homeFlowNodeEvent },
+    { id: "review", label: m.homeFlowNodeInspection },
+  ] as const;
 
-const NODES = [
-  { id: "system", label: "System" },
-  { id: "scenario", label: "Scenario" },
-  { id: "event", label: "Event" },
-  { id: "review", label: "Review" },
-] as const;
-
-export function CanonicalSpineDiagram() {
   return (
     <div
       style={{
@@ -33,7 +31,7 @@ export function CanonicalSpineDiagram() {
           fontFamily: "'JetBrains Mono', monospace",
         }}
       >
-        Canonical review spine
+        {m.homeCanonicalSpineCaption}
       </div>
       <div
         style={{
@@ -75,4 +73,3 @@ export function CanonicalSpineDiagram() {
     </div>
   );
 }
-

@@ -152,6 +152,19 @@ body {
   }
 }
 
+/* Command spine flow — stack arrows vertically on narrow screens */
+@media (max-width: 700px) {
+  .home-command-spine-flow {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .home-command-spine-arrow {
+    transform: rotate(90deg);
+    padding: 0.25rem 0 !important;
+    align-self: center !important;
+  }
+}
+
 @media (max-width: 900px) {
   .home-problem-grid {
     grid-template-columns: 1fr !important;

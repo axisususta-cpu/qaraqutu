@@ -13,6 +13,7 @@ import { RoleExportDiagram } from "./components/diagrams/RoleExportDiagram";
 import { InstitutionalUseFamilies } from "./components/institutional/InstitutionalUseFamilies";
 import { SectorScenarioCards } from "./components/sector/SectorScenarioCards";
 import { HomeRoleInstitutionGrid } from "./components/home/HomeRoleInstitutionGrid";
+import { HomeCommandSpineFlow } from "./components/home/HomeCommandSpineFlow";
 const MEDIA = {
   hero: "/media/home/home-hero-vehicle.jpg",
   vehicle: "/media/home/vehicle-section-dashboard.jpg",
@@ -101,13 +102,16 @@ export default function LandingPage() {
             >
               {m.motto}
             </p>
-            <h1 style={{ fontSize: "2.05rem", margin: 0, lineHeight: 1.22, fontWeight: 600 }}>
-              {(() => {
-                const accent = lang === "tr" ? "Do\u011frulay\u0131c\u0131-\u00f6ncelikli" : "Verifier-first";
-                const parts = m.homeHeroHeading.split(accent);
-                if (parts.length < 2) return m.homeHeroHeading;
-                return <>{parts[0]}<span style={{ color: "var(--accent)" }}>{accent}</span>{parts[1]}</>;
-              })()}
+            <h1
+              style={{
+                fontSize: "clamp(1.35rem, 3.5vw, 2.05rem)",
+                margin: 0,
+                lineHeight: 1.2,
+                fontWeight: 600,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              {m.homeHeroHeading}
             </h1>
             <p
               style={{
@@ -150,6 +154,18 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
+            <p
+              style={{
+                marginTop: "0.85rem",
+                marginBottom: 0,
+                fontSize: "0.74rem",
+                lineHeight: 1.55,
+                color: "var(--text-muted)",
+                maxWidth: 720,
+              }}
+            >
+              {m.homeHeroArchitectureNote}
+            </p>
             <div
               style={{
                 marginTop: "1.05rem",
@@ -213,7 +229,8 @@ export default function LandingPage() {
                 priority
               />
             </div>
-            <VerticalsDiagram />
+            <VerticalsDiagram lang={lang} />
+            <p style={{ margin: 0, fontSize: "0.76rem", lineHeight: 1.5, color: "var(--text-soft)" }}>{m.homeVerticalsCaption}</p>
             <div
               style={{
                 borderRadius: 10,
@@ -225,11 +242,13 @@ export default function LandingPage() {
               }}
             >
               {lang === "tr"
-                ? "Protokol konumu: QARAQUTU, inceleme zinciri bütünlüğünü korur; sorumluluk motoru veya yargısal ikame değildir."
-                : "Protocol position: QARAQUTU preserves chain-of-review integrity; it does not act as a liability engine or judicial substitute."}
+                ? "Protokol konumu: Doğrulayıcı bir inceleme istasyonudur; zincir disiplinini korur, sorumluluk motoru veya mahkeme ikamesi değildir."
+                : "Protocol position: the Verifier is an inspection station—it preserves chain discipline; it is not a liability engine or a substitute for court judgement."}
             </div>
           </div>
         </section>
+
+        <HomeCommandSpineFlow lang={lang} />
 
         {/* Problem — institutional cards */}
         <section
@@ -331,7 +350,7 @@ export default function LandingPage() {
         >
           <SectionHeader badge={lang === "tr" ? "Mimari" : "Architecture"} heading={m.sectionProductSystem} />
           <div style={{ marginBottom: "0.75rem" }}>
-            <CanonicalSpineDiagram />
+            <CanonicalSpineDiagram lang={lang} />
           </div>
           <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
             <li>
@@ -434,7 +453,24 @@ export default function LandingPage() {
                   <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text)", marginBottom: "0.25rem", fontFamily: MONO }}>{v.label}</div>
                   <div style={{ fontSize: "0.65rem", color: "var(--text-dim)", fontFamily: MONO, marginBottom: "0.5rem" }}>{v.trace}</div>
                   <p style={{ margin: "0 0 0.45rem", fontSize: "0.78rem", lineHeight: 1.5, color: "var(--text-soft)" }}>{v.why}</p>
-                  <p style={{ margin: 0, fontSize: "0.72rem", lineHeight: 1.5, color: "var(--text-muted)", fontFamily: MONO }}>{v.sep}</p>
+                  <p style={{ margin: "0 0 0.5rem", fontSize: "0.72rem", lineHeight: 1.5, color: "var(--text-muted)", fontFamily: MONO }}>{v.sep}</p>
+                  <Link
+                    href="/verifier"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.25rem",
+                      fontSize: "0.7rem",
+                      fontWeight: 600,
+                      color: "var(--accent)",
+                      textDecoration: "none",
+                      fontFamily: MONO,
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    {m.homeDemoCardCta}
+                    <span aria-hidden>→</span>
+                  </Link>
                 </div>
               </div>
             ))}
@@ -710,19 +746,23 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Institutional notice */}
+        {/* Institutional notice — doctrine closure */}
         <section
           style={{
-            marginTop: "0.4rem",
+            marginTop: "0.5rem",
             borderTop: "1px solid var(--border)",
-            paddingTop: "0.85rem",
-            paddingBottom: "0.1rem",
+            paddingTop: "1rem",
+            paddingBottom: "0.25rem",
           }}
         >
-          <p style={{ fontSize: "0.75rem", opacity: 0.8, color: "var(--text-muted)", maxWidth: 820, lineHeight: 1.6 }}>
-            {lang === "tr"
-              ? "QARAQUTU, uyuşmazlık düzeyinde bir kanıt sistemidir. Sorumluluk motoru, yargısal karar sistemi veya bağımsız hukuk/hasar/teknik değerlendirmelerin yerine geçen bir yapı değildir. Doğrulayıcı durumları ve dışa aktarımlar, tek taraflı kusur-sonuç hükmü değil; kanonik kayda bağlı role uygun artefaktlardır."
-              : "QARAQUTU is a dispute-grade evidence system. It is not a liability engine, not a judicial decision system, and not a substitute for independent legal, claims, or technical judgment. Verifier states and exports are role-appropriate artifacts linked to a canonical record, not unilateral findings about fault or outcome."}
+          <p style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-soft)", margin: "0 0 0.45rem", letterSpacing: "0.02em" }}>
+            {m.footerWitnessLine1}
+          </p>
+          <p style={{ fontSize: "0.76rem", color: "var(--text-muted)", maxWidth: 860, lineHeight: 1.65, margin: "0 0 0.55rem" }}>
+            {m.footerWitnessLine2}
+          </p>
+          <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", maxWidth: 860, lineHeight: 1.6, margin: 0, opacity: 0.92 }}>
+            {m.doctrineDisclaimer}
           </p>
         </section>
       </div>

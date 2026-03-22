@@ -1,8 +1,10 @@
-﻿"use client";
+"use client";
 
+import type { Lang } from "../../../lib/i18n/messages";
+import { MSG } from "../../../lib/i18n/messages";
 
-
-export function VerticalsDiagram() {
+export function VerticalsDiagram({ lang }: { lang: Lang }) {
+  const m = MSG[lang];
   return (
     <div
       style={{
@@ -22,7 +24,7 @@ export function VerticalsDiagram() {
           fontFamily: "'JetBrains Mono', monospace",
         }}
       >
-        One product · three verticals
+        {m.homeVerticalsDiagramTitle}
       </div>
       <div
         style={{
@@ -32,9 +34,9 @@ export function VerticalsDiagram() {
         }}
       >
         {[
-          { id: "vehicle", label: "Vehicle", trace: "Event → Bundle → Manifest" },
+          { id: "vehicle", label: lang === "tr" ? "Araç" : "Vehicle", trace: "Event → Bundle → Manifest" },
           { id: "drone", label: "Drone", trace: "Mission → Telemetry → Link" },
-          { id: "robot", label: "Robot", trace: "Interaction → Safety → Handoff" },
+          { id: "robot", label: lang === "tr" ? "Robot" : "Robot", trace: "Interaction → Safety → Handoff" },
         ].map((v) => (
           <div
             key={v.id}
@@ -70,4 +72,3 @@ export function VerticalsDiagram() {
     </div>
   );
 }
-

@@ -502,6 +502,21 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     setIssuanceAudience(DEFAULT_AUDIENCE_BY_PROFILE[exportProfile]);
   }, [exportProfile]);
 
+  /** New event selection must not inherit verify/export identity from a previous package. */
+  useEffect(() => {
+    setVerificationState(null);
+    setTranscript(null);
+    setIdentity(null);
+    setVerificationRunId(null);
+    setTranscriptId(null);
+    setVerificationError(null);
+    setVerificationJustCompleted(false);
+    setLastIssuedArtifact(null);
+    setIssuanceState("idle");
+    setExportError(null);
+    setLastIssuedAtIso(null);
+  }, [selectedEventId]);
+
   useEffect(() => {
     async function load() {
       const res = await fetch(`${API_BASE}/v1/events`);
@@ -583,10 +598,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   };
 
   const selected = events.find((e) => e.eventId === selectedId) ?? null;
-  const bundleAnchorId =
-    identity?.bundle_id ?? selected?.bundleId ?? selectedEventCard?.bundleId ?? "—";
-  const manifestAnchorId =
-    identity?.manifest_id ?? selected?.manifestId ?? selectedEventCard?.manifestId ?? "—";
+  const verifyIdentityMatchesSelection = Boolean(
+    identity && selectedEventId && identity.event_id === selectedEventId
+  );
+  const bundleAnchorId = verifyIdentityMatchesSelection
+    ? identity!.bundle_id
+    : (selected?.bundleId ?? selectedEventCard?.bundleId ?? "—");
+  const manifestAnchorId = verifyIdentityMatchesSelection
+    ? identity!.manifest_id
+    : (selected?.manifestId ?? selectedEventCard?.manifestId ?? "—");
   const visibleRecorded = selectedCase?.recordedEvidence?.length
     ? toRecordedRows(selectedCase.recordedEvidence, language)
     : [];
@@ -1783,8 +1803,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   >
                     {[
                       { key: "event_id", value: selectedEventCard.eventId },
-                      { key: "bundle_id", value: identity?.bundle_id ?? selectedEventCard.bundleId ?? "—" },
-                      { key: "manifest_id", value: identity?.manifest_id ?? selectedEventCard.manifestId ?? "—" },
+                      { key: "bundle_id", value: bundleAnchorId },
+                      { key: "manifest_id", value: manifestAnchorId },
                       ...(transcriptId ? [{ key: "trace_id", value: transcriptId }] : []),
                       ...(verificationRunId ? [{ key: "run_id", value: verificationRunId }] : []),
                     ].map((item, i) => (
@@ -1871,8 +1891,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           </div>
                           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem 0.75rem", fontFamily: MONO, fontSize: "0.68rem", color: "var(--text-soft)" }}>
                             <span>event_id:{selectedEventCard.eventId}</span>
-                            <span>bundle_id:{identity?.bundle_id ?? selectedEventCard.bundleId ?? "—"}</span>
-                            <span>manifest_id:{identity?.manifest_id ?? selectedEventCard.manifestId ?? "—"}</span>
+                            <span>bundle_id:{bundleAnchorId}</span>
+                            <span>manifest_id:{manifestAnchorId}</span>
                           </div>
                         </div>
                         <div style={{ padding: "0.6rem 1.15rem", borderBottom: `1px solid ${"var(--border-muted)"}`, background: "var(--panel-card)" }}>
@@ -2538,7 +2558,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </p>
               )}
 
-              {verificationState && identity && (
+              {verificationState && identity && verifyIdentityMatchesSelection && (
                 <div
                   style={{
                     border: verificationJustCompleted ? "1px solid var(--success)" : "1px solid var(--border)",
@@ -2953,9 +2973,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             : "Bounded JSON/PDF issuance from the fixed action bar."}
                         </p>
                       )}
-                      {(identity?.bundle_id ?? selected?.bundleId) && (
+                      {selectedEventCard && (
                         <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.65rem", lineHeight: 1.5 }}>
-                          {language === "tr" ? "Paket ID" : "Bundle ID"}: {identity?.bundle_id ?? selected?.bundleId} · {language === "tr" ? "Manifest ID" : "Manifest ID"}: {identity?.manifest_id ?? selected?.manifestId ?? "—"} · {language === "tr" ? "İz" : "Trace"}: {transcriptId ?? (language === "tr" ? "hazırlanmadı" : "pending")}
+                          {language === "tr" ? "Paket ID" : "Bundle ID"}: {bundleAnchorId} · {language === "tr" ? "Manifest ID" : "Manifest ID"}: {manifestAnchorId} · {language === "tr" ? "İz" : "Trace"}: {transcriptId ?? (language === "tr" ? "hazırlanmadı" : "pending")}
                         </div>
                       )}
                       {(issuanceState !== "idle" || !!issuedArtifact) && (

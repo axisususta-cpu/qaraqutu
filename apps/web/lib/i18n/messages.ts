@@ -27,47 +27,76 @@ const en = {
     "Verifier-first witness protocol for dispute-grade event packages across Vehicle, Drone, and Robot.",
 
   // Home hero
-  homeHeroChip: "Witness protocol",
-  homeHeroHeading: "One product. Verifier-first. Three verticals.",
+  homeHeroChip: "Dispute-grade evidence chain",
+  homeHeroHeading: "When the same incident is read three different ways, the institution needs one chain everyone can audit—not three stories.",
   homeHeroBody:
-    "QARAQUTU is a verifier-first witness protocol for dispute-grade event packages across Vehicle, Drone, and Robot. The Verifier is the main review station: a bounded assessment with recorded evidence, derived assessment, verification trace, and artifact issuance. Golden is the internal quality bar and reference for the verifier, not a separate product or primary surface.",
+    "QARAQUTU binds sensors, logs, and operator context into one canonical event package, then inspects it in a dedicated Verifier: recorded material, derived readings, explicit unknowns, a verification trace, and role-bounded issuance. It is built for underwriting, counsel, field, and engineering to work from the same spine without collapsing witness and interpretation.",
+  homeHeroArchitectureNote:
+    "Architecture: Verifier-first inspection station · Vehicle, Drone, and Robot on one canonical model · Golden remains an internal continuity reference, not a separate product.",
   homeHeroCta: "Open Verifier",
   homeHeroCtaSecondary: "Docs",
-  homeHeroPillar1: "Verifier is the primary surface",
-  homeHeroPillar2: "Recorded and derived stay separated",
-  homeHeroPillar3: "Trace supports review, not final truth",
-  homeHeroPillar4: "Issuance is protocol artifact, not blame",
-  homeHeroEyebrow: "QARAQUTU · witness protocol · inspection-grade surface",
+  homeHeroPillar1: "One package spine per active event",
+  homeHeroPillar2: "Recorded and derived never merged in the surface",
+  homeHeroPillar3: "Trace documents checks—does not claim final truth",
+  homeHeroPillar4: "Issuance is a bounded artifact, not a fault finding",
+  homeHeroEyebrow: "QARAQUTU · institutional witness protocol",
+  homeFlowBandBadge: "Spine",
+  homeFlowBandTitle: "Command spine at a glance",
+  homeFlowBandLead:
+    "Every review starts by locking system, scenario, and event—then opening inspection. No dashboard rollup; one canonical package at a time.",
+  homeFlowNodeSystem: "System",
+  homeFlowNodeScenario: "Scenario",
+  homeFlowNodeEvent: "Event",
+  homeFlowNodeInspection: "Inspection",
+  homeFlowNodeSystemBlurb: "Vehicle, Drone, or Robot domain",
+  homeFlowNodeScenarioBlurb: "Incident class frame",
+  homeFlowNodeEventBlurb: "Canonical package ID",
+  homeFlowNodeInspectionBlurb: "Verifier station — layers & trace",
+  homeVerticalsCaption:
+    "Same protocol across three domains; separation of recorded, derived, trace, and issuance is preserved in each.",
+  homeVerticalsDiagramTitle: "Domains on one spine",
+  homeCanonicalSpineCaption: "Canonical review spine",
   homeHowItWorksTitle: "How the protocol runs",
-  homeHowItWorksLead: "Five bounded steps from capture to role-specific review. No verdict engine; disciplined artifacts only.",
+  homeHowItWorksLead:
+    "After the spine is bound, five disciplined steps move from raw capture to role-specific shells—without a verdict engine or blended evidence layers.",
   homeHowStep1: "Capture / record — sensors and sources enter the canonical package as recorded evidence.",
   homeHowStep2: "Separate recorded vs derived — reconstruction and interpretation never replace raw witness material.",
   homeHowStep3: "Verify / trace — bounded checks produce an audit trace; trace supports review, not final truth.",
   homeHowStep4: "Issue bounded artifact — claims/legal outputs tied to manifest, bundle, and receipt chain.",
   homeHowStep5: "Route to role-specific review — each institution receives a shell aligned to its evidence need.",
   homeProblemIntro:
-    "When high-stakes reviews rely on fragmented exports and mixed narratives, institutions cannot agree on what was witnessed versus what was inferred.",
-  homeProblemCard1Title: "Operational evidence threads do not meet in one file",
+    "After a serious vehicle approach, a BVLOS loss window, or a collaborative robot stop, the same underlying facts are copied into different containers. The friction is not ‘missing data’—it is divergent objects of evidence.",
+  homeProblemCard1Title: "Claims sees a FNOL narrative; legal sees discovery excerpts; engineering sees logs",
   homeProblemCard1Body:
-    "Logs, ticketing, body-cam extracts, and ad-hoc PDFs circulate in parallel. Underwriting, legal, and field teams each hold a partial thread—without one tamper-evident package anchor.",
-  homeProblemCard2Title: "Recorded signal and derived narrative are conflated",
+    "Each function receives a different slice—spreadsheets, ticket exports, counsel summaries—none of which declare the same bundle hash or manifest line. Cross-checking becomes a meeting sport instead of a chain comparison.",
+  homeProblemCard2Title: "The telemetry slide and the ‘what happened’ paragraph share one slide deck",
   homeProblemCard2Body:
-    "Raw telemetry and later reconstruction are pasted into the same storyline. That collapses the boundary between witness material and interpretation—precisely where disputes ignite.",
-  homeProblemCard3Title: "Each role needs a different read on the same spine",
+    "Raw sensor frames and the reconstructed timeline are styled alike. Once witness and interpretation share one visual authority, parties argue about storytelling instead of inspecting separation.",
+  homeProblemCard3Title: "Municipality wants an administrative packet; the field unit needs timestamps; OEM wants the safety ladder",
   homeProblemCard3Body:
-    "Claims, counsel, municipality, and engineering each require a disciplined view—without inventing parallel truths. The same canonical event must support distinct, bounded shells.",
+    "Legitimate needs differ—but without a shared canonical spine, each team silently extends the record. QARAQUTU keeps one event core and issues role-bounded shells, not parallel truths.",
   homeDemoDoctrineTitle: "Why a canonical witness layer is inevitable",
   homeDemoDoctrineSubtitle:
     "Doctrine-safe demo scenarios — illustrative classes only; no named real-world incidents embedded in the product.",
-  homeDemoVehicleWhy: "Near-miss and collision disputes turn on timing, chain of custody, and separation of telemetry from narrative.",
+  homeDemoVehicleWhy:
+    "Bounded verification is required because near-miss and collision reviews hinge on time alignment, custody, and proving that AEB or driver inputs were not collapsed into a single fiction.",
   homeDemoVehicleSeparation: "Recorded payloads stay raw; derived timelines and reconstructions are explicitly second-layer.",
-  homeDemoDroneWhy: "BVLOS and mission anomalies require traceable link-loss windows and recovery sequences accountable to operators.",
+  homeDemoDroneWhy:
+    "Bounded verification is required because BVLOS and mission anomalies need defensible link-loss windows, failsafe ladders, and re-acquisition steps—without inferring operator negligence from narrative alone.",
   homeDemoDroneSeparation: "Telemetry streams remain recorded; mission readings and timelines are derived and bounded.",
-  homeDemoRobotWhy: "Public interaction and safety-stop events need operator handoff and protective-stop context without mixing layers.",
+  homeDemoRobotWhy:
+    "Bounded verification is required because public proximity and protective stops must show PLC state, torque context, and calibration lineage separately from human-factors judgement.",
   homeDemoRobotSeparation: "Interaction logs are recorded; encounter synthesis stays derived and review-conditioned.",
+  homeDemoCardCta: "Inspect in Verifier",
   homeRoleGridTitle: "Who uses this protocol",
   homeRoleGridSubtitle:
     "One canonical event core; institutional shells vary by filing, liability, and operational context — not by inventing parallel truths.",
+  homeRoleProduceTitle: "Evidence production chain",
+  homeRoleProduceLead:
+    "Capture, bind to a canonical package, run bounded checks—field and technical actors anchor what enters the spine.",
+  homeRoleConsumeTitle: "Evidence consumption / review chain",
+  homeRoleConsumeLead:
+    "Claims, legal, administrative, and oversight actors receive role-bounded shells tied to the same manifest and trace references.",
   homeRoleInsuranceTitle: "Insurance / claims",
   homeRoleInsuranceBody: "Dispute-ready summaries and claims packs tied to canonical references — not unilateral fault findings.",
   homeRoleLegalTitle: "Legal / notary / authenticity",
@@ -300,19 +329,39 @@ const tr = {
     "Araç, İnsansız Hava Aracı ve Robot'ta uyuşmazlık düzeyinde olay paketleri için doğrulayıcı-öncelikli tanık protokolü.",
 
   // Home hero
-  homeHeroChip: "Tanık protokolü",
-  homeHeroHeading: "Tek ürün. Doğrulayıcı-öncelikli. Üç dikey.",
+  homeHeroChip: "Uyuşmazlık sınıfı kanıt zinciri",
+  homeHeroHeading:
+    "Aynı olayı sigorta, hukuk ve teknik farklı nesnelerde okuduğunda kurumun ihtiyacı; herkesin denetleyebileceği tek zincir — üç ayrı öykü değil.",
   homeHeroBody:
-    "QARAQUTU; Araç, İHA ve Robot genelinde uyuşmazlık düzeyinde olay paketleri için doğrulayıcı-öncelikli bir tanık protokolüdür. Doğrulayıcı ana inceleme istasyonudur: kayıtlı kanıt, türetilmiş değerlendirme, doğrulama izi ve belge düzenlemesiyle sınırlı bir değerlendirme yapısı. Golden, doğrulayıcı için dahili kalite referansıdır; ayrı bir ürün değildir.",
+    "QARAQUTU sensör, günlük ve operatör bağlamını tek kanonik olay paketinde birleştirir; ardından ayrılmış bir Doğrulayıcı istasyonunda inceler: kayıtlı materyal, türetilmiş okumalar, açık bilinmeyenler, doğrulama izi ve role sınırlı belge düzenlemesi. Hasar, vekil, saha ve mühendislik aynı omurgadan çalışsın diye tasarlanmıştır; tanık ile yorumun aynı yüzeyde erimesine izin vermez.",
+  homeHeroArchitectureNote:
+    "Mimari notu: Doğrulayıcı birincil inceleme istasyonudur · Araç, İHA ve Robot tek kanonik model üzerindedir · Golden, ayrı ürün değil; doğrulayıcı sürekliliği için dahili referanstır.",
   homeHeroCta: "Doğrulayıcıyı Aç",
   homeHeroCtaSecondary: "Belgeler",
-  homeHeroPillar1: "Doğrulayıcı temel yüzeydir",
-  homeHeroPillar2: "Kayıtlı ve türetilmiş ayrı kalır",
-  homeHeroPillar3: "İz, incelemeyi destekler; nihai gerçek değildir",
-  homeHeroPillar4: "Belge düzenlemesi protokol çıktısıdır, sorumluluk değil",
-  homeHeroEyebrow: "QARAQUTU · tanık protokolü · inceleme sınıfı yüzey",
+  homeHeroPillar1: "Etkin olay başına tek paket omurgası",
+  homeHeroPillar2: "Kayıtlı ve türetilmiş yüzeyde asla birleştirilmez",
+  homeHeroPillar3: "İz kontrolleri belgeler; nihai gerçek iddiası taşımaz",
+  homeHeroPillar4: "Düzenleme sınırlı artefaktır; kusur hükmü değildir",
+  homeHeroEyebrow: "QARAQUTU · kurumsal tanık protokolü",
+  homeFlowBandBadge: "Omurga",
+  homeFlowBandTitle: "Komut omurgası — tek bakışta",
+  homeFlowBandLead:
+    "Her inceleme sistem → senaryo → olay kilitlendikten sonra açılır; gösterge paneli toplaması yok, aynı anda yalnızca bir kanonik paket.",
+  homeFlowNodeSystem: "Sistem",
+  homeFlowNodeScenario: "Senaryo",
+  homeFlowNodeEvent: "Olay",
+  homeFlowNodeInspection: "İnceleme",
+  homeFlowNodeSystemBlurb: "Araç, İHA veya Robot",
+  homeFlowNodeScenarioBlurb: "Olay sınıfı çerçevesi",
+  homeFlowNodeEventBlurb: "Kanonik paket kimliği",
+  homeFlowNodeInspectionBlurb: "Doğrulayıcı — katmanlar ve iz",
+  homeVerticalsCaption:
+    "Üç alanda aynı protokol; kayıtlı, türetilmiş, iz ve düzenleme ayrımı korunur.",
+  homeVerticalsDiagramTitle: "Tek omurgadaki alanlar",
+  homeCanonicalSpineCaption: "Kanonik inceleme omurgası",
   homeHowItWorksTitle: "Protokol nasıl işler",
-  homeHowItWorksLead: "Yakalamadan role özgü incelemeye beş sınırlı adım. Hüküm motoru yok; yalnızca disiplinli artefakt.",
+  homeHowItWorksLead:
+    "Omurga bağlandıktan sonra beş sınırlı adımla yakalama, role özgü kabuklara uzanır — hüküm motoru yok, kanıt katmanları eritilmez.",
   homeHowStep1: "Yakalama / kayıt — sensör ve kaynaklar, kayıtlı kanıt olarak kanonik pakete girer.",
   homeHowStep2: "Kayıtlı ve türetilmiş ayrımı — yorumlama, ham tanık materyalinin yerini almaz.",
   homeHowStep3: "Doğrulama / iz — sınırlı kontroller denetim izi üretir; iz incelemeyi destekler, nihai gerçek değildir.",
@@ -332,15 +381,25 @@ const tr = {
   homeDemoDoctrineTitle: "Neden kanonik tanık katmanı kaçınılmaz",
   homeDemoDoctrineSubtitle:
     "Doktrin güvenli demo senaryolar — yalnızca sınıf örnekleri; ürüne gerçek adlı olay gömülmez.",
-  homeDemoVehicleWhy: "Yakın kaçış ve çatışma ihtilafları zamanlama, zincir ve telemetri–anlatı ayrımına dayanır.",
+  homeDemoVehicleWhy:
+    "Sınırlı doğrulama şarttır: yakın kaçış ve çatışma incelemeleri zaman hizası, emanet zinciri ve AEB veya sürücü girdilerinin tek kurguda eritilmediğinin gösterilmesine bağlıdır.",
   homeDemoVehicleSeparation: "Kayıtlı yükler ham kalır; zaman çizgisi ve rekonstrüksiyon açıkça ikinci katmandır.",
-  homeDemoDroneWhy: "BVLOS ve görev anomalilerinde bağlantı kaybı penceresi ve kurtarma dizisi operatör hesap verebilirliği için izlenebilir olmalıdır.",
+  homeDemoDroneWhy:
+    "Sınırlı doğrulama şarttır: BVLOS ve görev anomalilerinde bağlantı kaybı penceresi, failsafe basamakları ve yeniden ele geçirme — operatör ihmali anlatısından ayrı — savunulabilir olmalıdır.",
   homeDemoDroneSeparation: "Telemetri akışı kayıtlı kalır; görev okumaları ve zaman çizgisi türetilmiş ve sınırlıdır.",
-  homeDemoRobotWhy: "Kamusal karşılaşma ve güvenlik durdurma olaylarında el değişimi ve koruyucu durdurma bağlamı katmanları karıştırmadan sunulmalıdır.",
+  homeDemoRobotWhy:
+    "Sınırlı doğrulama şarttır: kamusal yakınlık ve koruyucu durdurmalarda PLC durumu, tork bağlamı ve kalibrasyon soyunu insan faktörü hükmünden ayrı göstermek gerekir.",
   homeDemoRobotSeparation: "Etkileşim günlükleri kayıtlıdır; karşılaşma özeti türetilmiş ve incelemeye koşulludur.",
+  homeDemoCardCta: "Doğrulayıcıda incele",
   homeRoleGridTitle: "Kim bu protokolü kullanır",
   homeRoleGridSubtitle:
     "Tek kanonik olay çekirdeği; kurumsal kabuklar dosyalama, sorumluluk ve operasyon bağlamına göre değişir — paralel gerçeklik üretmez.",
+  homeRoleProduceTitle: "Kanıt üretim zinciri",
+  homeRoleProduceLead:
+    "Yakalama, kanonik pakete bağlama ve sınırlı kontroller — saha ve teknik aktörler omurgaya girenleri sabitler.",
+  homeRoleConsumeTitle: "Kanıt tüketim / inceleme zinciri",
+  homeRoleConsumeLead:
+    "Hasar, hukuk, idari ve gözetim muhatapları aynı manifest ve iz referanslarına bağlı, role sınırlı kabuklar alır.",
   homeRoleInsuranceTitle: "Sigorta / hasar",
   homeRoleInsuranceBody: "Kanonik referanslara bağlı ihtilafa hazır özet ve hasar paketleri — tek taraflı kusur hükmü değildir.",
   homeRoleLegalTitle: "Hukuk / noter / özgünlük",
