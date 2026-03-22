@@ -12,12 +12,20 @@ import type {
   ArtifactProfileVisibility,
 } from "contracts";
 
-const TRACE_STEP = (
+function TRACE_STEP(
   step: number,
   check: string,
   result: string,
-  note: string
-): VerificationTraceStep => ({ step, check, result, note });
+  note: string,
+  tr?: { check: string; note: string }
+): VerificationTraceStep {
+  const row: VerificationTraceStep = { step, check, result, note };
+  if (tr) {
+    row.checkTr = tr.check;
+    row.noteTr = tr.note;
+  }
+  return row;
+}
 
 /** Golden-grade demo cases: 2 Vehicle, 2 Drone, 2 Robot. */
 export const CANONICAL_CASES: CanonicalCase[] = [
@@ -32,14 +40,18 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     manifestId: "QMF-20260311-DEMO-NEARMISS-01",
     occurredAt: "2026-03-11T08:30:00.000Z",
     summary:
-      "Near-miss in urban corridor where vehicle performed abrupt braking to avoid side-entry vehicle.",
+      "Demo urban corridor: subject vehicle executed a hard brake after side-entry threat; AEB and driver inputs both appear in the raw bus. Bounded verification confirms package integrity and layer separation—so underwriting and OEM review can argue about intervention timing without fighting over which file is authoritative.",
+    summaryTr:
+      "Demo kent koridoru: yan giriş tehdidi sonrası araç sert fren uyguladı; ham veri yolunda hem AEB hem sürücü girdileri görünür. Sınırlı doğrulama paket bütünlüğünü ve katman ayrımını teyit eder — sigorta ve üretici incelemesi, hangi dosyanın otorite olduğu tartışmasına girmeden müdahale zamanlamasını tartışabilir.",
     verificationState: "PASS",
     reviewWhyEn:
-      "Under review to confirm bundle integrity and manifest linkage for the AEB activation event—timing of system intervention vs driver action must remain traceable.",
+      "Bundle–manifest linkage and immutability checks for this assisted-driving near-miss: insurers and counsel need a single chain where radar/camera fusion, brake request, and driver torque are not collapsed into one narrative before review.",
     reviewWhyTr:
-      "AEB aktivasyon olayı için paket bütünlüğü ve manifest bağlantısının doğrulanması amacıyla incelemeye alındı; sistem müdahalesi ile sürücü aksiyonu zamanlaması izlenebilir kalmalı.",
-    nextStepEn: "Review trace summary or start artifact issuance.",
-    nextStepTr: "İz özetini inceleyin veya artifact issuance başlatın.",
+      "Bu destekli sürüş yakın kaçışı için paket–manifest bağlantısı ve değişmezlik kontrolleri: sigorta ve hukuk, radar/kamera füzyonu, fren isteği ve sürücü torkunun tek anlatıda eritilmeden önce tek zincirde kalmasına ihtiyaç duyar.",
+    nextStepEn:
+      "For claims: attach trace appendix to the FNOL pack and reserve OEM calibration review. For legal: lock discovery scope to manifest-listed hashes only. For technical: request bounded sensor-alignment worksheet export when issuance path is enabled.",
+    nextStepTr:
+      "Hasar tarafı: FNOL paketine iz eki ekleyin ve OEM kalibrasyon incelemesini rezerve edin. Hukuk tarafı: keşif kapsamını yalnızca manifestte listelenen özetlere kilitleyin. Teknik taraf: düzenleme yolu açıksa sınırlı sensör hizalama çalışma kağıdı dışa aktarımını talep edin.",
     recordedEvidence: [
       {
         recordId: "REC-NEARMISS-JSON",
@@ -52,7 +64,8 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.98,
-        displayLabel: "AEB event payload (raw)",
+        displayLabel: "AEB / ADAS event payload (ECU raw JSON, sealed)",
+        displayLabelTr: "AEB / ADAS olay yükü (ECU ham JSON, mühürlü)",
         machineLabel: "source_event_json",
       },
       {
@@ -66,32 +79,140 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.95,
-        displayLabel: "Pre- and post-brake telemetry snapshot",
+        displayLabel: "CAN-FD snapshot: speed, yaw rate, brake pressure, steering torque (±400 ms)",
+        displayLabelTr: "CAN-FD anlık görüntü: hız, yalpa hızı, fren basıncı, direksiyon torku (±400 ms)",
         machineLabel: "telemetry_snapshot",
+      },
+      {
+        recordId: "REC-NEARMISS-CAMMETA",
+        sourceType: "camera_metadata",
+        sourceId: "SRC-NEARMISS-CAM",
+        capturedAt: "2026-03-11T08:30:00.500Z",
+        contentType: "application/json",
+        hash: "hash-cammeta-nearmiss",
+        sizeOrLength: 512,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.94,
+        displayLabel: "Forward camera segment index + frame timestamps (no pixel payload in bundle)",
+        displayLabelTr: "Ön kamera segment indeksi + kare zaman damgaları (pakette piksel yükü yok)",
+        machineLabel: "camera_index_only",
+      },
+      {
+        recordId: "REC-NEARMISS-EDR",
+        sourceType: "edr_excerpt",
+        sourceId: "SRC-NEARMISS-EDR",
+        capturedAt: "2026-03-11T08:30:02.000Z",
+        contentType: "application/octet-stream",
+        hash: "hash-edr-nearmiss",
+        sizeOrLength: 1536,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.93,
+        displayLabel: "EDR-aligned excerpt hash (pre-impact 5 s, vendor redaction profile)",
+        displayLabelTr: "EDR hizalı özet özet hash (çarpışma öncesi 5 sn, satıcı maskeleme profili)",
+        machineLabel: "edr_excerpt_hash",
       },
     ] as RecordedEvidenceItem[],
     derivedAssessment: [
       {
         derivedId: "DER-NEARMISS-TIMELINE",
         derivedType: "timeline_synthesis",
-        derivedFrom: ["REC-NEARMISS-JSON", "REC-NEARMISS-TRACE"],
+        derivedFrom: ["REC-NEARMISS-JSON", "REC-NEARMISS-TRACE", "REC-NEARMISS-CAMMETA"],
         generatedAt: "2026-03-11T08:31:00.000Z",
         method: "timeline_v1",
         confidence: 0.92,
         recordedFlag: false,
         derivationNote: "Structured assessment from recorded payload and telemetry; not a verdict on causation.",
-        displayLabel: "AEB near-miss timeline synthesis",
+        displayLabel: "Brake request vs driver input ordering (synthetic timeline)",
+        displayLabelTr: "Fren isteği ile sürücü girdisi sıralaması (sentetik zaman çizelgesi)",
         machineLabel: "timeline_synthesis",
         humanSummary:
-          "Reconstructed sequence of approach, brake trigger, and near-miss clearance from source payload and telemetry; timing chain supports review of system vs driver contribution without assigning fault.",
+          "Orders AEB request, longitudinal decel onset, and steering torque rise within the demo window; useful for claims triage and OEM field-review packets. Does not decide whether the side vehicle had priority or if settings were misuse.",
+        humanSummaryTr:
+          "Demo penceresinde AEB isteği, boyuna yavaşlama başlangıcı ve direksiyon torku artışını sıralar; hasar triyajı ve OEM saha inceleme paketleri için kullanılır. Yan aracın önceliği veya ayarların kötüye kullanımı olup olmadığına karar vermez.",
+        sourceDependencies: ["REC-NEARMISS-JSON", "REC-NEARMISS-TRACE", "REC-NEARMISS-CAMMETA"],
+      },
+      {
+        derivedId: "DER-NEARMISS-SENSOR",
+        derivedType: "analytical_reading",
+        derivedFrom: ["REC-NEARMISS-JSON", "REC-NEARMISS-TRACE"],
+        generatedAt: "2026-03-11T08:31:15.000Z",
+        method: "cross_signal_v1",
+        confidence: 0.87,
+        recordedFlag: false,
+        derivationNote: "Cross-sensor consistency reading; not a calibration certificate or OEM sign-off.",
+        displayLabel: "Radar vs vision threat flag agreement (bounded confidence band)",
+        displayLabelTr: "Radar ile görüntü tehdit bayrağı uyumu (sınırlı güven bandı)",
+        machineLabel: "sensor_agreement",
+        humanSummary:
+          "Flags where fusion reported a side threat while longitudinal closure rate from CAN remained below nominal collision threshold—an interpretive bridge for engineers, not a statement that sensors were defective.",
+        humanSummaryTr:
+          "Füzyon yan tehdit bildirirken CAN üzerindeki boyuna kapanma hızının nominal çarpışma eşiğinin altında kaldığı anları işaretler — mühendisler için yorum köprüsüdür; sensörlerin kusurlu olduğu iddiası değildir.",
         sourceDependencies: ["REC-NEARMISS-JSON", "REC-NEARMISS-TRACE"],
       },
     ] as DerivedEvidenceItem[],
-    unknownDisputed: [],
+    unknownDisputed: [
+      "Whether dash-cam wall-clock skew relative to CAN monotonic time materially affects ordering of brake vs steering events in this demo bundle.",
+      "Whether OEM-published AEB trigger band for this road grade matches the observed intervention curve without independent bench data.",
+      "Whether post-event remote diagnostic upload completed inside fleet policy window; affects warranty posture but not this trace’s integrity.",
+    ],
+    unknownDisputedTr: [
+      "Bu demo paketinde dash-cam duvar saati kayması, CAN monoton zamanına göre fren ile direksiyon olaylarının sıralamasını anlamlı biçimde değiştirir mi?",
+      "Bu yol eğimi için OEM yayınlı AEB tetik bandı, bağımsız tezgâh verisi olmadan gözlenen müdahale eğrisi ile örtüşüyor mu?",
+      "Olay sonrası uzaktan tanılama yüklemesi filo politika penceresi içinde tamamlandı mı; garanti duruşunu etkiler, bu izin bütünlüğünü değil.",
+    ],
     verificationTrace: [
-      TRACE_STEP(1, "Canonical event linkage", "PASS", "Near-miss event linked to bundle and manifest; chain intact."),
-      TRACE_STEP(2, "Recorded vs derived separation", "PASS", "Recorded payload and telemetry kept distinct from timeline synthesis."),
-      TRACE_STEP(3, "Verification state", "PASS", "Canonical assessment; human review recommended for intervention context."),
+      TRACE_STEP(
+        1,
+        "Canonical event linkage",
+        "PASS",
+        "Near-miss event anchored to bundle QBN and manifest QMF; duplicate-event guard did not fire.",
+        {
+          check: "Kanonik olay bağlantısı",
+          note: "Yakın kaçış olayı QBN paketi ve QMF manifestine bağlandı; çift olay koruması tetiklenmedi.",
+        }
+      ),
+      TRACE_STEP(
+        2,
+        "Recorded vs derived separation",
+        "PASS",
+        "ECU JSON, CAN snapshot, camera index, and EDR excerpt remain in recorded layer; timeline and sensor readings are explicitly derived.",
+        {
+          check: "Kayıtlı ve türetilmiş ayrımı",
+          note: "ECU JSON, CAN anlık görüntü, kamera indeksi ve EDR özeti kayıtlı katmanda; zaman çizelgesi ve sensör okumaları açıkça türetilmiş.",
+        }
+      ),
+      TRACE_STEP(
+        3,
+        "Timestamp discipline",
+        "PASS",
+        "Monotonic bus timeline and camera frame indices align within declared skew tolerance; no silent clock rewrite detected in bundle.",
+        {
+          check: "Zaman damgası disiplini",
+          note: "Monotonik veri yolu zaman çizelgesi ile kamera kare indeksleri beyan sapma toleransı içinde; pakette sessiz saat yeniden yazımı tespit edilmedi.",
+        }
+      ),
+      TRACE_STEP(
+        4,
+        "Cross-signal plausibility",
+        "PASS",
+        "Fusion threat flags and longitudinal deceleration profile are co-present in the recorded substrate; derived agreement chart does not upgrade them to a fault finding.",
+        {
+          check: "Çapraz sinyal tutarlılığı",
+          note: "Füzyon tehdit bayrakları ve boyuna yavaşlama profili kayıtlı substratta birlikte; türetilmiş uyum grafiği bunları kusur bulgusuna yükseltmez.",
+        }
+      ),
+      TRACE_STEP(
+        5,
+        "Bounded verification outcome",
+        "PASS",
+        "Package integrity and layer discipline verified for this run; interpretive disputes listed under Unknown / Disputed remain explicitly open.",
+        {
+          check: "Sınırlı doğrulama sonucu",
+          note: "Bu çalıştırma için paket bütünlüğü ve katman disiplini doğrulandı; Bilinmeyen / Tartışmalı altındaki yorum ihtilafları açıkça açık kalır.",
+        }
+      ),
     ],
     artifactIssuance: { available: true, apiBacked: true },
     whyInevitable:
@@ -114,13 +235,63 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       },
     ] as AxisusState[],
     artifactProfiles: [
-      { profileCode: "claims", enabled: true, apiBacked: true, reasonTr: "Hasar/claim süreci bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Claims process is meaningful for this case; issuance API is connected." },
-      { profileCode: "legal", enabled: true, apiBacked: true, reasonTr: "Hukukî inceleme bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Legal review is meaningful for this case; issuance API is connected." },
-      { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Teknik rekonstrüksiyon anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Technical reconstruction is meaningful; issuance support is not yet connected." },
-      { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Güvenlik notu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Safety note is meaningful; issuance support is not yet connected." },
-      { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
-      { profileCode: "regulatory", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
-      { profileCode: "public_safety", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      {
+        profileCode: "claims",
+        enabled: true,
+        apiBacked: true,
+        reasonTr:
+          "Hasar dosyası: kanonik özet, iz eki ve makbuz hattı — kusur hükmü veya tek taraflı sorumluluk dili üretmez.",
+        reasonEn:
+          "Claims pack: canonical summary, trace appendix, and receipt chain — does not emit fault findings or one-sided liability language.",
+      },
+      {
+        profileCode: "legal",
+        enabled: true,
+        apiBacked: true,
+        reasonTr:
+          "Hukukî dosyalama: manifest bağlı kimlik alanları ve katman ayrımı — delil listesi değil mahkeme kararı ikamesi değildir.",
+        reasonEn:
+          "Legal filing shell: manifest-bound identity fields and layer separation — an exhibit list, not a substitute for court determination.",
+      },
+      {
+        profileCode: "technical",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "OEM / mühendislik okuması: sensör ve zaman çizelgesi sentezi; bounded PDF/JSON issuance yolu henüz bağlı değil.",
+        reasonEn:
+          "OEM / engineering read: sensor and timeline synthesis; bounded PDF/JSON issuance path not yet wired.",
+      },
+      {
+        profileCode: "safety",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "Saha güvenliği notu: müdahale öncesi/sonrası ölçülebilir göstergeler; operasyonel görevlendirme emri değildir.",
+        reasonEn:
+          "Field safety note: measurable pre/post-intervention indicators; not an operational dispatch order.",
+      },
+      {
+        profileCode: "governance",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Bu vaka bağlamında öncelikli yönetişim paketi tanımlanmadı.",
+        reasonEn: "No priority governance packet defined for this case context.",
+      },
+      {
+        profileCode: "regulatory",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Tip onayı / uyum beyanı bu demo kapsamında ayrıcalıklı çıkarılmıyor.",
+        reasonEn: "Type-approval / compliance attestation not privileged in this demo scope.",
+      },
+      {
+        profileCode: "public_safety",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Genel kamu güvenliği duyurusu bu paketten türetilmedi.",
+        reasonEn: "Public safety bulletin not derived from this package.",
+      },
     ] as ArtifactProfileVisibility[],
   },
   // —— Vehicle 2: Intersection Collision ——
@@ -134,14 +305,18 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     manifestId: "QMF-20260311-DEMO-COLLISION-01",
     occurredAt: "2026-03-11T09:45:00.000Z",
     summary:
-      "Collision at intersection where lane entry and signal interpretation are disputed between parties.",
+      "Demo two-vehicle intersection contact: both parties assert green-time and lane discipline. The canonical package preserves ECU fragments, signal-controller excerpt, and dash indices so bounded verification can attest structure—not who had priority.",
+    summaryTr:
+      "Demo iki araçlı kavşak teması: her iki taraf da yeşil süre ve şerit disiplinini ileri sürüyor. Kanonik paket ECU parçaları, sinyal kumanda özeti ve gösterge indekslerini korur; böylece sınırlı doğrulama yapıyı teyit eder — önceliğin kimde olduğuna karar vermez.",
     verificationState: "UNKNOWN",
     reviewWhyEn:
-      "Under review for bundle and manifest integrity; multi-party dispute over lane entry and signal state requires a single canonical record and trace before any role-based export.",
+      "Multi-party collision reviews fail when each side exports a different PDF. Here the spine locks hashes for vehicle payloads, signal timing excerpt, and third-party witness-device ping—so dispute is argued on shared references, not on shadow copies.",
     reviewWhyTr:
-      "Paket ve manifest bütünlüğü için incelemeye alındı; şerit girişi ve sinyal durumu konusundaki çok taraflı ihtilaf, rol bazlı export öncesi tek kanonik kayıt ve iz gerektirir.",
-    nextStepEn: "Run verification or start controlled artifact once trace and unknowns are reviewed.",
-    nextStepTr: "İz ve belirsizlikler incelendikten sonra doğrulamayı çalıştırın veya kontrollü artifact başlatın.",
+      "Çok taraflı çarpışma incelemeleri taraflar farklı PDF dışa aktardığında çöker. Burada omurga araç yükleri, sinyal zaman özeti ve üçüncü taraf tanık cihaz ping’i için özetleri kilitler — ihtilaf gölge kopyalar üzerinden değil paylaşılan referanslar üzerinden yürütülür.",
+    nextStepEn:
+      "Claims: freeze subrogation narrative to manifest-listed artifacts only. Legal: schedule joint technical read on signal-phase log vs ECU clock skew. Municipal liaison: optional administrative packet for signal maintenance history—export when regulatory profile is enabled in your tenant.",
+    nextStepTr:
+      "Hasar: rücu anlatısını yalnızca manifestte listelenen artefaktlarla dondurun. Hukuk: sinyal faz günlüğü ile ECU saat kayması üzerine ortak teknik okuma planlayın. İdari muhatap: sinyal bakım geçmişi için isteğe bağlı idari paket — kiracınızda düzenleyici profil açıksa dışa aktarın.",
     recordedEvidence: [
       {
         recordId: "REC-COLLISION-JSON",
@@ -154,35 +329,155 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.96,
-        displayLabel: "Intersection collision event payload (raw)",
+        displayLabel: "Per-vehicle ECU collision fragment (speed, heading, brake, indicator state)",
+        displayLabelTr: "Araç başına ECU çarpışma parçası (hız, yön, fren, sinyal kolu)",
         machineLabel: "source_event_json",
+      },
+      {
+        recordId: "REC-COLLISION-SIGNAL",
+        sourceType: "traffic_controller_log",
+        sourceId: "SRC-COLLISION-SIG",
+        capturedAt: "2026-03-11T09:45:00.100Z",
+        contentType: "application/json",
+        hash: "hash-signal-collision",
+        sizeOrLength: 896,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.91,
+        displayLabel: "Anonymized signal phase log excerpt (cycle ID only, no jurisdiction name)",
+        displayLabelTr: "Anonim sinyal faz günlüğü özeti (yalnızca döngü kimliği, yetki alanı adı yok)",
+        machineLabel: "signal_excerpt",
+      },
+      {
+        recordId: "REC-COLLISION-LIDAR",
+        sourceType: "lidar_snapshot",
+        sourceId: "SRC-COLLISION-LID",
+        capturedAt: "2026-03-11T09:45:00.200Z",
+        contentType: "application/octet-stream",
+        hash: "hash-lidar-collision",
+        sizeOrLength: 2816,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.89,
+        displayLabel: "Lidar point-cloud index + pose hash (payload referenced off-manifest per policy)",
+        displayLabelTr: "Lidar nokta bulutu indeksi + poz hash (yük politika gereği manifest dışı referans)",
+        machineLabel: "lidar_index",
+      },
+      {
+        recordId: "REC-COLLISION-WITNESS",
+        sourceType: "mobile_telemetry_ping",
+        sourceId: "SRC-COLLISION-WIT",
+        capturedAt: "2026-03-11T09:45:01.000Z",
+        contentType: "application/json",
+        hash: "hash-witness-ping",
+        sizeOrLength: 320,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.84,
+        displayLabel: "Third-party dash-app coarse GPS ping + device clock (consent-scoped demo token)",
+        displayLabelTr: "Üçüncü taraf dash uygulaması kaba GPS ping + cihaz saati (onay kapsamlı demo jetonu)",
+        machineLabel: "witness_ping",
       },
     ] as RecordedEvidenceItem[],
     derivedAssessment: [
       {
         derivedId: "DER-COLLISION-TIMELINE",
         derivedType: "timeline_synthesis",
-        derivedFrom: ["REC-COLLISION-JSON"],
+        derivedFrom: ["REC-COLLISION-JSON", "REC-COLLISION-SIGNAL"],
         generatedAt: "2026-03-11T09:46:00.000Z",
         method: "timeline_v1",
         confidence: 0.88,
         recordedFlag: false,
         derivationNote: "Structured reading from recorded payload; does not resolve disputed lane or signal interpretation.",
-        displayLabel: "Intersection event timeline synthesis",
+        displayLabel: "Approach–impact ordering relative to signal cycle markers",
+        displayLabelTr: "Sinyal döngü işaretleyicilerine göre yaklaşma–temas sıralaması",
         machineLabel: "timeline_synthesis",
         humanSummary:
-          "Reconstructed sequence of approach and impact from source payload; parties disagree on lane entry and signal phase—this assessment presents the recorded-derived chain, not a liability finding.",
-        sourceDependencies: ["REC-COLLISION-JSON"],
+          "Aligns both vehicle deceleration curves to the same anonymized cycle IDs; shows where narratives diverge without picking a winner. Useful for joint expert sessions and insurance mediation binders.",
+        humanSummaryTr:
+          "Her iki aracın yavaşlama eğrilerini aynı anonim döngü kimlikleriyle hizalar; anlatıların nerede ayrıldığını kazanan seçmeden gösterir. Ortak bilirkişi oturumları ve sigorta arabuluculuk dosyaları için uygundur.",
+        sourceDependencies: ["REC-COLLISION-JSON", "REC-COLLISION-SIGNAL"],
+      },
+      {
+        derivedId: "DER-COLLISION-GEOM",
+        derivedType: "analytical_reading",
+        derivedFrom: ["REC-COLLISION-LIDAR", "REC-COLLISION-JSON"],
+        generatedAt: "2026-03-11T09:46:30.000Z",
+        method: "geometry_hint_v1",
+        confidence: 0.82,
+        recordedFlag: false,
+        derivationNote: "Geometric hint from indexed lidar + pose; not a crash reconstruction certificate.",
+        displayLabel: "Lane occupancy hint at T−2 s / T0 (confidence banded)",
+        displayLabelTr: "T−2 sn / T0 anında şerit işgal ipucu (güven bandlı)",
+        machineLabel: "geom_hint",
+        humanSummary:
+          "Estimates relative lateral position bands immediately before contact; explicitly labeled as hypothesis-grade for engineers—does not replace police diagram or insurer scene survey.",
+        humanSummaryTr:
+          "Temas öncesi göreli yanal konum bantlarını tahmin eder; mühendisler için açıkça hipotez sınıfı etiketlenir — polis diyagramı veya sigorta saha ölçümünün yerini almaz.",
+        sourceDependencies: ["REC-COLLISION-LIDAR", "REC-COLLISION-JSON"],
       },
     ] as DerivedEvidenceItem[],
     unknownDisputed: [
-      "Lane entry timing and right-of-way at moment of entry.",
-      "Signal phase and interpretation by each party; requires human review.",
+      "Which party’s perception of green-time matches the controller excerpt when accounting for local clock skew and firmware revision.",
+      "Whether the witness-app ping establishes presence inside the box or only proximity; admissibility posture varies by forum.",
+      "Whether lidar index resolution is sufficient for lane-discipline claims without raw cloud retrieval—retrieval policy is outside this verification run.",
+    ],
+    unknownDisputedTr: [
+      "Yerel saat kayması ve ürün yazılımı revizyonu hesaba katıldığında yeşil süre algısı kumanda özetine hangi tarafın örtüştüğü.",
+      "Tanık uygulaması ping’i kutunun içinde varlığı mı yoksa yalnızca yakınlığı mı kurar; kabul edilebilirlik duruşu foruma göre değişir.",
+      "Ham bulut alınmadan şerit disiplini iddiaları için lidar indeks çözünürlüğü yeterli mi — alım politikası bu doğrulama çalıştırmasının dışındadır.",
     ],
     verificationTrace: [
-      TRACE_STEP(1, "Canonical event linkage", "PASS", "Intersection event linked to bundle and manifest."),
-      TRACE_STEP(2, "Recorded vs derived separation", "PASS", "Recorded payload distinct from timeline synthesis."),
-      TRACE_STEP(3, "Verification state", "UNKNOWN", "Disputed facts; verification trace documents steps only; human review required."),
+      TRACE_STEP(
+        1,
+        "Canonical event linkage",
+        "PASS",
+        "Intersection bundle lists both vehicle fragments under one manifest; cross-reference IDs consistent.",
+        {
+          check: "Kanonik olay bağlantısı",
+          note: "Kavşak paketi her iki araç parçasını tek manifest altında listeler; çapraz referans kimlikleri tutarlı.",
+        }
+      ),
+      TRACE_STEP(
+        2,
+        "Recorded vs derived separation",
+        "PASS",
+        "Controller excerpt and witness ping remain recorded; timeline and geometry hints are isolated in derived objects.",
+        {
+          check: "Kayıtlı ve türetilmiş ayrımı",
+          note: "Kumanda özeti ve tanık ping kayıtlı kalır; zaman çizelgesi ve geometri ipuçları türetilmiş nesnelerde izole.",
+        }
+      ),
+      TRACE_STEP(
+        3,
+        "Multi-party integrity",
+        "PASS",
+        "No silent merge of party-specific payloads; each hash line references its declared source type.",
+        {
+          check: "Çok taraflı bütünlük",
+          note: "Tarafa özgü yüklerde sessiz birleştirme yok; her özet satırı beyan edilen kaynak tipine referans verir.",
+        }
+      ),
+      TRACE_STEP(
+        4,
+        "Disputed fact boundary",
+        "UNKNOWN",
+        "Open questions on signal interpretation and witness relevance remain listed; trace does not collapse them into a verdict.",
+        {
+          check: "Tartışmalı olgu sınırı",
+          note: "Sinyal yorumu ve tanık ilişkilendirmesine dair açık sorular listelenmiş kalır; iz bunları hükme indirgemez.",
+        }
+      ),
+      TRACE_STEP(
+        5,
+        "Bounded verification outcome",
+        "UNKNOWN",
+        "Structural verification complete for this run; factual allocation explicitly deferred to human fora.",
+        {
+          check: "Sınırlı doğrulama sonucu",
+          note: "Bu çalıştırma için yapısal doğrulama tamamlandı; olgusal paylaştırma açıkça insan forumlarına ertelendi.",
+        }
+      ),
     ],
     artifactIssuance: { available: true, apiBacked: true },
     whyInevitable:
@@ -205,13 +500,63 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       },
     ] as AxisusState[],
     artifactProfiles: [
-      { profileCode: "claims", enabled: true, apiBacked: true, reasonTr: "Hasar/claim süreci çatışma vakası için anlamlı; issuance API bağlı.", reasonEn: "Claims process is meaningful for collision case; issuance API is connected." },
-      { profileCode: "legal", enabled: true, apiBacked: true, reasonTr: "Hukukî inceleme çok taraflı çatışma için anlamlı; issuance API bağlı.", reasonEn: "Legal review is meaningful for multi-party collision; issuance API is connected." },
-      { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Teknik rekonstrüksiyon anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Technical reconstruction is meaningful; issuance support is not yet connected." },
-      { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Güvenlik notu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Safety note is meaningful; issuance support is not yet connected." },
-      { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
-      { profileCode: "regulatory", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
-      { profileCode: "public_safety", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      {
+        profileCode: "claims",
+        enabled: true,
+        apiBacked: true,
+        reasonTr:
+          "Çok taraflı hasar paketi: çarpışma çekirdeği + iz eki; kusur yüzdesi veya tahkim sonucu üretmez.",
+        reasonEn:
+          "Multi-party claims pack: collision core + trace appendix; does not output fault percentages or arbitration outcomes.",
+      },
+      {
+        profileCode: "legal",
+        enabled: true,
+        apiBacked: true,
+        reasonTr:
+          "Keşif çerçevesi: kanonik kimlikler ve katmanlı delil envanteri; mahkeme hükmü veya savcılık görüşü değildir.",
+        reasonEn:
+          "Discovery framing: canonical IDs and layered exhibit inventory; not a court ruling or prosecution opinion.",
+      },
+      {
+        profileCode: "technical",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "Saha mühendisliği özeti: lidar indeks + geometri ipucu; tam rekonstrüksiyon raporu issuance ile bağlı değil.",
+        reasonEn:
+          "Field engineering summary: lidar index + geometry hint; full reconstruction report not wired to issuance.",
+      },
+      {
+        profileCode: "safety",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "Olay yeri güvenliği notu: sinyal ve yaklaşma ölçülebilir göstergeleri; trafik düzenleme emri değildir.",
+        reasonEn:
+          "Scene safety note: measurable signal and approach indicators; not a traffic control order.",
+      },
+      {
+        profileCode: "governance",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Kurumsal olay yönetişimi bu demo vakasında paketlenmedi.",
+        reasonEn: "Corporate incident governance not packaged for this demo case.",
+      },
+      {
+        profileCode: "regulatory",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Sinyal bakım idari özeti isteğe bağlıdır; varsayılan olarak kapalı.",
+        reasonEn: "Signal maintenance administrative summary is optional; off by default.",
+      },
+      {
+        profileCode: "public_safety",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Kamu güvenliği uyarısı bu paketten otomatik türetilmez.",
+        reasonEn: "Public safety alert not auto-derived from this package.",
+      },
     ] as ArtifactProfileVisibility[],
   },
   // —— Drone 1: Link Loss ——
@@ -225,14 +570,18 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     manifestId: "manifest-drone-003",
     occurredAt: "2025-03-14T10:05:00Z",
     summary:
-      "Temporary loss of command link and telemetry downlink during BVLOS segment.",
+      "Demo BVLOS corridor: command uplink and telemetry downlink drop for a bounded window while the aircraft continues on last-valid mission vectors. Bounded verification preserves raw link metrics, RC handoff log, and geofence heartbeat—so oversight can audit the loss window without inferring pilot negligence.",
+    summaryTr:
+      "Demo BVLOS koridoru: hava aracı son geçerli görev vektörleriyle devam ederken komut yük bağlantısı ve telemetri iniş hattı sınırlı bir pencerede düşer. Sınırlı doğrulama ham bağlantı ölçümlerini, kumanda el değişimi günlüğünü ve coğrafi çit nabzını korur — gözetim kayıp penceresini denetleyebilir, pilot ihmali çıkarmaz.",
     verificationState: "UNVERIFIED",
     reviewWhyEn:
-      "Under review for mission anomaly and operator handoff record verification; link-loss window and recovery sequence must be traceable for BVLOS accountability.",
+      "BVLOS accountability turns on whether the loss window, failsafe ladder, and operator re-acquisition are all on one manifest-backed chain. This demo case stresses that separation between raw RF/telemetry captures and any narrative about “who lost control” must remain explicit.",
     reviewWhyTr:
-      "Görev anomalisi ve operatör el değişimi kayıtlarının doğrulanması için incelemeye alındı; BVLOS hesap verebilirliği için bağlantı kaybı penceresi ve kurtarma dizisi izlenebilir olmalı.",
-    nextStepEn: "Run verification or start controlled artifact once trace and unknowns are reviewed.",
-    nextStepTr: "İz ve belirsizlikler incelendikten sonra doğrulamayı çalıştırın veya kontrollü artifact başlatın.",
+      "BVLOS hesap verebilirliği; kayıp penceresi, failsafe basamakları ve operatör yeniden ele geçirmenin tek manifest destekli zincirde olup olmadığına bağlıdır. Bu demo vaka, ham RF/telemetri yakalamaları ile “kontrolü kim kaybetti” anlatısı arasındaki ayrımın açık kalması gerektiğini vurgular.",
+    nextStepEn:
+      "Oversight: file BVLOS exceedance worksheet against the trace appendix. Operator org: pair this bundle with rostered PIC and relief-controller logs (outside this package). Insurer: use claims profile only for first-party equipment exposure—no third-party ground liability inference from this trace.",
+    nextStepTr:
+      "Gözetim: aşım çalışma kağıdını iz ekiyle eşleştirin. Operatör kuruluş: bu paketi görevli PIC ve yedek kumanda günlükleriyle eşleyin (paket dışı). Sigorta: yalnızca birinci taraf ekipman maruziyeti için hasar profilini kullanın — bu izden üçüncü taraf zemin sorumluluğu çıkarmayın.",
     recordedEvidence: [
       {
         recordId: "rec-drone-003-1",
@@ -245,40 +594,154 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.9,
-        displayLabel: "BVLOS segment telemetry (pre- and post-link-loss)",
+        displayLabel: "Primary downlink frame stream (RSSI, SNR, packet loss, GPS fix quality)",
+        displayLabelTr: "Birincil iniş hattı kare akışı (RSSI, SNR, paket kaybı, GPS kalite)",
         machineLabel: "telemetry_stream",
+      },
+      {
+        recordId: "rec-drone-003-2",
+        sourceType: "command_uplink_log",
+        sourceId: "SRC-DRONE-003-U",
+        capturedAt: "2025-03-14T10:05:02Z",
+        contentType: "application/json",
+        hash: "hash-drone-003-uplink",
+        sizeOrLength: 640,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.88,
+        displayLabel: "Uplink command queue snapshot (mode flags, last acknowledged stick/digital inputs)",
+        displayLabelTr: "Yüksel bağlantı komut kuyruğu anlık görüntüsü (mod bayrakları, son onaylı girdiler)",
+        machineLabel: "uplink_queue",
+      },
+      {
+        recordId: "rec-drone-003-3",
+        sourceType: "geofence_heartbeat",
+        sourceId: "SRC-DRONE-003-GF",
+        capturedAt: "2025-03-14T10:05:04Z",
+        contentType: "application/json",
+        hash: "hash-drone-003-gf",
+        sizeOrLength: 384,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.92,
+        displayLabel: "Geofence server heartbeat + corridor boundary tokens (no map tiles in bundle)",
+        displayLabelTr: "Coğrafi çit sunucu nabzı + koridor sınır jetonları (pakette harita karo yok)",
+        machineLabel: "geofence_hb",
+      },
+      {
+        recordId: "rec-drone-003-4",
+        sourceType: "operator_handoff_log",
+        sourceId: "SRC-DRONE-003-H",
+        capturedAt: "2025-03-14T10:06:30Z",
+        contentType: "application/json",
+        hash: "hash-drone-003-handoff",
+        sizeOrLength: 512,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.86,
+        displayLabel: "Control-station roster handoff log (anonymized station IDs)",
+        displayLabelTr: "Kontrol istasyonu nöbet el değişimi günlüğü (anonim istasyon kimlikleri)",
+        machineLabel: "handoff_log",
       },
     ] as RecordedEvidenceItem[],
     derivedAssessment: [
       {
         derivedId: "der-drone-003-timeline",
         derivedType: "timeline_synthesis",
-        derivedFrom: ["rec-drone-003-1"],
+        derivedFrom: ["rec-drone-003-1", "rec-drone-003-2"],
         generatedAt: "2025-03-14T10:06:00Z",
         method: "timeline_v1",
         confidence: 0.85,
         recordedFlag: false,
         derivationNote: "Structured assessment from recorded telemetry; not a determination of operator responsibility.",
-        displayLabel: "Link-loss and recovery timeline synthesis",
+        displayLabel: "Link-loss window vs failsafe ladder ordering",
+        displayLabelTr: "Bağlantı kaybı penceresi ve failsafe basamak sıralaması",
         machineLabel: "timeline_synthesis",
         humanSummary:
-          "Reconstructed mission segment and link recovery sequence from recorded telemetry; supports review of command-chain uncertainty and safe next step—human review required for scope of autonomy.",
+          "Orders the first missed ACK, first sustained telemetry gap, and published failsafe transitions as separate markers—useful for CAA-style review binders. Does not score crew competence.",
+        humanSummaryTr:
+          "İlk kaçırılan ACK, ilk sürekli telemetri boşluğu ve yayınlanan failsafe geçişlerini ayrı işaretleyiciler olarak sıralar; SHGM tarzı inceleme dosyaları için uygundur. Mürettebat yeterliliğine puan vermez.",
+        sourceDependencies: ["rec-drone-003-1", "rec-drone-003-2"],
+      },
+      {
+        derivedId: "der-drone-003-energy",
+        derivedType: "analytical_reading",
+        derivedFrom: ["rec-drone-003-1"],
+        generatedAt: "2025-03-14T10:06:15Z",
+        method: "power_budget_v1",
+        confidence: 0.8,
+        recordedFlag: false,
+        derivationNote: "Power-budget hint from bus voltage samples in stream; not a battery airworthiness ruling.",
+        displayLabel: "Propulsion bus voltage trend during link-loss (hint only)",
+        displayLabelTr: "Bağlantı kaybı sırasında tahrik bara gerilim eğilimi (yalnızca ipucu)",
+        machineLabel: "power_hint",
+        humanSummary:
+          "Flags whether voltage sag correlates temporally with high RF retransmit bursts—helps maintenance triage, not pilot blame.",
+        humanSummaryTr:
+          "Gerilim düşüşünün yüksek RF yeniden iletim patlamalarıyla zamansal örtüşüp örtüşmediğini işaretler — bakım triyajına yardımcıdır, pilot suçlaması değildir.",
         sourceDependencies: ["rec-drone-003-1"],
       },
     ] as DerivedEvidenceItem[],
     unknownDisputed: [
-      "Exact duration of link loss and whether it exceeded operational limits.",
-      "Recovery sequence and operator re-acquisition; requires human review.",
+      "Whether the measured link-loss duration exceeded the operator’s declared CONOPS limit once maintenance-adjusted thresholds are applied.",
+      "Whether geofence server clock skew understates time outside the corridor during the gap—requires independent NTP audit.",
+      "Whether secondary observer C2 station (not in this bundle) issued conflicting RTL commands during recovery.",
+    ],
+    unknownDisputedTr: [
+      "Ölçülen bağlantı kaybı süresi, bakım düzeltmeli eşikler uygulandığında operatörün beyan CONOPS sınırını aştı mı?",
+      "Coğrafi çit sunucu saat kayması, boşluk sırasında koridor dışı süreyi hafifletiyor mu — bağımsız NTP denetimi gerekir.",
+      "Bu pakette olmayan ikincil gözlemci C2 istasyonu kurtarma sırasında çelişkili RTL komutu verdi mi?",
     ],
     verificationTrace: [
-      TRACE_STEP(1, "Link-loss window", "OK", "Link-loss window is registered against the mission segment bundle and manifest."),
-      TRACE_STEP(2, "Telemetry window", "OK", "Telemetry window around the link-loss period is present and intact."),
-      TRACE_STEP(3, "Recovery sequence", "OK", "Recovery sequence is documented for human review; this trace does not decide scope of autonomy."),
+      TRACE_STEP(
+        1,
+        "Link-loss window",
+        "OK",
+        "Loss window registered on manifest with monotonic onboard timebase; no post-hoc stretch detected in bundle.",
+        {
+          check: "Bağlantı kaybı penceresi",
+          note: "Kayıp penceresi manifestte monotonik uçuş zaman tabanıyla kayıtlı; pakette sonradan uzatma tespit edilmedi.",
+        }
+      ),
+      TRACE_STEP(
+        2,
+        "Telemetry integrity",
+        "OK",
+        "Downlink frames before/after gap are hash-chained; missing sequence numbers explicitly enumerated.",
+        {
+          check: "Telemetri bütünlüğü",
+          note: "Boşluktan önce/sonra iniş hattı kareleri zincir özetli; eksik sıra numaraları açıkça numaralandı.",
+        }
+      ),
+      TRACE_STEP(
+        3,
+        "Failsafe ladder documentation",
+        "OK",
+        "Failsafe transitions appear as recorded mode flags; derived timeline narrates but does not upgrade them to compliance findings.",
+        {
+          check: "Failsafe basamak belgesi",
+          note: "Failsafe geçişleri kayıtlı mod bayrakları olarak görünür; türetilmiş zaman çizelgesi anlatır, uyum bulgusuna yükseltmez.",
+        }
+      ),
       TRACE_STEP(
         4,
+        "Handoff log presence",
+        "OK",
+        "Operator handoff log present and separated from telemetry—human factors review remains external to this trace.",
+        {
+          check: "El değişimi günlüğü varlığı",
+          note: "Operatör el değişimi günlüğü mevcut ve telemetriden ayrı — insan faktörleri incelemesi bu izin dışında kalır.",
+        }
+      ),
+      TRACE_STEP(
+        5,
         "BVLOS accountability",
         "UNVERIFIED",
-        "BVLOS accountability remains a human review surface; verification trace documents chain steps only."
+        "Accountability allocation across PIC, relief controller, and infrastructure remains explicitly open; trace lists checks only.",
+        {
+          check: "BVLOS hesap verebilirliği",
+          note: "PIC, yedek kumanda ve altyapı arasında hesap paylaşımı açıkça açık kalır; iz yalnızca kontrolleri listeler.",
+        }
       ),
     ],
     artifactIssuance: { available: true, apiBacked: true },
@@ -302,13 +765,65 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       },
     ] as AxisusState[],
     artifactProfiles: [
-      { profileCode: "claims", enabled: true, apiBacked: true, reasonTr: "Hasar/claim süreci bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Claims process is meaningful for this case; issuance API is connected." },
-      { profileCode: "legal", enabled: true, apiBacked: true, reasonTr: "Hukukî inceleme bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Legal review is meaningful for this case; issuance API is connected." },
-      { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Bağlantı kaybı telemetri rekonstrüksiyonu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Link-loss telemetry reconstruction is meaningful; issuance support is not yet connected." },
-      { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Güvenli sonraki adım bu vaka için anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Safe next step is meaningful for this case; issuance support is not yet connected." },
-      { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
-      { profileCode: "regulatory", enabled: true, apiBacked: false, reasonTr: "Kayıt ve trace anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Record and trace are meaningful; issuance support is not yet connected." },
-      { profileCode: "public_safety", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      {
+        profileCode: "claims",
+        enabled: true,
+        apiBacked: true,
+        reasonTr:
+          "Ekipman ve operasyon kesinti maruziyeti: iz ekiyle sınırlı hasar dosyası; üçüncü taraf zemin iddiası üretmez.",
+        reasonEn:
+          "Equipment / ops interruption exposure: claims binder bounded to trace appendix; does not manufacture third-party ground allegations.",
+      },
+      {
+        profileCode: "legal",
+        enabled: true,
+        apiBacked: true,
+        reasonTr:
+          "Denetim ve sözleşme uyumu için kanonik zincir özeti; savunma veya dava stratejisi değildir.",
+        reasonEn:
+          "Canonical chain summary for oversight and contract alignment; not a defense or litigation strategy memo.",
+      },
+      {
+        profileCode: "technical",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "Bakım triyajı: güç ve RF ipuçları; tam uçuş veri kaydı (FDR) ikamesi değildir.",
+        reasonEn:
+          "Maintenance triage: power and RF hints; not a substitute for a full flight data record.",
+      },
+      {
+        profileCode: "safety",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "Saha güvenliği brifingi: koridor ve failsafe sınırları; görev emri veya NOTAM ikamesi değildir.",
+        reasonEn:
+          "Field safety briefing: corridor and failsafe boundaries; not an ops order or NOTAM substitute.",
+      },
+      {
+        profileCode: "governance",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Kurumsal drone gözetim paketi bu demo için ayrıcalıklı değil.",
+        reasonEn: "Corporate drone governance pack not privileged for this demo.",
+      },
+      {
+        profileCode: "regulatory",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "Uyum dosyası çerçevesi: BVLOS aşım çalışma kağıdı şablonu; düzenleyici onay beyanı değildir.",
+        reasonEn:
+          "Compliance filing frame: BVLOS exceedance worksheet template; not a regulatory approval attestation.",
+      },
+      {
+        profileCode: "public_safety",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Genel kamu uyarısı bu izden türetilmedi.",
+        reasonEn: "General public alert not derived from this trace.",
+      },
     ] as ArtifactProfileVisibility[],
   },
   // —— Drone 2: Mission Anomaly ——
@@ -321,14 +836,19 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     bundleId: "bundle-drone-001",
     manifestId: "manifest-drone-001",
     occurredAt: "2025-03-12T14:22:00Z",
-    summary: "UAV deviated from planned altitude band during waypoint transit.",
+    summary:
+      "Demo waypoint transit: aircraft climbs through the cleared altitude band while still nominally on mission plan hash. Raw NAV solution, wind shear estimate channel, and mission file revision tag are co-registered so oversight can separate “off-plan geometry” from “off-plan intent.”",
+    summaryTr:
+      "Demo waypoint geçişi: hava aracı hâlâ nominal görev planı özeti üzerindeyken temizlenmiş irtifa bandının üstüne çıkar. Ham NAV çözümü, rüzgâr kesir tahmin kanalı ve görev dosyası revizyon etiketi birlikte kayıtlıdır; böylece gözetim “plandan sapmış geometriyi” “plandan sapmış niyetten” ayırabilir.",
     verificationState: "UNVERIFIED",
     reviewWhyEn:
-      "Under review for mission anomaly and altitude-deviation record verification; waypoint transit and handoff context must be traceable.",
+      "Mission anomalies in BVLOS-adjacent ops often mix environmental readings with autopilot mode changes. This case stresses recorded separation: the mission JSON hash, autopilot mode enum stream, and METAR ingestion token must not be flattened before technical or regulatory readers engage.",
     reviewWhyTr:
-      "Görev anomalisi ve irtifa sapması kayıtlarının doğrulanması için incelemeye alındı; waypoint geçişi ve el değişimi bağlamı izlenebilir olmalı.",
-    nextStepEn: "Run verification or start controlled artifact once trace and unknowns are reviewed.",
-    nextStepTr: "İz ve belirsizlikler incelendikten sonra doğrulamayı çalıştırın veya kontrollü artifact başlatın.",
+      "BVLOS yakın operasyonlarda görev anomalileri çevresel okumaları otopilot mod değişimleriyle karıştırır. Bu vaka kayıtlı ayrımı vurgular: görev JSON özeti, otopilot mod numaralandırma akışı ve METAR alım jetonu teknik veya düzenleyici okuyucular devreye girmeden düzleştirilmemelidir.",
+    nextStepEn:
+      "Chief pilot: compare mission file revision tag against signed dispatch release. Compliance: map deviation seconds only to the trace-backed band table—do not infer SORA breach from narrative alone. Client insurer: technical pack export for rotor-stress subrogation only if engineering profile is enabled.",
+    nextStepTr:
+      "Baş pilot: görev dosyası revizyon etiketini imzalı sevk onayıyla karşılaştırın. Uyum: sapma saniyelerini yalnızca iz destekli bant tablosuna eşleyin — yalnızca anlatıdan SORA ihlali çıkarmayın. Müşteri sigortası: mühendislik profili açıksa rotor gerilimi rücu için teknik paket dışa aktarımı.",
     recordedEvidence: [
       {
         recordId: "rec-drone-001-1",
@@ -341,39 +861,154 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.92,
-        displayLabel: "Waypoint-transit telemetry (altitude and track)",
+        displayLabel: "Waypoint transit telemetry (AGL, ground speed, autopilot mode enum, rotor RPM)",
+        displayLabelTr: "Waypoint geçiş telemetrisi (AGL, yer hızı, otopilot mod numaraları, rotor devri)",
         machineLabel: "telemetry_stream",
+      },
+      {
+        recordId: "rec-drone-001-2",
+        sourceType: "mission_file",
+        sourceId: "SRC-DRONE-001-M",
+        capturedAt: "2025-03-12T14:21:50Z",
+        contentType: "application/json",
+        hash: "hash-drone-001-mission",
+        sizeOrLength: 1820,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.94,
+        displayLabel: "Signed mission plan blob + waypoint altitude ceilings (hash-only in manifest)",
+        displayLabelTr: "İmzalı görev planı + waypoint irtifa tavanları (manifestte yalnızca özet)",
+        machineLabel: "mission_blob",
+      },
+      {
+        recordId: "rec-drone-001-3",
+        sourceType: "environmental_ingest",
+        sourceId: "SRC-DRONE-001-W",
+        capturedAt: "2025-03-12T14:21:55Z",
+        contentType: "application/json",
+        hash: "hash-drone-001-wind",
+        sizeOrLength: 420,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.87,
+        displayLabel: "METAR / micro-forecast token ingested pre-flight (source station anonymized)",
+        displayLabelTr: "Uçuş öncesi alınan METAR / mikro tahmin jetonu (istasyon anonim)",
+        machineLabel: "wx_ingest",
+      },
+      {
+        recordId: "rec-drone-001-4",
+        sourceType: "obstacle_radar",
+        sourceId: "SRC-DRONE-001-OBS",
+        capturedAt: "2025-03-12T14:22:10Z",
+        contentType: "application/octet-stream",
+        hash: "hash-drone-001-obs",
+        sizeOrLength: 960,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.85,
+        displayLabel: "Obstacle radar contact list (range/bearing snapshots, no imagery)",
+        displayLabelTr: "Engel radarı temas listesi (menzil/yön anlık görüntüleri, görüntü yok)",
+        machineLabel: "radar_contacts",
       },
     ] as RecordedEvidenceItem[],
     derivedAssessment: [
       {
         derivedId: "der-drone-001-timeline",
         derivedType: "timeline_synthesis",
-        derivedFrom: ["rec-drone-001-1"],
+        derivedFrom: ["rec-drone-001-1", "rec-drone-001-2"],
         generatedAt: "2025-03-12T14:23:00Z",
         method: "timeline_v1",
         confidence: 0.88,
         recordedFlag: false,
         derivationNote: "Structured assessment from recorded telemetry; does not assign cause of deviation.",
-        displayLabel: "Altitude-deviation and waypoint timeline synthesis",
+        displayLabel: "Ceiling breach window vs mode transitions",
+        displayLabelTr: "Tavan ihlali penceresi ve mod geçişleri",
         machineLabel: "timeline_synthesis",
         humanSummary:
-          "Reconstructed mission segment and altitude band deviation from recorded telemetry; supports risk-threshold and handoff review—not a finding on pilot or system fault.",
-        sourceDependencies: ["rec-drone-001-1"],
+          "Shows when AGL first exceeds the mission ceiling token while autopilot remained in LOITER-TRANSIT versus when climb authority shifted—supports SORA-style evidence binders without stating regulatory breach.",
+        humanSummaryTr:
+          "AGL’nin görev tavan jetonunu ilk kez aştığı anı otopilotun LOITER-TRANSIT’te kaldığı dönemle, tırmanış yetkisinin değiştiği anı gösterir — düzenleyici ihlal beyanı olmadan SORA tarzı delil dosyalarına destek olur.",
+        sourceDependencies: ["rec-drone-001-1", "rec-drone-001-2"],
+      },
+      {
+        derivedId: "der-drone-001-wind",
+        derivedType: "analytical_reading",
+        derivedFrom: ["rec-drone-001-1", "rec-drone-001-3"],
+        generatedAt: "2025-03-12T14:23:20Z",
+        method: "wx_correlation_v1",
+        confidence: 0.79,
+        recordedFlag: false,
+        derivationNote: "Correlation hint between vertical speed and ingested gust token; not a meteorological certification.",
+        displayLabel: "Vertical speed vs gust-token correlation (hypothesis tag)",
+        displayLabelTr: "Dikey hız ile hamle jetonu korelasyonu (hipotez etiketi)",
+        machineLabel: "wx_corr",
+        humanSummary:
+          "Flags temporal overlap between climb rate spikes and forecast gust markers—useful for operator debrief scripts, not for blaming ATC or forecast providers.",
+        humanSummaryTr:
+          "Tırmanma hızı sıçramaları ile tahmin hamle işaretleyicileri arasında zamansal örtüşmeyi işaretler — operatör brifing metinleri için uygundur; ATC veya tahmin sağlayıcıyı suçlamak için değildir.",
+        sourceDependencies: ["rec-drone-001-1", "rec-drone-001-3"],
       },
     ] as DerivedEvidenceItem[],
     unknownDisputed: [
-      "Whether deviation exceeded procedural or regulatory tolerance; requires human review.",
+      "Whether the ceiling token in the signed mission file matches the regulatory band table version active on dispatch date.",
+      "Whether obstacle radar contacts materially explain the climb or are uncorrelated noise—human sensor fusion review required.",
+      "Whether autopilot mode labels in the enum stream map 1:1 to the OEM manual the operator trained on.",
+    ],
+    unknownDisputedTr: [
+      "İmzalı görev dosyasındaki tavan jetonu, sevk tarihinde geçerli düzenleyici bant tablosu sürümüyle örtüşüyor mu?",
+      "Engel radarı temasları tırmanmayı anlamlı biçimde açıklıyor mu yoksa ilişkisiz gürültü mü — insan sensör füzyon incelemesi gerekir.",
+      "Numaralandırma akışındaki otopilot mod etiketleri operatörün eğitildiği OEM kılavuzuyla bire bir örtüşüyor mu?",
     ],
     verificationTrace: [
-      TRACE_STEP(1, "Mission plan linkage", "OK", "Mission plan linkage is present for the waypoint segment under review."),
-      TRACE_STEP(2, "Altitude band deviation", "OK", "Altitude band deviation is marked from recorded telemetry; significance is reserved for oversight review."),
-      TRACE_STEP(3, "Waypoint / track separation", "OK", "Waypoint / track separation remains distinct from the derived anomaly timeline; no cause or fault is decided here."),
+      TRACE_STEP(
+        1,
+        "Mission plan linkage",
+        "OK",
+        "Mission hash on manifest matches signed blob reference; waypoint list not silently rewritten inside bundle.",
+        {
+          check: "Görev planı bağlantısı",
+          note: "Manifestteki görev özeti imzalı yük referansıyla eşleşir; waypoint listesi paket içinde sessizce yeniden yazılmamış.",
+        }
+      ),
+      TRACE_STEP(
+        2,
+        "Altitude band deviation",
+        "OK",
+        "AGL samples exceed declared ceiling for 6.4 s per recorded clock; significance deferred to oversight.",
+        {
+          check: "İrtifa bandı sapması",
+          note: "AGL örnekleri kayıtlı saate göre beyan tavanı 6,4 sn aşar; anlam gözetimde ertelenir.",
+        }
+      ),
+      TRACE_STEP(
+        3,
+        "Environmental ingest boundary",
+        "OK",
+        "METAR token remains a recorded ingest; derived gust correlation is isolated and labeled hypothetical.",
+        {
+          check: "Çevresel alım sınırı",
+          note: "METAR jetonu kayıtlı alım olarak kalır; türetilmiş hamle korelasyonu izole ve hipotetik etiketlidir.",
+        }
+      ),
       TRACE_STEP(
         4,
+        "Radar contact separation",
+        "OK",
+        "Obstacle contacts kept in separate recorded object; not merged into autopilot fault codes.",
+        {
+          check: "Radar temas ayrımı",
+          note: "Engel temasları ayrı kayıtlı nesnede tutulur; otopilot arıza kodlarıyla birleştirilmemiştir.",
+        }
+      ),
+      TRACE_STEP(
+        5,
         "Oversight review",
         "UNVERIFIED",
-        "Oversight review remains required; verification trace documents chain steps only."
+        "Regulatory and training-alignment questions stay open; trace documents procedural checks only.",
+        {
+          check: "Gözetim incelemesi",
+          note: "Düzenleyici ve eğitim hizalama soruları açık kalır; iz yalnızca prosedürel kontrolleri belgeler.",
+        }
       ),
     ],
     artifactIssuance: { available: true, apiBacked: true },
@@ -397,13 +1032,65 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       },
     ] as AxisusState[],
     artifactProfiles: [
-      { profileCode: "claims", enabled: true, apiBacked: true, reasonTr: "Hasar/claim süreci bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Claims process is meaningful for this case; issuance API is connected." },
-      { profileCode: "legal", enabled: true, apiBacked: true, reasonTr: "Hukukî inceleme bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Legal review is meaningful for this case; issuance API is connected." },
-      { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Görev anomalisi rekonstrüksiyonu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Mission anomaly reconstruction is meaningful; issuance support is not yet connected." },
-      { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Risk eşiği ve güvenli sonraki adım anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Risk threshold and safe next step are meaningful; issuance support is not yet connected." },
-      { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
-      { profileCode: "regulatory", enabled: true, apiBacked: false, reasonTr: "Kayıt ve gözetim anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Record and oversight are meaningful; issuance support is not yet connected." },
-      { profileCode: "public_safety", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      {
+        profileCode: "claims",
+        enabled: true,
+        apiBacked: true,
+        reasonTr:
+          "Rotor ve görev kesinti maruziyeti: hasar özeti + iz; operatör kusur yüzdesi üretmez.",
+        reasonEn:
+          "Rotor / mission interruption exposure: loss summary + trace; does not output operator fault percentage.",
+      },
+      {
+        profileCode: "legal",
+        enabled: true,
+        apiBacked: true,
+        reasonTr:
+          "Sözleşme ve izin dosyası ekleri için kanonik zaman çizelgesi; düzenleyici ceza kararı değildir.",
+        reasonEn:
+          "Canonical timeline for contract and permit dossier attachments; not a regulatory penalty determination.",
+      },
+      {
+        profileCode: "technical",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "Mühendislik inceleme kağıdı: mod geçişleri ve tavan penceresi; tam uçuş simülasyonu ikamesi değildir.",
+        reasonEn:
+          "Engineering review sheet: mode transitions and ceiling window; not a substitute for full flight simulation.",
+      },
+      {
+        profileCode: "safety",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "Operasyonel güvenlik brifingi: sapma süresi ve engel temas listesi; görev iptal emri değildir.",
+        reasonEn:
+          "Operational safety briefing: deviation seconds and obstacle contact list; not a mission cancel order.",
+      },
+      {
+        profileCode: "governance",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Kurumsal kalite denetim paketi bu demo için tanımlanmadı.",
+        reasonEn: "Corporate quality audit pack not defined for this demo.",
+      },
+      {
+        profileCode: "regulatory",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "Uyum sunumu şablonu: bant tablosu eşlemesi; SHGM/ FAA kararı ikamesi değildir.",
+        reasonEn:
+          "Compliance presentation template: band-table mapping; not a CAA / FAA decision substitute.",
+      },
+      {
+        profileCode: "public_safety",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Yerleşim alanı uyarısı bu paketten otomatik üretilmez.",
+        reasonEn: "Populated-area alert not auto-generated from this package.",
+      },
     ] as ArtifactProfileVisibility[],
   },
   // —— Robot 1: Public Interaction ——
@@ -417,14 +1104,18 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     manifestId: "manifest-robot-003",
     occurredAt: "2025-03-13T14:20:00Z",
     summary:
-      "Service robot in public space; encounter with pedestrian and recorded handoff to operator.",
+      "Demo retail-adjacent aisle: mobile manipulator slows for pedestrian congestion, then remote operator takes voice-augmented control. Raw logs capture lidar proximity rings, VOIP session metadata, and zone tokens—bounded verification proves the encounter is one sealed object before any narrative about distress or negligence.",
+    summaryTr:
+      "Demo perakende bitişik koridor: mobil manipülatör yayalar için yavaşlar, ardından uzaktan operatör ses destekli kontrolü devralır. Ham günlükler lidar yakınlık halkalarını, VOIP oturum üst verisini ve bölge jetonlarını yakalar — sıkıntı veya ihmale dair anlatıdan önce karşılaşmanın tek mühürlü nesne olduğunu sınırlı doğrulama kanıtlar.",
     verificationState: "UNVERIFIED",
     reviewWhyEn:
-      "Under review for safety stop and compliance record assessment; public-space encounter and operator handoff must be traceable for context and liability clarity.",
+      "Public robot incidents fracture when video clips omit controller context. This case foregrounds recorded separation between on-robot perception samples and operator takeover metadata so municipal risk and venue insurers can review the same spine.",
     reviewWhyTr:
-      "Güvenlik durdurma ve uyumluluk kayıtlarının incelenmesi için incelemeye alındı; kamusal alan karşılaşması ve operatör devri izlenebilir olmalı.",
-    nextStepEn: "Run verification or start controlled artifact once trace and unknowns are reviewed.",
-    nextStepTr: "İz ve belirsizlikler incelendikten sonra doğrulamayı çalıştırın veya kontrollü artifact başlatın.",
+      "Kamusal robot olayları video klipler kumanda bağlamını düşürdüğünde parçalanır. Bu vaka, belediye riski ve mekân sigortası aynı omurgayı inceleyebilsin diye uçbirim algı örnekleri ile operatör devralma üst verisi arasındaki kayıtlı ayrımı öne çıkarır.",
+    nextStepEn:
+      "Venue risk: file incident with facility security using trace appendix only. Operator org: pair VOIP metadata with rostered supervisor (external HR record). Legal: treat derived de-escalation reading as hypothesis—do not cite as emotional distress finding.",
+    nextStepTr:
+      "Mekân riski: olayı yalnızca iz ekiyle tesis güvenliğine bildirin. Operatör kuruluşu: VOIP üst verisini nöbetçi süpervizörle eşleyin (İK kaydı paket dışı). Hukuk: türetilmiş yatıştırma okumasını hipotez kabul edin — duygusal sıkıntı bulgusu gibi atıf yapmayın.",
     recordedEvidence: [
       {
         recordId: "rec-robot-003-1",
@@ -437,39 +1128,154 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.9,
-        displayLabel: "Pedestrian encounter and handoff log (raw)",
+        displayLabel: "Onboard interaction log (state machine transitions, max speed caps, audio beacon flags)",
+        displayLabelTr: "Uçbirim etkileşim günlüğü (durum makinesi geçişleri, hız tavanları, ses işaret bayrakları)",
         machineLabel: "interaction_log",
+      },
+      {
+        recordId: "rec-robot-003-2",
+        sourceType: "lidar_proximity",
+        sourceId: "SRC-ROBOT-003-L",
+        capturedAt: "2025-03-13T14:20:02Z",
+        contentType: "application/octet-stream",
+        hash: "hash-robot-003-lidar",
+        sizeOrLength: 2048,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.91,
+        displayLabel: "Lidar proximity ring samples (range histogram only, no stored point cloud)",
+        displayLabelTr: "Lidar yakınlık halkası örnekleri (yalnızca menzil histogramı, nokta bulutu yok)",
+        machineLabel: "lidar_rings",
+      },
+      {
+        recordId: "rec-robot-003-3",
+        sourceType: "operator_session",
+        sourceId: "SRC-ROBOT-003-V",
+        capturedAt: "2025-03-13T14:20:08Z",
+        contentType: "application/json",
+        hash: "hash-robot-003-voip",
+        sizeOrLength: 480,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.88,
+        displayLabel: "Remote operator session metadata (session ID, codec, jitter; no audio payload)",
+        displayLabelTr: "Uzaktan operatör oturum üst verisi (oturum kimliği, codec, gecikme; ses yükü yok)",
+        machineLabel: "voip_meta",
+      },
+      {
+        recordId: "rec-robot-003-4",
+        sourceType: "venue_zone_token",
+        sourceId: "SRC-ROBOT-003-Z",
+        capturedAt: "2025-03-13T14:19:50Z",
+        contentType: "application/json",
+        hash: "hash-robot-003-zone",
+        sizeOrLength: 256,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.93,
+        displayLabel: "Venue digital twin zone token (crowd-density policy revision hash)",
+        displayLabelTr: "Mekân dijital ikiz bölge jetonu (kalabalık yoğunluğu politika revizyon özeti)",
+        machineLabel: "zone_token",
       },
     ] as RecordedEvidenceItem[],
     derivedAssessment: [
       {
         derivedId: "der-robot-003-summary",
         derivedType: "timeline_synthesis",
-        derivedFrom: ["rec-robot-003-1"],
+        derivedFrom: ["rec-robot-003-1", "rec-robot-003-3"],
         generatedAt: "2025-03-13T14:21:00Z",
         method: "timeline_v1",
         confidence: 0.86,
         recordedFlag: false,
         derivationNote: "Structured assessment from recorded interaction log; does not determine whether context loss constituted harm.",
-        displayLabel: "Encounter and handoff timeline synthesis",
+        displayLabel: "Pedestrian approach → slow → remote takeover timeline",
+        displayLabelTr: "Yaya yaklaşma → yavaşlama → uzaktan devralma zaman çizelgesi",
         machineLabel: "timeline_synthesis",
         humanSummary:
-          "Reconstructed encounter and operator handoff sequence from recorded log; supports context review and safe next step—human review required to assess significance of context loss.",
-        sourceDependencies: ["rec-robot-003-1"],
+          "Orders deceleration, voice-channel open, and mode handoff without embedding subjective crowd mood—useful for venue compliance workshops.",
+        humanSummaryTr:
+          "Yavaşlama, ses kanalı açılışı ve mod devrini öznel kalabalık algısı eklemeden sıralar — mekân uyum atölyeleri için uygundur.",
+        sourceDependencies: ["rec-robot-003-1", "rec-robot-003-3"],
+      },
+      {
+        derivedId: "der-robot-003-deescalation",
+        derivedType: "analytical_reading",
+        derivedFrom: ["rec-robot-003-1", "rec-robot-003-2"],
+        generatedAt: "2025-03-13T14:21:12Z",
+        method: "policy_gap_v1",
+        confidence: 0.78,
+        recordedFlag: false,
+        derivationNote: "Policy-gap hint compares recorded caps to venue token; not a safety certification.",
+        displayLabel: "Recorded speed caps vs venue crowd-density policy token (gap hint)",
+        displayLabelTr: "Kayıtlı hız tavanları ile mekân kalabalık politikası jetonu (boşluk ipucu)",
+        machineLabel: "policy_gap",
+        humanSummary:
+          "Flags whether the robot remained inside the posted cap for the hashed policy revision—does not judge if the policy itself was adequate for peak hour.",
+        humanSummaryTr:
+          "Robotun özetlenmiş politika revizyonu için beyan edilen tavan içinde kalıp kalmadığını işaretler — politikanın yoğun saat için yeterli olup olmadığına hükmetmez.",
+        sourceDependencies: ["rec-robot-003-1", "rec-robot-003-4"],
       },
     ] as DerivedEvidenceItem[],
     unknownDisputed: [
-      "Whether context loss in this encounter warrants escalation; requires human review.",
+      "Whether the encounter crossed the venue’s contractual escalation threshold for remote human takeover versus acceptable autonomous slow-mode.",
+      "Whether absence of audio payload in the bundle blocks fair review of operator tone—or whether separate lawful retention holds the only copy.",
+      "Whether lidar histograms alone prove sufficient minimum separation for municipal ADA-crowding scenarios.",
+    ],
+    unknownDisputedTr: [
+      "Karşılaşma, uzaktan insan devralması için mekân sözleşmesi eskalasyon eşiğini mi aştı yoksa kabul edilebilir otonom yavaş modunda mı kaldı?",
+      "Pakette ses yükü olmaması operatör tonunun adil incelenmesini engeller mi — yoksa yasal saklamada tek kopya mı var?",
+      "Lidar histogramları tek başına belediye ADA yoğunluğu senaryoları için yeterli minimum ayrımı kanıtlar mı?",
     ],
     verificationTrace: [
-      TRACE_STEP(1, "Encounter registered", "OK", "Encounter is registered against the public-interaction bundle and manifest."),
-      TRACE_STEP(2, "Interaction log integrity", "OK", "Interaction log integrity is preserved and remains distinct from the derived encounter timeline."),
-      TRACE_STEP(3, "Handoff chain documented", "OK", "Handoff chain documented for context review; significance remains with human review."),
+      TRACE_STEP(
+        1,
+        "Encounter registered",
+        "OK",
+        "Encounter object sealed under public-interaction manifest; venue zone token referenced without embedding floor plans.",
+        {
+          check: "Karşılaşma kaydı",
+          note: "Karşılaşma nesnesi kamusal etkileşim manifesti altında mühürlendi; kat planları gömülmeden mekân bölge jetonu referanslandı.",
+        }
+      ),
+      TRACE_STEP(
+        2,
+        "Interaction log integrity",
+        "OK",
+        "State transitions hash-chained; no retroactive edit flags in bundle.",
+        {
+          check: "Etkileşim günlüğü bütünlüğü",
+          note: "Durum geçişleri zincir özetli; pakette geriye dönük düzenleme bayrağı yok.",
+        }
+      ),
+      TRACE_STEP(
+        3,
+        "Sensor vs operator metadata separation",
+        "OK",
+        "Lidar rings remain recorded; remote session metadata stored as separate object—no implicit merge.",
+        {
+          check: "Sensör ve operatör üst verisi ayrımı",
+          note: "Lidar halkaları kayıtlı kalır; uzak oturum üst verisi ayrı nesnede — örtük birleştirme yok.",
+        }
+      ),
       TRACE_STEP(
         4,
+        "Derived policy gap labeling",
+        "OK",
+        "Policy gap chart explicitly labeled non-certifying; cannot be exported as compliance attestation from this trace alone.",
+        {
+          check: "Türetilmiş politika boşluğu etiketi",
+          note: "Politika boşluğu grafiği açıkça sertifikalandırmayan olarak etiketlendi; yalnız bu izden uyum beyanı olarak dışa aktarılamaz.",
+        }
+      ),
+      TRACE_STEP(
+        5,
         "Context review",
         "UNVERIFIED",
-        "Context review remains required; verification trace documents chain steps only."
+        "Escalation and admissibility questions remain open; trace lists procedural checks only.",
+        {
+          check: "Bağlam incelemesi",
+          note: "Eskalasyon ve kabul edilebilirlik soruları açık kalır; iz yalnızca prosedürel kontrolleri listeler.",
+        }
       ),
     ],
     artifactIssuance: { available: true, apiBacked: true },
@@ -493,13 +1299,67 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       },
     ] as AxisusState[],
     artifactProfiles: [
-      { profileCode: "claims", enabled: true, apiBacked: true, reasonTr: "Hasar/claim süreci bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Claims process is meaningful for this case; issuance API is connected." },
-      { profileCode: "legal", enabled: true, apiBacked: true, reasonTr: "Hukukî inceleme bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Legal review is meaningful for this case; issuance API is connected." },
-      { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Etkileşim zinciri rekonstrüksiyonu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Interaction chain reconstruction is meaningful; issuance support is not yet connected." },
-      { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Kamusal alan riski ve güvenli sonraki adım anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Public-space risk and safe next step are meaningful; issuance support is not yet connected." },
-      { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
-      { profileCode: "regulatory", enabled: true, apiBacked: false, reasonTr: "Kayıt ve trace anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Record and trace are meaningful; issuance support is not yet connected." },
-      { profileCode: "public_safety", enabled: true, apiBacked: false, reasonTr: "Kamusal güvenlik bağlamı anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Public safety context is meaningful; issuance support is not yet connected." },
+      {
+        profileCode: "claims",
+        enabled: true,
+        apiBacked: true,
+        reasonTr:
+          "Mekân ve ziyaretçi maruziyeti: olay özeti + iz; duygusal sıkıntı teşhisi veya kusur yüzdesi üretmez.",
+        reasonEn:
+          "Venue / patron exposure: incident summary + trace; does not output emotional distress diagnosis or fault percentage.",
+      },
+      {
+        profileCode: "legal",
+        enabled: true,
+        apiBacked: true,
+        reasonTr:
+          "Sözleşme ve KVKK çerçevesi için kanonik zaman çizelgesi; mahkeme hükmü veya idari para cezası değildir.",
+        reasonEn:
+          "Canonical timeline for contract and privacy framing; not a court judgment or administrative fine.",
+      },
+      {
+        profileCode: "technical",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "Robot mühendisliği özeti: lidar histogramları ve mod geçişleri; tam ODD sertifikasyonu ikamesi değildir.",
+        reasonEn:
+          "Robotics engineering summary: lidar histograms and mode transitions; not an ODD certification substitute.",
+      },
+      {
+        profileCode: "safety",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "Saha güvenliği brifingi: hız tavanları ve bölge jetonu; operasyonel tahliye emri değildir.",
+        reasonEn:
+          "Field safety briefing: speed caps and zone token; not an operational evacuation order.",
+      },
+      {
+        profileCode: "governance",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Kurumsal robot etik kurulu paketi bu demo için ayrıcalıklı değil.",
+        reasonEn: "Corporate robotics ethics board pack not privileged in this demo.",
+      },
+      {
+        profileCode: "regulatory",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "İdari dosya şablonu: politika boşluğu grafiği ekleri; düzenleyici onay beyanı değildir.",
+        reasonEn:
+          "Administrative dossier template: policy-gap chart attachments; not a regulatory approval statement.",
+      },
+      {
+        profileCode: "public_safety",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "Kamu güvenliği brifingi: kalabalık yoğunluğu jetonu ile hizalanmış ölçülebilir göstergeler; panik uyarısı değildir.",
+        reasonEn:
+          "Public safety briefing: measurable indicators aligned to crowd-density token; not a panic alert.",
+      },
     ] as ArtifactProfileVisibility[],
   },
   // —— Robot 2: Safety Stop ——
@@ -512,14 +1372,19 @@ export const CANONICAL_CASES: CanonicalCase[] = [
     bundleId: "bundle-robot-001",
     manifestId: "manifest-robot-001",
     occurredAt: "2025-03-13T11:08:00Z",
-    summary: "Emergency stop triggered by proximity sensor during cycle.",
+    summary:
+      "Demo collaborative workcell: protective stop fires on redundant proximity while a human reaches across light curtain plane. Raw safety PLC telegram, torque-limited joint snapshot, and maintenance calibration seal are co-registered—bounded verification shows the stop chain, not whether maintenance was negligent.",
+    summaryTr:
+      "Demo işbirlikli iş hücresi: insan perde düzlemini geçerken yedekli yakınlıkta koruyucu durdurma tetiklenir. Ham güvenlik PLC telgrafı, tork sınırlı eklem anlık görüntüsü ve bakım kalibrasyon mührü birlikte kayıtlıdır — sınırlı doğrulama durdurma zincirini gösterir, bakımın ihmalkâr olup olmadığını değil.",
     verificationState: "UNVERIFIED",
     reviewWhyEn:
-      "Under review for safety stop and compliance record assessment; proximity-trigger and cycle boundary must be traceable for protective-stop accountability.",
+      "ISO 10218-style reviews need the stop ladder, reset authority, and calibration lineage on one manifest. This demo stresses that torque telemetry and PLC bits stay recorded while “was threshold correct?” stays disputed.",
     reviewWhyTr:
-      "Güvenlik durdurma ve uyumluluk kayıtlarının incelenmesi için incelemeye alındı; yakınlık tetikleyicisi ve döngü sınırı izlenebilir olmalı.",
-    nextStepEn: "Run verification or start controlled artifact once trace and unknowns are reviewed.",
-    nextStepTr: "İz ve belirsizlikler incelendikten sonra doğrulamayı çalıştırın veya kontrollü artifact başlatın.",
+      "ISO 10218 tarzı incelemeler durdurma basamaklarını, sıfırlama yetkisini ve kalibrasyon soyunu tek manifestte ister. Bu demo tork telemetrisi ve PLC bitlerinin kayıtlı kalmasını, “eşik doğru muydu?” sorusunun tartışmalı kalmasını vurgular.",
+    nextStepEn:
+      "EHS: lock out/tag out before clearing stop; cite trace IDs in CAPA form only. Legal: do not treat derived threshold comparison as negligence admission. Production: restart only after dual human acknowledgment per local SOP (outside this bundle).",
+    nextStepTr:
+      "İSG: durdurmayı kaldırmadan önce kilitle/etiketle; CAPA formunda yalnızca iz kimliklerine atıf yapın. Hukuk: türetilmiş eşik karşılaştırmasını ihmalkârlık itirafı saymayın. Üretim: yerel SOP uyarınca çift insan onayı olmadan yeniden başlatma (paket dışı).",
     recordedEvidence: [
       {
         recordId: "rec-robot-001-1",
@@ -532,39 +1397,154 @@ export const CANONICAL_CASES: CanonicalCase[] = [
         recordedFlag: true,
         derivationNote: null,
         originConfidence: 0.95,
-        displayLabel: "Proximity-trigger and stop-cycle log (raw)",
+        displayLabel: "Safety PLC telegram stream (E-stop, light curtain, reset interlock bits)",
+        displayLabelTr: "Güvenlik PLC telgraf akışı (E-stop, ışık perdesi, sıfırlama kilidi bitleri)",
         machineLabel: "safety_log",
+      },
+      {
+        recordId: "rec-robot-001-2",
+        sourceType: "joint_telemetry",
+        sourceId: "SRC-ROBOT-001-J",
+        capturedAt: "2025-03-13T11:08:00.050Z",
+        contentType: "application/octet-stream",
+        hash: "hash-robot-001-joint",
+        sizeOrLength: 768,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.93,
+        displayLabel: "Joint torque / velocity snapshot (±120 ms around stop edge)",
+        displayLabelTr: "Eklem tork / hız anlık görüntüsü (durdurma kenarı ±120 ms)",
+        machineLabel: "joint_snap",
+      },
+      {
+        recordId: "rec-robot-001-3",
+        sourceType: "calibration_seal",
+        sourceId: "SRC-ROBOT-001-C",
+        capturedAt: "2025-03-13T08:00:00Z",
+        contentType: "application/json",
+        hash: "hash-robot-001-cal",
+        sizeOrLength: 360,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.9,
+        displayLabel: "Proximity sensor calibration seal (vendor anonymized, expiry timestamp)",
+        displayLabelTr: "Yakınlık sensörü kalibrasyon mührü (satıcı anonim, sona erme zaman damgası)",
+        machineLabel: "cal_seal",
+      },
+      {
+        recordId: "rec-robot-001-4",
+        sourceType: "maintenance_ticket",
+        sourceId: "SRC-ROBOT-001-M",
+        capturedAt: "2025-03-13T09:30:00Z",
+        contentType: "application/json",
+        hash: "hash-robot-001-ticket",
+        sizeOrLength: 420,
+        recordedFlag: true,
+        derivationNote: null,
+        originConfidence: 0.87,
+        displayLabel: "CMMS ticket stub linked to cell (procedure code only, no technician PII)",
+        displayLabelTr: "Hücreye bağlı CMMS bilet özü (yalnızca prosedür kodu, teknisyen KVKK verisi yok)",
+        machineLabel: "cmms_stub",
       },
     ] as RecordedEvidenceItem[],
     derivedAssessment: [
       {
         derivedId: "der-robot-001-timeline",
         derivedType: "timeline_synthesis",
-        derivedFrom: ["rec-robot-001-1"],
+        derivedFrom: ["rec-robot-001-1", "rec-robot-001-2"],
         generatedAt: "2025-03-13T11:09:00Z",
         method: "timeline_v1",
         confidence: 0.9,
         recordedFlag: false,
         derivationNote: "Structured assessment from recorded safety log; protective stop is boundary-preserving, not a fault finding.",
-        displayLabel: "Safety stop and cycle trace synthesis",
+        displayLabel: "Curtain break → torque collapse → E-stop latch timeline",
+        displayLabelTr: "Perde kırılması → tork düşüşü → E-stop mandal zaman çizelgesi",
         machineLabel: "timeline_synthesis",
         humanSummary:
-          "Reconstructed stop trigger and cycle boundary from recorded safety log; supports oversight and safe next step—protective stopping preserves boundary before risk escalation; not a determination of blame.",
-        sourceDependencies: ["rec-robot-001-1"],
+          "Shows ordering between curtain violation, commanded torque ramp-down, and latched stop—useful for insurer loss-control visits without naming individual maintainers.",
+        humanSummaryTr:
+          "Perde ihlali, komutlu tork düşüşü ve kilitli durdurma arasındaki sıralamayı gösterir — bireysel bakımcı adı vermeden sigorta kayıp kontrol ziyaretleri için uygundur.",
+        sourceDependencies: ["rec-robot-001-1", "rec-robot-001-2"],
+      },
+      {
+        derivedId: "der-robot-001-threshold",
+        derivedType: "analytical_reading",
+        derivedFrom: ["rec-robot-001-1", "rec-robot-001-3"],
+        generatedAt: "2025-03-13T11:09:15Z",
+        method: "threshold_compare_v1",
+        confidence: 0.81,
+        recordedFlag: false,
+        derivationNote: "Compares trigger margin to sealed calibration constants; not a product recall trigger.",
+        displayLabel: "Observed trigger margin vs sealed calibration constants (read-only table)",
+        displayLabelTr: "Gözlenen tetik marjı ile mühürlü kalibrasyon sabitleri (salt okunur tablo)",
+        machineLabel: "threshold_compare",
+        humanSummary:
+          "States whether the observed proximity margin was inside the sealed band at stop time—does not decide if seal was forged or if policy should change.",
+        humanSummaryTr:
+          "Durdurma anında gözlenen yakınlık marjının mühürlü bandın içinde olup olmadığını belirtir — mührün sahte olup olmadığına veya politikanın değişmesi gerektiğine karar vermez.",
+        sourceDependencies: ["rec-robot-001-1", "rec-robot-001-3"],
       },
     ] as DerivedEvidenceItem[],
     unknownDisputed: [
-      "Whether this protective stop fully aligns with configured safety policy thresholds; requires human review.",
+      "Whether the CMMS stub proves the correct preventive task was executed before shift start—or only that a ticket existed.",
+      "Whether dual-channel proximity agreement met SIL expectations for this cell configuration without independent hardware audit.",
+      "Whether restart authority should stay withheld until ergonomics reviews the reach envelope that led to the curtain break.",
+    ],
+    unknownDisputedTr: [
+      "CMMS özü vardiya başlangıcından önce doğru önleyici görevin yapıldığını kanıtlar mı — yoksa yalnızca bir biletin var olduğunu mu?",
+      "Bu hücre konfigürasyonu için çift kanallı yakınlık uyumu, bağımsız donanım denetimi olmadan SIL beklentisini karşıladı mı?",
+      "Perde kırılmasına yol açan erişim zarfı ergonomi tarafından incelenene kadar yeniden başlatma yetkisi bekletilmeli mi?",
     ],
     verificationTrace: [
-      TRACE_STEP(1, "Workcell cycle bound", "OK", "Workcell cycle bound is registered for this protective stop event."),
-      TRACE_STEP(2, "Safety log integrity", "OK", "Safety log integrity is preserved for the proximity-triggered stop event."),
-      TRACE_STEP(3, "Proximity trigger and stop boundary", "OK", "Proximity trigger and stop boundary are traced for oversight; this trace does not decide fault or blame."),
+      TRACE_STEP(
+        1,
+        "Workcell cycle bound",
+        "OK",
+        "Cycle ID and light-curtain map revision hash registered on manifest; no undeclared program edits in bundle.",
+        {
+          check: "İş hücresi döngü sınırı",
+          note: "Döngü kimliği ve ışık perdesi harita revizyon özeti manifestte kayıtlı; pakette beyan edilmemiş program düzenlemesi yok.",
+        }
+      ),
+      TRACE_STEP(
+        2,
+        "Safety log integrity",
+        "OK",
+        "PLC telegram ordering preserved; duplicate stop acknowledgements explicitly enumerated.",
+        {
+          check: "Güvenlik günlüğü bütünlüğü",
+          note: "PLC telgraf sıralaması korunmuş; yinelenen durdurma onayları açıkça numaralandı.",
+        }
+      ),
+      TRACE_STEP(
+        3,
+        "Joint telemetry boundary",
+        "OK",
+        "Torque snapshot remains separate object from PLC bits; no silent fusion into a single ‘fault code’ string.",
+        {
+          check: "Eklem telemetrisi sınırı",
+          note: "Tork anlık görüntüsü PLC bitlerinden ayrı nesne olarak kalır; tek bir ‘arıza kodu’ dizesinde sessiz füzyon yok.",
+        }
+      ),
       TRACE_STEP(
         4,
+        "Calibration seal linkage",
+        "OK",
+        "Calibration seal referenced by hash; expiry checked against onboard clock, not against vendor SLA contract text.",
+        {
+          check: "Kalibrasyon mührü bağlantısı",
+          note: "Kalibrasyon mührü özetle referanslanır; sona erme uçbirim saatine göre kontrol edilir, satıcı SLA sözleşme metnine göre değil.",
+        }
+      ),
+      TRACE_STEP(
+        5,
         "Protective stop review",
         "UNVERIFIED",
-        "Protective stop review remains required; verification trace documents chain steps only."
+        "Human factors and SIL audit questions remain open; trace documents mechanical verification steps only.",
+        {
+          check: "Koruyucu durdurma incelemesi",
+          note: "İnsan faktörleri ve SIL denetimi soruları açık kalır; iz yalnızca mekanik doğrulama adımlarını belgeler.",
+        }
       ),
     ],
     artifactIssuance: { available: true, apiBacked: true },
@@ -588,13 +1568,65 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       },
     ] as AxisusState[],
     artifactProfiles: [
-      { profileCode: "claims", enabled: true, apiBacked: true, reasonTr: "Hasar/claim süreci bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Claims process is meaningful for this case; issuance API is connected." },
-      { profileCode: "legal", enabled: true, apiBacked: true, reasonTr: "Hukukî inceleme bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Legal review is meaningful for this case; issuance API is connected." },
-      { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Durdurma zinciri rekonstrüksiyonu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Stop-cycle reconstruction is meaningful; issuance support is not yet connected." },
-      { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Koruyucu durdurma ve güvenli sonraki adım anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Protective stop and safe next step are meaningful; issuance support is not yet connected." },
-      { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
-      { profileCode: "regulatory", enabled: true, apiBacked: false, reasonTr: "Kayıt ve gözetim anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Record and oversight are meaningful; issuance support is not yet connected." },
-      { profileCode: "public_safety", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
+      {
+        profileCode: "claims",
+        enabled: true,
+        apiBacked: true,
+        reasonTr:
+          "Üretim kesinti ve ekipman maruziyeti: olay özeti + iz; iş güvenliği ihlali kararı üretmez.",
+        reasonEn:
+          "Production interruption / equipment exposure: incident summary + trace; does not output workplace safety violation rulings.",
+      },
+      {
+        profileCode: "legal",
+        enabled: true,
+        apiBacked: true,
+        reasonTr:
+          "İş hukuku ve tedarik zinciri sözleşmeleri için kanonik zaman çizelgesi; mahkeme hükmü değildir.",
+        reasonEn:
+          "Canonical timeline for labor and supply-chain contracts; not a court judgment.",
+      },
+      {
+        profileCode: "technical",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "OEM / entegratör inceleme kağıdı: tork ve PLC dizisi; tam fonksiyonel güvenlik raporu ikamesi değildir.",
+        reasonEn:
+          "OEM / integrator review sheet: torque and PLC sequence; not a full functional safety report substitute.",
+      },
+      {
+        profileCode: "safety",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "EHS brifingi: durdurma basamakları ve sıfırlama kilidi; üretim hattını tek başına açma emri değildir.",
+        reasonEn:
+          "EHS briefing: stop ladder and reset interlock; not a standalone line-clearance order.",
+      },
+      {
+        profileCode: "governance",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Üst yönetim olay inceleme paketi bu demo için ayrıcalıklı değil.",
+        reasonEn: "Executive incident review pack not privileged in this demo.",
+      },
+      {
+        profileCode: "regulatory",
+        enabled: true,
+        apiBacked: false,
+        reasonTr:
+          "İdari denetim dosyası şablonu: kalibrasyon mührü ve CMMS özü; düzenleyici ceza makbuzu değildir.",
+        reasonEn:
+          "Regulatory inspection dossier template: calibration seal + CMMS stub; not a regulatory penalty receipt.",
+      },
+      {
+        profileCode: "public_safety",
+        enabled: false,
+        apiBacked: false,
+        reasonTr: "Genel kamu uyarısı bu endüstriyel hücre paketinden türetilmez.",
+        reasonEn: "General public alert not derived from this industrial cell package.",
+      },
     ] as ArtifactProfileVisibility[],
   },
 ];

@@ -52,6 +52,8 @@ export interface RecordedEvidenceItem {
   originConfidence: number;
   storageRef?: string;
   displayLabel: string;
+  /** Optional Turkish surface label (verifier demo enrichment). */
+  displayLabelTr?: string;
   machineLabel: string;
 }
 
@@ -65,8 +67,10 @@ export interface DerivedEvidenceItem {
   recordedFlag: false;
   derivationNote: string;
   displayLabel: string;
+  displayLabelTr?: string;
   machineLabel: string;
   humanSummary: string;
+  humanSummaryTr?: string;
   sourceDependencies: string[];
 }
 
@@ -95,6 +99,8 @@ export interface VerificationTraceStep {
   check: string;
   result: string;
   note: string;
+  checkTr?: string;
+  noteTr?: string;
 }
 
 /** AXISUS State Pack v1: case-aware boundary protocol state. */
@@ -131,6 +137,8 @@ export interface CanonicalCase {
   manifestId: string;
   occurredAt: string;
   summary: string;
+  /** Turkish incident summary for verifier-first demo surface. */
+  summaryTr?: string;
   verificationState: VerificationState;
   /** Doctrine: Recorded Evidence (never collapse with derived). */
   recordedEvidence: RecordedEvidenceItem[];
@@ -138,6 +146,7 @@ export interface CanonicalCase {
   derivedAssessment: DerivedEvidenceItem[];
   /** Doctrine: Unknown / Disputed */
   unknownDisputed: string[];
+  unknownDisputedTr?: string[];
   /** Doctrine: Verification Trace */
   verificationTrace: VerificationTraceStep[];
   /** Doctrine: Artifact Issuance (available for vehicle when API-backed). */

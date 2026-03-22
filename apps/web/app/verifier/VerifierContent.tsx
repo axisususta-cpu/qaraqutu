@@ -98,13 +98,27 @@ interface EventCard {
 }
 
 /** Map canonical case to EventCard for spine display. */
-function caseToEventCard(c: { eventId: string; scenarioFrame: string; summary: string; occurredAt: string; verificationState: string; bundleId: string; manifestId: string; artifactIssuance: { available: boolean } }): EventCard {
+function caseToEventCard(
+  c: {
+    eventId: string;
+    scenarioFrame: string;
+    summary: string;
+    summaryTr?: string;
+    occurredAt: string;
+    verificationState: string;
+    bundleId: string;
+    manifestId: string;
+    artifactIssuance: { available: boolean };
+  },
+  lang: "en" | "tr"
+): EventCard {
   const severity = c.verificationState === "FAIL" ? "high" : c.verificationState === "PASS" ? "low" : "medium";
   const outputs = c.artifactIssuance.available ? ["Claims artifact", "Legal artifact", "Trace"] : ["Demo context"];
+  const summary = lang === "tr" && c.summaryTr ? c.summaryTr : c.summary;
   return {
     eventId: c.eventId,
     title: c.scenarioFrame,
-    summary: c.summary,
+    summary,
     timestamp: c.occurredAt,
     severity,
     state: c.verificationState,
@@ -244,21 +258,33 @@ interface DerivedEvidenceRow {
   profileRelevance: string;
 }
 
-function toRecordedRows(items: RecordedEvidenceItem[]): RecordedEvidenceRow[] {
-  return items.map((r) => ({
-    source: r.displayLabel || `${r.sourceType} / ${r.sourceId}`,
-    timestamp: r.capturedAt,
-    description: r.displayLabel || r.machineLabel,
-    referenceId: r.recordId,
-    status: r.originConfidence >= 0.9 ? "verified" : "recorded",
-  }));
+function toRecordedRows(items: RecordedEvidenceItem[], lang: "en" | "tr"): RecordedEvidenceRow[] {
+  return items.map((r) => {
+    const label =
+      lang === "tr" && r.displayLabelTr
+        ? r.displayLabelTr
+        : r.displayLabel || `${r.sourceType} / ${r.sourceId}`;
+    return {
+      source: label,
+      timestamp: r.capturedAt,
+      description: label,
+      referenceId: r.recordId,
+      status: r.originConfidence >= 0.9 ? "verified" : "recorded",
+    };
+  });
 }
 
-function toDerivedRows(items: DerivedEvidenceItem[]): DerivedEvidenceRow[] {
+function toDerivedRows(items: DerivedEvidenceItem[], lang: "en" | "tr"): DerivedEvidenceRow[] {
   return items.map((d) => ({
-    type: d.derivedType || d.displayLabel,
+    type:
+      lang === "tr" && d.displayLabelTr
+        ? d.displayLabelTr
+        : d.derivedType || d.displayLabel,
     basisReferences: (d.derivedFrom || d.sourceDependencies || []).join(", ") || "—",
-    explanation: d.humanSummary || d.derivationNote || "—",
+    explanation:
+      lang === "tr" && d.humanSummaryTr
+        ? d.humanSummaryTr
+        : d.humanSummary || d.derivationNote || "—",
     confidence: String(Math.round((d.confidence ?? 0) * 100) + "%"),
     profileRelevance: (d as { visibility_class?: string }).visibility_class ?? "claims_review",
   }));
@@ -315,23 +341,10 @@ function buildTranscriptStepRows(
 function getVisibleUnknownItems(
   caseId: string | undefined,
   items: string[] | undefined,
+  itemsTr: string[] | undefined,
   language: "en" | "tr"
 ): string[] {
-  if (language === "tr") return items ?? [];
-
-  if (caseId === "golden-robot-public") {
-    return [
-      "Whether context loss in the public encounter crossed the escalation threshold for supervisor review.",
-      "Whether the operator handoff captured enough context to support a bounded follow-up artifact.",
-    ];
-  }
-
-  if (caseId === "golden-robot-safety") {
-    return [
-      "Whether the proximity-trigger threshold matched the configured protective-stop policy at the moment of interruption.",
-      "Whether restart authority should remain withheld until a human review closes the stop-cycle uncertainty.",
-    ];
-  }
+  if (language === "tr") return itemsTr?.length ? itemsTr : items ?? [];
 
   return items ?? [];
 }
@@ -556,7 +569,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     selectedScenario
       ? getCanonicalCases(selectedSystem).filter((c) => c.scenarioFrame === selectedScenario)
       : []
-  ).map(caseToEventCard);
+  ).map((c) => caseToEventCard(c, language));
 
   const selectedEventCard =
     displayEvents.find((e) => e.eventId === selectedEventId) ?? null;
@@ -574,31 +587,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     identity?.bundle_id ?? selected?.bundleId ?? selectedEventCard?.bundleId ?? "—";
   const manifestAnchorId =
     identity?.manifest_id ?? selected?.manifestId ?? selectedEventCard?.manifestId ?? "—";
-  const visibleRecorded =
-    selectedCase?.recordedEvidence?.length
-      ? toRecordedRows(selectedCase.recordedEvidence).map((row, index) => {
-          if (selectedCase.caseId === "golden-drone-linkloss" && index === 0) {
-            return {
-              ...row,
-              source: "Telemetry window",
-              description:
-                "BVLOS segment telemetry window preserved on the canonical bundle; the recorded layer remains raw and separate from any recovery reading.",
-            };
-          }
-          if (selectedCase.caseId === "golden-drone-mission" && index === 0) {
-            return {
-              ...row,
-              source: "Waypoint transit telemetry",
-              description:
-                "Altitude-band and track telemetry captured as a raw mission object; significance stays in derived review, not in this recorded layer.",
-            };
-          }
-          return row;
-        })
-      : [];
+  const visibleRecorded = selectedCase?.recordedEvidence?.length
+    ? toRecordedRows(selectedCase.recordedEvidence, language)
+    : [];
   const visibleUnknownItems = getVisibleUnknownItems(
     selectedCase?.caseId,
     selectedCase?.unknownDisputed,
+    selectedCase?.unknownDisputedTr,
     language
   );
   const traceStepRows =
@@ -611,10 +606,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         }))
       : selectedCase?.verificationTrace?.length
       ? selectedCase.verificationTrace.map((s) => ({
-          label: s.check,
+          label: language === "tr" && s.checkTr ? s.checkTr : s.check,
           status: s.result,
           time: undefined as string | undefined,
-          note: s.note || undefined,
+          note: (language === "tr" && s.noteTr ? s.noteTr : s.note) || undefined,
         }))
       : buildTranscriptStepRows(selectedSystem, transcript, verificationState, language);
   const hasConnectedIssuanceProfile =
@@ -2096,7 +2091,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {(() => {
                         const derived =
                           selectedCase?.derivedAssessment?.length
-                            ? toDerivedRows(selectedCase.derivedAssessment)
+                            ? toDerivedRows(selectedCase.derivedAssessment, language)
                             : [];
                         if (derived.length === 0) {
                           return (
