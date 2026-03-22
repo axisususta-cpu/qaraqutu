@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { VerificationRunResponse } from "contracts";
+import { normalizeQaraqutuAccessToken } from "../../../../../lib/access-token";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -49,6 +50,7 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ eventId: 
     };
     if (token.length >= 12) {
       headers.Authorization = `Bearer ${token}`;
+      headers["x-qaraqutu-access"] = token;
     }
     const res = await fetch(`${API_BASE}/v1/events/${eventId}/verify`, {
       method: "POST",

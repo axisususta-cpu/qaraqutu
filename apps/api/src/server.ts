@@ -28,10 +28,12 @@ const BUILD_COMMIT_SHA = process.env.VERCEL_GIT_COMMIT_SHA ?? "unknown";
 const BUILD_TIME = process.env.BUILD_TIME ?? new Date().toISOString();
 const API_SUPPORTED_EXPORT_PROFILES: ExportProfileCode[] = ["claims", "legal"];
 const API_SUPPORTED_EXPORT_FORMATS: ExportFormat[] = ["json", "pdf"];
-/** Normalized secret; Vercel/env often injects trailing newlines — strict equality must use trim. */
-const ACCESS_TOKEN_RAW = process.env.QARAQUTU_ACCESS_TOKEN ?? "";
-const ACCESS_TOKEN =
-  ACCESS_TOKEN_RAW.trim().length >= 12 ? ACCESS_TOKEN_RAW.trim() : null;
+/** Normalized secret; Vercel/env may inject BOM, CR/LF, or trailing newlines. */
+function normalizeAccessToken(raw: string): string {
+  return raw.replace(/^\uFEFF/, "").trim();
+}
+const ACCESS_TOKEN_RAW = normalizeAccessToken(process.env.QARAQUTU_ACCESS_TOKEN ?? "");
+const ACCESS_TOKEN = ACCESS_TOKEN_RAW.length >= 12 ? ACCESS_TOKEN_RAW : null;
 
 function getClientIp(request: any): string {
   const xff = request.headers?.["x-forwarded-for"];
@@ -45,11 +47,11 @@ function hasBearerAccess(request: any): boolean {
   if (!ACCESS_TOKEN) return false;
   const auth = request.headers?.authorization;
   if (typeof auth === "string" && auth.startsWith("Bearer ")) {
-    const provided = auth.slice("Bearer ".length).trim();
+    const provided = normalizeAccessToken(auth.slice("Bearer ".length));
     return provided === ACCESS_TOKEN;
   }
   const alt = request.headers?.["x-qaraqutu-access"];
-  return typeof alt === "string" && alt.trim() === ACCESS_TOKEN;
+  return typeof alt === "string" && normalizeAccessToken(alt) === ACCESS_TOKEN;
 }
 
 type RateKey = string;

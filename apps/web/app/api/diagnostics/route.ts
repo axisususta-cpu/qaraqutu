@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { resolveBffUpstreamToken } from "../../../lib/access-token";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -7,12 +8,15 @@ const API_BASE =
     : "http://localhost:4000");
 
 /** Server-side proxy for /v1/system/diagnostics so the browser does not hit the API cross-origin. */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const token = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
+    const token = resolveBffUpstreamToken(req);
     const res = await fetch(`${API_BASE}/v1/system/diagnostics`, {
-      next: { revalidate: 10 },
-      headers: token.length >= 12 ? { Authorization: `Bearer ${token}` } : undefined,
+      cache: "no-store",
+      headers:
+        token.length >= 12
+          ? { Authorization: `Bearer ${token}`, "x-qaraqutu-access": token }
+          : undefined,
     });
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });

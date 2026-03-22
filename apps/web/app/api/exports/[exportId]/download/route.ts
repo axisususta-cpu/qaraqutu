@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { resolveBffUpstreamToken } from "../../../../../lib/access-token";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -11,8 +12,8 @@ function isSafeExportId(value: string): boolean {
   return /^QEX-[a-zA-Z0-9-]{10,120}$/.test(value);
 }
 
-export async function GET(_req: NextRequest, ctx: { params: Promise<{ exportId: string }> }) {
-  const token = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
+export async function GET(req: NextRequest, ctx: { params: Promise<{ exportId: string }> }) {
+  const token = resolveBffUpstreamToken(req);
   if (token.length < 12) {
     return NextResponse.json({ error: "ACCESS_GATE_NOT_CONFIGURED" }, { status: 503 });
   }

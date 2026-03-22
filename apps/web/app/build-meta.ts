@@ -4,9 +4,7 @@ const commitSha =
   "unknown";
 
 const buildTime =
-  process.env.NEXT_PUBLIC_BUILD_TIME ??
-  process.env.BUILD_TIME ??
-  new Date().toISOString();
+  process.env.NEXT_PUBLIC_BUILD_TIME ?? process.env.BUILD_TIME ?? "unknown";
 
 export const webBuildMeta = {
   app: "qaraqutu-web",

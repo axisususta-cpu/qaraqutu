@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { ExportArtifactResponse } from "contracts";
+import { resolveBffUpstreamToken } from "../../../../../lib/access-token";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -34,7 +35,7 @@ function localPreviewExport(eventId: string, body: Record<string, unknown> | nul
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ eventId: string }> }) {
-  const token = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
+  const token = resolveBffUpstreamToken(req);
   const { eventId } = await ctx.params;
   if (!isSafeId(eventId)) {
     return NextResponse.json({ error: "INVALID_EVENT_ID" }, { status: 400 });

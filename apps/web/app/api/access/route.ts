@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const ACCESS_COOKIE = "qq_access";
+import { normalizeQaraqutuAccessToken, QARAQUTU_ACCESS_COOKIE } from "../../../lib/access-token";
 
 function safeNext(next: unknown): string {
   if (typeof next !== "string") return "/";
@@ -10,7 +9,7 @@ function safeNext(next: unknown): string {
 }
 
 export async function POST(req: NextRequest) {
-  const expected = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
+  const expected = normalizeQaraqutuAccessToken(process.env.QARAQUTU_ACCESS_TOKEN);
   if (expected.length < 12) {
     return NextResponse.json(
       {
@@ -22,10 +21,10 @@ export async function POST(req: NextRequest) {
   }
 
   const body = (await req.json().catch(() => null)) as null | { token?: unknown; next?: unknown };
-  const token = typeof body?.token === "string" ? body.token.trim() : "";
+  const token = typeof body?.token === "string" ? normalizeQaraqutuAccessToken(body.token) : "";
   const next = safeNext(body?.next);
 
-  if (!token || token.trim() !== expected) {
+  if (!token || token !== expected) {
     return NextResponse.json(
       { error: "ACCESS_DENIED", message: "Not authorized for this restricted surface." },
       { status: 403 }
@@ -34,7 +33,7 @@ export async function POST(req: NextRequest) {
 
   const res = NextResponse.redirect(new URL(next, req.url), 303);
   res.cookies.set({
-    name: ACCESS_COOKIE,
+    name: QARAQUTU_ACCESS_COOKIE,
     value: expected,
     httpOnly: true,
     sameSite: "lax",

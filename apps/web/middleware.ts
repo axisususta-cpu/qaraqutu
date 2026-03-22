@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const ACCESS_COOKIE = "qq_access";
+import { normalizeQaraqutuAccessToken, QARAQUTU_ACCESS_COOKIE } from "./lib/access-token";
 
 function getClientIp(req: NextRequest): string {
   const xff = req.headers.get("x-forwarded-for");
@@ -41,10 +40,10 @@ function applySecurityHeaders(res: NextResponse) {
 }
 
 function hasValidAccess(req: NextRequest): boolean {
-  const token = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
+  const token = normalizeQaraqutuAccessToken(process.env.QARAQUTU_ACCESS_TOKEN);
   if (token.length < 12) return false;
-  const cookieToken = req.cookies.get(ACCESS_COOKIE)?.value?.trim() ?? "";
-  const headerToken = req.headers.get("x-qaraqutu-access")?.trim() ?? "";
+  const cookieToken = normalizeQaraqutuAccessToken(req.cookies.get(QARAQUTU_ACCESS_COOKIE)?.value);
+  const headerToken = normalizeQaraqutuAccessToken(req.headers.get("x-qaraqutu-access"));
   return cookieToken === token || headerToken === token;
 }
 
