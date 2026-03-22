@@ -8,6 +8,7 @@ import { ThemeToggle } from "./components/ThemeToggle";
 import { LanguageProvider } from "../lib/LanguageContext";
 import { LanguageToggle } from "./components/LanguageToggle";
 import { BRAND } from "../lib/brand";
+import { FooterDoctrine } from "./components/FooterDoctrine";
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://qaraqutu-web.vercel.app"),
@@ -115,9 +116,10 @@ export default function RootLayout({
             </div>
           </header>
           {children}
+          <FooterDoctrine />
           <footer
             style={{
-              padding: "0.7rem 2rem 0.9rem",
+              padding: "0.55rem 2rem 0.85rem",
               fontSize: "0.66rem",
               color: "var(--text-muted)",
               display: "flex",
@@ -127,7 +129,6 @@ export default function RootLayout({
               gap: "0.6rem",
               letterSpacing: "0.05em",
               borderTop: "1px solid var(--border-soft)",
-              marginTop: "0.5rem",
               background: "var(--panel)",
             }}
           >

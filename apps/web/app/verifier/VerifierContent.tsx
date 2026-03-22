@@ -592,6 +592,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         }
       : null);
 
+  const msg = MSG[language];
+
   async function runVerification() {
     if (!selectedId) return;
     setLoading(true);
@@ -775,7 +777,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   height: 7,
                   borderRadius: "50%",
                   background: "var(--accent)",
-                  boxShadow: `0 0 6px ${"var(--accent)"}60`,
                   flexShrink: 0,
                 }}
               />
@@ -1343,13 +1344,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 {language === "tr" ? "// empty_event_catalog" : "// empty_event_catalog"}
                               </div>
                               <p style={{ margin: 0, fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
-                                {language === "tr"
-                                  ? selectedScenario
-                                    ? "Bu senaryo için olay kartı yok."
-                                    : "Önce senaryo seçin; olaylar senaryoya göre listelenir."
-                                  : selectedScenario
-                                  ? "No event cards for this scenario."
-                                  : "Choose a scenario first; events are listed per scenario."}
+                                {selectedScenario ? msg.verifierEmptyEventCatalog : msg.verifierPickScenarioFirst}
                               </p>
                             </div>
                           ) : (
@@ -1465,7 +1460,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                         opacity: 0.7,
                                       }}
                                     >
-                                      {language === "tr" ? "Ne oldu" : "What happened"}
+                                      {msg.verifierWhatHappened}
                                     </span>
                                     <p style={{ margin: "0.2rem 0 0", fontSize: "0.75rem" }}>
                                       {sum.what}
@@ -1480,9 +1475,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                           opacity: 0.7,
                                         }}
                                       >
-                                        {language === "tr"
-                                          ? "Neden incelemede"
-                                          : "Why under review"}
+                                        {msg.verifierWhyUnderReview}
                                       </span>
                                       <p style={{ margin: "0.2rem 0 0", fontSize: "0.75rem" }}>
                                         {sum.why}
@@ -1498,7 +1491,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                           opacity: 0.7,
                                         }}
                                       >
-                                        {language === "tr" ? "İnceleme durumu" : "Review state"}
+                                        {msg.verifierReviewState}
                                       </span>
                                       <p style={{ margin: "0.2rem 0 0", fontSize: "0.75rem" }}>
                                         {sum.state}
@@ -1514,7 +1507,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                           opacity: 0.7,
                                         }}
                                       >
-                                        {language === "tr" ? "Güvenli sonraki adım" : "Safe next step"}
+                                        {msg.verifierSafeNextStep}
                                       </span>
                                       <p style={{ margin: "0.2rem 0 0", fontSize: "0.75rem" }}>
                                         {sum.next}
@@ -1578,6 +1571,37 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           </aside>
 
           <main style={{ minWidth: 0 }}>
+            {!selectedEventCard ? (
+              <section
+                style={{
+                  marginBottom: UI.sectionGap,
+                  borderRadius: UI.radius.md,
+                  border: `1px solid ${"var(--border-strong)"}`,
+                  background: "var(--panel-raised)",
+                  padding: "1rem 1.15rem",
+                }}
+                aria-live="polite"
+              >
+                <div style={{ fontFamily: MONO, fontSize: "0.58rem", letterSpacing: "0.12em", color: "var(--accent)", fontWeight: 700, marginBottom: "0.35rem" }}>
+                  {msg.verifierWaitingSelectionTitle}
+                </div>
+                <p style={{ margin: 0, fontSize: "0.82rem", lineHeight: 1.55, color: "var(--text-soft)" }}>{msg.verifierWaitingSelectionBody}</p>
+              </section>
+            ) : null}
+
+            {/* Main inspection panels — scroll targets align with command spine */}
+            <div
+              style={{
+                marginBottom: "0.85rem",
+                paddingBottom: "0.5rem",
+                borderBottom: `1px solid ${"var(--border-muted)"}`,
+              }}
+            >
+              <span style={{ fontFamily: MONO, fontSize: "0.52rem", letterSpacing: "0.14em", color: "var(--text-dim)", fontWeight: 700 }}>
+                {msg.verifierMainNavLabel}
+              </span>
+            </div>
+
             {/* 0) Demo scenario notice */}
             {selectedCase && (
               <section style={{ marginBottom: UI.sectionGap }} aria-label={language === "tr" ? "Demo senaryosu bildirimi" : "Demo scenario notice"}>
@@ -1651,7 +1675,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       fontWeight: 600,
                     }}
                   >
-                    {language === "tr" ? "review_stage" : "review_stage"}
+                    {msg.verifierReviewStage}
                   </span>
                   {/* State badge */}
                   <div
@@ -1667,7 +1691,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         height: 6,
                         borderRadius: "50%",
                         background: reviewTone.borderColor,
-                        boxShadow: `0 0 5px ${reviewTone.borderColor}60`,
                       }}
                     />
                     <span
@@ -1735,13 +1758,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               >
                 <div style={{ padding: "0.7rem 1rem", borderRight: `1px solid ${"var(--border-muted)"}` }}>
                   <div style={{ fontFamily: MONO, fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.25rem" }}>
-                    {language === "tr" ? "incident_class" : "incident_class"}
+                    {msg.verifierIncidentClass}
                   </div>
                   <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-soft)" }}>{selectedCase.incidentClass}</div>
                 </div>
                 <div style={{ padding: "0.7rem 1rem" }}>
                   <div style={{ fontFamily: MONO, fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.25rem" }}>
-                    {language === "tr" ? "scenario_frame" : "scenario_frame"}
+                    {msg.verifierScenarioFrame}
                   </div>
                   <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-soft)" }}>{selectedCase.scenarioFrame}</div>
                 </div>
@@ -1770,7 +1793,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   }}
                 >
                   <span style={{ fontFamily: MONO, fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", fontWeight: 600 }}>
-                    {language === "tr" ? "identity_chain" : "identity_chain"}
+                    {msg.verifierIdentityChain}
                   </span>
                 </div>
                 {selectedEventCard ? (
@@ -1839,7 +1862,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 >
                   <div style={{ width: 3, height: 12, borderRadius: 1, background: "var(--accent)", flexShrink: 0 }} />
                   <span style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", fontWeight: 600 }}>
-                    {language === "tr" ? "incident_summary" : "incident_summary"}
+                    {msg.verifierIncidentSummary}
                   </span>
                 </div>
                 {/* Panel body */}
@@ -1858,17 +1881,33 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         {selectedCase && (
                           <div style={{ padding: "0.6rem 1.15rem", borderBottom: `1px solid ${"var(--border-muted)"}`, background: "var(--panel-card)" }}>
                             <div style={{ fontFamily: MONO, fontSize: "0.54rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.25rem" }}>
-                              {language === "tr" ? "vaka_bağlamı" : "case_context"}
+                              {msg.verifierCaseContext}
                             </div>
                             <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)", fontFamily: MONO }}>
                               {selectedSystem} · {selectedEventCard.title}
                             </p>
                           </div>
                         )}
+                        <div style={{ padding: "0.6rem 1.15rem", borderBottom: `1px solid ${"var(--border-muted)"}`, background: "var(--panel)" }}>
+                          <div style={{ fontFamily: MONO, fontSize: "0.54rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.3rem" }}>
+                            {msg.verifierIdentityChain}
+                          </div>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem 0.75rem", fontFamily: MONO, fontSize: "0.68rem", color: "var(--text-soft)" }}>
+                            <span>event_id:{selectedEventCard.eventId}</span>
+                            <span>bundle_id:{identity?.bundle_id ?? selectedEventCard.bundleId ?? "—"}</span>
+                            <span>manifest_id:{identity?.manifest_id ?? selectedEventCard.manifestId ?? "—"}</span>
+                          </div>
+                        </div>
+                        <div style={{ padding: "0.6rem 1.15rem", borderBottom: `1px solid ${"var(--border-muted)"}`, background: "var(--panel-card)" }}>
+                          <div style={{ fontFamily: MONO, fontSize: "0.54rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.25rem" }}>
+                            {msg.verifierRoleContextLabel}
+                          </div>
+                          <p style={{ margin: 0, fontSize: "0.76rem", lineHeight: 1.5, color: "var(--text-muted)" }}>{msg.verifierRoleContextBody}</p>
+                        </div>
                         {/* What happened — full width primary */}
                         <div style={{ padding: "1rem 1.15rem", borderBottom: `1px solid ${"var(--border-muted)"}` }}>
                           <div style={{ fontFamily: MONO, fontSize: "0.56rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.4rem" }}>
-                            {language === "tr" ? "what_happened" : "what_happened"}
+                            {msg.verifierWhatHappened}
                           </div>
                           <p style={{ margin: 0, lineHeight: 1.6, fontSize: "0.9rem", fontWeight: 500, color: "var(--text)" }}>{sum.what}</p>
                         </div>
@@ -1878,7 +1917,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             {sum.why && (
                               <div style={{ padding: "0.75rem 1.15rem", borderRight: `1px solid ${"var(--border-muted)"}` }}>
                                 <div style={{ fontFamily: MONO, fontSize: "0.55rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.3rem" }}>
-                                  {language === "tr" ? "why_under_review" : "why_under_review"}
+                                  {msg.verifierWhyUnderReview}
                                 </div>
                                 <p style={{ margin: 0, lineHeight: 1.5, fontSize: "0.78rem", color: "var(--text-soft)" }}>{sum.why}</p>
                               </div>
@@ -1886,7 +1925,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             {sum.state && (
                               <div style={{ padding: "0.75rem 1.15rem" }}>
                                 <div style={{ fontFamily: MONO, fontSize: "0.55rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.3rem" }}>
-                                  {language === "tr" ? "review_state" : "review_state"}
+                                  {msg.verifierReviewState}
                                 </div>
                                 <p style={{ margin: 0, lineHeight: 1.5, fontSize: "0.82rem", color: "var(--text-soft)", fontWeight: 700, fontFamily: MONO }}>{sum.state}</p>
                               </div>
@@ -1897,7 +1936,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         {sum.next && (
                           <div style={{ padding: "0.65rem 1.15rem", background: "var(--panel-card)" }}>
                             <div style={{ fontFamily: MONO, fontSize: "0.55rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.25rem" }}>
-                              {language === "tr" ? "safe_next_step" : "safe_next_step"}
+                              {msg.verifierSafeNextStep}
                             </div>
                             <p style={{ margin: 0, lineHeight: 1.5, fontSize: "0.76rem", color: "var(--text-muted)" }}>{sum.next}</p>
                           </div>
@@ -1958,13 +1997,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   : "// recorded: raw layer | derived: second layer | not blended"}
               </div>
               {selectedEventCard ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div className="verifier-evidence-split">
                   {/* A. Recorded Evidence */}
                   <div
                     style={{
                       border: "1px solid var(--border)",
                       borderRadius: UI.radius.md,
                       overflow: "hidden",
+                      borderTop: "2px solid var(--success)",
                     }}
                   >
                     <div
@@ -1981,18 +2021,19 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                         <div style={{ width: 3, height: 14, borderRadius: 2, background: "var(--success)", flexShrink: 0 }} />
                         <span style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.08em", fontWeight: 700, color: "var(--text-muted)" }}>
-                          {language === "tr" ? "recorded_evidence" : "recorded_evidence"}
+                          {msg.verifierRecorded}
                         </span>
                       </div>
                       <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: "var(--text-dim)" }}>
-                        {language === "tr" ? "ham_katman" : "raw_layer"}
+                        {msg.verifierRawLayer}
                       </span>
                     </div>
                     <div style={{ padding: "0.85rem 1rem" }}>
                       <p style={{ margin: "0 0 0.65rem", fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", lineHeight: 1.55 }}>
-                        {language === "tr"
-                          ? `manifest: ${manifestAnchorId}`
-                          : `manifest: ${manifestAnchorId}`}
+                        {msg.verifierEvidenceRecordedCaption}
+                      </p>
+                      <p style={{ margin: "0 0 0.65rem", fontFamily: MONO, fontSize: "0.6rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
+                        manifest:{manifestAnchorId}
                       </p>
                       {(() => {
                         if (visibleRecorded.length === 0) {
@@ -2046,6 +2087,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       border: "1px solid var(--border)",
                       borderRadius: UI.radius.md,
                       overflow: "hidden",
+                      borderTop: "2px solid var(--warning)",
                     }}
                   >
                     <div
@@ -2062,18 +2104,16 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                         <div style={{ width: 3, height: 14, borderRadius: 2, background: "var(--warning)", flexShrink: 0 }} />
                         <span style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.08em", fontWeight: 700, color: "var(--text-muted)" }}>
-                          {language === "tr" ? "derived_assessment" : "derived_assessment"}
+                          {msg.verifierDerived}
                         </span>
                       </div>
                       <span style={{ fontFamily: MONO, fontSize: "0.6rem", color: "var(--text-dim)" }}>
-                        {language === "tr" ? "ikinci_katman" : "second_layer"}
+                        {msg.verifierSecondLayer}
                       </span>
                     </div>
                     <div style={{ padding: "0.85rem 1rem" }}>
                       <p style={{ margin: "0 0 0.65rem", fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", lineHeight: 1.55 }}>
-                        {language === "tr"
-                          ? "// kayıtlıdan türetilir; yerini almaz; nihai hüküm değildir"
-                          : "// derived from recorded; does not replace it; not a determination"}
+                        {msg.verifierEvidenceDerivedCaption}
                       </p>
                       {(() => {
                         const derived =
@@ -2155,14 +2195,17 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <div style={{ width: 3, height: 14, borderRadius: 2, background: "var(--error)", flexShrink: 0 }} />
                     <span style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.08em", fontWeight: 700, color: "var(--text-muted)" }}>
-                      {language === "tr" ? "unknown_disputed" : "unknown_disputed"}
+                      {msg.verifierUnknownDisputed}
                     </span>
                   </div>
                   <span style={{ fontFamily: MONO, fontSize: "0.58rem", color: "var(--text-dim)" }}>
-                    {language === "tr" ? "insan_incelemesi" : "human_review_required"}
+                    {msg.verifierHumanReview}
                   </span>
                 </div>
                 <div style={{ padding: "0.85rem 1rem", background: "var(--panel)", fontSize: "0.8rem" }}>
+                  <p style={{ margin: "0 0 0.75rem", fontSize: "0.74rem", lineHeight: 1.55, color: "var(--text-muted)", fontFamily: MONO }}>
+                    {msg.verifierUnknownIntro}
+                  </p>
                   {selectedEventCard ? (
                     <>
                       {verificationState === "UNKNOWN" && (
@@ -2247,7 +2290,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <div style={{ width: 3, height: 14, borderRadius: 2, background: "var(--blue)", flexShrink: 0 }} />
                     <span id="verification-trace-heading" style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.08em", fontWeight: 700, color: "var(--text-muted)" }}>
-                      {language === "tr" ? "verification_trace" : "verification_trace"}
+                      {msg.verifierVerificationTraceHeader}
                     </span>
                   </div>
                   <span style={{ fontFamily: MONO, fontSize: "0.58rem", color: "var(--text-dim)" }}>
@@ -2288,9 +2331,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             lineHeight: 1.5,
                           }}
                         >
-                          {language === "tr"
-                            ? "Vaka bağlı inceleme adımları; sonuç gerçek veya hüküm değildir."
-                            : "Case-bound examination steps; outcome is not truth or verdict."}
+                          {msg.verifierTracePanelNote}
                         </div>
                         {/* Trace step rows */}
                         <div style={{ background: "var(--panel)" }}>
@@ -2438,58 +2479,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     ))}
                   </select>
                   <div style={{ marginTop: "0.75rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-                      <button
-                        type="button"
-                        onClick={runVerification}
-                        disabled={!selectedId || loading}
-                        style={{
-                          fontSize: "0.85rem",
-                          padding: "0.5rem 1rem",
-                          borderRadius: 4,
-                          border: loading ? "1px solid var(--border-strong)" : "1px solid var(--accent)",
-                          background: loading ? "var(--panel-card)" : "var(--accent-soft)",
-                          color: "var(--text)",
-                          cursor: loading ? "wait" : "pointer",
-                          opacity: !selectedId ? 0.6 : 1,
-                          transition: "background 0.2s ease, border-color 0.2s ease",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "0.4rem",
-                        }}
-                      >
-                        {loading && (
-                          <span
-                            style={{
-                              width: 14,
-                              height: 14,
-                              border: `2px solid ${"var(--text-muted)"}`,
-                              borderTopColor: "transparent",
-                              borderRadius: "50%",
-                              animation: "spin 0.7s linear infinite",
-                            }}
-                          />
-                        )}
-                        {loading
-                          ? language === "tr"
-                            ? "Doğrulanıyor…"
-                            : "Verifying…"
-                          : language === "tr"
-                          ? "Olayı Doğrula"
-                          : "Verify Event Package"}
-                      </button>
-                      {loading && (
-                        <span
-                          style={{
-                            fontSize: "0.8rem",
-                            color: "var(--text-muted)",
-                            fontWeight: 500,
-                          }}
-                        >
-                          {language === "tr" ? "Paket ve zincir kontrol ediliyor…" : "Checking bundle and chain…"}
-                        </span>
-                      )}
-                    </div>
+                    <p style={{ margin: "0 0 0.35rem", fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
+                      {language === "tr"
+                        ? "Paket doğrulaması ve sınırlı dışa aktarım alt sabit eylem çubuğundan yürütülür."
+                        : "Package verification and bounded export run from the fixed action bar below."}
+                    </p>
                     <div
                       style={{
                         marginTop: "0.4rem",
@@ -2567,7 +2561,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     padding: "0.75rem 1rem",
                     marginBottom: "1rem",
                     transition: "border-color 0.3s ease",
-                    boxShadow: verificationJustCompleted ? `0 0 0 1px ${"var(--success-border)"}` : undefined,
                   }}
                 >
                   <div
@@ -2720,7 +2713,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   opacity: 0.85,
                 }}
               >
-                {language === "tr" ? "// artifact_issuance" : "// artifact_issuance"}
+                {msg.verifierArtifactIssuanceHeader}
               </div>
               <div
                 style={{
@@ -2735,9 +2728,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   border: `1px solid ${"var(--border-muted)"}`,
                 }}
               >
-                {language === "tr"
-                  ? "// conditioned_on: trace + open_unknowns | does_not_override"
-                  : "// conditioned_on: trace + open_unknowns | does_not_override"}
+                {msg.verifierIssuancePanelLead}
               </div>
               {!selectedCase ? (
                 <div
@@ -2909,6 +2900,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           ? "Kontrollü issuance: artifact manifest ve iz ile sınırlı kalır; suçlama veya nihai hüküm değildir."
                           : "Controlled issuance: artifact remains bound to manifest and trace; not a blame or final verdict."}
                       </p>
+                      {!hasConnectedApiIssuanceProfile ? (
                       <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
                         <button
                           type="button"
@@ -2953,6 +2945,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             : language === "tr" ? "Sınırlı Belge Düzenleme — PDF" : "Issue bounded PDF"}
                         </button>
                       </div>
+                      ) : (
+                        <p style={{ fontSize: "0.7rem", color: "var(--text-dim)", marginTop: "0.45rem", marginBottom: 0 }}>
+                          {language === "tr"
+                            ? "Sınırlı JSON/PDF düzenlemesi alt sabit çubuktan."
+                            : "Bounded JSON/PDF issuance from the fixed action bar."}
+                        </p>
+                      )}
                       {(identity?.bundle_id ?? selected?.bundleId) && (
                         <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.65rem", lineHeight: 1.5 }}>
                           {language === "tr" ? "Paket ID" : "Bundle ID"}: {identity?.bundle_id ?? selected?.bundleId} · {language === "tr" ? "Manifest ID" : "Manifest ID"}: {identity?.manifest_id ?? selected?.manifestId ?? "—"} · {language === "tr" ? "İz" : "Trace"}: {transcriptId ?? (language === "tr" ? "hazırlanmadı" : "pending")}
@@ -3301,6 +3300,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {language === "tr" ? "Hukukî inceleme" : "Legal"}
                     </button>
                   </div>
+                  {!hasConnectedApiIssuanceProfile ? (
                   <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
                     <button
                       type="button"
@@ -3337,6 +3337,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {exportLoading === "pdf" ? (language === "tr" ? "Hazırlanıyor…" : "Preparing…") : language === "tr" ? "Issuance — PDF" : "Issue as PDF"}
                     </button>
                   </div>
+                  ) : (
+                    <p style={{ fontSize: "0.7rem", color: "var(--text-dim)", marginTop: "0.45rem", marginBottom: 0 }}>
+                      {language === "tr"
+                        ? "Sınırlı JSON/PDF düzenlemesi alt sabit çubuktan."
+                        : "Bounded JSON/PDF issuance from the fixed action bar."}
+                    </p>
+                  )}
                   {exportError && <p style={{ fontSize: "0.8rem", marginTop: "0.5rem", color: "var(--error)" }}>{exportError}</p>}
                   {issuedArtifact ? (() => {
                     const m = MSG[language];
@@ -3599,8 +3606,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             gap: "0.45rem 0.65rem",
           }}
         >
-          <span style={{ fontFamily: MONO, fontSize: "0.52rem", letterSpacing: "0.1em", color: "var(--text-dim)", flex: "1 1 120px", minWidth: 0 }}>
-            {language === "tr" ? "// pack_actions · trace≠truth · issuance≠blame" : "// pack_actions · trace≠truth · issuance≠blame"}
+          <span style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem 0.65rem", fontFamily: MONO, fontSize: "0.52rem", letterSpacing: "0.06em", color: "var(--text-dim)", flex: "1 1 140px", minWidth: 0, alignItems: "center" }}>
+            <span style={{ padding: "0.12rem 0.4rem", borderRadius: 4, border: "1px solid var(--border-muted)", background: "var(--panel-card)" }}>{msg.verifierActionBarDoctrineTrace}</span>
+            <span style={{ padding: "0.12rem 0.4rem", borderRadius: 4, border: "1px solid var(--border-muted)", background: "var(--panel-card)" }}>{msg.verifierActionBarDoctrineIssuance}</span>
           </span>
           <button
             type="button"

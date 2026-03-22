@@ -45,31 +45,31 @@
 
 /* Dark mode */
 [data-theme="dark"] {
-  --bg: #0c0c0b;
-  --header-bg: #111110;
-  --panel: #161614;
-  --panel-raised: #1a1a18;
-  --panel-card: #1e1e1c;
-  --surface: rgba(255, 107, 43, 0.07);
-  --text: #f0ede8;
-  --text-soft: #c5c0b5;
-  --text-muted: #7a7568;
-  --text-dim: #4d4840;
-  --border: #2c2b28;
-  --border-soft: #222220;
-  --border-muted: #1c1c1a;
-  --border-strong: #454540;
-  --border-subtle: rgba(255,255,255,0.04);
-  --accent: #FF6B2B;
-  --accent-soft: rgba(255, 107, 43, 0.12);
-  --accent-border: #E05A1C;
-  --accent-hover: rgba(255, 107, 43, 0.18);
-  --active-bg: rgba(255, 107, 43, 0.09);
-  --chip-bg: rgba(255, 107, 43, 0.12);
-  --chip-border: rgba(255, 107, 43, 0.28);
-  --chip-text: #FF7A3D;
-  --cta-gradient: linear-gradient(135deg, #FF6B2B, #D4561A);
-  --cta-shadow: 0 2px 16px rgba(255, 107, 43, 0.25);
+  --bg: #0a0a09;
+  --header-bg: #0e0e0d;
+  --panel: #121211;
+  --panel-raised: #161615;
+  --panel-card: #1a1a18;
+  --surface: rgba(212, 86, 26, 0.08);
+  --text: #eceae6;
+  --text-soft: #b8b3a8;
+  --text-muted: #7f7a70;
+  --text-dim: #525048;
+  --border: #2a2926;
+  --border-soft: #1f1f1d;
+  --border-muted: #181817;
+  --border-strong: #3d3c38;
+  --border-subtle: rgba(255,255,255,0.035);
+  --accent: #c94f18;
+  --accent-soft: rgba(212, 86, 26, 0.11);
+  --accent-border: #a84314;
+  --accent-hover: rgba(212, 86, 26, 0.16);
+  --active-bg: rgba(212, 86, 26, 0.08);
+  --chip-bg: rgba(212, 86, 26, 0.1);
+  --chip-border: rgba(212, 86, 26, 0.26);
+  --chip-text: #d4561a;
+  --cta-gradient: linear-gradient(135deg, #d4561a, #a84314);
+  --cta-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
   --success: #10b981;
   --success-soft: rgba(16, 185, 129, 0.10);
   --success-border: rgba(16, 185, 129, 0.28);
@@ -138,6 +138,49 @@ body {
   background-image: linear-gradient(rgba(212, 86, 26, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(212, 86, 26, 0.03) 1px, transparent 1px) !important;
   background-size: 48px 48px !important;
+}
+
+[data-theme="dark"] .home-hero-with-grid {
+  background-image: linear-gradient(rgba(212, 86, 26, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 86, 26, 0.045) 1px, transparent 1px) !important;
+}
+
+/* Home — problem & role grids stack on narrow viewports */
+@media (max-width: 1100px) {
+  .home-how-steps-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .home-problem-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .home-role-institution-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1100px) {
+  .home-role-institution-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Verifier — recorded | derived split on wide viewports */
+.verifier-evidence-split {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 960px) {
+  .verifier-evidence-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+  }
 }
 
 /* ── Protocol document shell — print / filing posture (no PDF engine; layout only) ── */

@@ -12,6 +12,7 @@ import { EvidenceLayerDiagram } from "./components/diagrams/EvidenceLayerDiagram
 import { RoleExportDiagram } from "./components/diagrams/RoleExportDiagram";
 import { InstitutionalUseFamilies } from "./components/institutional/InstitutionalUseFamilies";
 import { SectorScenarioCards } from "./components/sector/SectorScenarioCards";
+import { HomeRoleInstitutionGrid } from "./components/home/HomeRoleInstitutionGrid";
 const MEDIA = {
   hero: "/media/home/home-hero-vehicle.jpg",
   vehicle: "/media/home/vehicle-section-dashboard.jpg",
@@ -55,17 +56,17 @@ export default function LandingPage() {
             </div>
             <p
               style={{
-                margin: "0 0 0.85rem 0",
-                fontSize: "1rem",
-                fontStyle: "normal",
-                fontWeight: 500,
-                color: "var(--text-soft)",
-                letterSpacing: "-0.01em",
-                lineHeight: 1.35,
-                fontFamily: SANS,
+                margin: "0 0 0.55rem 0",
+                fontSize: "0.68rem",
+                fontWeight: 600,
+                color: "var(--text-muted)",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                fontFamily: MONO,
+                lineHeight: 1.4,
               }}
             >
-              {m.motto}
+              {m.homeHeroEyebrow}
             </p>
             <div
               style={{
@@ -87,7 +88,20 @@ export default function LandingPage() {
             >
               {m.homeHeroChip}
             </div>
-            <h1 style={{ fontSize: "2.2rem", margin: 0, lineHeight: 1.25, fontWeight: 600 }}>
+            <p
+              style={{
+                margin: "0 0 0.65rem 0",
+                fontSize: "1.05rem",
+                fontWeight: 500,
+                color: "var(--text-soft)",
+                letterSpacing: "-0.015em",
+                lineHeight: 1.35,
+                fontFamily: SANS,
+              }}
+            >
+              {m.motto}
+            </p>
+            <h1 style={{ fontSize: "2.05rem", margin: 0, lineHeight: 1.22, fontWeight: 600 }}>
               {(() => {
                 const accent = lang === "tr" ? "Do\u011frulay\u0131c\u0131-\u00f6ncelikli" : "Verifier-first";
                 const parts = m.homeHeroHeading.split(accent);
@@ -185,7 +199,7 @@ export default function LandingPage() {
                 borderRadius: 12,
                 overflow: "hidden",
                 border: "1px solid var(--border)",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                boxShadow: "0 1px 6px rgba(0,0,0,0.08)",
                 aspectRatio: "16/10",
                 background: "var(--border-muted)",
               }}
@@ -217,108 +231,232 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Problem + system */}
+        {/* Problem — institutional cards */}
         <section
           style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-            gap: "1rem",
+            borderRadius: 12,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
+            padding: "1.2rem 1.35rem",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
           }}
         >
-          {/* Problem statement */}
-          <section
+          <SectionHeader badge={lang === "tr" ? "Ba\u011flam" : "Context"} heading={m.sectionProblem} />
+          <p style={{ margin: "0 0 1rem", fontSize: "0.88rem", lineHeight: 1.55, color: "var(--text-soft)", maxWidth: 820 }}>
+            {m.homeProblemIntro}
+          </p>
+          <div
+            className="home-problem-grid"
             style={{
-              borderRadius: 12,
-              border: "1px solid var(--border)",
-              background: "var(--panel)",
-              padding: "1.1rem 1.25rem",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+              display: "grid",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              gap: "0.75rem",
             }}
           >
-            <SectionHeader badge={lang === "tr" ? "Ba\u011flam" : "Context"} heading={m.sectionProblem} />
-            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
-              <li>{lang === "tr" ? "Olay inceleme verisi log, kayıt ve dışa aktarımlara dağılır." : "Incident review data is fragmented across logs, captures, and exported files."}</li>
-              <li>{lang === "tr" ? "Kayıtlı olgular ile türetilmiş yorumlar sıkça tek anlatı katmanına sıkıştırılır." : "Recorded facts and derived interpretations are often collapsed into one narrative layer."}</li>
-              <li>{lang === "tr" ? "Hasar, hukuk ve teknik ekipler çoğu zaman aynı kanonik nesneye bağlanmaz." : "Claims, legal, and technical teams rarely anchor decisions on the same canonical object."}</li>
-            </ul>
-          </section>
-
-          {/* Product system summary */}
-          <section
-            style={{
-              borderRadius: 12,
-              border: "1px solid var(--border)",
-              background: "var(--panel-raised)",
-              padding: "1.1rem 1.25rem",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-            }}
-          >
-            <SectionHeader badge={lang === "tr" ? "Mimari" : "Architecture"} heading={m.sectionProductSystem} />
-            <div style={{ marginBottom: "0.75rem" }}>
-              <CanonicalSpineDiagram />
-            </div>
-            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
-              <li>
-                <strong>{lang === "tr" ? "Tek ürün:" : "Single product:"}</strong> {lang === "tr" ? "Araç, İHA ve Robot genelinde tek kanonik olay modeli." : "one canonical event model across Vehicle, Drone, and Robot."}
-              </li>
-              <li>
-                <strong>{lang === "tr" ? "Doğrulayıcı:" : "Verifier:"}</strong> {lang === "tr" ? "sorumluluk hükmü üretmeyen, sınırlı protokol durumlarına sahip ana inceleme istasyonu." : "primary review station with bounded protocol states, not liability judgement."}
-              </li>
-              <li>
-                <strong>Golden:</strong> {lang === "tr" ? "doğrulayıcı sürekliliği için dahili kalite referansı; bağımsız ürün değil." : "internal quality reference for verifier continuity, not an independent product."}
-              </li>
-              <li>
-                <strong>{lang === "tr" ? "Belge ailesi:" : "Issuance family:"}</strong> {lang === "tr" ? "makbuz ve manifest bağlantısına bağlı, role duyarlı hasar/hukuk artefaktları." : "role-aware claims/legal artifacts tied to receipts and manifest linkage."}
-              </li>
-            </ul>
-          </section>
-        </section>
-
-        {/* Three verticals - supporting visuals */}
-        <section
-          className="home-verticals-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            gap: "1rem",
-          }}
-        >
-          {[
-            { key: "vehicle", img: MEDIA.vehicle, label: "Vehicle", trace: "Event \u2192 Bundle \u2192 Manifest", alt: "Vehicle incident dashboard - canonical event review and verification trace" },
-            { key: "drone", img: MEDIA.drone, label: "Drone", trace: "Mission \u2192 Telemetry \u2192 Link", alt: "Drone operations - mission and telemetry linkage for QARAQUTU witness protocol" },
-            { key: "robot", img: MEDIA.robot, label: "Robot", trace: "Interaction \u2192 Safety \u2192 Handoff", alt: "Robot and industrial safety - interaction and handoff trace for protocol-grade review" },
-          ].map((v) => (
-            <div
-              key={v.key}
-              style={{
-                borderRadius: 12,
-                border: "1px solid var(--border)",
-                background: "var(--panel)",
-                overflow: "hidden",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-              }}
-            >
+            {[
+              { title: m.homeProblemCard1Title, body: m.homeProblemCard1Body },
+              { title: m.homeProblemCard2Title, body: m.homeProblemCard2Body },
+              { title: m.homeProblemCard3Title, body: m.homeProblemCard3Body },
+            ].map((card) => (
               <div
+                key={card.title}
                 style={{
-                  position: "relative",
-                  aspectRatio: "4/3",
-                  background: "var(--border-muted)",
+                  borderRadius: 10,
+                  border: "1px solid var(--border-soft)",
+                  background: "var(--panel-card)",
+                  padding: "0.85rem 0.95rem",
+                  borderTop: "2px solid var(--accent)",
                 }}
               >
-                <Image
-                  src={v.img}
-                  alt={v.alt}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 340px"
-                  style={{ objectFit: "cover" }}
-                />
+                <div style={{ fontFamily: MONO, fontSize: "0.7rem", fontWeight: 700, color: "var(--text)", marginBottom: "0.4rem", letterSpacing: "0.02em" }}>
+                  {card.title}
+                </div>
+                <p style={{ margin: 0, fontSize: "0.8rem", lineHeight: 1.55, color: "var(--text-soft)" }}>{card.body}</p>
               </div>
-              <div style={{ padding: "0.65rem 0.85rem", borderTop: "1px solid var(--border-soft)" }}>
-                <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)", marginBottom: "0.2rem", fontFamily: MONO }}>{v.label}</div>
-                <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontFamily: MONO }}>{v.trace}</div>
+            ))}
+          </div>
+        </section>
+
+        {/* How the protocol runs */}
+        <section
+          style={{
+            borderRadius: 12,
+            border: "1px solid var(--border)",
+            background: "var(--panel-raised)",
+            padding: "1.2rem 1.35rem",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+          }}
+        >
+          <SectionHeader badge={lang === "tr" ? "Akış" : "Flow"} heading={m.homeHowItWorksTitle} />
+          <p style={{ margin: "0 0 1rem", fontSize: "0.86rem", lineHeight: 1.55, color: "var(--text-soft)", maxWidth: 860 }}>
+            {m.homeHowItWorksLead}
+          </p>
+          <div
+            className="home-how-steps-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
+              gap: "0.65rem",
+            }}
+          >
+            {[m.homeHowStep1, m.homeHowStep2, m.homeHowStep3, m.homeHowStep4, m.homeHowStep5].map((step, i) => (
+              <div
+                key={i}
+                style={{
+                  borderRadius: 8,
+                  border: "1px solid var(--border)",
+                  background: "var(--panel)",
+                  padding: "0.65rem 0.75rem",
+                  minWidth: 0,
+                }}
+              >
+                <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--accent)", fontWeight: 700, marginBottom: "0.35rem" }}>
+                  {String(i + 1).padStart(2, "0")}
+                </div>
+                <p style={{ margin: 0, fontSize: "0.76rem", lineHeight: 1.5, color: "var(--text-soft)" }}>{step}</p>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        </section>
+
+        {/* Product system summary */}
+        <section
+          style={{
+            borderRadius: 12,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
+            padding: "1.1rem 1.25rem",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+          }}
+        >
+          <SectionHeader badge={lang === "tr" ? "Mimari" : "Architecture"} heading={m.sectionProductSystem} />
+          <div style={{ marginBottom: "0.75rem" }}>
+            <CanonicalSpineDiagram />
+          </div>
+          <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
+            <li>
+              <strong>{lang === "tr" ? "Tek ürün:" : "Single product:"}</strong> {lang === "tr" ? "Araç, İHA ve Robot genelinde tek kanonik olay modeli." : "one canonical event model across Vehicle, Drone, and Robot."}
+            </li>
+            <li>
+              <strong>{lang === "tr" ? "Doğrulayıcı:" : "Verifier:"}</strong> {lang === "tr" ? "sorumluluk hükmü üretmeyen, sınırlı protokol durumlarına sahip ana inceleme istasyonu." : "primary review station with bounded protocol states, not liability judgement."}
+            </li>
+            <li>
+              <strong>Golden:</strong> {lang === "tr" ? "doğrulayıcı sürekliliği için dahili kalite referansı; bağımsız ürün değil." : "internal quality reference for verifier continuity, not an independent product."}
+            </li>
+            <li>
+              <strong>{lang === "tr" ? "Belge ailesi:" : "Issuance family:"}</strong> {lang === "tr" ? "makbuz ve manifest bağlantısına bağlı, role duyarlı hasar/hukuk artefaktları." : "role-aware claims/legal artifacts tied to receipts and manifest linkage."}
+            </li>
+          </ul>
+        </section>
+
+        {/* Doctrine-safe demo verticals — class illustrations only */}
+        <section
+          style={{
+            borderRadius: 12,
+            border: "1px solid var(--border)",
+            background: "var(--panel-raised)",
+            padding: "1.25rem 1.4rem",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+          }}
+        >
+          <SectionHeader
+            badge={lang === "tr" ? "Demo" : "Demo"}
+            heading={m.homeDemoDoctrineTitle}
+            accentWord={lang === "tr" ? "kaçınılmaz" : "inevitable"}
+            subtitle={m.homeDemoDoctrineSubtitle}
+          />
+          <div
+            className="home-verticals-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+              gap: "1rem",
+              marginTop: "0.5rem",
+            }}
+          >
+            {[
+              {
+                key: "vehicle",
+                img: MEDIA.vehicle,
+                label: lang === "tr" ? "Araç" : "Vehicle",
+                trace: "Event \u2192 Bundle \u2192 Manifest",
+                alt: "Vehicle incident dashboard - canonical event review and verification trace",
+                why: m.homeDemoVehicleWhy,
+                sep: m.homeDemoVehicleSeparation,
+              },
+              {
+                key: "drone",
+                img: MEDIA.drone,
+                label: "Drone",
+                trace: "Mission \u2192 Telemetry \u2192 Link",
+                alt: "Drone operations - mission and telemetry linkage for QARAQUTU witness protocol",
+                why: m.homeDemoDroneWhy,
+                sep: m.homeDemoDroneSeparation,
+              },
+              {
+                key: "robot",
+                img: MEDIA.robot,
+                label: "Robot",
+                trace: "Interaction \u2192 Safety \u2192 Handoff",
+                alt: "Robot and industrial safety - interaction and handoff trace for protocol-grade review",
+                why: m.homeDemoRobotWhy,
+                sep: m.homeDemoRobotSeparation,
+              },
+            ].map((v) => (
+              <div
+                key={v.key}
+                style={{
+                  borderRadius: 12,
+                  border: "1px solid var(--border)",
+                  background: "var(--panel)",
+                  overflow: "hidden",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <div
+                  style={{
+                    position: "relative",
+                    aspectRatio: "4/3",
+                    background: "var(--border-muted)",
+                  }}
+                >
+                  <Image
+                    src={v.img}
+                    alt={v.alt}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 340px"
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+                <div style={{ padding: "0.65rem 0.85rem", borderTop: "1px solid var(--border-soft)", flex: 1 }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text)", marginBottom: "0.25rem", fontFamily: MONO }}>{v.label}</div>
+                  <div style={{ fontSize: "0.65rem", color: "var(--text-dim)", fontFamily: MONO, marginBottom: "0.5rem" }}>{v.trace}</div>
+                  <p style={{ margin: "0 0 0.45rem", fontSize: "0.78rem", lineHeight: 1.5, color: "var(--text-soft)" }}>{v.why}</p>
+                  <p style={{ margin: 0, fontSize: "0.72rem", lineHeight: 1.5, color: "var(--text-muted)", fontFamily: MONO }}>{v.sep}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Role / institution grid */}
+        <section
+          style={{
+            borderRadius: 12,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
+            padding: "1.25rem 1.4rem",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+          }}
+        >
+          <SectionHeader
+            badge={lang === "tr" ? "Kurumsal" : "Institutional"}
+            heading={m.homeRoleGridTitle}
+            accentWord={lang === "tr" ? "kullanır" : "uses"}
+          />
+          <HomeRoleInstitutionGrid lang={lang} />
         </section>
 
         {/* Role-aware review + export family */}
