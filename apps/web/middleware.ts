@@ -60,7 +60,6 @@ function restrictedRedirect(req: NextRequest, surface: string): NextResponse {
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const isDevLocal = process.env.NODE_ENV !== "production";
 
   // Allow public access tooling.
   if (pathname === "/access" || pathname === "/restricted" || pathname.startsWith("/api/access")) {
@@ -69,13 +68,14 @@ export function middleware(req: NextRequest) {
     return res;
   }
 
+  // Public verifier BFF (`/api/events/*/exports`, `/api/exports/*/download`) must not be
+  // cookie-rewritten: POST would hit a page route and return 405. Upstream API auth uses
+  // server-side QARAQUTU_ACCESS_TOKEN from route handlers.
   const protectedSurface =
     pathname === "/admin" ||
     pathname === "/console" ||
     pathname === "/verifier/golden" ||
-    pathname.startsWith("/api/diagnostics") ||
-    (!isDevLocal && pathname.includes("/api/events/") && pathname.endsWith("/exports")) ||
-    pathname.startsWith("/api/exports/") && pathname.endsWith("/download");
+    pathname.startsWith("/api/diagnostics");
 
   if (protectedSurface && !hasValidAccess(req)) {
     // Minimal audit trace (no secrets).
@@ -95,10 +95,6 @@ export function middleware(req: NextRequest) {
         ? "golden"
         : pathname.startsWith("/api/diagnostics")
         ? "admin-diagnostics"
-        : pathname.includes("/api/events/") && pathname.endsWith("/exports")
-        ? "artifact-issuance"
-        : pathname.startsWith("/api/exports/") && pathname.endsWith("/download")
-        ? "artifact-download"
         : "protected";
 
     return restrictedRedirect(req, surfaceName);

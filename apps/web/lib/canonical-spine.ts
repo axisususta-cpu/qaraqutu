@@ -231,8 +231,8 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       "Under review for mission anomaly and operator handoff record verification; link-loss window and recovery sequence must be traceable for BVLOS accountability.",
     reviewWhyTr:
       "Görev anomalisi ve operatör el değişimi kayıtlarının doğrulanması için incelemeye alındı; BVLOS hesap verebilirliği için bağlantı kaybı penceresi ve kurtarma dizisi izlenebilir olmalı.",
-    nextStepEn: "Demo context only in current release.",
-    nextStepTr: "Mevcut sürümde yalnızca demo bağlamı desteklenmektedir.",
+    nextStepEn: "Run verification or start controlled artifact once trace and unknowns are reviewed.",
+    nextStepTr: "İz ve belirsizlikler incelendikten sonra doğrulamayı çalıştırın veya kontrollü artifact başlatın.",
     recordedEvidence: [
       {
         recordId: "rec-drone-003-1",
@@ -274,9 +274,14 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       TRACE_STEP(1, "Link-loss window", "OK", "Link-loss window is registered against the mission segment bundle and manifest."),
       TRACE_STEP(2, "Telemetry window", "OK", "Telemetry window around the link-loss period is present and intact."),
       TRACE_STEP(3, "Recovery sequence", "OK", "Recovery sequence is documented for human review; this trace does not decide scope of autonomy."),
-      TRACE_STEP(4, "BVLOS accountability", "demo", "BVLOS accountability remains a review surface; live verification is not connected for Drone."),
+      TRACE_STEP(
+        4,
+        "BVLOS accountability",
+        "UNVERIFIED",
+        "BVLOS accountability remains a human review surface; verification trace documents chain steps only."
+      ),
     ],
-    artifactIssuance: { available: false },
+    artifactIssuance: { available: true, apiBacked: true },
     whyInevitable:
       "BVLOS and link-loss accountability depend on a single canonical record and a verification trace that keeps recorded telemetry separate from derived timeline. QARAQUTU provides that spine for this drone case—without it, operator and system boundaries stay blurred.",
     titleTr: "Bağlantı Kaybı / Operatör Belirsizliği İncelemesi",
@@ -297,8 +302,8 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       },
     ] as AxisusState[],
     artifactProfiles: [
-      { profileCode: "claims", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
-      { profileCode: "legal", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "claims", enabled: true, apiBacked: true, reasonTr: "Hasar/claim süreci bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Claims process is meaningful for this case; issuance API is connected." },
+      { profileCode: "legal", enabled: true, apiBacked: true, reasonTr: "Hukukî inceleme bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Legal review is meaningful for this case; issuance API is connected." },
       { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Bağlantı kaybı telemetri rekonstrüksiyonu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Link-loss telemetry reconstruction is meaningful; issuance support is not yet connected." },
       { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Güvenli sonraki adım bu vaka için anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Safe next step is meaningful for this case; issuance support is not yet connected." },
       { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
@@ -322,8 +327,8 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       "Under review for mission anomaly and altitude-deviation record verification; waypoint transit and handoff context must be traceable.",
     reviewWhyTr:
       "Görev anomalisi ve irtifa sapması kayıtlarının doğrulanması için incelemeye alındı; waypoint geçişi ve el değişimi bağlamı izlenebilir olmalı.",
-    nextStepEn: "Demo context only in current release.",
-    nextStepTr: "Mevcut sürümde yalnızca demo bağlamı desteklenmektedir.",
+    nextStepEn: "Run verification or start controlled artifact once trace and unknowns are reviewed.",
+    nextStepTr: "İz ve belirsizlikler incelendikten sonra doğrulamayı çalıştırın veya kontrollü artifact başlatın.",
     recordedEvidence: [
       {
         recordId: "rec-drone-001-1",
@@ -364,9 +369,14 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       TRACE_STEP(1, "Mission plan linkage", "OK", "Mission plan linkage is present for the waypoint segment under review."),
       TRACE_STEP(2, "Altitude band deviation", "OK", "Altitude band deviation is marked from recorded telemetry; significance is reserved for oversight review."),
       TRACE_STEP(3, "Waypoint / track separation", "OK", "Waypoint / track separation remains distinct from the derived anomaly timeline; no cause or fault is decided here."),
-      TRACE_STEP(4, "Oversight review", "demo", "Oversight review remains required; live verification is not connected for Drone."),
+      TRACE_STEP(
+        4,
+        "Oversight review",
+        "UNVERIFIED",
+        "Oversight review remains required; verification trace documents chain steps only."
+      ),
     ],
-    artifactIssuance: { available: false },
+    artifactIssuance: { available: true, apiBacked: true },
     whyInevitable:
       "Mission anomaly review needs recorded-vs-derived separation and a verification trace so oversight and claims have one canonical spine. QARAQUTU delivers that for this drone case—altitude and waypoint disputes otherwise lack a single reference.",
     titleTr: "Görev Anomalisi İncelemesi",
@@ -387,8 +397,8 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       },
     ] as AxisusState[],
     artifactProfiles: [
-      { profileCode: "claims", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
-      { profileCode: "legal", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "claims", enabled: true, apiBacked: true, reasonTr: "Hasar/claim süreci bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Claims process is meaningful for this case; issuance API is connected." },
+      { profileCode: "legal", enabled: true, apiBacked: true, reasonTr: "Hukukî inceleme bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Legal review is meaningful for this case; issuance API is connected." },
       { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Görev anomalisi rekonstrüksiyonu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Mission anomaly reconstruction is meaningful; issuance support is not yet connected." },
       { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Risk eşiği ve güvenli sonraki adım anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Risk threshold and safe next step are meaningful; issuance support is not yet connected." },
       { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
@@ -413,8 +423,8 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       "Under review for safety stop and compliance record assessment; public-space encounter and operator handoff must be traceable for context and liability clarity.",
     reviewWhyTr:
       "Güvenlik durdurma ve uyumluluk kayıtlarının incelenmesi için incelemeye alındı; kamusal alan karşılaşması ve operatör devri izlenebilir olmalı.",
-    nextStepEn: "Demo context only in current release.",
-    nextStepTr: "Mevcut sürümde yalnızca demo bağlamı desteklenmektedir.",
+    nextStepEn: "Run verification or start controlled artifact once trace and unknowns are reviewed.",
+    nextStepTr: "İz ve belirsizlikler incelendikten sonra doğrulamayı çalıştırın veya kontrollü artifact başlatın.",
     recordedEvidence: [
       {
         recordId: "rec-robot-003-1",
@@ -455,9 +465,14 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       TRACE_STEP(1, "Encounter registered", "OK", "Encounter is registered against the public-interaction bundle and manifest."),
       TRACE_STEP(2, "Interaction log integrity", "OK", "Interaction log integrity is preserved and remains distinct from the derived encounter timeline."),
       TRACE_STEP(3, "Handoff chain documented", "OK", "Handoff chain documented for context review; significance remains with human review."),
-      TRACE_STEP(4, "Context review", "demo", "Context review remains required; live verification is not connected for Robot."),
+      TRACE_STEP(
+        4,
+        "Context review",
+        "UNVERIFIED",
+        "Context review remains required; verification trace documents chain steps only."
+      ),
     ],
-    artifactIssuance: { available: false },
+    artifactIssuance: { available: true, apiBacked: true },
     whyInevitable:
       "Public-space robot incidents need a canonical record and verification trace so that encounter, handoff, and context are one reference. QARAQUTU provides that spine for this robot case—without it, public-safety and liability discussions lack a shared evidence base.",
     titleTr: "Kamusal Alan Etkileşim İncelemesi",
@@ -478,8 +493,8 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       },
     ] as AxisusState[],
     artifactProfiles: [
-      { profileCode: "claims", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
-      { profileCode: "legal", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "claims", enabled: true, apiBacked: true, reasonTr: "Hasar/claim süreci bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Claims process is meaningful for this case; issuance API is connected." },
+      { profileCode: "legal", enabled: true, apiBacked: true, reasonTr: "Hukukî inceleme bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Legal review is meaningful for this case; issuance API is connected." },
       { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Etkileşim zinciri rekonstrüksiyonu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Interaction chain reconstruction is meaningful; issuance support is not yet connected." },
       { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Kamusal alan riski ve güvenli sonraki adım anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Public-space risk and safe next step are meaningful; issuance support is not yet connected." },
       { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },
@@ -503,8 +518,8 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       "Under review for safety stop and compliance record assessment; proximity-trigger and cycle boundary must be traceable for protective-stop accountability.",
     reviewWhyTr:
       "Güvenlik durdurma ve uyumluluk kayıtlarının incelenmesi için incelemeye alındı; yakınlık tetikleyicisi ve döngü sınırı izlenebilir olmalı.",
-    nextStepEn: "Demo context only in current release.",
-    nextStepTr: "Mevcut sürümde yalnızca demo bağlamı desteklenmektedir.",
+    nextStepEn: "Run verification or start controlled artifact once trace and unknowns are reviewed.",
+    nextStepTr: "İz ve belirsizlikler incelendikten sonra doğrulamayı çalıştırın veya kontrollü artifact başlatın.",
     recordedEvidence: [
       {
         recordId: "rec-robot-001-1",
@@ -545,9 +560,14 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       TRACE_STEP(1, "Workcell cycle bound", "OK", "Workcell cycle bound is registered for this protective stop event."),
       TRACE_STEP(2, "Safety log integrity", "OK", "Safety log integrity is preserved for the proximity-triggered stop event."),
       TRACE_STEP(3, "Proximity trigger and stop boundary", "OK", "Proximity trigger and stop boundary are traced for oversight; this trace does not decide fault or blame."),
-      TRACE_STEP(4, "Protective stop review", "demo", "Protective stop review remains required; live verification is not connected for Robot."),
+      TRACE_STEP(
+        4,
+        "Protective stop review",
+        "UNVERIFIED",
+        "Protective stop review remains required; verification trace documents chain steps only."
+      ),
     ],
-    artifactIssuance: { available: false },
+    artifactIssuance: { available: true, apiBacked: true },
     whyInevitable:
       "Safety-stop accountability requires a canonical record and verification trace so that proximity trigger and cycle boundary are unambiguous. QARAQUTU provides that spine for this robot case—protective stopping is then evidence-backed, not contested by fragmented logs.",
     titleTr: "Güvenlik Durdurma Olayı İncelemesi",
@@ -568,8 +588,8 @@ export const CANONICAL_CASES: CanonicalCase[] = [
       },
     ] as AxisusState[],
     artifactProfiles: [
-      { profileCode: "claims", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
-      { profileCode: "legal", enabled: true, apiBacked: false, reasonTr: "Bu profil bu vaka için anlamlıdır; issuance desteği henüz bağlı değildir.", reasonEn: "This profile is meaningful for this case; issuance support is not yet connected." },
+      { profileCode: "claims", enabled: true, apiBacked: true, reasonTr: "Hasar/claim süreci bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Claims process is meaningful for this case; issuance API is connected." },
+      { profileCode: "legal", enabled: true, apiBacked: true, reasonTr: "Hukukî inceleme bu vaka için anlamlı; issuance API bağlı.", reasonEn: "Legal review is meaningful for this case; issuance API is connected." },
       { profileCode: "technical", enabled: true, apiBacked: false, reasonTr: "Durdurma zinciri rekonstrüksiyonu anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Stop-cycle reconstruction is meaningful; issuance support is not yet connected." },
       { profileCode: "safety", enabled: true, apiBacked: false, reasonTr: "Koruyucu durdurma ve güvenli sonraki adım anlamlı; issuance desteği henüz bağlı değildir.", reasonEn: "Protective stop and safe next step are meaningful; issuance support is not yet connected." },
       { profileCode: "governance", enabled: false, apiBacked: false, reasonTr: "Bu profil seçili vaka bağlamında öncelikli değildir.", reasonEn: "This profile is not a priority in the context of the selected case." },

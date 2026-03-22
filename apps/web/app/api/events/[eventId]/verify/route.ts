@@ -41,9 +41,14 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ eventId: 
   }
 
   try {
+    const token = process.env.QARAQUTU_ACCESS_TOKEN;
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token && token.trim().length >= 12) {
+      headers.Authorization = `Bearer ${token}`;
+    }
     const res = await fetch(`${API_BASE}/v1/events/${eventId}/verify`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       cache: "no-store",
     });
     const json = await res.json().catch(() => ({}));

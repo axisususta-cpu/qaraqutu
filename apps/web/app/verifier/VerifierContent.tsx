@@ -78,6 +78,12 @@ function getScenariosBySystem(system: MockSystemId): string[] {
   return Array.from(set);
 }
 
+function resolveInitialSystem(eventId?: string): MockSystemId {
+  if (!eventId) return "vehicle";
+  const c = getCanonicalCaseByEventId(eventId);
+  return (c?.system as MockSystemId) ?? "vehicle";
+}
+
 // Unified event card shape (Vehicle from API, Drone/Robot from mock).
 interface EventCard {
   eventId: string;
@@ -143,6 +149,32 @@ function getIncidentSummary(
         (language === "tr"
           ? "Paket bütünlüğü ve manifest bağlantısı doğrulaması için incelemeye alındı."
           : "Under review for bundle integrity and manifest linkage verification."),
+      state: verificationState,
+      next:
+        nextFromCase ??
+        (verificationState === "UNVERIFIED" || verificationState === "UNKNOWN"
+          ? language === "tr"
+            ? "Doğrulamayı çalıştırın veya kontrollü artifact başlatın."
+            : "Run verification or start controlled artifact."
+          : language === "tr"
+          ? "İz özetini inceleyin veya artifact issuance başlatın."
+          : "Review trace summary or start artifact issuance."),
+    };
+  }
+  if ((system === "drone" || system === "robot") && verificationState) {
+    const droneWhy =
+      whyFromCase ??
+      (language === "tr"
+        ? "Görev anomalisi ve operatör el değişimi kayıtlarının doğrulanması için."
+        : "Under review for mission anomaly and operator handoff record verification.");
+    const robotWhy =
+      whyFromCase ??
+      (language === "tr"
+        ? "Güvenlik durdurma ve uyumluluk kayıtlarının incelenmesi için."
+        : "Under review for safety stop and compliance record assessment.");
+    return {
+      what: eventCard.summary,
+      why: system === "drone" ? droneWhy : robotWhy,
       state: verificationState,
       next:
         nextFromCase ??
@@ -250,13 +282,13 @@ const CANONICAL_STEP_LABELS: { key: string; en: string; tr: string }[] = [
 ];
 
 function buildTranscriptStepRows(
-  system: MockSystemId,
+  _system: MockSystemId,
   transcript: TranscriptStep[] | null,
   verificationState: VerificationState | null,
   language: "en" | "tr"
 ): TranscriptStepRow[] {
   const canonicalLabels = CANONICAL_STEP_LABELS.map((s) => (language === "tr" ? s.tr : s.en));
-  if (system === "vehicle" && transcript && transcript.length > 0) {
+  if (transcript && transcript.length > 0) {
     return transcript.map((step) => ({
       label: step.check,
       status: step.result,
@@ -264,7 +296,7 @@ function buildTranscriptStepRows(
       note: step.note || undefined,
     }));
   }
-  if (system === "vehicle" && verificationState) {
+  if (verificationState) {
     return canonicalLabels.map((label, i) => ({
       label,
       status: i < canonicalLabels.length - 1 ? "OK" : verificationState,
@@ -272,19 +304,11 @@ function buildTranscriptStepRows(
       note: undefined,
     }));
   }
-  if (system === "vehicle") {
-    return canonicalLabels.map((label) => ({
-      label,
-      status: "pending",
-      time: undefined,
-      note: language === "tr" ? "Doğrulama çalıştırılmadı." : "Verification not run.",
-    }));
-  }
-  return canonicalLabels.map((label, i) => ({
+  return canonicalLabels.map((label) => ({
     label,
-    status: i < canonicalLabels.length - 1 ? "OK" : "demo",
+    status: "pending",
     time: undefined,
-    note: language === "tr" ? "Demo bağlamı." : "Demo context.",
+    note: language === "tr" ? "Doğrulama çalıştırılmadı." : "Verification not run.",
   }));
 }
 
@@ -346,7 +370,9 @@ function getReviewTone(state: string | null) {
 
 export function VerifierContent({ initialEventId }: { initialEventId?: string }) {
   const { lang: language, setLang: setLanguage } = useLanguage();
-  const [selectedSystem, setSelectedSystem] = useState<MockSystemId>("vehicle");
+  const [selectedSystem, setSelectedSystem] = useState<MockSystemId>(() =>
+    resolveInitialSystem(initialEventId)
+  );
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [activeSpineSection, setActiveSpineSection] = useState<string>("system");
@@ -443,15 +469,22 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     return () => clearTimeout(t);
   }, [verificationJustCompleted]);
 
-  // When scenario changes: reset selected event.
-  const handleScenarioChange = (scenario: string | null) => {
+  const handleScenarioChange = (scenario: string) => {
     setSelectedScenario(scenario);
-    setSelectedEventId(null);
-    if (selectedSystem === "vehicle") setSelectedId(null);
+    const casesInScenario = getCanonicalCases(selectedSystem).filter(
+      (c) => c.scenarioFrame === scenario
+    );
+    const first = casesInScenario[0]?.eventId ?? null;
+    setSelectedEventId(first);
+    setSelectedId(first);
   };
 
-  // Canonical spine: one registry for all verticals.
-  const displayEvents: EventCard[] = getCanonicalCases(selectedSystem).map(caseToEventCard);
+  // Events visible for the selected scenario only (canonical registry).
+  const displayEvents: EventCard[] = (
+    selectedScenario
+      ? getCanonicalCases(selectedSystem).filter((c) => c.scenarioFrame === selectedScenario)
+      : []
+  ).map(caseToEventCard);
 
   const selectedEventCard =
     displayEvents.find((e) => e.eventId === selectedEventId) ?? null;
@@ -461,19 +494,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   // When user selects an event from cards: set selectedEventId; for Vehicle also set selectedId for API.
   const handleSelectEvent = (eventId: string) => {
     setSelectedEventId(eventId);
-    if (selectedSystem === "vehicle") setSelectedId(eventId);
+    setSelectedId(eventId);
   };
 
   const selected = events.find((e) => e.eventId === selectedId) ?? null;
-  const isVehicle = selectedSystem === "vehicle";
   const bundleAnchorId =
-    isVehicle
-      ? identity?.bundle_id ?? selected?.bundleId ?? selectedEventCard?.bundleId ?? "—"
-      : selectedEventCard?.bundleId ?? "—";
+    identity?.bundle_id ?? selected?.bundleId ?? selectedEventCard?.bundleId ?? "—";
   const manifestAnchorId =
-    isVehicle
-      ? identity?.manifest_id ?? selected?.manifestId ?? selectedEventCard?.manifestId ?? "—"
-      : selectedEventCard?.manifestId ?? "—";
+    identity?.manifest_id ?? selected?.manifestId ?? selectedEventCard?.manifestId ?? "—";
   const visibleRecorded =
     selectedCase?.recordedEvidence?.length
       ? toRecordedRows(selectedCase.recordedEvidence).map((row, index) => {
@@ -502,7 +530,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     language
   );
   const traceStepRows =
-    isVehicle && transcript?.length
+    transcript?.length
       ? transcript.map((s) => ({
           label: s.check,
           status: s.result,
@@ -514,18 +542,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           label: s.check,
           status: s.result,
           time: undefined as string | undefined,
-          note:
-            s.result === "demo" && !isVehicle
-              ? language === "tr"
-                ? `${s.note} Canlı receipt/export hattı bu dikey için bağlı değildir.`
-                : `${s.note} No live receipt/export path is connected for this vertical.`
-              : s.note || undefined,
+          note: s.note || undefined,
         }))
       : buildTranscriptStepRows(selectedSystem, transcript, verificationState, language);
   const hasConnectedIssuanceProfile =
     !!selectedCase?.artifactProfiles?.some((ap) => ap.enabled && ap.apiBacked);
-  const hasConnectedVehicleIssuanceProfile =
-    isVehicle &&
+  /** API-backed claims/legal issuance when the selected event exists in the live events catalog. */
+  const hasConnectedApiIssuanceProfile =
     !!selected &&
     !!selectedCase?.artifactProfiles?.some(
       (ap) =>
@@ -1229,11 +1252,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             <button
                               key={name}
                               type="button"
-                              onClick={() =>
-                                handleScenarioChange(
-                                  selectedScenario === name ? null : name
-                                )
-                              }
+                              onClick={() => handleScenarioChange(name)}
                               style={{
                                 padding: "0.35rem 0.5rem",
                                 textAlign: "left",
@@ -1268,8 +1287,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           {displayEvents.length === 0 ? (
                             <p style={{ margin: 0, fontSize: "0.75rem" }}>
                               {language === "tr"
-                                ? "Olay bulunamadı."
-                                : "No events available."}
+                                ? selectedScenario
+                                  ? "Olay bulunamadı."
+                                  : "Önce bir senaryo seçin."
+                                : selectedScenario
+                                ? "No events available."
+                                : "Select a scenario first."}
                             </p>
                           ) : (
                             displayEvents.map((ev) => {
@@ -1691,9 +1714,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   <span style={{ fontFamily: MONO, fontSize: "0.58rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", fontWeight: 600 }}>
                     {language === "tr" ? "identity_chain" : "identity_chain"}
                   </span>
-                  {!isVehicle && (
-                    <span style={{ fontFamily: MONO, fontSize: "0.55rem", color: "var(--text-dim)", marginLeft: "auto" }}>demo</span>
-                  )}
                 </div>
                 {selectedEventCard ? (
                   <div
@@ -1705,10 +1725,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   >
                     {[
                       { key: "event_id", value: selectedEventCard.eventId },
-                      { key: "bundle_id", value: isVehicle && identity ? identity.bundle_id : selectedEventCard.bundleId ?? "—" },
-                      { key: "manifest_id", value: isVehicle && identity ? identity.manifest_id : selectedEventCard.manifestId ?? "—" },
-                      ...(isVehicle && transcriptId ? [{ key: "trace_id", value: transcriptId }] : []),
-                      ...(isVehicle && verificationRunId ? [{ key: "run_id", value: verificationRunId }] : []),
+                      { key: "bundle_id", value: identity?.bundle_id ?? selectedEventCard.bundleId ?? "—" },
+                      { key: "manifest_id", value: identity?.manifest_id ?? selectedEventCard.manifestId ?? "—" },
+                      ...(transcriptId ? [{ key: "trace_id", value: transcriptId }] : []),
+                      ...(verificationRunId ? [{ key: "run_id", value: verificationRunId }] : []),
                     ].map((item, i) => (
                       <div
                         key={item.key}
@@ -2198,7 +2218,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             lineHeight: 1.6,
                           }}
                         >
-                          {`manifest:${manifestAnchorId} → trace:${isVehicle ? transcriptId ?? "pending" : "demo"} → ${hasConnectedIssuanceProfile ? "bounded_issuance:available" : "issuance:not_connected"}`}
+                          {`manifest:${manifestAnchorId} → trace:${transcriptId ?? "pending"} → ${hasConnectedIssuanceProfile ? "bounded_issuance:available" : "issuance:not_connected"}`}
                         </div>
                         <div
                           style={{
@@ -2332,8 +2352,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   </div>
                 );
               })()}
-              {isVehicle && (
-                <>
+              <>
                   <div style={{ fontSize: "0.7rem", opacity: 0.65, marginBottom: "0.25rem" }}>
                     {language === "tr" ? "Yedek: açılır menü ile olay seçimi" : "Fallback: select event by dropdown"}
                   </div>
@@ -2428,28 +2447,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {!loading && !verificationError && !verificationState && selectedId && (language === "tr" ? "Doğrulama bekleniyor." : "Verification pending.")}
                     </div>
                   </div>
-                </>
-              )}
-              {!isVehicle && (
-                <div
-                  style={{
-                    marginTop: "0.5rem",
-                    padding: "0.6rem 0.75rem",
-                    border: "1px solid var(--border)",
-                    borderRadius: 4,
-                    fontSize: "0.8rem",
-                    background: "var(--panel-raised)",
-                    color: "var(--text-soft)",
-                  }}
-                >
-                  {language === "tr"
-                    ? "Mevcut sürümde yalnızca demo bağlamı. Doğrulama ve dışa aktarım yalnızca Araç sistemi için geçerlidir."
-                    : "Demo context only in this release. Verification and controlled issuance are available for the Vehicle system."}
-                </div>
-              )}
+              </>
             </section>
 
-            {isVehicle && (
             <section
               style={{
                 border: loading ? "1px solid var(--accent)" : undefined,
@@ -2591,7 +2591,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
               )}
             </section>
-            )}
 
             {/* AXISUS — boundary protocol; secondary to doctrine spine */}
             {selectedCase?.axisusStates?.length ? (
@@ -2731,8 +2730,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     </div>
                     <div>
                       {language === "tr"
-                        ? `Manifest bağı: ${manifestAnchorId} · İz bağı: ${isVehicle ? transcriptId ?? "hazırlanmadı" : "demo review chain"}`
-                        : `Manifest anchor: ${manifestAnchorId} · Trace anchor: ${isVehicle ? transcriptId ?? "pending" : "demo review chain"}`}
+                        ? `Manifest bağı: ${manifestAnchorId} · İz bağı: ${transcriptId ?? "hazırlanmadı"}`
+                        : `Manifest anchor: ${manifestAnchorId} · Trace anchor: ${transcriptId ?? "pending"}`}
                     </div>
                     <div>
                       {language === "tr"
@@ -2802,7 +2801,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       );
                     })}
                   </div>
-                  {hasConnectedVehicleIssuanceProfile ? (
+                  {hasConnectedApiIssuanceProfile ? (
                     <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border)" }}>
                       <div style={{ fontSize: "0.8rem", marginBottom: "0.25rem", display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
                         <span style={{ opacity: 0.8 }}>{language === "tr" ? "Issuance profili:" : "Issuance profile:"}</span>
@@ -3047,11 +3046,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 );
                                 const framing = getInstitutionFraming(issuanceAudience, language);
                                 const traceDisplay =
-                                  isVehicle && transcriptId
-                                    ? transcriptId
-                                    : language === "tr"
-                                      ? "demo · bağlı iz yok"
-                                      : "demo · no live trace id";
+                                  transcriptId ??
+                                  (language === "tr"
+                                    ? "henüz doğrulama izi yok"
+                                    : "no verification trace yet");
                                 return (
                                   <div style={{ marginTop: "1.25rem" }}>
                                     <div
@@ -3288,11 +3286,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     const { primary } = resolveIssuanceDocumentFamilies(meta.export_profile, selectedSystem);
                     const framing = getInstitutionFraming(issuanceAudience, language);
                     const traceDisplay =
-                      isVehicle && transcriptId
-                        ? transcriptId
-                        : language === "tr"
-                          ? "demo · bağlı iz yok"
-                          : "demo · no live trace id";
+                      transcriptId ??
+                      (language === "tr"
+                        ? "henüz doğrulama izi yok"
+                        : "no verification trace yet");
                     return (
                       <div style={{ marginTop: "1rem" }}>
                         <div style={{ fontSize: "0.72rem", fontWeight: 600, marginBottom: "0.45rem", fontFamily: MONO }}>
@@ -3345,52 +3342,46 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
               ) : (
                 <div style={{ border: "1px solid var(--border)", borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>
-                  {!isVehicle ? (
-                    <div>
-                      <p style={{ margin: "0 0 0.5rem" }}>
-                        {language === "tr"
-                          ? "Aynı olay omurgasından, rol ve amaça göre kontrollü issuance. Bu dikey için issuance kasıtlı olarak sınırlıdır; çünkü API destekli receipt/export hattı henüz bağlı değildir."
-                          : "Controlled issuance from the same event spine, by role and purpose. Issuance is intentionally constrained for this vertical because the API-backed receipt/export path is not yet connected."}
-                      </p>
-                      <p style={{ margin: "0 0 0.5rem", fontSize: "0.78rem", opacity: 0.88, lineHeight: 1.45 }}>
-                        {language === "tr"
-                          ? `Manifest bağı ${manifestAnchorId} üzerinde kalır; trace review-chain olarak görünür, issuance onun üstüne yazmaz.`
-                          : `The panel remains anchored to manifest ${manifestAnchorId}; the trace stays a review-chain object, and issuance does not outrank it.`}
-                      </p>
-                      <div style={{ fontSize: "0.8rem", opacity: 0.9 }}>
-                        {language === "tr" ? "Bu dikeyde kullanılacak artifact profilleri:" : "Artifact profiles for this vertical:"}
-                        <ul style={{ margin: "0.35rem 0 0", paddingLeft: "1.1rem" }}>
-                          {getArtifactProfilesForDomain(selectedSystem).slice(0, 5).map((p) => (
-                            <li key={p.code}>
-                              {language === "tr" ? p.ctaTr : p.ctaEn} — {language === "tr" ? p.purposeShortTr : p.purposeShortEn}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  ) : !selected ? (
-                    <p style={{ margin: 0 }}>
-                      {language === "tr" ? "Belge üretimi için araç olayının API ile eşleşmesi gerekir." : "Vehicle event must match API for artifact issuance."}
+                  <p style={{ margin: "0 0 0.5rem" }}>
+                    {language === "tr"
+                      ? "Kontrollü JSON/PDF çıktıları, canlı olay kataloğundaki (API) kimlik ve tenant politikasına bağlıdır; trace ve unknown/disputed üstüne yazılmaz."
+                      : "Controlled JSON/PDF outputs are bound to the live event catalog (API) identity and tenant policy; they do not override the trace or unknown/disputed items."}
+                  </p>
+                  <p style={{ margin: "0 0 0.5rem", fontSize: "0.78rem", opacity: 0.88, lineHeight: 1.45 }}>
+                    {language === "tr"
+                      ? `Manifest bağı ${manifestAnchorId} üzerinde kalır.`
+                      : `Panel remains anchored to manifest ${manifestAnchorId}.`}
+                  </p>
+                  {!selected ? (
+                    <p style={{ margin: "0 0 0.5rem" }}>
+                      {language === "tr"
+                        ? "Belge üretimi için olayın API ile eşleşmesi ve sol omurgadan seçilmiş olması gerekir."
+                        : "For artifact issuance, the event must match the API and be selected from the spine."}
                     </p>
-                  ) : (
-                    <p style={{ margin: 0 }}>
-                      {language === "tr" ? "Belge üretimi için sol omurgadan bir araç olayı seçin." : "Select a vehicle event in the left spine for artifact issuance."}
-                    </p>
-                  )}
+                  ) : null}
+                  <div style={{ fontSize: "0.8rem", opacity: 0.9 }}>
+                    {language === "tr" ? "Bu dikey için artifact profilleri:" : "Artifact profiles for this vertical:"}
+                    <ul style={{ margin: "0.35rem 0 0", paddingLeft: "1.1rem" }}>
+                      {getArtifactProfilesForDomain(selectedSystem).slice(0, 5).map((p) => (
+                        <li key={p.code}>
+                          {language === "tr" ? p.ctaTr : p.ctaEn} — {language === "tr" ? p.purposeShortTr : p.purposeShortEn}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
-              {issuedArtifact && !hasConnectedVehicleIssuanceProfile
+              {issuedArtifact && !hasConnectedApiIssuanceProfile
                 ? (() => {
                     const m = MSG[language];
                     const meta = issuedArtifact.meta;
                     const { primary } = resolveIssuanceDocumentFamilies(meta.export_profile, selectedSystem);
                     const framing = getInstitutionFraming(issuanceAudience, language);
                     const traceDisplay =
-                      isVehicle && transcriptId
-                        ? transcriptId
-                        : language === "tr"
-                          ? "demo · bağlı iz yok"
-                          : "demo · no live trace id";
+                      transcriptId ??
+                      (language === "tr"
+                        ? "henüz doğrulama izi yok"
+                        : "no verification trace yet");
                     return (
                       <div style={{ marginTop: "1rem", borderTop: "1px solid var(--border)", paddingTop: "0.9rem" }}>
                         <div style={{ fontSize: "0.72rem", fontWeight: 600, marginBottom: "0.45rem", fontFamily: MONO }}>
