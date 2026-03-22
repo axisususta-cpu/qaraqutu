@@ -22,6 +22,7 @@ import {
   getArtifactProfilesForDomain,
 } from "../../lib/artifact-profiles";
 import { LogoPrimary } from "../components/LogoPrimary";
+import { ReconstructionViewport } from "../components/verifier/ReconstructionViewport";
 import { DocumentShell } from "../components/documents/DocumentShell";
 import { DocumentSection } from "../components/documents/DocumentSection";
 import { DocumentMetadataBlock } from "../components/documents/DocumentMetadataBlock";
@@ -1600,6 +1601,23 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               {msg.verifierActionBarDoctrineIssuance}
             </p>
 
+            <ReconstructionViewport
+              language={language}
+              system={selectedSystem}
+              incidentClass={selectedCase?.incidentClass ?? null}
+              eventId={selectedEventCard?.eventId ?? selectedId ?? null}
+              title={selectedEventCard?.title ?? selectedCase?.scenarioFrame ?? null}
+              verificationState={visibleReviewState}
+            />
+
+            <div
+              id="verifier-inspection-detail-deck"
+              style={{
+                marginTop: "0.15rem",
+                paddingTop: "0.55rem",
+                borderTop: "2px solid var(--border-strong)",
+              }}
+            >
             {!selectedEventCard ? (
               <section
                 style={{
@@ -3599,6 +3617,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   })()
                 : null}
             </section>
+            </div>
             </div>
             </div>
           </main>
