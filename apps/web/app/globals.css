@@ -145,6 +145,18 @@ body {
     linear-gradient(90deg, rgba(212, 86, 26, 0.045) 1px, transparent 1px) !important;
 }
 
+/* Landing — dark hero grid overlay (very light; no motion) */
+.home-dark-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.35;
+}
+
 /* Home — problem & role grids stack on narrow viewports */
 @media (max-width: 1100px) {
   .home-how-steps-grid {

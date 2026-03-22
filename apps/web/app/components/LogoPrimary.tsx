@@ -9,12 +9,19 @@ interface LogoPrimaryProps {
   href?: string;
   height?: number;
   className?: string;
+  /** Orange wordmark on near-black surfaces (e.g. landing header) regardless of theme. */
+  variant?: "default" | "onDarkSurface";
 }
 
-export function LogoPrimary({ href = "/", height = 28, className }: LogoPrimaryProps) {
+export function LogoPrimary({ href = "/", height = 28, className, variant = "default" }: LogoPrimaryProps) {
   const { mode } = useTheme();
   // light surface → logo-primary-light (black ink); dark surface → logo-primary-dark (orange)
-  const src = mode === "dark" ? BRAND_PATHS.primaryDark : BRAND_PATHS.primaryLight;
+  const src =
+    variant === "onDarkSurface"
+      ? BRAND_PATHS.primaryDark
+      : mode === "dark"
+        ? BRAND_PATHS.primaryDark
+        : BRAND_PATHS.primaryLight;
 
   const img = (
     <Image

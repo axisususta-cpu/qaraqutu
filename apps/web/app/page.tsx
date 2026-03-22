@@ -28,240 +28,298 @@ const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif
 export default function LandingPage() {
   const { lang } = useLanguage();
   const m = MSG[lang];
+  const protocolTags =
+    lang === "tr"
+      ? ["KAYITLI ≠ TÜRETİLMİŞ", "İZ ≠ NİHAİ GERÇEK", "DÜZENLEME ≠ SUÇLAMA"]
+      : ["RECORDED ≠ DERIVED", "TRACE ≠ TRUTH", "ISSUANCE ≠ BLAME"];
+
   return (
     <main
-      className="home-hero-with-grid"
       style={{
         minHeight: "100vh",
+        margin: 0,
+        padding: 0,
         background: "var(--bg)",
-        backgroundPosition: "0 0",
         color: "var(--text)",
-        padding: "1.75rem 2rem 2.25rem",
         fontFamily: SANS,
       }}
     >
-      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: "1.4rem" }}>
-        {/* Hero */}
-        <section
-          className="home-hero-grid"
+      {/* Full-bleed dark hero — inspection-station landing grammar */}
+      <section
+        className="home-dark-hero"
+        style={{
+          position: "relative",
+          minHeight: "min(92vh, 880px)",
+          background: "#090908",
+          color: "#eceae6",
+          borderBottom: "1px solid #1a1a18",
+        }}
+      >
+        <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 2.15fr) minmax(0, 1.45fr)",
-            gap: "1.75rem",
-            alignItems: "flex-start",
+            maxWidth: 1180,
+            margin: "0 auto",
+            padding: "2.25rem 2rem 2.75rem",
+            position: "relative",
+            zIndex: 1,
           }}
         >
-          <div>
-            <div style={{ marginBottom: "0.55rem" }}>
-              <LogoPrimary href="/" height={44} />
-            </div>
-            <p
-              style={{
-                margin: "0 0 0.55rem 0",
-                fontSize: "0.68rem",
-                fontWeight: 600,
-                color: "var(--text-muted)",
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                fontFamily: MONO,
-                lineHeight: 1.4,
-              }}
-            >
-              {m.homeHeroEyebrow}
-            </p>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.35rem",
-                padding: "0.25rem 0.6rem",
-                borderRadius: 999,
-                marginBottom: "0.65rem",
-                background: "var(--chip-bg)",
-                border: "1px solid var(--chip-border)",
-                color: "var(--chip-text)",
-                fontSize: "0.7rem",
-                fontWeight: 600,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                fontFamily: MONO,
-              }}
-            >
-              {m.homeHeroChip}
-            </div>
-            <p
-              style={{
-                margin: "0 0 0.65rem 0",
-                fontSize: "1.05rem",
-                fontWeight: 500,
-                color: "var(--text-soft)",
-                letterSpacing: "-0.015em",
-                lineHeight: 1.35,
-                fontFamily: SANS,
-              }}
-            >
-              {m.motto}
-            </p>
-            <h1
-              style={{
-                fontSize: "clamp(1.35rem, 3.5vw, 2.05rem)",
-                margin: 0,
-                lineHeight: 1.2,
-                fontWeight: 600,
-                letterSpacing: "-0.02em",
-              }}
-            >
-              {m.homeHeroHeading}
-            </h1>
-            <p
-              style={{
-                fontSize: "0.96rem",
-                color: "var(--text-soft)",
-                maxWidth: 680,
-                lineHeight: 1.6,
-                marginTop: "0.85rem",
-              }}
-            >
-              {m.homeHeroBody}
-            </p>
-            <div
-              style={{
-                marginTop: "0.95rem",
-                display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: "0.5rem",
-                maxWidth: 700,
-              }}
-            >
-              {[
-                m.homeHeroPillar1,
-                m.homeHeroPillar2,
-                m.homeHeroPillar3,
-                m.homeHeroPillar4,
-              ].map((line) => (
-                <div
-                  key={line}
+          <div
+            className="home-hero-grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1.85fr) minmax(0, 1.35fr)",
+              gap: "2rem",
+              alignItems: "stretch",
+            }}
+          >
+            <div>
+              <div style={{ marginBottom: "1rem" }}>
+                <LogoPrimary href="/" height={56} variant="onDarkSurface" />
+              </div>
+              <p
+                style={{
+                  margin: "0 0 0.65rem 0",
+                  fontSize: "0.72rem",
+                  fontWeight: 600,
+                  color: "rgba(255,255,255,0.45)",
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  fontFamily: MONO,
+                  lineHeight: 1.4,
+                }}
+              >
+                {m.homeHeroEyebrow}
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "0.4rem",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                {protocolTags.map((tag) => (
+                  <span
+                    key={tag}
+                    style={{
+                      padding: "0.22rem 0.55rem",
+                      borderRadius: 2,
+                      border: "1px solid rgba(255,255,255,0.14)",
+                      background: "rgba(255,255,255,0.04)",
+                      fontSize: "0.62rem",
+                      fontWeight: 600,
+                      letterSpacing: "0.08em",
+                      fontFamily: MONO,
+                      color: "rgba(255,255,255,0.7)",
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  padding: "0.28rem 0.65rem",
+                  borderRadius: 2,
+                  marginBottom: "0.75rem",
+                  background: "rgba(212,86,26,0.12)",
+                  border: "1px solid rgba(212,86,26,0.35)",
+                  color: "var(--accent)",
+                  fontSize: "0.68rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  fontFamily: MONO,
+                }}
+              >
+                {m.homeHeroChip}
+              </div>
+              <p
+                style={{
+                  margin: "0 0 0.55rem 0",
+                  fontSize: "1.12rem",
+                  fontWeight: 500,
+                  color: "rgba(255,255,255,0.72)",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1.38,
+                  fontFamily: SANS,
+                }}
+              >
+                {m.motto}
+              </p>
+              <h1
+                style={{
+                  fontSize: "clamp(1.5rem, 4vw, 2.35rem)",
+                  margin: 0,
+                  lineHeight: 1.15,
+                  fontWeight: 600,
+                  letterSpacing: "-0.03em",
+                  color: "#f7f5f0",
+                }}
+              >
+                {m.homeHeroHeading}
+              </h1>
+              <p
+                style={{
+                  fontSize: "1rem",
+                  color: "rgba(255,255,255,0.58)",
+                  maxWidth: 640,
+                  lineHeight: 1.62,
+                  marginTop: "1rem",
+                }}
+              >
+                {m.homeHeroBody}
+              </p>
+              <div
+                style={{
+                  marginTop: "1.1rem",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: "0.55rem",
+                  maxWidth: 720,
+                }}
+              >
+                {[m.homeHeroPillar1, m.homeHeroPillar2, m.homeHeroPillar3, m.homeHeroPillar4].map((line) => (
+                  <div
+                    key={line}
+                    style={{
+                      borderRadius: 2,
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      background: "rgba(255,255,255,0.03)",
+                      padding: "0.52rem 0.68rem",
+                      fontSize: "0.8125rem",
+                      color: "rgba(255,255,255,0.62)",
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    {line}
+                  </div>
+                ))}
+              </div>
+              <p
+                style={{
+                  marginTop: "1rem",
+                  marginBottom: 0,
+                  fontSize: "0.8rem",
+                  lineHeight: 1.58,
+                  color: "rgba(255,255,255,0.42)",
+                  maxWidth: 720,
+                  fontFamily: MONO,
+                }}
+              >
+                {m.homeHeroArchitectureNote}
+              </p>
+              <div
+                style={{
+                  marginTop: "1.35rem",
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "0.65rem",
+                  alignItems: "center",
+                }}
+              >
+                <Link
+                  href="/verifier"
                   style={{
-                    borderRadius: 8,
-                    border: "1px solid var(--border-soft)",
-                    background: "var(--panel)",
-                    padding: "0.48rem 0.62rem",
-                    fontSize: "0.79rem",
-                    color: "var(--text-soft)",
+                    padding: "0.65rem 1.5rem",
+                    borderRadius: 2,
+                    border: "1px solid var(--accent-border)",
+                    background: "var(--accent)",
+                    textDecoration: "none",
+                    color: "#ffffff",
+                    fontWeight: 700,
+                    fontFamily: MONO,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    fontSize: "0.72rem",
                   }}
                 >
-                  {line}
-                </div>
-              ))}
+                  {m.homeHeroCta}
+                </Link>
+                <Link
+                  href="/docs"
+                  style={{
+                    padding: "0.62rem 1.25rem",
+                    borderRadius: 2,
+                    border: "1px solid rgba(255,255,255,0.22)",
+                    background: "transparent",
+                    textDecoration: "none",
+                    color: "rgba(255,255,255,0.78)",
+                    fontFamily: MONO,
+                    fontSize: "0.7rem",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {m.homeHeroCtaSecondary}
+                </Link>
+              </div>
             </div>
-            <p
-              style={{
-                marginTop: "0.85rem",
-                marginBottom: 0,
-                fontSize: "0.74rem",
-                lineHeight: 1.55,
-                color: "var(--text-muted)",
-                maxWidth: 720,
-              }}
-            >
-              {m.homeHeroArchitectureNote}
-            </p>
-            <div
-              style={{
-                marginTop: "1.05rem",
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "0.75rem",
-                fontSize: "0.8rem",
-              }}
-            >
-              <Link
-                href="/verifier"
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+              <div
                 style={{
-                  padding: "0.6rem 1.35rem",
-                  borderRadius: 12,
-                  border: "none",
-                background: "var(--cta-gradient)",
-                boxShadow: "var(--cta-shadow)",
-                  textDecoration: "none",
-                  color: "#ffffff",
-                  fontWeight: 600,
+                  position: "relative",
+                  borderRadius: 2,
+                  overflow: "hidden",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  aspectRatio: "16/10",
+                  background: "#121211",
+                }}
+              >
+                <Image
+                  src={MEDIA.hero}
+                  alt="Vehicle incident review - QARAQUTU verifier-first witness protocol in fleet and claims context"
+                  fill
+                  sizes="(max-width: 768px) 100vw, 420px"
+                  style={{ objectFit: "cover", opacity: 0.92 }}
+                  priority
+                />
+              </div>
+              <div style={{ borderRadius: 2, border: "1px solid rgba(255,255,255,0.08)", padding: "0.65rem 0.75rem", background: "rgba(255,255,255,0.02)" }}>
+                <VerticalsDiagram lang={lang} />
+              </div>
+              <p style={{ margin: 0, fontSize: "0.8rem", lineHeight: 1.55, color: "rgba(255,255,255,0.5)" }}>{m.homeVerticalsCaption}</p>
+              <div
+                style={{
+                  borderRadius: 2,
+                  border: "1px dashed rgba(255,255,255,0.18)",
+                  padding: "0.6rem 0.75rem",
+                  fontSize: "0.78rem",
+                  color: "rgba(255,255,255,0.45)",
+                  lineHeight: 1.55,
                   fontFamily: MONO,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
                 }}
               >
-                {m.homeHeroCta}
-              </Link>
-              <Link
-                href="/docs"
-                style={{
-                  padding: "0.55rem 1.1rem",
-                  borderRadius: 12,
-                  border: "1px solid var(--border)",
-                  background: "var(--panel)",
-                  textDecoration: "none",
-                  color: "var(--text-soft)",
-                }}
-              >
-                {m.homeHeroCtaSecondary}
-              </Link>
+                {lang === "tr"
+                  ? "Protokol konumu: Doğrulayıcı bir inceleme istasyonudur; zincir disiplinini korur, sorumluluk motoru veya mahkeme ikamesi değildir."
+                  : "Protocol position: the Verifier is an inspection station—it preserves chain discipline; it is not a liability engine or a substitute for court judgement."}
+              </div>
             </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            <div
-              style={{
-                position: "relative",
-                borderRadius: 12,
-                overflow: "hidden",
-                border: "1px solid var(--border)",
-                boxShadow: "0 1px 6px rgba(0,0,0,0.08)",
-                aspectRatio: "16/10",
-                background: "var(--border-muted)",
-              }}
-            >
-              <Image
-                src={MEDIA.hero}
-                alt="Vehicle incident review - QARAQUTU verifier-first witness protocol in fleet and claims context"
-                fill
-                sizes="(max-width: 768px) 100vw, 420px"
-                style={{ objectFit: "cover" }}
-                priority
-              />
-            </div>
-            <VerticalsDiagram lang={lang} />
-            <p style={{ margin: 0, fontSize: "0.76rem", lineHeight: 1.5, color: "var(--text-soft)" }}>{m.homeVerticalsCaption}</p>
-            <div
-              style={{
-                borderRadius: 10,
-                border: "1px dashed var(--border)",
-                padding: "0.55rem 0.7rem",
-                fontSize: "0.77rem",
-                color: "var(--text-muted)",
-                lineHeight: 1.5,
-              }}
-            >
-              {lang === "tr"
-                ? "Protokol konumu: Doğrulayıcı bir inceleme istasyonudur; zincir disiplinini korur, sorumluluk motoru veya mahkeme ikamesi değildir."
-                : "Protocol position: the Verifier is an inspection station—it preserves chain discipline; it is not a liability engine or a substitute for court judgement."}
-            </div>
-          </div>
-        </section>
+        </div>
+      </section>
 
+      <div
+        className="home-below-fold home-hero-with-grid"
+        style={{ maxWidth: 1180, margin: "0 auto", padding: "2rem 2rem 2.5rem", display: "flex", flexDirection: "column", gap: "1.75rem" }}
+      >
         <HomeCommandSpineFlow lang={lang} />
 
         {/* Problem — institutional cards */}
         <section
           style={{
-            borderRadius: 12,
-            border: "1px solid var(--border)",
+            borderRadius: 4,
+            border: "1px solid var(--border-strong)",
             background: "var(--panel)",
-            padding: "1.2rem 1.35rem",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            padding: "1.45rem 1.5rem",
+            boxShadow: "none",
           }}
         >
           <SectionHeader badge={lang === "tr" ? "Ba\u011flam" : "Context"} heading={m.sectionProblem} />
-          <p style={{ margin: "0 0 1rem", fontSize: "0.88rem", lineHeight: 1.55, color: "var(--text-soft)", maxWidth: 820 }}>
+          <p style={{ margin: "0 0 1.15rem", fontSize: "0.92rem", lineHeight: 1.58, color: "var(--text-soft)", maxWidth: 820 }}>
             {m.homeProblemIntro}
           </p>
           <div
@@ -269,7 +327,7 @@ export default function LandingPage() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              gap: "0.75rem",
+              gap: "1rem",
             }}
           >
             {[
@@ -280,34 +338,35 @@ export default function LandingPage() {
               <div
                 key={card.title}
                 style={{
-                  borderRadius: 10,
-                  border: "1px solid var(--border-soft)",
+                  borderRadius: 2,
+                  border: "1px solid var(--border)",
                   background: "var(--panel-card)",
-                  padding: "0.85rem 0.95rem",
-                  borderTop: "2px solid var(--accent)",
+                  padding: "1rem 1.05rem",
+                  borderLeft: "3px solid var(--accent)",
                 }}
               >
-                <div style={{ fontFamily: MONO, fontSize: "0.7rem", fontWeight: 700, color: "var(--text)", marginBottom: "0.4rem", letterSpacing: "0.02em" }}>
+                <div style={{ fontFamily: MONO, fontSize: "0.74rem", fontWeight: 700, color: "var(--text)", marginBottom: "0.45rem", letterSpacing: "0.04em" }}>
                   {card.title}
                 </div>
-                <p style={{ margin: 0, fontSize: "0.8rem", lineHeight: 1.55, color: "var(--text-soft)" }}>{card.body}</p>
+                <p style={{ margin: 0, fontSize: "0.875rem", lineHeight: 1.58, color: "var(--text-soft)" }}>{card.body}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* How the protocol runs */}
+        {/* How the protocol runs — dark band */}
         <section
           style={{
-            borderRadius: 12,
-            border: "1px solid var(--border)",
-            background: "var(--panel-raised)",
-            padding: "1.2rem 1.35rem",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            borderRadius: 2,
+            border: "1px solid #1f1f1d",
+            background: "#0b0b0a",
+            color: "#e8e6e1",
+            padding: "1.75rem 1.65rem",
+            boxShadow: "none",
           }}
         >
-          <SectionHeader badge={lang === "tr" ? "Akış" : "Flow"} heading={m.homeHowItWorksTitle} />
-          <p style={{ margin: "0 0 1rem", fontSize: "0.86rem", lineHeight: 1.55, color: "var(--text-soft)", maxWidth: 860 }}>
+          <SectionHeader tone="dark" badge={lang === "tr" ? "Akış" : "Flow"} heading={m.homeHowItWorksTitle} />
+          <p style={{ margin: "0 0 1.25rem", fontSize: "0.9rem", lineHeight: 1.58, color: "rgba(255,255,255,0.52)", maxWidth: 860 }}>
             {m.homeHowItWorksLead}
           </p>
           <div
@@ -315,24 +374,33 @@ export default function LandingPage() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-              gap: "0.65rem",
+              gap: "0.75rem",
             }}
           >
             {[m.homeHowStep1, m.homeHowStep2, m.homeHowStep3, m.homeHowStep4, m.homeHowStep5].map((step, i) => (
               <div
                 key={i}
                 style={{
-                  borderRadius: 8,
-                  border: "1px solid var(--border)",
-                  background: "var(--panel)",
-                  padding: "0.65rem 0.75rem",
+                  borderRadius: 2,
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  background: "#121211",
+                  padding: "0.85rem 0.8rem",
                   minWidth: 0,
                 }}
               >
-                <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--accent)", fontWeight: 700, marginBottom: "0.35rem" }}>
+                <div
+                  style={{
+                    fontFamily: MONO,
+                    fontSize: "0.85rem",
+                    color: "var(--accent)",
+                    fontWeight: 700,
+                    marginBottom: "0.45rem",
+                    letterSpacing: "0.06em",
+                  }}
+                >
                   {String(i + 1).padStart(2, "0")}
                 </div>
-                <p style={{ margin: 0, fontSize: "0.76rem", lineHeight: 1.5, color: "var(--text-soft)" }}>{step}</p>
+                <p style={{ margin: 0, fontSize: "0.8125rem", lineHeight: 1.52, color: "rgba(255,255,255,0.62)" }}>{step}</p>
               </div>
             ))}
           </div>
@@ -371,11 +439,11 @@ export default function LandingPage() {
         {/* Doctrine-safe demo verticals — class illustrations only */}
         <section
           style={{
-            borderRadius: 12,
-            border: "1px solid var(--border)",
+            borderRadius: 4,
+            border: "1px solid var(--border-strong)",
             background: "var(--panel-raised)",
-            padding: "1.25rem 1.4rem",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+            padding: "1.35rem 1.45rem",
+            boxShadow: "none",
           }}
         >
           <SectionHeader
@@ -389,7 +457,7 @@ export default function LandingPage() {
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              gap: "1rem",
+              gap: "1.1rem",
               marginTop: "0.5rem",
             }}
           >
@@ -425,11 +493,11 @@ export default function LandingPage() {
               <div
                 key={v.key}
                 style={{
-                  borderRadius: 12,
-                  border: "1px solid var(--border)",
+                  borderRadius: 2,
+                  border: "1px solid var(--border-strong)",
                   background: "var(--panel)",
                   overflow: "hidden",
-                  boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
+                  boxShadow: "none",
                   display: "flex",
                   flexDirection: "column",
                 }}
@@ -449,23 +517,23 @@ export default function LandingPage() {
                     style={{ objectFit: "cover" }}
                   />
                 </div>
-                <div style={{ padding: "0.65rem 0.85rem", borderTop: "1px solid var(--border-soft)", flex: 1 }}>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text)", marginBottom: "0.25rem", fontFamily: MONO }}>{v.label}</div>
-                  <div style={{ fontSize: "0.65rem", color: "var(--text-dim)", fontFamily: MONO, marginBottom: "0.5rem" }}>{v.trace}</div>
-                  <p style={{ margin: "0 0 0.45rem", fontSize: "0.78rem", lineHeight: 1.5, color: "var(--text-soft)" }}>{v.why}</p>
-                  <p style={{ margin: "0 0 0.5rem", fontSize: "0.72rem", lineHeight: 1.5, color: "var(--text-muted)", fontFamily: MONO }}>{v.sep}</p>
+                <div style={{ padding: "0.85rem 0.95rem", borderTop: "1px solid var(--border)", flex: 1 }}>
+                  <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text)", marginBottom: "0.3rem", fontFamily: MONO }}>{v.label}</div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--text-dim)", fontFamily: MONO, marginBottom: "0.55rem", letterSpacing: "0.04em" }}>{v.trace}</div>
+                  <p style={{ margin: "0 0 0.5rem", fontSize: "0.875rem", lineHeight: 1.55, color: "var(--text-soft)" }}>{v.why}</p>
+                  <p style={{ margin: "0 0 0.55rem", fontSize: "0.75rem", lineHeight: 1.52, color: "var(--text-muted)", fontFamily: MONO }}>{v.sep}</p>
                   <Link
                     href="/verifier"
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
                       gap: "0.25rem",
-                      fontSize: "0.7rem",
+                      fontSize: "0.74rem",
                       fontWeight: 600,
                       color: "var(--accent)",
                       textDecoration: "none",
                       fontFamily: MONO,
-                      letterSpacing: "0.04em",
+                      letterSpacing: "0.05em",
                     }}
                   >
                     {m.homeDemoCardCta}
@@ -746,22 +814,33 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Institutional notice — doctrine closure */}
+        {/* Institutional notice — doctrine closure (reinforced; site footer continues below) */}
         <section
           style={{
             marginTop: "0.5rem",
-            borderTop: "1px solid var(--border)",
-            paddingTop: "1rem",
-            paddingBottom: "0.25rem",
+            borderRadius: 2,
+            padding: "1.35rem 1.25rem",
+            background: "var(--panel-card)",
+            border: "1px solid var(--border-strong)",
           }}
         >
-          <p style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-soft)", margin: "0 0 0.45rem", letterSpacing: "0.02em" }}>
+          <p
+            style={{
+              fontSize: "0.82rem",
+              fontWeight: 700,
+              color: "var(--text)",
+              margin: "0 0 0.5rem",
+              letterSpacing: "0.08em",
+              fontFamily: MONO,
+              textTransform: "uppercase",
+            }}
+          >
             {m.footerWitnessLine1}
           </p>
-          <p style={{ fontSize: "0.76rem", color: "var(--text-muted)", maxWidth: 860, lineHeight: 1.65, margin: "0 0 0.55rem" }}>
+          <p style={{ fontSize: "0.875rem", color: "var(--text-soft)", maxWidth: 860, lineHeight: 1.65, margin: "0 0 0.6rem" }}>
             {m.footerWitnessLine2}
           </p>
-          <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", maxWidth: 860, lineHeight: 1.6, margin: 0, opacity: 0.92 }}>
+          <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", maxWidth: 860, lineHeight: 1.62, margin: 0 }}>
             {m.doctrineDisclaimer}
           </p>
         </section>

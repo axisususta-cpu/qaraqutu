@@ -11,31 +11,32 @@ export function FooterDoctrine() {
   return (
     <div
       style={{
-        maxWidth: 1100,
+        maxWidth: 1180,
         margin: "0 auto",
-        padding: "0.65rem 2rem 0",
-        borderTop: "1px solid var(--border-soft)",
-        background: "var(--panel)",
+        padding: "1.35rem 2rem 1.15rem",
+        borderTop: "1px solid #1f1f1d",
+        background: "#0a0a0a",
       }}
     >
       <p
         style={{
           margin: 0,
-          fontSize: "0.72rem",
-          lineHeight: 1.5,
-          color: "var(--text-soft)",
+          fontSize: "0.78rem",
+          lineHeight: 1.45,
+          color: "rgba(255,255,255,0.88)",
           fontFamily: MONO,
-          letterSpacing: "0.02em",
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
         }}
       >
         {m.footerWitnessLine1}
       </p>
       <p
         style={{
-          margin: "0.35rem 0 0",
-          fontSize: "0.68rem",
-          lineHeight: 1.55,
-          color: "var(--text-muted)",
+          margin: "0.5rem 0 0",
+          fontSize: "0.8rem",
+          lineHeight: 1.65,
+          color: "rgba(255,255,255,0.52)",
           maxWidth: 920,
         }}
       >

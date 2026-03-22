@@ -22,20 +22,20 @@ export function ConditionalSiteFooter() {
       <FooterDoctrine />
       <footer
         style={{
-          padding: "0.55rem 2rem 0.85rem",
-          fontSize: "0.66rem",
-          color: "var(--text-muted)",
+          padding: "0.75rem 2rem 1.1rem",
+          fontSize: "0.68rem",
+          color: "rgba(255,255,255,0.45)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           flexWrap: "wrap",
           gap: "0.6rem",
           letterSpacing: "0.05em",
-          borderTop: "1px solid var(--border-soft)",
-          background: "var(--panel)",
+          borderTop: "1px solid #1a1a18",
+          background: "#070706",
         }}
       >
-        <LogoPrimary href="/" height={18} />
+        <LogoPrimary href="/" height={20} variant="onDarkSurface" />
         <span
           style={{ fontFamily: MONO }}
           title={`${webBuildMeta.app} @ ${gitCommitSha} · ${webBuildMeta.buildTime}`}

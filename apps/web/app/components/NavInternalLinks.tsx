@@ -13,10 +13,11 @@ const INTERNAL: { href: string; msgKey: keyof typeof MSG.en }[] = [
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 
-export function NavInternalLinks() {
+export function NavInternalLinks({ surface = "default" }: { surface?: "default" | "darkBar" }) {
   const pathname = usePathname() ?? "";
   const { lang } = useLanguage();
   const m = MSG[lang];
+  const bar = surface === "darkBar";
 
   return (
     <nav
@@ -31,7 +32,14 @@ export function NavInternalLinks() {
         maxWidth: 520,
       }}
     >
-      <span style={{ fontFamily: MONO, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)" }}>
+      <span
+        style={{
+          fontFamily: MONO,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: bar ? "rgba(255,255,255,0.35)" : "var(--text-dim)",
+        }}
+      >
         {m.navInternalStrip}
       </span>
       {INTERNAL.map(({ href, msgKey }) => {
@@ -44,12 +52,12 @@ export function NavInternalLinks() {
             key={href}
             href={linkHref}
             style={{
-              color: isActive ? "var(--text-soft)" : "var(--text-dim)",
+              color: isActive ? (bar ? "rgba(255,255,255,0.92)" : "var(--text-soft)") : bar ? "rgba(255,255,255,0.45)" : "var(--text-dim)",
               textDecoration: "none",
               padding: "0.12rem 0.4rem",
               borderRadius: 4,
-              border: "1px solid var(--border-muted)",
-              background: "var(--panel-card)",
+              border: bar ? "1px solid rgba(255,255,255,0.12)" : "1px solid var(--border-muted)",
+              background: bar ? "rgba(255,255,255,0.05)" : "var(--panel-card)",
               fontFamily: MONO,
               fontSize: "0.62rem",
               letterSpacing: "0.04em",

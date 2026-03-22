@@ -4,9 +4,10 @@ import { useTheme } from "../../lib/ThemeContext";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 
-export function ThemeToggle() {
+export function ThemeToggle({ surface = "default" }: { surface?: "default" | "darkBar" }) {
   const { mode, toggle } = useTheme();
   const isDark = mode === "dark";
+  const bar = surface === "darkBar";
 
   return (
     <button
@@ -19,9 +20,9 @@ export function ThemeToggle() {
         gap: "0.35rem",
         padding: "0.22rem 0.6rem",
         borderRadius: 999,
-        border: "1px solid var(--border)",
-        background: "var(--panel)",
-        color: "var(--text-muted)",
+        border: bar ? "1px solid rgba(255,255,255,0.18)" : "1px solid var(--border)",
+        background: bar ? "rgba(255,255,255,0.06)" : "var(--panel)",
+        color: bar ? "rgba(255,255,255,0.55)" : "var(--text-muted)",
         cursor: "pointer",
         fontSize: "0.74rem",
         fontFamily: MONO,

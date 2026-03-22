@@ -15,19 +15,22 @@ export function ConditionalSiteHeader() {
   const pathname = usePathname() ?? "";
   if (pathname.startsWith("/verifier")) return null;
 
+  const isHome = pathname === "/" || pathname === "";
+  const bar = isHome ? "darkBar" : "default";
+
   return (
     <header
       style={{
-        background: "var(--header-bg)",
-        color: "var(--text)",
-        borderBottom: "1px solid var(--border-soft)",
+        background: isHome ? "#0a0a0a" : "var(--header-bg)",
+        color: isHome ? "#eceae6" : "var(--text)",
+        borderBottom: isHome ? "1px solid #1a1a18" : "1px solid var(--border-soft)",
       }}
     >
       <div
         style={{
-          maxWidth: 1100,
+          maxWidth: 1180,
           margin: "0 auto",
-          padding: "0.85rem 2rem",
+          padding: isHome ? "0.65rem 2rem" : "0.85rem 2rem",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -42,8 +45,8 @@ export function ConditionalSiteHeader() {
             alignItems: "flex-start",
           }}
         >
-          <LogoPrimary href="/" height={36} />
-          <BrandTagline />
+          <LogoPrimary href="/" height={isHome ? 40 : 36} variant={isHome ? "onDarkSurface" : "default"} />
+          <BrandTagline surface={bar === "darkBar" ? "darkBar" : "default"} />
         </div>
         <div
           style={{
@@ -57,18 +60,18 @@ export function ConditionalSiteHeader() {
             aria-label="Primary"
             style={{
               display: "flex",
-              gap: "0.75rem",
+              gap: "0.65rem",
               fontSize: "0.8rem",
               alignItems: "center",
               flexWrap: "wrap",
               justifyContent: "flex-end",
             }}
           >
-            <NavLinks />
-            <LanguageToggle />
-            <ThemeToggle />
+            <NavLinks surface={bar === "darkBar" ? "darkBar" : "default"} />
+            <LanguageToggle surface={bar === "darkBar" ? "darkBar" : "default"} />
+            <ThemeToggle surface={bar === "darkBar" ? "darkBar" : "default"} />
           </nav>
-          <NavInternalLinks />
+          <NavInternalLinks surface={bar === "darkBar" ? "darkBar" : "default"} />
         </div>
       </div>
     </header>

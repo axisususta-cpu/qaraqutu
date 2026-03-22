@@ -13,7 +13,7 @@ const ROUTES: { href: string; msgKey: keyof typeof MSG.en; verifierPrimary?: boo
   { href: "/docs", msgKey: "navDocs" },
 ];
 
-export function NavLinks() {
+export function NavLinks({ surface = "default" }: { surface?: "default" | "darkBar" }) {
   const pathname = usePathname() ?? "";
   const { lang } = useLanguage();
   const m = MSG[lang];
@@ -31,26 +31,32 @@ export function NavLinks() {
         const isVerifierActive = href === "/verifier" && pathname === "/verifier";
         const linkHref = href;
 
+        const dark = surface === "darkBar";
+        const muted = dark ? "rgba(255,255,255,0.5)" : "var(--text-muted)";
+        const text = dark ? "rgba(255,255,255,0.88)" : "var(--text)";
+        const borderSoft = dark ? "rgba(255,255,255,0.12)" : "var(--border-soft)";
+        const borderHi = dark ? "rgba(255,255,255,0.22)" : "var(--border)";
+        const activeBg = dark ? "rgba(212,86,26,0.12)" : "var(--active-bg)";
         return (
           <Link
             key={href}
             href={linkHref}
             style={{
-              color: isVerifierActive ? "var(--accent)" : isActive ? "var(--text)" : "var(--text-muted)",
+              color: isVerifierActive ? "var(--accent)" : isActive ? text : muted,
               textDecoration: "none",
               padding: "0.2rem 0.5rem",
               borderRadius: 999,
               border: isVerifierActive
                 ? "1px solid var(--accent-border)"
                 : isActive
-                ? "1px solid var(--border)"
-                : "1px solid var(--border-soft)",
-              background: isVerifierActive ? "var(--accent-soft)" : isActive ? "var(--active-bg)" : "transparent",
-              fontSize: "0.8rem",
+                ? `1px solid ${borderHi}`
+                : `1px solid ${borderSoft}`,
+              background: isVerifierActive ? "var(--accent-soft)" : isActive ? activeBg : "transparent",
+              fontSize: "0.72rem",
               fontWeight: isVerifierActive ? 600 : isActive ? 500 : 400,
-              fontFamily: isVerifierActive ? MONO : undefined,
-              letterSpacing: isVerifierActive ? "0.08em" : undefined,
-              textTransform: isVerifierActive ? "uppercase" : undefined,
+              fontFamily: dark || isVerifierActive ? MONO : undefined,
+              letterSpacing: isVerifierActive ? "0.08em" : dark ? "0.05em" : undefined,
+              textTransform: isVerifierActive ? "uppercase" : dark ? "uppercase" : "none",
             }}
           >
             {label}

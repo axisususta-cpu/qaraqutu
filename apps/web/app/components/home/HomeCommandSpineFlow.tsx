@@ -20,11 +20,11 @@ export function HomeCommandSpineFlow({ lang }: { lang: Lang }) {
   return (
     <section
       style={{
-        borderRadius: 12,
+        borderRadius: 4,
         border: "1px solid var(--border-strong)",
         background: "var(--panel-raised)",
-        padding: "1.25rem 1.35rem",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+        padding: "1.35rem 1.45rem",
+        boxShadow: "none",
       }}
     >
       <SectionHeader badge={m.homeFlowBandBadge} heading={m.homeFlowBandTitle} />

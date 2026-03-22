@@ -4,15 +4,16 @@ import { useLanguage } from "../../lib/LanguageContext";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 
-export function LanguageToggle() {
+export function LanguageToggle({ surface = "default" }: { surface?: "default" | "darkBar" }) {
   const { lang, setLang } = useLanguage();
+  const dark = surface === "darkBar";
 
   return (
     <div
       style={{
         display: "inline-flex",
         borderRadius: 999,
-        border: "1px solid var(--border)",
+        border: dark ? "1px solid rgba(255,255,255,0.18)" : "1px solid var(--border)",
         overflow: "hidden",
         flexShrink: 0,
       }}
@@ -27,7 +28,7 @@ export function LanguageToggle() {
           style={{
             padding: "0.22rem 0.55rem",
             background: lang === l ? "var(--accent-soft)" : "transparent",
-            color: lang === l ? "var(--accent)" : "var(--text-muted)",
+            color: lang === l ? "var(--accent)" : dark ? "rgba(255,255,255,0.5)" : "var(--text-muted)",
             border: "none",
             cursor: "pointer",
             fontFamily: MONO,
