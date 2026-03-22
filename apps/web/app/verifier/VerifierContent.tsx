@@ -487,6 +487,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       const json = await res.json();
       const items: CanonicalEvent[] = json.items ?? [];
       setEvents(items);
+      if (selectedSystem !== "vehicle") return;
       const vehicleCases = getCanonicalCases("vehicle");
       const requestedId = initialEventId ?? null;
       const fromCanonical =
@@ -500,10 +501,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       if (effectiveId) {
         setSelectedId(effectiveId);
         setSelectedEventId(effectiveId);
+        if (requestedId != null && requestedId === effectiveId) {
+          const canon = getCanonicalCaseByEventId(effectiveId);
+          if (canon) setSelectedScenario(canon.scenarioFrame);
+        }
       }
     }
     load();
-  }, [initialEventId]);
+  }, [initialEventId, selectedSystem]);
 
   // When system changes: reset scenario and event; for vehicle use canonical spine first.
   useEffect(() => {
@@ -518,11 +523,24 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       if (effectiveId) {
         setSelectedId(effectiveId);
         setSelectedEventId(effectiveId);
+        if (requestedId != null && requestedId === effectiveId) {
+          const canon = getCanonicalCaseByEventId(effectiveId);
+          if (canon) setSelectedScenario(canon.scenarioFrame);
+        }
       } else setSelectedId(null);
     } else {
       const cases = getCanonicalCases(selectedSystem);
-      const first = cases[0]?.eventId ?? null;
-      if (first) setSelectedEventId(first);
+      const requestedId = initialEventId ?? null;
+      const inSpine =
+        requestedId && cases.some((c) => c.eventId === requestedId);
+      const effectiveId = inSpine ? requestedId! : cases[0]?.eventId ?? null;
+      if (effectiveId) {
+        setSelectedEventId(effectiveId);
+        if (requestedId != null && requestedId === effectiveId) {
+          const canon = getCanonicalCaseByEventId(effectiveId);
+          if (canon) setSelectedScenario(canon.scenarioFrame);
+        }
+      }
       setSelectedId(null);
     }
   }, [selectedSystem, initialEventId]);
@@ -1477,12 +1495,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               overflowY: "auto",
             }}
           >
-            <div style={{ padding: "0.65rem 0.85rem 2rem" }}>
+            <div style={{ padding: "0.5rem 0.85rem 2rem" }}>
             <div
               style={{
                 borderBottom: "1px solid var(--border-strong)",
-                paddingBottom: "0.5rem",
-                marginBottom: "0.5rem",
+                paddingBottom: "0.4rem",
+                marginBottom: "0.25rem",
               }}
             >
               <div
@@ -1504,9 +1522,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     maxWidth: "100%",
                     wordBreak: "break-all",
                   }}
-                  title={selectedEventCard?.eventId ?? selectedId ?? ""}
+                  title={selectedEventCard?.eventId ?? ""}
                 >
-                  {selectedEventCard?.eventId ?? selectedId ?? "—"}
+                  {selectedEventCard?.eventId ?? "—"}
                 </span>
                 <span
                   style={{
@@ -1519,7 +1537,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   }}
                 >
                   {selectedEventCard?.title ??
-                    selectedCase?.scenarioFrame ??
                     (language === "tr" ? "Paket seçilmedi" : "No package selected")}
                 </span>
                 <span
@@ -1586,11 +1603,40 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               </nav>
             </div>
 
+            <div
+              style={{
+                marginLeft: "-0.85rem",
+                marginRight: "-0.85rem",
+                width: "calc(100% + 1.7rem)",
+                marginBottom: "0.35rem",
+              }}
+            >
+              <ReconstructionViewport
+                language={language}
+                system={selectedSystem}
+                incidentClass={selectedEventCard != null ? selectedCase?.incidentClass ?? null : null}
+                eventId={selectedEventCard != null ? selectedEventCard.eventId ?? selectedId : null}
+                title={selectedEventCard?.title ?? null}
+                verificationState={visibleReviewState}
+              />
+            </div>
+
+            <div
+              id="verifier-inspection-detail-deck"
+              style={{
+                marginTop: "0.2rem",
+                paddingTop: "0.6rem",
+                paddingBottom: "0.25rem",
+                borderTop: "2px solid var(--border-strong)",
+                background: "var(--bg)",
+                scrollMarginTop: "0.75rem",
+              }}
+            >
             <p
               style={{
                 margin: "0 0 0.65rem",
                 fontFamily: SANS,
-                fontSize: "0.92rem",
+                fontSize: "0.8rem",
                 lineHeight: 1.45,
                 color: "var(--text-muted)",
                 borderLeft: "2px solid var(--accent)",
@@ -1600,24 +1646,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               {msg.verifierSubtitle} · {msg.verifierLayering} · {msg.verifierActionBarDoctrineTrace} ·{" "}
               {msg.verifierActionBarDoctrineIssuance}
             </p>
-
-            <ReconstructionViewport
-              language={language}
-              system={selectedSystem}
-              incidentClass={selectedCase?.incidentClass ?? null}
-              eventId={selectedEventCard?.eventId ?? selectedId ?? null}
-              title={selectedEventCard?.title ?? selectedCase?.scenarioFrame ?? null}
-              verificationState={visibleReviewState}
-            />
-
-            <div
-              id="verifier-inspection-detail-deck"
-              style={{
-                marginTop: "0.15rem",
-                paddingTop: "0.55rem",
-                borderTop: "2px solid var(--border-strong)",
-              }}
-            >
             {!selectedEventCard ? (
               <section
                 style={{
