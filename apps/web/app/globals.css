@@ -217,6 +217,19 @@ body {
   .verifier-chassis-grid {
     grid-template-columns: 1fr !important;
   }
+  .verifier-chassis-grid > aside {
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .verifier-chassis-grid > main {
+    max-height: none !important;
+    overflow: visible !important;
+  }
 }
 
 /* ── Protocol document shell — print / filing posture (no PDF engine; layout only) ── */

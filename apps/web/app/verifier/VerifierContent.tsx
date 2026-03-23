@@ -1068,6 +1068,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       <div
         className="verifier-chassis-grid"
         style={{
+          position: "relative",
+          zIndex: 0,
           display: "grid",
           gridTemplateColumns: `${CH.spinePx}px minmax(0, 1fr)`,
           alignItems: "stretch",
@@ -1078,13 +1080,16 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             style={{
               position: "sticky",
               top: CH.topNavPx,
+              zIndex: 20,
+              height: `calc(100vh - ${CH.topNavPx}px)`,
+              minHeight: `calc(100vh - ${CH.topNavPx}px)`,
               alignSelf: "start",
-              maxHeight: `calc(100vh - ${CH.topNavPx}px)`,
               display: "flex",
               flexDirection: "column",
               borderRight: "1px solid var(--border-strong)",
               borderBottom: "1px solid var(--border)",
               background: "var(--panel-raised)",
+              overflowY: "auto",
               overflowX: "hidden",
             }}
             aria-label={language === "tr" ? "Komut omurgası" : "Command spine"}
@@ -1155,10 +1160,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
             <div
               style={{
-                flex: 1,
-                minHeight: 0,
-                overflowY: "auto",
-                overflowX: "hidden",
+                overflow: "visible",
               }}
             >
             <div style={{ padding: "0 0.5rem 0.65rem" }}>
@@ -1634,6 +1636,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
           <main
             style={{
+              position: "relative",
+              zIndex: 1,
               minWidth: 0,
               borderLeft: "1px solid var(--border-muted)",
               background: "var(--bg)",
@@ -1824,6 +1828,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <nav
               aria-label={language === "tr" ? "İnceleme sekmeleri" : "Inspection tabs"}
               style={{
+                position: "relative",
+                zIndex: 2,
                 display: "flex",
                 flexWrap: "wrap",
                 gap: "0.25rem",
@@ -1863,9 +1869,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             {activeReviewTab === "scene" && (
               <div
                 style={{
-                  marginLeft: "-0.85rem",
-                  marginRight: "-0.85rem",
-                  width: "calc(100% + 1.7rem)",
+                  position: "relative",
+                  width: "100%",
+                  maxWidth: "100%",
+                  overflow: "hidden",
                   marginBottom: "0.35rem",
                 }}
               >

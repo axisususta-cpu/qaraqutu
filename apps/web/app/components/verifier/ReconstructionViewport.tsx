@@ -488,6 +488,7 @@ function MetaCluster({
         top: 10,
         right: 10,
         zIndex: 2,
+        pointerEvents: "none",
         minWidth: 118,
         maxWidth: 148,
         padding: "0.4rem 0.45rem",
@@ -609,7 +610,15 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
           borderBottom: "1px solid var(--border-strong)",
         }}
       >
-        <div style={{ position: "absolute", inset: 0, zIndex: 0, padding: "0.35rem 0.55rem" }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            padding: "0.35rem 0.55rem",
+            pointerEvents: "none",
+          }}
+        >
           <div style={{ width: "100%", height: "100%", minHeight: STAGE_MIN_H }}>
             <SceneRenderer kind={scene} language={language} />
           </div>
