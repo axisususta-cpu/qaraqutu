@@ -68,17 +68,130 @@ interface IssuanceRecord {
 
 // Phase 1 mock data scaffolding for future workstation wiring.
 type MockSystemId = "vehicle" | "drone" | "robot";
+type SourceId = "demo_archive" | "connected_device" | "uploaded_package";
 
 const MOCK_SYSTEMS: { id: MockSystemId; label: string }[] = [
-  { id: "vehicle", label: "Vehicle" },
-  { id: "drone", label: "Drone" },
-  { id: "robot", label: "Robot" },
+  { id: "vehicle", label: "Vehicle Pack" },
+  { id: "drone", label: "Drone Pack" },
+  { id: "robot", label: "Robot Pack" },
 ];
 
-/** Scenario options derived from canonical case registry. */
-function getScenariosBySystem(system: MockSystemId): string[] {
-  const cases = getCanonicalCases(system);
-  const set = new Set(cases.map((c) => c.scenarioFrame));
+type DemoPackageDef = {
+  packageKey: string;
+  system: MockSystemId;
+  scenarioClass: string;
+  title: string;
+  summaryTr: string;
+  opContextTr: string;
+  riskBand: "DUSUK" | "ORTA" | "YUKSEK";
+  sceneIdentityTr: string;
+  canonicalIndex: number;
+};
+
+const DEMO_PACKAGES: DemoPackageDef[] = [
+  {
+    packageKey: "veh-school-stop-bypass",
+    system: "vehicle",
+    scenarioClass: "Sinyal ve yol geçiş ihlali",
+    title: "School-Zone Stop-Signal Bypass",
+    summaryTr: "Okul bölgesi stop çizgisinde sinyal/işaret ihlali paterni gözlendi.",
+    opContextTr: "Kentsel şerit, yaya önceliği, düşük hız geçişi.",
+    riskBand: "YUKSEK",
+    sceneIdentityTr: "Şerit · dur çizgisi · kritik geçiş anı",
+    canonicalIndex: 0,
+  },
+  {
+    packageKey: "veh-child-crossing-contact",
+    system: "vehicle",
+    scenarioClass: "Temas ve yaya güvenliği",
+    title: "Urban Child-Crossing Contact",
+    summaryTr: "Kentsel çocuk geçişinde temas anı ve reaksiyon penceresi incelenir.",
+    opContextTr: "Kavşak yaklaşımı, frenleme sırası ve yön değişimi.",
+    riskBand: "YUKSEK",
+    sceneIdentityTr: "Kavşak · temas lokusu · reaksiyon penceresi",
+    canonicalIndex: 1,
+  },
+  {
+    packageKey: "veh-signal-direction-pattern",
+    system: "vehicle",
+    scenarioClass: "Yön ve sinyal uyumu",
+    title: "Signal / Direction Violation Pattern",
+    summaryTr: "Sinyal kullanım düzeni ile yön değişimi arasında ihlal paterni aranır.",
+    opContextTr: "Yol koridoru, manevra ve denetim izi eşleştirmesi.",
+    riskBand: "ORTA",
+    sceneIdentityTr: "Koridor · yön sapması · sinyal-zaman hizası",
+    canonicalIndex: 0,
+  },
+  {
+    packageKey: "drone-wireline-contact",
+    system: "drone",
+    scenarioClass: "Hat koridoru ihlali",
+    title: "Wire-Line Corridor Contact",
+    summaryTr: "İletim hattı koridorunda temas riski ve rota sapması incelenir.",
+    opContextTr: "Koridor takibi, irtifa bandı ve bağlantı kalitesi.",
+    riskBand: "YUKSEK",
+    sceneIdentityTr: "Koridor · irtifa · hat yakınlığı",
+    canonicalIndex: 0,
+  },
+  {
+    packageKey: "drone-airspace-intrusion",
+    system: "drone",
+    scenarioClass: "Saha sınırı ihlali",
+    title: "Protected Airspace Intrusion",
+    summaryTr: "Korunan hava sahasına giriş ve sınır ihlali zinciri değerlendirilir.",
+    opContextTr: "Görev planı, coğrafi sınır ve operatör devri.",
+    riskBand: "YUKSEK",
+    sceneIdentityTr: "Sınır poligonu · ihlal vektörü · dönüş hattı",
+    canonicalIndex: 1,
+  },
+  {
+    packageKey: "drone-uncontrolled-descent",
+    system: "drone",
+    scenarioClass: "Uçuş stabilitesi",
+    title: "Uncontrolled Test-Flight Descent",
+    summaryTr: "Test uçuşunda kontrolsüz alçalma ve bağlantı kaybı penceresi incelenir.",
+    opContextTr: "Rüzgar etkisi, komut gecikmesi ve failsafe geçişi.",
+    riskBand: "ORTA",
+    sceneIdentityTr: "İrtifa düşüşü · link-loss · fail-safe tetikleme",
+    canonicalIndex: 0,
+  },
+  {
+    packageKey: "robot-surgical-drift",
+    system: "robot",
+    scenarioClass: "Hassas yönlendirme sapması",
+    title: "Surgical Guidance Drift",
+    summaryTr: "Hassas yönlendirme görevinde izlenen hat ve gerçek hareket sapması gözlenir.",
+    opContextTr: "Sınır bölgede operatör gözetimi ve hareket zarfı kontrolü.",
+    riskBand: "YUKSEK",
+    sceneIdentityTr: "Çalışma zarfı · sapma eğrisi · güvenlik sınırı",
+    canonicalIndex: 0,
+  },
+  {
+    packageKey: "robot-public-collapse",
+    system: "robot",
+    scenarioClass: "Kamusal stabilite olayı",
+    title: "Public Stability Collapse",
+    summaryTr: "Kamusal bölgede stabilite kaybı ve güvenlik durdurma gecikmesi incelenir.",
+    opContextTr: "İnsan yakınlığı, hız limiti ve operatör devralma penceresi.",
+    riskBand: "YUKSEK",
+    sceneIdentityTr: "Kamusal bölge · denge kaybı · durdurma zinciri",
+    canonicalIndex: 1,
+  },
+  {
+    packageKey: "robot-route-barrier-strike",
+    system: "robot",
+    scenarioClass: "Rota engel çarpması",
+    title: "Route-Following Barrier Strike",
+    summaryTr: "Rota takip modunda engel bariyere temas paterni incelenir.",
+    opContextTr: "Hareket sınırı, çevresel algı ve emniyet durdurma eşiği.",
+    riskBand: "ORTA",
+    sceneIdentityTr: "Rota çizgisi · bariyer temas noktası · güvenlik zarfı",
+    canonicalIndex: 1,
+  },
+];
+
+function getScenarioClassesBySystem(system: MockSystemId): string[] {
+  const set = new Set(DEMO_PACKAGES.filter((p) => p.system === system).map((p) => p.scenarioClass));
   return Array.from(set);
 }
 
@@ -156,8 +269,8 @@ function getIncidentSummary(
       next: language === "tr" ? "Bir olay seçin." : "Select an event.",
     };
   }
-  const whyFromCase = language === "tr" ? selectedCase?.reviewWhyTr : selectedCase?.reviewWhyEn;
-  const nextFromCase = language === "tr" ? selectedCase?.nextStepTr : selectedCase?.nextStepEn;
+  const whyFromCase = undefined;
+  const nextFromCase = undefined;
 
   if (system === "vehicle" && verificationState) {
     return {
@@ -419,14 +532,13 @@ function protocolStatePillStyle(label: string): CSSProperties {
 export function VerifierContent({ initialEventId }: { initialEventId?: string }) {
   const { lang: language, setLang: setLanguage } = useLanguage();
   const { mode, toggle: toggleTheme } = useTheme();
-  const [selectedSystem, setSelectedSystem] = useState<MockSystemId>(() =>
-    resolveInitialSystem(initialEventId)
-  );
+  const [selectedSource, setSelectedSource] = useState<SourceId>("demo_archive");
+  const [selectedSystem, setSelectedSystem] = useState<MockSystemId>(() => resolveInitialSystem(initialEventId));
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [activeSpineSection, setActiveSpineSection] = useState<string>("system");
-  type ReviewTabId = "summary" | "evidence" | "unknownDisputed" | "transcript" | "issuance";
-  const [activeReviewTab, setActiveReviewTab] = useState<ReviewTabId>("summary");
+  const [activeSpineSection, setActiveSpineSection] = useState<string>("source");
+  type ReviewTabId = "scene" | "recorded" | "derived" | "unknownDisputed" | "transcript" | "issuance";
+  const [activeReviewTab, setActiveReviewTab] = useState<ReviewTabId>("scene");
   const [events, setEvents] = useState<CanonicalEvent[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [verificationState, setVerificationState] =
@@ -489,63 +601,33 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       const json = await res.json();
       const items: CanonicalEvent[] = json.items ?? [];
       setEvents(items);
-      if (selectedSystem !== "vehicle") return;
-      const vehicleCases = getCanonicalCases("vehicle");
       const requestedId = initialEventId ?? null;
-      const fromCanonical =
-        requestedId && vehicleCases.some((c) => c.eventId === requestedId)
-          ? requestedId
-          : vehicleCases[0]?.eventId ?? null;
-      const match =
-        requestedId && items.find((ev) => ev.eventId === requestedId);
-      const effectiveId =
-        match ? match.eventId : fromCanonical ?? items[0]?.eventId ?? null;
-      if (effectiveId) {
-        setSelectedId(effectiveId);
-        setSelectedEventId(effectiveId);
-        if (requestedId != null && requestedId === effectiveId) {
-          const canon = getCanonicalCaseByEventId(effectiveId);
-          if (canon) setSelectedScenario(canon.scenarioFrame);
+      if (!requestedId) return;
+      const match = items.find((ev) => ev.eventId === requestedId);
+      if (match) {
+        setSelectedId(match.eventId);
+        setSelectedEventId(match.eventId);
+        const canon = getCanonicalCaseByEventId(match.eventId);
+        if (canon) {
+          setSelectedSource("demo_archive");
+          setSelectedSystem(canon.system as MockSystemId);
+          const pkg = DEMO_PACKAGES.find((p) => p.system === (canon.system as MockSystemId) && getCanonicalCases(canon.system as MockSystemId)[p.canonicalIndex]?.eventId === match.eventId);
+          setSelectedScenario(pkg?.scenarioClass ?? null);
         }
       }
     }
     load();
-  }, [initialEventId, selectedSystem]);
+  }, [initialEventId]);
 
-  // When system changes: reset scenario and event; for vehicle use canonical spine first.
+  // When source/family changes: reset scenario and event; only Demo Archive is active in this local pass.
   useEffect(() => {
     setSelectedScenario(null);
     setSelectedEventId(null);
-    if (selectedSystem === "vehicle") {
-      const cases = getCanonicalCases("vehicle");
-      const requestedId = initialEventId ?? null;
-      const inSpine =
-        requestedId && cases.some((c) => c.eventId === requestedId);
-      const effectiveId = inSpine ? requestedId! : cases[0]?.eventId ?? null;
-      if (effectiveId) {
-        setSelectedId(effectiveId);
-        setSelectedEventId(effectiveId);
-        if (requestedId != null && requestedId === effectiveId) {
-          const canon = getCanonicalCaseByEventId(effectiveId);
-          if (canon) setSelectedScenario(canon.scenarioFrame);
-        }
-      } else setSelectedId(null);
-    } else {
-      const cases = getCanonicalCases(selectedSystem);
-      const requestedId = initialEventId ?? null;
-      const inSpine =
-        requestedId && cases.some((c) => c.eventId === requestedId);
-      const effectiveId = inSpine ? requestedId! : cases[0]?.eventId ?? null;
-      if (effectiveId) {
-        setSelectedEventId(effectiveId);
-        if (requestedId != null && requestedId === effectiveId) {
-          const canon = getCanonicalCaseByEventId(effectiveId);
-          if (canon) setSelectedScenario(canon.scenarioFrame);
-        }
-      }
-      setSelectedId(null);
+    setSelectedId(null);
+    if (selectedSource !== "demo_archive") {
+      return;
     }
-  }, [selectedSystem, initialEventId]);
+  }, [selectedSource, selectedSystem]);
 
   useEffect(() => {
     if (!verificationJustCompleted) return;
@@ -555,25 +637,31 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
   const handleScenarioChange = (scenario: string) => {
     setSelectedScenario(scenario);
-    const casesInScenario = getCanonicalCases(selectedSystem).filter(
-      (c) => c.scenarioFrame === scenario
-    );
-    const first = casesInScenario[0]?.eventId ?? null;
-    setSelectedEventId(first);
-    setSelectedId(first);
+    setSelectedEventId(null);
+    setSelectedId(null);
   };
 
-  // Events visible for the selected scenario only (canonical registry).
-  const displayEvents: EventCard[] = (
-    selectedScenario
-      ? getCanonicalCases(selectedSystem).filter((c) => c.scenarioFrame === selectedScenario)
-      : []
-  ).map((c) => caseToEventCard(c, language));
+  // Demo packages visible for selected scenario class; each package binds to a canonical case identity.
+  const displayEvents: EventCard[] = (selectedScenario
+    ? DEMO_PACKAGES.filter((p) => p.system === selectedSystem && p.scenarioClass === selectedScenario)
+    : []
+  ).map((p) => {
+    const base = getCanonicalCases(selectedSystem)[p.canonicalIndex] ?? getCanonicalCases(selectedSystem)[0];
+    const mapped = caseToEventCard(base, language);
+    return {
+      ...mapped,
+      eventId: base.eventId,
+      title: p.title,
+      summary: `${p.summaryTr} ${language === "tr" ? "Bağlam" : "Context"}: ${p.opContextTr}`,
+      severity: p.riskBand === "YUKSEK" ? "high" : p.riskBand === "ORTA" ? "medium" : "low",
+    };
+  });
 
   const selectedEventCard =
     displayEvents.find((e) => e.eventId === selectedEventId) ?? null;
 
   const selectedCase = selectedEventId ? getCanonicalCaseByEventId(selectedEventId) : null;
+  const selectedPackage = displayEvents.find((e) => e.eventId === selectedEventId) ?? null;
 
   // When user selects an event from cards: set selectedEventId; for Vehicle also set selectedId for API.
   const handleSelectEvent = (eventId: string) => {
@@ -830,14 +918,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   }
 
   const reviewTabs: { id: string; label: string }[] = [
-    { id: "summary", label: language === "tr" ? "Olay Özeti" : "Incident summary" },
-    { id: "evidence", label: language === "tr" ? "Delil Katmanları" : "Evidence layers" },
+    { id: "scene", label: "Sahne" },
+    { id: "recorded", label: "Kayıtlı" },
+    { id: "derived", label: "Türetilmiş" },
     {
       id: "unknownDisputed",
-      label: language === "tr" ? "Tartışmalı / Belirsiz" : "Unknown / disputed",
+      label: "Belirsiz / Tartışmalı",
     },
-    { id: "transcript", label: language === "tr" ? "Doğrulama İzi" : "Verification trace" },
-    { id: "issuance", label: language === "tr" ? "Artefakt" : "Artifact" },
+    { id: "transcript", label: "İz" },
+    { id: "issuance", label: "Artefakt" },
   ];
 
   const canResetVerificationRun =
@@ -850,6 +939,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     !!verificationError;
   const resetRunDisabled =
     !canResetVerificationRun || loading || !!exportLoading;
+  const isPackageSelected = Boolean(selectedId);
+  const isVerificationReady = Boolean(verificationState || verifyIdentityMatchesSelection);
 
   return (
     <div
@@ -1055,8 +1146,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 }}
               >
                 {language === "tr"
-                  ? "1 SİSTEM → 2 SENARYO → 3 OLAY"
-                  : "1 SYSTEM → 2 SCENARIO → 3 EVENT"}
+                  ? "1 KAYNAK → 2 AİLE → 3 SINIF → 4 PAKET"
+                  : "1 SOURCE → 2 FAMILY → 3 CLASS → 4 PACKAGE"}
               </div>
             </div>
 
@@ -1083,19 +1174,24 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             </div>
             {[
               {
-                id: "system",
+                id: "source",
                 step: 1,
-                label: language === "tr" ? "Sistem" : "System",
+                label: language === "tr" ? "Kaynak" : "Source",
+              },
+              {
+                id: "family",
+                step: 2,
+                label: language === "tr" ? "Cihaz ailesi" : "Device family",
               },
               {
                 id: "scenario",
-                step: 2,
-                label: language === "tr" ? "Senaryo" : "Scenario",
+                step: 3,
+                label: language === "tr" ? "Olay sınıfı" : "Incident class",
               },
               {
                 id: "event",
-                step: 3,
-                label: language === "tr" ? "Olay" : "Event",
+                step: 4,
+                label: language === "tr" ? "Olay paketi" : "Event package",
               },
             ].map((section) => {
               const isActive = activeSpineSection === section.id;
@@ -1119,7 +1215,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   <button
                     type="button"
                     onClick={() => {
-                      setActiveSpineSection(section.id);
+                      setActiveSpineSection((prev) => (prev === section.id ? "" : section.id));
                     }}
                     style={{
                       width: "100%",
@@ -1176,7 +1272,39 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontSize: "0.86rem",
                       }}
                     >
-                      {section.id === "system" && (
+                      {section.id === "source" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                          {[
+                            { id: "demo_archive" as const, tr: "Demo Arşivi", en: "Demo Archive", active: true },
+                            { id: "connected_device" as const, tr: "Bağlı Cihaz", en: "Connected Device", active: false },
+                            { id: "uploaded_package" as const, tr: "Yüklenen Paket", en: "Uploaded Package", active: false },
+                          ].map((src) => (
+                            <button
+                              key={src.id}
+                              type="button"
+                              onClick={() => {
+                                if (!src.active) return;
+                                setSelectedSource(src.id);
+                              }}
+                              style={{
+                                padding: "0.35rem 0.5rem",
+                                textAlign: "left",
+                                borderRadius: 4,
+                                border: selectedSource === src.id ? "1px solid var(--accent)" : "1px solid var(--border)",
+                                background: selectedSource === src.id ? "var(--accent-soft)" : "transparent",
+                                color: src.active ? "var(--text)" : "var(--text-dim)",
+                                cursor: src.active ? "pointer" : "not-allowed",
+                                fontSize: "0.9rem",
+                                opacity: src.active ? 1 : 0.7,
+                              }}
+                            >
+                              {language === "tr" ? src.tr : src.en}
+                              {!src.active ? ` · ${language === "tr" ? "Sınırlı" : "Bounded"}` : ""}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {section.id === "family" && (
                         <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                           {MOCK_SYSTEMS.map((sys) => (
                             <button
@@ -1200,14 +1328,20 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 fontSize: "0.92rem",
                               }}
                             >
-                              {sys.label}
+                              {language === "tr"
+                                ? sys.id === "vehicle"
+                                  ? "Vehicle Pack"
+                                  : sys.id === "drone"
+                                  ? "Drone Pack"
+                                  : "Robot Pack"
+                                : sys.label}
                             </button>
                           ))}
                         </div>
                       )}
                       {section.id === "scenario" && (
                         <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                          {(getScenariosBySystem(selectedSystem)).map((name) => (
+                          {getScenarioClassesBySystem(selectedSystem).map((name) => (
                             <button
                               key={name}
                               type="button"
@@ -1289,7 +1423,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "space-between",
-                                    padding: "0.45rem 0.6rem 0.3rem",
+                                    padding: "0.36rem 0.52rem 0.28rem",
                                     borderBottom: `1px solid ${isSelected ? "var(--border)" : "var(--border-muted)"}`,
                                     background: isSelected ? "var(--panel-raised)" : "var(--panel)",
                                   }}
@@ -1314,22 +1448,19 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                     style={{
                                       ...protocolStatePillStyle(protocolLabel),
                                       flexShrink: 0,
-                                      marginLeft: "0.4rem",
-                                      minWidth: "5.5rem",
-                                      padding: "0.28rem 0.5rem",
-                                      fontSize: "0.74rem",
+                                      marginLeft: "0.32rem",
+                                      minWidth: "4.6rem",
+                                      padding: "0.2rem 0.38rem",
+                                      fontSize: "0.68rem",
                                     }}
                                   >
                                     {protocolLabel}
                                   </span>
                                 </div>
                                 {/* card row 2: title + summary */}
-                                <div style={{ padding: "0.35rem 0.6rem 0.45rem" }}>
-                                  <div style={{ fontSize: "0.84rem", color: isSelected ? "var(--text-soft)" : "var(--text-muted)", fontWeight: isSelected ? 500 : 400, marginBottom: "0.15rem", lineHeight: 1.35 }}>
+                                <div style={{ padding: "0.3rem 0.52rem 0.34rem" }}>
+                                  <div style={{ fontSize: "0.82rem", color: isSelected ? "var(--text-soft)" : "var(--text-muted)", fontWeight: isSelected ? 600 : 500, marginBottom: 0, lineHeight: 1.3 }}>
                                     {ev.title}
-                                  </div>
-                                  <div style={{ fontFamily: SANS, fontSize: "0.76rem", color: "var(--text-dim)", lineHeight: 1.4 }}>
-                                    {ev.summary.slice(0, 52)}{ev.summary.length > 52 ? "…" : ""}
                                   </div>
                                 </div>
                               </button>
@@ -1367,13 +1498,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   textTransform: "uppercase",
                 }}
               >
-                {language === "tr" ? "Eylem alanı" : "Actions"}
+                {language === "tr" ? "Eylem hiyerarşisi" : "Action hierarchy"}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                 <button
                   type="button"
                   onClick={runVerification}
-                  disabled={!selectedId || loading}
+                  disabled={!isPackageSelected || loading}
                   style={{
                     fontFamily: MONO,
                     fontSize: "0.78rem",
@@ -1383,8 +1514,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     border: loading ? "1px solid var(--border-strong)" : "1px solid var(--accent)",
                     background: loading ? "var(--panel-card)" : "var(--accent-soft)",
                     color: "var(--text)",
-                    cursor: loading ? "wait" : !selectedId ? "not-allowed" : "pointer",
-                    opacity: !selectedId ? 0.55 : 1,
+                    cursor: loading ? "wait" : !isPackageSelected ? "not-allowed" : "pointer",
+                    opacity: !isPackageSelected ? 0.55 : 1,
                     fontWeight: 700,
                     width: "100%",
                     textAlign: "center",
@@ -1394,6 +1525,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     ? language === "tr"
                       ? "DOĞRULANIYOR…"
                       : "VERIFYING…"
+                    : !isPackageSelected
+                    ? language === "tr"
+                      ? "Demo olayı aç / Paket seç"
+                      : "Open demo event / Select package"
                     : language === "tr"
                     ? "OLAYI DOĞRULA"
                     : "VERIFY PACKAGE"}
@@ -1402,7 +1537,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   <button
                     type="button"
                     onClick={runExportJson}
-                    disabled={!selectedId || !!exportLoading}
+                    disabled={!isVerificationReady || !!exportLoading}
                     style={{
                       fontFamily: MONO,
                       fontSize: "0.74rem",
@@ -1411,8 +1546,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       border: "1px solid var(--border)",
                       background: "var(--panel-card)",
                       color: "var(--text)",
-                      cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
-                      opacity: !selectedId || exportLoading ? 0.55 : 1,
+                      cursor: !isVerificationReady || exportLoading ? "not-allowed" : "pointer",
+                      opacity: !isVerificationReady || exportLoading ? 0.55 : 1,
                       fontWeight: 600,
                       width: "100%",
                     }}
@@ -1422,13 +1557,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         ? "JSON…"
                         : "JSON…"
                       : language === "tr"
-                      ? "BOUNDED JSON"
-                      : "BOUNDED JSON"}
+                      ? "JSON dışa aktar"
+                      : "Export JSON"}
                   </button>
                   <button
                     type="button"
                     onClick={runExportPdf}
-                    disabled={!selectedId || !!exportLoading}
+                    disabled={!isVerificationReady || !!exportLoading}
                     style={{
                       fontFamily: MONO,
                       fontSize: "0.74rem",
@@ -1437,8 +1572,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       border: "1px solid var(--border)",
                       background: "var(--panel-card)",
                       color: "var(--text)",
-                      cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
-                      opacity: !selectedId || exportLoading ? 0.55 : 1,
+                      cursor: !isVerificationReady || exportLoading ? "not-allowed" : "pointer",
+                      opacity: !isVerificationReady || exportLoading ? 0.55 : 1,
                       fontWeight: 600,
                       width: "100%",
                     }}
@@ -1448,8 +1583,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         ? "PDF…"
                         : "PDF…"
                       : language === "tr"
-                      ? "BOUNDED PDF"
-                      : "BOUNDED PDF"}
+                      ? "PDF dışa aktar"
+                      : "Export PDF"}
                   </button>
                 </div>
                 <button
@@ -1478,10 +1613,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 style={{
                   margin: "0.45rem 0 0",
                   fontFamily: MONO,
-                  fontSize: "0.65rem",
+                  fontSize: "0.58rem",
                   letterSpacing: "0.03em",
                   color: "var(--text-dim)",
-                  lineHeight: 1.4,
+                  lineHeight: 1.25,
+                  opacity: 0.62,
                 }}
               >
                 {msg.verifierActionBarDoctrineTrace} · {msg.verifierActionBarDoctrineIssuance}
@@ -1608,6 +1744,31 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
               </div>
             </div>
+            {selectedPackage ? (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                  gap: "0.4rem",
+                  padding: "0.15rem 0 0.5rem",
+                }}
+              >
+                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.4rem 0.55rem" }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", marginBottom: "0.15rem", letterSpacing: "0.1em" }}>BAĞLAM</div>
+                  <div style={{ fontSize: "0.84rem", color: "var(--text-soft)", lineHeight: 1.45 }}>{selectedPackage.summary}</div>
+                </div>
+                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.4rem 0.55rem" }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", marginBottom: "0.15rem", letterSpacing: "0.1em" }}>OPERASYON</div>
+                  <div style={{ fontSize: "0.84rem", color: "var(--text-soft)", lineHeight: 1.45 }}>{selectedPackage.title}</div>
+                </div>
+                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.4rem 0.55rem" }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", marginBottom: "0.15rem", letterSpacing: "0.1em" }}>KRİTİK AN</div>
+                  <div style={{ fontSize: "0.84rem", color: "var(--text-soft)", lineHeight: 1.45 }}>
+                    {language === "tr" ? "Doğrulama öncesi ayrım: kayıtlı/türetilmiş + iz zinciri" : "Pre-verify split: recorded/derived + trace chain"}
+                  </div>
+                </div>
+              </div>
+            ) : null}
             <nav
               aria-label={language === "tr" ? "İnceleme sekmeleri" : "Inspection tabs"}
               style={{
@@ -1647,23 +1808,25 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               })}
             </nav>
 
-            <div
-              style={{
-                marginLeft: "-0.85rem",
-                marginRight: "-0.85rem",
-                width: "calc(100% + 1.7rem)",
-                marginBottom: "0.35rem",
-              }}
-            >
-              <ReconstructionViewport
-                language={language}
-                system={selectedSystem}
-                incidentClass={selectedEventCard != null ? selectedCase?.incidentClass ?? null : null}
-                eventId={selectedEventCard != null ? selectedEventCard.eventId ?? selectedId : null}
-                title={selectedEventCard?.title ?? null}
-                verificationState={visibleReviewState}
-              />
-            </div>
+            {activeReviewTab === "scene" && (
+              <div
+                style={{
+                  marginLeft: "-0.85rem",
+                  marginRight: "-0.85rem",
+                  width: "calc(100% + 1.7rem)",
+                  marginBottom: "0.35rem",
+                }}
+              >
+                <ReconstructionViewport
+                  language={language}
+                  system={selectedSystem}
+                  incidentClass={selectedEventCard != null ? selectedCase?.incidentClass ?? null : null}
+                  eventId={selectedEventCard != null ? selectedEventCard.eventId ?? selectedId : null}
+                  title={selectedEventCard?.title ?? null}
+                  verificationState={visibleReviewState}
+                />
+              </div>
+            )}
 
             <div
               id="verifier-inspection-detail-deck"
@@ -1677,22 +1840,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 minHeight: "12rem",
               }}
             >
-            {activeReviewTab === "summary" && (
+            {activeReviewTab === "scene" && (
             <>
-            <p
-              style={{
-                margin: "0 0 0.65rem",
-                fontFamily: SANS,
-                fontSize: "0.8rem",
-                lineHeight: 1.45,
-                color: "var(--text-muted)",
-                borderLeft: "2px solid var(--accent)",
-                paddingLeft: "0.5rem",
-              }}
-            >
-              {msg.verifierSubtitle} · {msg.verifierLayering} · {msg.verifierActionBarDoctrineTrace} ·{" "}
-              {msg.verifierActionBarDoctrineIssuance}
-            </p>
             {!selectedEventCard ? (
               <section
                 style={{
@@ -1724,7 +1873,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
             {/* 0) Demo scenario notice */}
             {selectedCase && (
-              <section style={{ marginBottom: UI.sectionGap }} aria-label={language === "tr" ? "Demo senaryosu bildirimi" : "Demo scenario notice"}>
+              <section style={{ marginBottom: UI.sectionGap, display: "none" }} aria-label={language === "tr" ? "Demo senaryosu bildirimi" : "Demo scenario notice"}>
                 <div
                   style={{
                     borderRadius: UI.radius.xs,
@@ -1755,7 +1904,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             )}
 
             {/* Identity chain */}
-            <section id="verifier-panel-identity" style={{ marginBottom: UI.sectionGap }}>
+            <section id="verifier-panel-identity" style={{ marginBottom: UI.sectionGap, display: "none" }}>
               <div
                 style={{
                   border: "1px solid var(--border-strong)",
@@ -1830,7 +1979,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             </section>
 
             {/* Incident summary — tab anchor */}
-            <section id="verifier-panel-summary" style={{ marginBottom: UI.sectionGap }}>
+            <section id="verifier-panel-summary" style={{ marginBottom: UI.sectionGap, display: "none" }}>
               <div
                 style={{
                   border: "1px solid var(--border-strong)",
@@ -2034,28 +2183,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             </>
             )}
 
-            {activeReviewTab === "evidence" && (
+            {(activeReviewTab === "recorded" || activeReviewTab === "derived") && (
             <>
             {/* Evidence layers */}
             <section id="verifier-panel-evidence" style={{ marginBottom: UI.sectionGap }}>
-              <div
-                style={{
-                  padding: "0.4rem 0.6rem",
-                  marginBottom: "0.55rem",
-                  background: "var(--panel-raised)",
-                  border: "1px solid var(--border-strong)",
-                  borderRadius: 2,
-                  fontFamily: SANS,
-                  fontSize: "0.92rem",
-                  lineHeight: 1.5,
-                  color: "var(--text-muted)",
-                }}
-              >
-                {msg.verifierLayerDisciplineNote}
-              </div>
               {selectedEventCard ? (
-                <div className="verifier-evidence-split">
+                <div className="verifier-evidence-split" style={{ gridTemplateColumns: "1fr" }}>
                   {/* A. Recorded Evidence */}
+                  {activeReviewTab === "recorded" && (
                   <div
                     style={{
                       border: "1px solid var(--border-strong)",
@@ -2150,7 +2285,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       })()}
                     </div>
                   </div>
+                  )}
                   {/* B. Derived Evidence */}
+                  {activeReviewTab === "derived" && (
                   <div
                     style={{
                       border: "1px solid var(--border-strong)",
@@ -2230,6 +2367,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       })()}
                     </div>
                   </div>
+                  )}
                 </div>
               ) : (
                 <div
@@ -2737,58 +2875,32 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             {/* 7) Verification / export flow */}
             <section style={{ marginBottom: UI.sectionGap }}>
               {selectedEventCard && (
-                <div style={{ fontSize: "0.88rem", color: "var(--text-muted)", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <div style={{ fontSize: "0.84rem", color: "var(--text-muted)", marginBottom: "0.4rem", display: "flex", alignItems: "center", gap: "0.45rem" }}>
                   <span>{language === "tr" ? "Seçili:" : "Selected:"}</span>
-                  <span style={{ fontWeight: 700, color: "var(--text-soft)", fontFamily: "monospace", fontSize: "0.86rem" }}>{selectedEventCard.eventId}</span>
+                  <span style={{ fontWeight: 700, color: "var(--text-soft)", fontFamily: "monospace", fontSize: "0.8rem" }}>{selectedEventCard.eventId}</span>
                   <span style={{ color: "var(--text-dim)" }}>— {selectedEventCard.title}</span>
                 </div>
               )}
               {selectedCase && (() => {
                 const gate = evaluateGoldenAcceptance(selectedCase);
                 return (
-                  <div style={{ fontSize: "0.92rem", color: "var(--text-dim)", marginBottom: "0.5rem" }}>
+                  <div style={{ fontSize: "0.84rem", color: "var(--text-dim)", marginBottom: "0.35rem" }}>
                     {language === "tr" ? "Golden kabul:" : "Golden acceptance:"} {gate.passed}/{gate.total}
                   </div>
                 );
               })()}
               <>
-                  <div style={{ fontSize: "0.8125rem", opacity: 0.65, marginBottom: "0.25rem" }}>
-                    {language === "tr" ? "Yedek: açılır menü ile olay seçimi" : "Fallback: select event by dropdown"}
-                  </div>
-                  <select
-                    value={selectedId ?? ""}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setSelectedId(v);
-                      setSelectedEventId(v);
-                    }}
-                    style={{
-                      marginTop: "0.5rem",
-                      padding: "0.4rem 0.6rem",
-                      background: "var(--panel)",
-                      color: "var(--text)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 4,
-                      fontSize: "0.95rem",
-                    }}
-                  >
-                    {displayEvents.map((ev) => (
-                      <option key={ev.eventId} value={ev.eventId}>
-                        {ev.title} — {ev.eventId}
-                      </option>
-                    ))}
-                  </select>
-                  <div style={{ marginTop: "0.75rem" }}>
+                  <div style={{ marginTop: "0.45rem" }}>
                     <p style={{ margin: "0 0 0.35rem", fontSize: "0.84rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
                       {language === "tr"
-                        ? "Paket doğrulaması ve sınırlı dışa aktarım sol omurgadaki eylem alanından yürütülür."
-                        : "Package verification and bounded export run from the action area in the left spine."}
+                        ? "Dışa aktarım eylemleri soldaki omurgada doğrulama durumuna bağlı açılır."
+                        : "Export actions in the left spine open only when verification state is ready."}
                     </p>
                     <div
                       style={{
                         marginTop: "0.4rem",
-                        fontSize: "0.875rem",
-                        opacity: 0.9,
+                        fontSize: "0.82rem",
+                        opacity: 0.86,
                       }}
                     >
                       {loading && (language === "tr" ? "İşleniyor — sonuç aşağıda güncellenecek." : "Processing — result will update below.")}
@@ -2806,7 +2918,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
             {/* AXISUS — boundary protocol; secondary to doctrine spine */}
             {selectedCase?.axisusStates?.length ? (
-              <section style={{ marginTop: "1rem" }} aria-label="AXISUS">
+              <section style={{ marginTop: "0.6rem", display: "none" }} aria-label="AXISUS">
                 <div
                   style={{
                     fontSize: "0.92rem",
@@ -2876,34 +2988,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               >
                 {msg.verifierArtifactIssuanceHeader}
               </div>
-              <div
-                style={{
-                  fontFamily: MONO,
-                  fontSize: "0.74rem",
-                  color: "var(--text-dim)",
-                  marginBottom: "0.75rem",
-                  lineHeight: 1.6,
-                  padding: "0.4rem 0.75rem",
-                  background: "var(--panel-card)",
-                  borderRadius: UI.radius.xs,
-                  border: `1px solid ${"var(--border-muted)"}`,
-                }}
-              >
-                {msg.verifierIssuancePanelLead}
-              </div>
-              <div
-                style={{
-                  marginBottom: "0.75rem",
-                  padding: "0.55rem 0.75rem",
-                  borderRadius: UI.radius.xs,
-                  border: `1px dashed ${"var(--border-strong)"}`,
-                  background: "var(--accent-soft)",
-                  fontSize: "0.84rem",
-                  lineHeight: 1.55,
-                  color: "var(--text-soft)",
-                }}
-              >
-                {msg.verifierIssuanceDependencyBanner}
+              <div style={{ marginBottom: "0.6rem", fontFamily: MONO, fontSize: "0.7rem", color: "var(--text-dim)", opacity: 0.88 }}>
+                {language === "tr"
+                  ? "Artefakt yüzeyi yalnızca doğrulama hazır olduğunda aktifleşir."
+                  : "Artifact surface activates only when verification is ready."}
               </div>
               {!selectedCase ? (
                 <div
@@ -2930,20 +3018,20 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
               ) : selectedCase.artifactProfiles && selectedCase.artifactProfiles.length > 0 ? (
                 <div style={{ border: "1px solid var(--border)", borderRadius: 6, padding: "1rem", background: "var(--panel-raised)" }}>
-                  <p style={{ fontSize: "0.84rem", color: "var(--text-muted)", marginBottom: "0.75rem" }}>
+                  <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "0.55rem" }}>
                     {language === "tr"
                       ? "Bu çıktı nihai hukukî veya olgusal hüküm değildir. Issuance kullanılabilirliği, gerçeklik iddiası anlamına gelmez."
                       : "This output is not a final legal or factual determination. Issuance availability does not imply a truth claim."}
                   </p>
                     <div
                       style={{
-                        marginBottom: "0.85rem",
-                        padding: "0.65rem 0.75rem",
+                        marginBottom: "0.6rem",
+                        padding: "0.5rem 0.62rem",
                         border: "1px solid var(--border)",
-                        borderRadius: 6,
+                        borderRadius: 4,
                         background: "var(--panel-card)",
-                        fontSize: "0.88rem",
-                        lineHeight: 1.5,
+                        fontSize: "0.82rem",
+                        lineHeight: 1.4,
                         color: "var(--text)",
                       }}
                     >
@@ -2967,23 +3055,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         : "The receipt/export path is intentionally withheld for this case because no API-backed issuance path is connected."}
                     </div>
                   </div>
-                    <div
-                      style={{
-                        marginBottom: "0.75rem",
-                        padding: "0.4rem 0.75rem",
-                        fontFamily: MONO,
-                        fontSize: "0.72rem",
-                        letterSpacing: "0.08em",
-                        color: "var(--text-dim)",
-                        background: "var(--panel-card)",
-                        borderRadius: UI.radius.xs,
-                        border: `1px solid ${"var(--border-muted)"}`,
-                        lineHeight: 1.5,
-                      }}
-                    >
+                    <div style={{ marginBottom: "0.5rem", fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", opacity: 0.85 }}>
                       {language === "tr"
-                        ? "Trace’e bağlı artifact · Rol sınırlı çıktı · Nihai hüküm değildir."
-                        : "Trace-linked artifact · Role-bound output · Not a determination."}
+                        ? "İz bağlı · rol sınırlı · hüküm değil"
+                        : "Trace-bound · role-bounded · not a verdict"}
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                     {selectedCase.artifactProfiles.map((ap) => {
