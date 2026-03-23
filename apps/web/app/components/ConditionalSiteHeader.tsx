@@ -6,7 +6,6 @@ import { LogoPrimary } from "./LogoPrimary";
 import { ThemeToggle } from "./ThemeToggle";
 import { LanguageToggle } from "./LanguageToggle";
 import { BrandTagline } from "./BrandTagline";
-import { NavInternalLinks } from "./NavInternalLinks";
 
 /**
  * Full site header hidden on verifier routes so the inspection chassis owns vertical chrome.
@@ -51,9 +50,9 @@ export function ConditionalSiteHeader() {
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
+            flexDirection: "row",
             alignItems: "flex-end",
-            gap: "0.35rem",
+            gap: "0.55rem",
           }}
         >
           <nav
@@ -71,7 +70,6 @@ export function ConditionalSiteHeader() {
             <LanguageToggle surface={bar === "darkBar" ? "darkBar" : "default"} />
             <ThemeToggle surface={bar === "darkBar" ? "darkBar" : "default"} />
           </nav>
-          <NavInternalLinks surface={bar === "darkBar" ? "darkBar" : "default"} />
         </div>
       </div>
     </header>

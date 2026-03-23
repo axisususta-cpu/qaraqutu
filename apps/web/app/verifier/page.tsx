@@ -15,17 +15,19 @@ function LoadingFallback() {
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ marginBottom: "1rem" }}>
           <div style={{ fontSize: "0.75rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)" }}>
-            Verifier
+            Doğrulayıcı
           </div>
-          <h1 style={{ fontSize: "1.4rem", margin: 0 }}>Event Package Verification</h1>
+          <h1 style={{ fontSize: "1.4rem", margin: 0 }}>Olay Paketi Doğrulaması</h1>
           <p style={{ fontSize: "0.8rem", color: "var(--text-soft)", marginTop: "0.25rem" }}>
-            A bounded assessment of the referenced event package.
+            Referans verilen olay paketi için sınırlı inceleme yüzeyi.
           </p>
         </div>
         <div style={{ display: "flex", alignItems: "flex-start", gap: "1.5rem" }}>
           <aside style={{ width: 280, borderRight: "1px solid var(--border)", paddingRight: "1rem" }}>
-            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>Command Spine</div>
-            <div style={{ padding: "0.5rem 0", fontSize: "0.8rem", color: "var(--text-soft)" }}>System → Scenario → Event</div>
+            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>Komut omurgası</div>
+            <div style={{ padding: "0.5rem 0", fontSize: "0.8rem", color: "var(--text-soft)" }}>
+              Kaynak → Cihaz ailesi → Olay sınıfı → Olay paketi
+            </div>
           </aside>
           <main style={{ flex: 1 }}>
             <div style={{ border: "1px solid var(--border)", borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.8rem", color: "var(--text-muted)", minHeight: 120 }} aria-hidden="true" />

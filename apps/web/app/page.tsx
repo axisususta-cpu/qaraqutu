@@ -586,19 +586,19 @@ export default function LandingPage() {
             </div>
             <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
               <li>
-                <strong>Claims</strong>{" "}
+                <strong>{lang === "tr" ? "Hasar" : "Claims"}</strong>{" "}
                 {lang === "tr"
                   ? "kanonik referanslara bağlı, uyuşmazlık-odaklı kısa özetler alır."
                   : "receives concise dispute-ready summaries tied to canonical references."}
               </li>
               <li>
-                <strong>Legal</strong>{" "}
+                <strong>{lang === "tr" ? "Hukuk" : "Legal"}</strong>{" "}
                 {lang === "tr"
                   ? "manifest, makbuz ve provenans çerçevesiyle zincir-merkezli artefaktlar alır."
                   : "receives chain-centric artifacts with manifest, receipt, and provenance framing."}
               </li>
               <li>
-                <strong>Technical</strong>{" "}
+                <strong>{lang === "tr" ? "Teknik" : "Technical"}</strong>{" "}
                 {lang === "tr"
                   ? "kanonik olay nesnesi ve kanıt ayrımı omurgasına bağlı kalır."
                   : "remains anchored to the canonical event object and evidence separation."}
@@ -646,13 +646,13 @@ export default function LandingPage() {
             </p>
             <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
               <li>
-                <strong>{lang === "tr" ? "Claims pack:" : "Claims pack:"}</strong>{" "}
+              <strong>{lang === "tr" ? "Hasar paketi:" : "Claims pack:"}</strong>{" "}
                 {lang === "tr"
                   ? "hasar inceleme duruşu için JSON/PDF artifact ailesi."
                   : "JSON/PDF artifact family for claims review posture."}
               </li>
               <li>
-                <strong>{lang === "tr" ? "Legal pack:" : "Legal pack:"}</strong>{" "}
+              <strong>{lang === "tr" ? "Hukuk paketi:" : "Legal pack:"}</strong>{" "}
                 {lang === "tr"
                   ? "açık zincir ve provenans çerçevesi taşıyan JSON/PDF artifact ailesi."
                   : "JSON/PDF artifact family with explicit chain and provenance framing."}
@@ -729,34 +729,22 @@ export default function LandingPage() {
           <SectionHeader badge={lang === "tr" ? "Y\u00fczeyler" : "Surfaces"} heading={m.sectionProductSurfaces} />
           <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", marginTop: 0 }}>
             <li>
-              <strong>Verifier</strong>{" "}
+              <strong>{lang === "tr" ? "Doğrulayıcı" : "Verifier"}</strong>{" "}
               {lang === "tr"
                 ? "- birincil inceleme istasyonu; kanonik olay denetimi ve sınırlı doğrulama zinciri."
                 : "- primary review station; canonical event inspection and bounded verification chain."}
             </li>
             <li>
-              <strong>Golden</strong>{" "}
-              {lang === "tr"
-                ? "- doğrulayıcı sürekliliği için dahili kalite/rubrik yüzeyi; ayrı bir birincil ürün değildir."
-                : "- internal quality reference and rubric surface for verifier continuity; not a separate primary product."}
-            </li>
-            <li>
-              <strong>Console</strong>{" "}
-              {lang === "tr"
-                ? "- kontrollü protokol kabuğu hazırlığı için ayrılmış yüzey; aktif yürütme değildir."
-                : "- reserved shell for controlled protocol shell preparation and future bounded operator surface; not active execution."}
-            </li>
-            <li>
-              <strong>Docs</strong>{" "}
+              <strong>{lang === "tr" ? "Belgeler" : "Docs"}</strong>{" "}
               {lang === "tr"
                 ? "- uygulama hizalaması için protokol ve API çerçevesi."
                 : "- protocol and API framing for implementation alignment."}
             </li>
             <li>
-              <strong>Admin / diagnostics</strong>{" "}
+              <strong>{lang === "tr" ? "Erişim" : "Access"}</strong>{" "}
               {lang === "tr"
-                ? "- ortam ve doğrulama sağlığı için yalnız tanılama çalışma yüzeyi."
-                : "- diagnostics-only workbench for environment and verification health."}
+                ? "- korumalı yüzeylere geçiş için yetkili erişim kapısı."
+                : "- authorization gate for protected surfaces."}
             </li>
           </ul>
           <div style={{ marginTop: "0.75rem", display: "flex", flexWrap: "wrap", gap: "0.6rem", fontSize: "0.8rem" }}>
@@ -769,27 +757,7 @@ export default function LandingPage() {
                 background: "var(--accent-soft)",
               }}
             >
-              {lang === "tr" ? "Doğrulayıcı (birincil)" : "Verifier (primary)"}
-            </span>
-            <span
-              style={{
-                padding: "0.35rem 0.8rem",
-                borderRadius: 999,
-                border: "1px solid var(--border)",
-                color: "var(--text-soft)",
-              }}
-            >
-              {lang === "tr" ? "Golden (dahili referans)" : "Golden (internal reference)"}
-            </span>
-            <span
-              style={{
-                padding: "0.35rem 0.8rem",
-                borderRadius: 999,
-                border: "1px solid var(--border)",
-                color: "var(--text-soft)",
-              }}
-            >
-              {lang === "tr" ? "Konsol (ayrılmış hazırlık kabuğu)" : "Console (reserved preparation shell)"}
+              {lang === "tr" ? "Doğrulayıcı" : "Verifier"}
             </span>
             <span
               style={{
@@ -809,41 +777,11 @@ export default function LandingPage() {
                 color: "var(--text-soft)",
               }}
             >
-              {lang === "tr" ? "Admin (yalnız tanılama)" : "Admin (diagnostics-only)"}
+              {lang === "tr" ? "Erişim" : "Access"}
             </span>
           </div>
         </section>
 
-        {/* Institutional notice — doctrine closure (reinforced; site footer continues below) */}
-        <section
-          style={{
-            marginTop: "0.5rem",
-            borderRadius: 2,
-            padding: "1.35rem 1.25rem",
-            background: "var(--panel-card)",
-            border: "1px solid var(--border-strong)",
-          }}
-        >
-          <p
-            style={{
-              fontSize: "0.82rem",
-              fontWeight: 700,
-              color: "var(--text)",
-              margin: "0 0 0.5rem",
-              letterSpacing: "0.08em",
-              fontFamily: MONO,
-              textTransform: "uppercase",
-            }}
-          >
-            {m.footerWitnessLine1}
-          </p>
-          <p style={{ fontSize: "0.875rem", color: "var(--text-soft)", maxWidth: 860, lineHeight: 1.65, margin: "0 0 0.6rem" }}>
-            {m.footerWitnessLine2}
-          </p>
-          <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)", maxWidth: 860, lineHeight: 1.62, margin: 0 }}>
-            {m.doctrineDisclaimer}
-          </p>
-        </section>
       </div>
     </main>
   );

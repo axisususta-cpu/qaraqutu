@@ -11,6 +11,7 @@ const ROUTES: { href: string; msgKey: keyof typeof MSG.en; verifierPrimary?: boo
   { href: "/", msgKey: "navHome" },
   { href: "/verifier", msgKey: "navVerifier", verifierPrimary: true },
   { href: "/docs", msgKey: "navDocs" },
+  { href: "/access", msgKey: "navAccess" },
 ];
 
 export function NavLinks({ surface = "default" }: { surface?: "default" | "darkBar" }) {

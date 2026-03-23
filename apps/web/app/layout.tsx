@@ -32,7 +32,6 @@ export const metadata = {
   manifest: "/manifest.json",
 };
 
-const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
 export default function RootLayout({
@@ -41,7 +40,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const gitCommitSha = webBuildMeta.commitSha;
-  const shortSha = gitCommitSha === "unknown" ? "unknown" : gitCommitSha.slice(0, 7);
   return (
     <html lang="tr" suppressHydrationWarning>
       <head>

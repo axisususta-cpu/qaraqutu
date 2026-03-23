@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { LogoPrimary } from "./LogoPrimary";
-import { webBuildMeta } from "../build-meta";
 import { FooterDoctrine } from "./FooterDoctrine";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
@@ -13,9 +12,6 @@ const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace
 export function ConditionalSiteFooter() {
   const pathname = usePathname() ?? "";
   if (pathname.startsWith("/verifier")) return null;
-
-  const gitCommitSha = webBuildMeta.commitSha;
-  const shortSha = gitCommitSha === "unknown" ? "unknown" : gitCommitSha.slice(0, 7);
 
   return (
     <>
@@ -36,12 +32,7 @@ export function ConditionalSiteFooter() {
         }}
       >
         <LogoPrimary href="/" height={20} variant="onDarkSurface" />
-        <span
-          style={{ fontFamily: MONO }}
-          title={`${webBuildMeta.app} @ ${gitCommitSha} · ${webBuildMeta.buildTime}`}
-        >
-          {webBuildMeta.app} @ {shortSha} · {webBuildMeta.buildTime}
-        </span>
+        <span style={{ fontFamily: MONO }}>QARAQUTU</span>
       </footer>
     </>
   );

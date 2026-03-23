@@ -48,6 +48,39 @@ export default function DocsPage() {
           {m.docsTitle}
         </h1>
 
+        <section
+          style={{
+            marginBottom: "1.35rem",
+            borderRadius: 10,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
+            padding: "0.8rem 0.9rem",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "0.55rem",
+            alignItems: "center",
+          }}
+        >
+          <strong style={{ fontSize: "0.8rem" }}>{isTr ? "Katmanlar" : "Layers"}</strong>
+          <a href="#urun-protokol-kilavuzu" style={{ fontSize: "0.78rem", color: "var(--accent)", textDecoration: "none" }}>
+            {isTr ? "Ürün / Protokol Kılavuzu" : "Product / Protocol Guide"}
+          </a>
+          <a href="#teknik-api-referansi" style={{ fontSize: "0.78rem", color: "var(--accent)", textDecoration: "none" }}>
+            {isTr ? "Teknik / API Referansı" : "Technical / API Reference"}
+          </a>
+        </section>
+
+        <section id="urun-protokol-kilavuzu" style={{ marginBottom: "1.2rem" }}>
+          <h2 style={{ fontSize: "1rem", margin: 0, fontWeight: 700 }}>
+            {isTr ? "Ürün / Protokol Kılavuzu" : "Product / Protocol Guide"}
+          </h2>
+          <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", margin: "0.35rem 0 0", lineHeight: 1.58 }}>
+            {isTr
+              ? "Kurumsal, hukuk, sigorta ve operasyon okuyucuları için sade akış. Teknik test/fixture dilinden ayrıdır."
+              : "Plain-language layer for legal, insurance, operations, and business readers."}
+          </p>
+        </section>
+
         <section style={{ marginBottom: "1.75rem" }}>
           <h2 style={{ fontSize: "1rem", marginBottom: "0.6rem", marginTop: 0, fontWeight: 600 }}>
             {isTr ? "Ürün kapsamı" : "Product scope"}
@@ -78,17 +111,6 @@ export default function DocsPage() {
             </li>
             <li>
               <strong>Receipt</strong>: {isTr ? "bir işlemin gerçekleştiğini gösteren protokol kanıtı (ör. export üretimi)." : "protocol evidence that an action occurred (such as export generation)."}
-            </li>
-            <li>
-              <strong>Tenant policy (implementation)</strong>: {isTr ? "hangi export profillerinin etkin olacağını, export’larda hangi görünürlük sınıflarına izin verileceğini ve policy tabanlı redaksiyonun açık olup olmadığını belirleyen backend konfigürasyonu." : "backend configuration that determines which export profiles are enabled, which visibility classes are allowed in exports, and whether policy-driven redaction is enabled."}
-            </li>
-            <li>
-              <strong>Verification run</strong>: {isTr ? "tek bir doğrulama eyleminin kalıcı kaydıdır; olay, bundle, manifest ve verification state ile bağlıdır. Her çalışmanın benzersiz bir verification_run_id değeri vardır." : "a persisted record of a single verification action, linked to an event, bundle, manifest, and verification state. Each run has a unique verification_run_id."}
-            </li>
-            <li>
-              <strong>Verification trace</strong>: {isTr ? "verification run’a bağlı kalıcı artifact’tır; ilgili çalışmanın yapılandırılmış adımlarını (check/result/note) tutar. Her iz için benzersiz " : "a persisted artifact linked to a verification run; stores structured steps (check, result, note) for that run. Each trace has a unique "}
-              <code>transcript_id</code>
-              {isTr ? " (API alanı) bulunur." : " (API field)."}
             </li>
             <li>
               <strong>Verification State</strong>: {isTr ? "demo olayları için PASS, FAIL, UNKNOWN veya UNVERIFIED değerlerinden biridir." : "one of PASS, FAIL, UNKNOWN, UNVERIFIED for the demo events."}
@@ -124,6 +146,17 @@ export default function DocsPage() {
           {getAllSectorScenarios().map((s) => (
             <SectorScenarioDetail key={s.id} scenario={s} lang={lang} />
           ))}
+        </section>
+
+        <section id="teknik-api-referansi" style={{ marginBottom: "1.2rem", marginTop: "2rem" }}>
+          <h2 style={{ fontSize: "1rem", margin: 0, fontWeight: 700 }}>
+            {isTr ? "Teknik / API Referansı" : "Technical / API Reference"}
+          </h2>
+          <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", margin: "0.35rem 0 0", lineHeight: 1.58 }}>
+            {isTr
+              ? "Geliştirici odaklı terimler, API uçları ve tanılama içerikleri bu katmanda tutulur."
+              : "Developer-facing API, diagnostics, and implementation details."}
+          </p>
         </section>
 
         <section style={{ marginBottom: "1.75rem" }}>

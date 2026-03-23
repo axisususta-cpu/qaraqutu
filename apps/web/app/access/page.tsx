@@ -148,7 +148,7 @@ export default function AccessPage({
                 fontWeight: 600,
               }}
             >
-              {submitting ? "Submitting…" : "Continue"}
+              {submitting ? "..." : m.accessSubmit}
             </button>
             <a
               href={next}
@@ -164,7 +164,7 @@ export default function AccessPage({
                 fontSize: "0.85rem",
               }}
             >
-              Back
+              {m.accessBack}
             </a>
           </div>
 
