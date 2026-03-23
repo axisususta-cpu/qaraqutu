@@ -425,6 +425,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [activeSpineSection, setActiveSpineSection] = useState<string>("system");
+  type ReviewTabId = "summary" | "evidence" | "unknownDisputed" | "transcript" | "issuance";
+  const [activeReviewTab, setActiveReviewTab] = useState<ReviewTabId>("summary");
   const [events, setEvents] = useState<CanonicalEvent[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [verificationState, setVerificationState] =
@@ -663,11 +665,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
   const msg = MSG[language];
 
-  function scrollToPanel(sectionId: string) {
-    setActiveSpineSection(sectionId);
-    requestAnimationFrame(() => {
-      document.getElementById(`verifier-panel-${sectionId}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
+  function selectReviewTab(tabId: ReviewTabId) {
+    setActiveReviewTab(tabId);
   }
 
   function resetVerificationRun() {
@@ -859,7 +858,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         background: "var(--bg)",
         color: "var(--text)",
         fontFamily: SANS,
-        paddingBottom: "calc(3.35rem + env(safe-area-inset-bottom, 0px))",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
       }}
     >
       <header
@@ -987,8 +986,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               position: "sticky",
               top: CH.topNavPx,
               alignSelf: "start",
-              maxHeight: `calc(100vh - ${CH.topNavPx}px - 3.5rem)`,
-              overflowY: "auto",
+              maxHeight: `calc(100vh - ${CH.topNavPx}px)`,
+              display: "flex",
+              flexDirection: "column",
               borderRight: "1px solid var(--border-strong)",
               borderBottom: "1px solid var(--border)",
               background: "var(--panel-raised)",
@@ -1060,6 +1060,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               </div>
             </div>
 
+            <div
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: "auto",
+                overflowX: "hidden",
+              }}
+            >
             <div style={{ padding: "0 0.5rem 0.65rem" }}>
             <div
               style={{
@@ -1078,74 +1086,22 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 id: "system",
                 step: 1,
                 label: language === "tr" ? "Sistem" : "System",
-                group: "select" as const,
               },
               {
                 id: "scenario",
                 step: 2,
                 label: language === "tr" ? "Senaryo" : "Scenario",
-                group: "select" as const,
               },
               {
                 id: "event",
                 step: 3,
                 label: language === "tr" ? "Olay" : "Event",
-                group: "select" as const,
               },
-              {
-                id: "summary",
-                step: null,
-                label: language === "tr" ? "Olay Özeti" : "Incident Summary",
-                group: "review" as const,
-              },
-              {
-                id: "evidence",
-                step: null,
-                label: language === "tr" ? "Delil Katmanları" : "Evidence Layers",
-                group: "review" as const,
-              },
-              {
-                id: "unknownDisputed",
-                step: null,
-                label: language === "tr" ? "Bilinmeyen / Tartışmalı" : "Unknown / Disputed",
-                group: "review" as const,
-              },
-              {
-                id: "transcript",
-                step: null,
-                label: language === "tr" ? "Doğrulama İzi" : "Verification Trace",
-                group: "review" as const,
-              },
-              {
-                id: "issuance",
-                step: null,
-                label: language === "tr" ? "Belge Üretimi" : "Artifact Issuance",
-                group: "review" as const,
-              },
-            ].map((section, idx, arr) => {
+            ].map((section) => {
               const isActive = activeSpineSection === section.id;
               const isStep = section.step != null;
-              const prevGroup = idx > 0 ? arr[idx - 1].group : null;
-              const showDivider = section.group === "review" && prevGroup === "select";
               return (
                 <div key={section.id}>
-                  {showDivider && (
-                    <div style={{ marginTop: "0.35rem" }}>
-                      <div
-                        style={{
-                          fontFamily: MONO,
-                          fontSize: "0.72rem",
-                          letterSpacing: "0.16em",
-                          color: "var(--text-dim)",
-                          fontWeight: 700,
-                          margin: "0 0.15rem 0.35rem",
-                        }}
-                      >
-                        {language === "tr" ? "İNCELEME" : "REVIEW"}
-                      </div>
-                      <div style={{ height: 1, background: "var(--border)" }} />
-                    </div>
-                  )}
                   <div
                     style={{
                       marginBottom: "0.15rem",
@@ -1163,8 +1119,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   <button
                     type="button"
                     onClick={() => {
-                      if (section.group === "review") scrollToPanel(section.id);
-                      else setActiveSpineSection(section.id);
+                      setActiveSpineSection(section.id);
                     }}
                     style={{
                       width: "100%",
@@ -1383,100 +1338,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           )}
                         </div>
                       )}
-                      {section.id === "summary" && (
-                        <div>
-                          {selectedEventCard ? (
-                            (() => {
-                              const sum = getIncidentSummary(
-                                selectedSystem,
-                                selectedEventCard,
-                                verificationState,
-                                language
-                              );
-                              return (
-                                <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                                  <div>
-                                    <span
-                                      style={{
-                                        textTransform: "uppercase",
-                                        letterSpacing: "0.05em",
-                                        opacity: 0.7,
-                                      }}
-                                    >
-                                      {msg.verifierWhatHappened}
-                                    </span>
-                                    <p style={{ margin: "0.2rem 0 0", fontSize: "0.875rem" }}>
-                                      {sum.what}
-                                    </p>
-                                  </div>
-                                  {sum.why && (
-                                    <div>
-                                      <span
-                                        style={{
-                                          textTransform: "uppercase",
-                                          letterSpacing: "0.05em",
-                                          opacity: 0.7,
-                                        }}
-                                      >
-                                        {msg.verifierWhyUnderReview}
-                                      </span>
-                                      <p style={{ margin: "0.2rem 0 0", fontSize: "0.875rem" }}>
-                                        {sum.why}
-                                      </p>
-                                    </div>
-                                  )}
-                                  {sum.state && (
-                                    <div>
-                                      <span
-                                        style={{
-                                          textTransform: "uppercase",
-                                          letterSpacing: "0.05em",
-                                          opacity: 0.7,
-                                        }}
-                                      >
-                                        {msg.verifierReviewState}
-                                      </span>
-                                      <p style={{ margin: "0.2rem 0 0", fontSize: "0.875rem" }}>
-                                        {sum.state}
-                                      </p>
-                                    </div>
-                                  )}
-                                  {sum.next && (
-                                    <div>
-                                      <span
-                                        style={{
-                                          textTransform: "uppercase",
-                                          letterSpacing: "0.05em",
-                                          opacity: 0.7,
-                                        }}
-                                      >
-                                        {msg.verifierSafeNextStep}
-                                      </span>
-                                      <p style={{ margin: "0.2rem 0 0", fontSize: "0.875rem" }}>
-                                        {sum.next}
-                                      </p>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })()
-                          ) : (
-                            <p style={{ margin: 0 }}>{msg.verifierEmptySummaryPanel}</p>
-                          )}
-                        </div>
-                      )}
-                      {section.id === "evidence" && (
-                        <p style={{ margin: 0 }}>{msg.verifierSpineBlurbEvidence}</p>
-                      )}
-                      {section.id === "unknownDisputed" && (
-                        <p style={{ margin: 0 }}>{msg.verifierSpineBlurbUnknown}</p>
-                      )}
-                      {section.id === "transcript" && (
-                        <p style={{ margin: 0 }}>{msg.verifierSpineBlurbTrace}</p>
-                      )}
-                      {section.id === "issuance" && (
-                        <p style={{ margin: 0 }}>{msg.verifierSpineBlurbIssuance}</p>
-                      )}
                     </div>
                   )}
                   </div>
@@ -1484,6 +1345,153 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               );
             })}
             </div>{/* end inner padding div */}
+            </div>{/* end scroll region */}
+
+            <div
+              style={{
+                flexShrink: 0,
+                borderTop: "1px solid var(--border-strong)",
+                padding: "0.5rem 0.55rem calc(0.55rem + env(safe-area-inset-bottom, 0px))",
+                background: "var(--panel)",
+              }}
+              aria-label={language === "tr" ? "Eylem alanı" : "Action area"}
+            >
+              <div
+                style={{
+                  fontFamily: MONO,
+                  fontSize: "0.68rem",
+                  letterSpacing: "0.14em",
+                  color: "var(--text-dim)",
+                  fontWeight: 700,
+                  marginBottom: "0.45rem",
+                  textTransform: "uppercase",
+                }}
+              >
+                {language === "tr" ? "Eylem alanı" : "Actions"}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                <button
+                  type="button"
+                  onClick={runVerification}
+                  disabled={!selectedId || loading}
+                  style={{
+                    fontFamily: MONO,
+                    fontSize: "0.78rem",
+                    letterSpacing: "0.05em",
+                    padding: "0.42rem 0.55rem",
+                    borderRadius: UI.radius.xs,
+                    border: loading ? "1px solid var(--border-strong)" : "1px solid var(--accent)",
+                    background: loading ? "var(--panel-card)" : "var(--accent-soft)",
+                    color: "var(--text)",
+                    cursor: loading ? "wait" : !selectedId ? "not-allowed" : "pointer",
+                    opacity: !selectedId ? 0.55 : 1,
+                    fontWeight: 700,
+                    width: "100%",
+                    textAlign: "center",
+                  }}
+                >
+                  {loading
+                    ? language === "tr"
+                      ? "DOĞRULANIYOR…"
+                      : "VERIFYING…"
+                    : language === "tr"
+                    ? "OLAYI DOĞRULA"
+                    : "VERIFY PACKAGE"}
+                </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.28rem" }}>
+                  <button
+                    type="button"
+                    onClick={runExportJson}
+                    disabled={!selectedId || !!exportLoading}
+                    style={{
+                      fontFamily: MONO,
+                      fontSize: "0.74rem",
+                      padding: "0.38rem 0.5rem",
+                      borderRadius: UI.radius.xs,
+                      border: "1px solid var(--border)",
+                      background: "var(--panel-card)",
+                      color: "var(--text)",
+                      cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
+                      opacity: !selectedId || exportLoading ? 0.55 : 1,
+                      fontWeight: 600,
+                      width: "100%",
+                    }}
+                  >
+                    {exportLoading === "json"
+                      ? language === "tr"
+                        ? "JSON…"
+                        : "JSON…"
+                      : language === "tr"
+                      ? "BOUNDED JSON"
+                      : "BOUNDED JSON"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={runExportPdf}
+                    disabled={!selectedId || !!exportLoading}
+                    style={{
+                      fontFamily: MONO,
+                      fontSize: "0.74rem",
+                      padding: "0.38rem 0.5rem",
+                      borderRadius: UI.radius.xs,
+                      border: "1px solid var(--border)",
+                      background: "var(--panel-card)",
+                      color: "var(--text)",
+                      cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
+                      opacity: !selectedId || exportLoading ? 0.55 : 1,
+                      fontWeight: 600,
+                      width: "100%",
+                    }}
+                  >
+                    {exportLoading === "pdf"
+                      ? language === "tr"
+                        ? "PDF…"
+                        : "PDF…"
+                      : language === "tr"
+                      ? "BOUNDED PDF"
+                      : "BOUNDED PDF"}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={resetVerificationRun}
+                  disabled={resetRunDisabled}
+                  style={{
+                    fontFamily: MONO,
+                    fontSize: "0.72rem",
+                    letterSpacing: "0.04em",
+                    padding: "0.36rem 0.5rem",
+                    borderRadius: UI.radius.xs,
+                    border: "1px solid var(--border-strong)",
+                    background: "var(--panel-raised)",
+                    color: "var(--text-muted)",
+                    cursor: resetRunDisabled ? "not-allowed" : "pointer",
+                    opacity: resetRunDisabled ? 0.45 : 1,
+                    fontWeight: 600,
+                    width: "100%",
+                  }}
+                >
+                  {msg.verifierActionBarReset}
+                </button>
+              </div>
+              <p
+                style={{
+                  margin: "0.45rem 0 0",
+                  fontFamily: MONO,
+                  fontSize: "0.65rem",
+                  letterSpacing: "0.03em",
+                  color: "var(--text-dim)",
+                  lineHeight: 1.4,
+                }}
+              >
+                {msg.verifierActionBarDoctrineTrace} · {msg.verifierActionBarDoctrineIssuance}
+              </p>
+              {exportError ? (
+                <p style={{ margin: "0.35rem 0 0", fontFamily: MONO, fontSize: "0.7rem", color: "var(--error)", lineHeight: 1.35 }}>
+                  {exportError}
+                </p>
+              ) : null}
+            </div>
           </aside>
 
           <main
@@ -1495,113 +1503,149 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               overflowY: "auto",
             }}
           >
-            <div style={{ padding: "0.5rem 0.85rem 2rem" }}>
+            <div style={{ padding: "0.5rem 0.85rem 1.5rem" }}>
             <div
               style={{
                 borderBottom: "1px solid var(--border-strong)",
-                paddingBottom: "0.4rem",
-                marginBottom: "0.25rem",
+                paddingBottom: "0.5rem",
+                marginBottom: "0.35rem",
               }}
             >
               <div
                 style={{
                   display: "flex",
                   flexWrap: "wrap",
-                  alignItems: "center",
-                  gap: "0.4rem 0.65rem",
-                  marginBottom: "0.45rem",
+                  alignItems: "flex-start",
+                  gap: "0.45rem 0.75rem",
                 }}
               >
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.35rem", minWidth: 0, flex: "1 1 220px" }}>
+                  <span
+                    style={{
+                      fontFamily: MONO,
+                      fontSize: "0.88rem",
+                      fontWeight: 700,
+                      color: "var(--text)",
+                      letterSpacing: "0.03em",
+                      maxWidth: "100%",
+                      wordBreak: "break-all",
+                      lineHeight: 1.25,
+                    }}
+                    title={selectedEventCard?.eventId ?? ""}
+                  >
+                    {selectedEventCard?.eventId ?? "—"}
+                  </span>
+                  {selectedEventCard ? (
+                    <span
+                      style={{
+                        fontFamily: MONO,
+                        fontSize: "0.62rem",
+                        letterSpacing: "0.14em",
+                        textTransform: "uppercase",
+                        padding: "0.14rem 0.38rem",
+                        border: "1px solid var(--border)",
+                        borderRadius: 2,
+                        color: "var(--text-dim)",
+                        background: "var(--panel-card)",
+                        fontWeight: 600,
+                        flexShrink: 0,
+                      }}
+                      title={language === "tr" ? "Tanıtım / demo protokol verisi" : "Demo protocol data"}
+                    >
+                      {language === "tr" ? "DEMO OLAY" : "DEMO EVENT"}
+                    </span>
+                  ) : null}
+                </div>
                 <span
                   style={{
-                    fontFamily: MONO,
-                    fontSize: "0.74rem",
-                    fontWeight: 700,
-                    color: "var(--text-soft)",
-                    letterSpacing: "0.02em",
-                    maxWidth: "100%",
-                    wordBreak: "break-all",
-                  }}
-                  title={selectedEventCard?.eventId ?? ""}
-                >
-                  {selectedEventCard?.eventId ?? "—"}
-                </span>
-                <span
-                  style={{
-                    fontSize: "1.0625rem",
+                    fontSize: "1.15rem",
                     fontWeight: 600,
                     color: "var(--text)",
-                    flex: "1 1 180px",
+                    flex: "2 1 280px",
                     minWidth: 0,
-                    lineHeight: 1.32,
+                    lineHeight: 1.28,
+                    letterSpacing: "-0.01em",
                   }}
                 >
                   {selectedEventCard?.title ??
                     (language === "tr" ? "Paket seçilmedi" : "No package selected")}
                 </span>
-                <span
-                  style={{
-                    fontFamily: MONO,
-                    fontSize: "0.68rem",
-                    letterSpacing: "0.12em",
-                    textTransform: "uppercase",
-                    padding: "0.2rem 0.45rem",
-                    border: "1px solid var(--border)",
-                    borderRadius: 2,
-                    color: "var(--text-muted)",
-                  }}
-                >
-                  {selectedSystem}
-                </span>
-                {visibleReviewState != null ? (
-                  <span style={protocolStatePillStyle(displayedReviewState)}>{displayedReviewState}</span>
-                ) : (
+                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.35rem", flexShrink: 0 }}>
                   <span
                     style={{
                       fontFamily: MONO,
                       fontSize: "0.68rem",
-                      letterSpacing: "0.1em",
-                      color: "var(--text-dim)",
-                      padding: "0.2rem 0.45rem",
-                      border: "1px dashed var(--border-strong)",
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      padding: "0.22rem 0.5rem",
+                      border: "1px solid var(--border-strong)",
                       borderRadius: 2,
+                      color: "var(--text-soft)",
+                      background: "var(--panel-raised)",
+                      fontWeight: 700,
                     }}
                   >
-                    {language === "tr" ? "DURUM —" : "STATE —"}
+                    {selectedSystem}
                   </span>
-                )}
-              </div>
-              <nav
-                aria-label={language === "tr" ? "İnceleme sekmeleri" : "Inspection tabs"}
-                style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem", alignItems: "center" }}
-              >
-                {reviewTabs.map((tab) => {
-                  const on = activeSpineSection === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => scrollToPanel(tab.id)}
+                  {visibleReviewState != null ? (
+                    <span style={protocolStatePillStyle(displayedReviewState)}>{displayedReviewState}</span>
+                  ) : (
+                    <span
                       style={{
                         fontFamily: MONO,
-                        fontSize: "0.72rem",
-                        letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        padding: "0.28rem 0.5rem",
+                        fontSize: "0.68rem",
+                        letterSpacing: "0.1em",
+                        color: "var(--text-dim)",
+                        padding: "0.22rem 0.5rem",
+                        border: "1px dashed var(--border-strong)",
                         borderRadius: 2,
-                        border: `1px solid ${on ? "var(--accent-border)" : "var(--border)"}`,
-                        background: on ? "var(--accent-soft)" : "var(--panel)",
-                        color: on ? "var(--text)" : "var(--text-muted)",
-                        cursor: "pointer",
-                        fontWeight: on ? 700 : 500,
+                        fontWeight: 600,
                       }}
                     >
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </nav>
+                      {language === "tr" ? "DURUM —" : "STATE —"}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
+            <nav
+              aria-label={language === "tr" ? "İnceleme sekmeleri" : "Inspection tabs"}
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "0.25rem",
+                alignItems: "center",
+                paddingBottom: "0.45rem",
+                marginBottom: "0.35rem",
+                borderBottom: "1px solid var(--border-muted)",
+              }}
+            >
+              {reviewTabs.map((tab) => {
+                const on = activeReviewTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => selectReviewTab(tab.id as ReviewTabId)}
+                    style={{
+                      fontFamily: MONO,
+                      fontSize: "0.72rem",
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                      padding: "0.3rem 0.55rem",
+                      borderRadius: 2,
+                      border: `1px solid ${on ? "var(--accent-border)" : "var(--border)"}`,
+                      background: on ? "var(--accent-soft)" : "var(--panel)",
+                      color: on ? "var(--text)" : "var(--text-muted)",
+                      cursor: "pointer",
+                      fontWeight: on ? 700 : 500,
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </nav>
 
             <div
               style={{
@@ -1630,8 +1674,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 borderTop: "2px solid var(--border-strong)",
                 background: "var(--bg)",
                 scrollMarginTop: "0.75rem",
+                minHeight: "12rem",
               }}
             >
+            {activeReviewTab === "summary" && (
+            <>
             <p
               style={{
                 margin: "0 0 0.65rem",
@@ -1984,7 +2031,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 )}
               </div>
             </section>
+            </>
+            )}
 
+            {activeReviewTab === "evidence" && (
+            <>
             {/* Evidence layers */}
             <section id="verifier-panel-evidence" style={{ marginBottom: UI.sectionGap }}>
               <div
@@ -2196,7 +2247,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
               )}
             </section>
+            </>
+            )}
 
+            {activeReviewTab === "unknownDisputed" && (
+            <>
             {/* Unknown / disputed */}
             <section id="verifier-panel-unknownDisputed" style={{ marginBottom: UI.sectionGap }}>
               <div
@@ -2314,7 +2369,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
               </div>
             </section>
+            </>
+            )}
 
+            {activeReviewTab === "transcript" && (
+            <>
             {/* Verification trace */}
             <section id="verifier-panel-transcript" style={{ marginBottom: UI.sectionGap }} aria-labelledby="verification-trace-heading">
               <div
@@ -2528,76 +2587,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               </div>
             </section>
 
-            {/* 7) Verification / export flow */}
-            <section style={{ marginBottom: UI.sectionGap }}>
-              {selectedEventCard && (
-                <div style={{ fontSize: "0.88rem", color: "var(--text-muted)", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <span>{language === "tr" ? "Seçili:" : "Selected:"}</span>
-                  <span style={{ fontWeight: 700, color: "var(--text-soft)", fontFamily: "monospace", fontSize: "0.86rem" }}>{selectedEventCard.eventId}</span>
-                  <span style={{ color: "var(--text-dim)" }}>— {selectedEventCard.title}</span>
-                </div>
-              )}
-              {selectedCase && (() => {
-                const gate = evaluateGoldenAcceptance(selectedCase);
-                return (
-                  <div style={{ fontSize: "0.92rem", color: "var(--text-dim)", marginBottom: "0.5rem" }}>
-                    {language === "tr" ? "Golden kabul:" : "Golden acceptance:"} {gate.passed}/{gate.total}
-                  </div>
-                );
-              })()}
-              <>
-                  <div style={{ fontSize: "0.8125rem", opacity: 0.65, marginBottom: "0.25rem" }}>
-                    {language === "tr" ? "Yedek: açılır menü ile olay seçimi" : "Fallback: select event by dropdown"}
-                  </div>
-                  <select
-                    value={selectedId ?? ""}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setSelectedId(v);
-                      setSelectedEventId(v);
-                    }}
-                    style={{
-                      marginTop: "0.5rem",
-                      padding: "0.4rem 0.6rem",
-                      background: "var(--panel)",
-                      color: "var(--text)",
-                      border: "1px solid var(--border)",
-                      borderRadius: 4,
-                      fontSize: "0.95rem",
-                    }}
-                  >
-                    {displayEvents.map((ev) => (
-                      <option key={ev.eventId} value={ev.eventId}>
-                        {ev.title} — {ev.eventId}
-                      </option>
-                    ))}
-                  </select>
-                  <div style={{ marginTop: "0.75rem" }}>
-                    <p style={{ margin: "0 0 0.35rem", fontSize: "0.84rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
-                      {language === "tr"
-                        ? "Paket doğrulaması ve sınırlı dışa aktarım alt sabit eylem çubuğundan yürütülür."
-                        : "Package verification and bounded export run from the fixed action bar below."}
-                    </p>
-                    <div
-                      style={{
-                        marginTop: "0.4rem",
-                        fontSize: "0.875rem",
-                        opacity: 0.9,
-                      }}
-                    >
-                      {loading && (language === "tr" ? "İşleniyor — sonuç aşağıda güncellenecek." : "Processing — result will update below.")}
-                      {!loading && verificationError && (language === "tr" ? "Hata: " : "Error: ")}
-                      {!loading && verificationError && <strong style={{ color: "var(--error)" }}>{verificationError}</strong>}
-                      {!loading && !verificationError && verificationState && (language === "tr" ? "Durum: " : "Status: ")}
-                      {!loading && !verificationError && verificationState && (
-                        <strong>{displayProtocolState(verificationState)}</strong>
-                      )}
-                      {!loading && !verificationError && !verificationState && selectedId && (language === "tr" ? "Doğrulama bekleniyor." : "Verification pending.")}
-                    </div>
-                  </div>
-              </>
-            </section>
-
             <section
               style={{
                 border: loading ? "1px solid var(--accent)" : undefined,
@@ -2740,6 +2729,80 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
               )}
             </section>
+            </>
+            )}
+
+            {activeReviewTab === "issuance" && (
+            <>
+            {/* 7) Verification / export flow */}
+            <section style={{ marginBottom: UI.sectionGap }}>
+              {selectedEventCard && (
+                <div style={{ fontSize: "0.88rem", color: "var(--text-muted)", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <span>{language === "tr" ? "Seçili:" : "Selected:"}</span>
+                  <span style={{ fontWeight: 700, color: "var(--text-soft)", fontFamily: "monospace", fontSize: "0.86rem" }}>{selectedEventCard.eventId}</span>
+                  <span style={{ color: "var(--text-dim)" }}>— {selectedEventCard.title}</span>
+                </div>
+              )}
+              {selectedCase && (() => {
+                const gate = evaluateGoldenAcceptance(selectedCase);
+                return (
+                  <div style={{ fontSize: "0.92rem", color: "var(--text-dim)", marginBottom: "0.5rem" }}>
+                    {language === "tr" ? "Golden kabul:" : "Golden acceptance:"} {gate.passed}/{gate.total}
+                  </div>
+                );
+              })()}
+              <>
+                  <div style={{ fontSize: "0.8125rem", opacity: 0.65, marginBottom: "0.25rem" }}>
+                    {language === "tr" ? "Yedek: açılır menü ile olay seçimi" : "Fallback: select event by dropdown"}
+                  </div>
+                  <select
+                    value={selectedId ?? ""}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setSelectedId(v);
+                      setSelectedEventId(v);
+                    }}
+                    style={{
+                      marginTop: "0.5rem",
+                      padding: "0.4rem 0.6rem",
+                      background: "var(--panel)",
+                      color: "var(--text)",
+                      border: "1px solid var(--border)",
+                      borderRadius: 4,
+                      fontSize: "0.95rem",
+                    }}
+                  >
+                    {displayEvents.map((ev) => (
+                      <option key={ev.eventId} value={ev.eventId}>
+                        {ev.title} — {ev.eventId}
+                      </option>
+                    ))}
+                  </select>
+                  <div style={{ marginTop: "0.75rem" }}>
+                    <p style={{ margin: "0 0 0.35rem", fontSize: "0.84rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
+                      {language === "tr"
+                        ? "Paket doğrulaması ve sınırlı dışa aktarım sol omurgadaki eylem alanından yürütülür."
+                        : "Package verification and bounded export run from the action area in the left spine."}
+                    </p>
+                    <div
+                      style={{
+                        marginTop: "0.4rem",
+                        fontSize: "0.875rem",
+                        opacity: 0.9,
+                      }}
+                    >
+                      {loading && (language === "tr" ? "İşleniyor — sonuç aşağıda güncellenecek." : "Processing — result will update below.")}
+                      {!loading && verificationError && (language === "tr" ? "Hata: " : "Error: ")}
+                      {!loading && verificationError && <strong style={{ color: "var(--error)" }}>{verificationError}</strong>}
+                      {!loading && !verificationError && verificationState && (language === "tr" ? "Durum: " : "Status: ")}
+                      {!loading && !verificationError && verificationState && (
+                        <strong>{displayProtocolState(verificationState)}</strong>
+                      )}
+                      {!loading && !verificationError && !verificationState && selectedId && (language === "tr" ? "Doğrulama bekleniyor." : "Verification pending.")}
+                    </div>
+                  </div>
+              </>
+            </section>
 
             {/* AXISUS — boundary protocol; secondary to doctrine spine */}
             {selectedCase?.axisusStates?.length ? (
@@ -2856,8 +2919,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 >
                   <p style={{ margin: 0, marginBottom: "0.35rem" }}>
                     {language === "tr"
-                      ? "Belge üretimi için sol omurgadan bir olay seçin."
-                      : "Select an event in the left spine for artifact issuance."}
+                      ? "Belge üretimi için sol şeritten sistem → senaryo → olay ile bir paket seçin."
+                      : "Select a package via system → scenario → event in the left spine for artifact issuance."}
                   </p>
                   <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>
                     {language === "tr"
@@ -3060,8 +3123,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       ) : (
                         <p style={{ fontSize: "0.8125rem", color: "var(--text-dim)", marginTop: "0.45rem", marginBottom: 0 }}>
                           {language === "tr"
-                            ? "Sınırlı JSON/PDF düzenlemesi alt sabit çubuktan."
-                            : "Bounded JSON/PDF issuance from the fixed action bar."}
+                            ? "Sınırlı JSON/PDF düzenlemesi sol şeritteki eylem alanından."
+                            : "Bounded JSON/PDF issuance from the left spine action area."}
                         </p>
                       )}
                       {selectedEventCard && (
@@ -3452,8 +3515,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   ) : (
                     <p style={{ fontSize: "0.8125rem", color: "var(--text-dim)", marginTop: "0.45rem", marginBottom: 0 }}>
                       {language === "tr"
-                        ? "Sınırlı JSON/PDF düzenlemesi alt sabit çubuktan."
-                        : "Bounded JSON/PDF issuance from the fixed action bar."}
+                        ? "Sınırlı JSON/PDF düzenlemesi sol şeritteki eylem alanından."
+                        : "Bounded JSON/PDF issuance from the left spine action area."}
                     </p>
                   )}
                   {exportError && <p style={{ fontSize: "0.92rem", marginTop: "0.5rem", color: "var(--error)" }}>{exportError}</p>}
@@ -3646,188 +3709,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 : null}
             </section>
             </div>
+            </>
+            )}
             </div>
             </div>
           </main>
-      </div>
-
-      {/* Fixed primary actions — mirrors in-flow controls; doctrine copy unchanged */}
-      <div
-        role="toolbar"
-        aria-label={language === "tr" ? "Paket eylemleri" : "Package actions"}
-        style={{
-          position: "fixed",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 50,
-          borderTop: "1px solid var(--border-strong)",
-          background: "var(--panel)",
-          boxShadow: "none",
-          padding: "0.5rem max(1rem, env(safe-area-inset-right)) calc(0.5rem + env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left))",
-        }}
-      >
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "100%",
-            margin: 0,
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "0.5rem 1rem",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              gap: "0.5rem 0.75rem",
-              minWidth: 0,
-              flex: "1 1 auto",
-            }}
-          >
-            <button
-              type="button"
-              onClick={runVerification}
-              disabled={!selectedId || loading}
-              style={{
-                fontFamily: MONO,
-                fontSize: "0.82rem",
-                letterSpacing: "0.06em",
-                padding: "0.45rem 0.85rem",
-                borderRadius: UI.radius.xs,
-                border: loading ? "1px solid var(--border-strong)" : "1px solid var(--accent)",
-                background: loading ? "var(--panel-card)" : "var(--accent-soft)",
-                color: "var(--text)",
-                cursor: loading ? "wait" : !selectedId ? "not-allowed" : "pointer",
-                opacity: !selectedId ? 0.55 : 1,
-                fontWeight: 700,
-                flexShrink: 0,
-              }}
-            >
-              {loading
-                ? language === "tr"
-                  ? "DOĞRULANIYOR…"
-                  : "VERIFYING…"
-                : language === "tr"
-                ? "OLAYI DOĞRULA"
-                : "VERIFY PACKAGE"}
-            </button>
-            <span
-              style={{
-                fontFamily: MONO,
-                fontSize: "0.78rem",
-                letterSpacing: "0.04em",
-                color: "var(--text-dim)",
-                lineHeight: 1.4,
-                maxWidth: "min(42rem, 100%)",
-              }}
-            >
-              {msg.verifierActionBarDoctrineTrace} · {msg.verifierActionBarDoctrineIssuance}
-            </span>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              gap: "0.35rem 0.5rem",
-              flexShrink: 0,
-            }}
-          >
-            {hasConnectedApiIssuanceProfile ? (
-              <>
-                <button
-                  type="button"
-                  onClick={runExportJson}
-                  disabled={!selectedId || !!exportLoading}
-                  style={{
-                    fontFamily: MONO,
-                    fontSize: "0.8rem",
-                    padding: "0.42rem 0.75rem",
-                    borderRadius: UI.radius.xs,
-                    border: "1px solid var(--border)",
-                    background: "var(--panel-card)",
-                    color: "var(--text)",
-                    cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
-                    opacity: !selectedId || exportLoading ? 0.55 : 1,
-                    fontWeight: 600,
-                  }}
-                >
-                  {exportLoading === "json"
-                    ? language === "tr"
-                      ? "JSON…"
-                      : "JSON…"
-                    : language === "tr"
-                    ? "BOUNDED JSON"
-                    : "BOUNDED JSON"}
-                </button>
-                <button
-                  type="button"
-                  onClick={runExportPdf}
-                  disabled={!selectedId || !!exportLoading}
-                  style={{
-                    fontFamily: MONO,
-                    fontSize: "0.8rem",
-                    padding: "0.42rem 0.75rem",
-                    borderRadius: UI.radius.xs,
-                    border: "1px solid var(--border)",
-                    background: "var(--panel-card)",
-                    color: "var(--text)",
-                    cursor: !selectedId || exportLoading ? "not-allowed" : "pointer",
-                    opacity: !selectedId || exportLoading ? 0.55 : 1,
-                    fontWeight: 600,
-                  }}
-                >
-                  {exportLoading === "pdf"
-                    ? language === "tr"
-                      ? "PDF…"
-                      : "PDF…"
-                    : language === "tr"
-                    ? "BOUNDED PDF"
-                    : "BOUNDED PDF"}
-                </button>
-              </>
-            ) : null}
-            <button
-              type="button"
-              onClick={resetVerificationRun}
-              disabled={resetRunDisabled}
-              style={{
-                fontFamily: MONO,
-                fontSize: "0.78rem",
-                letterSpacing: "0.05em",
-                padding: "0.4rem 0.65rem",
-                borderRadius: UI.radius.xs,
-                border: "1px solid var(--border-strong)",
-                background: "var(--panel-raised)",
-                color: "var(--text-muted)",
-                cursor: resetRunDisabled ? "not-allowed" : "pointer",
-                opacity: resetRunDisabled ? 0.45 : 1,
-                fontWeight: 600,
-              }}
-            >
-              {msg.verifierActionBarReset}
-            </button>
-          </div>
-        </div>
-        {exportError ? (
-          <div
-            style={{
-              marginTop: "0.35rem",
-              paddingLeft: "max(1rem, env(safe-area-inset-left))",
-              fontFamily: MONO,
-              fontSize: "0.8rem",
-              color: "var(--error)",
-            }}
-          >
-            {exportError}
-          </div>
-        ) : null}
       </div>
     </div>
   );
