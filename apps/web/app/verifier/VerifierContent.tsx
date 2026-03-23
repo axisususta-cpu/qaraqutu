@@ -206,6 +206,7 @@ interface EventCard {
   eventId: string;
   title: string;
   summary: string;
+  identity?: string;
   timestamp: string;
   severity: string;
   state: string;
@@ -653,6 +654,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       eventId: base.eventId,
       title: p.title,
       summary: `${p.summaryTr} ${language === "tr" ? "Bağlam" : "Context"}: ${p.opContextTr}`,
+      identity: p.sceneIdentityTr,
       severity: p.riskBand === "YUKSEK" ? "high" : p.riskBand === "ORTA" ? "medium" : "low",
     };
   });
@@ -1642,9 +1644,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <div style={{ padding: "0.5rem 0.85rem 1.5rem" }}>
             <div
               style={{
-                borderBottom: "1px solid var(--border-strong)",
-                paddingBottom: "0.5rem",
-                marginBottom: "0.35rem",
+                border: "1px solid var(--border-strong)",
+                background: "var(--panel)",
+                borderTop: "2px solid var(--accent-border)",
+                padding: "0.45rem 0.55rem 0.5rem",
+                marginBottom: "0.45rem",
               }}
             >
               <div
@@ -1659,9 +1663,21 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   <span
                     style={{
                       fontFamily: MONO,
-                      fontSize: "0.88rem",
+                      fontSize: "0.62rem",
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      color: "var(--text-dim)",
                       fontWeight: 700,
-                      color: "var(--text)",
+                    }}
+                  >
+                    {language === "tr" ? "PAKET KİMLİĞİ" : "PACKAGE IDENTITY"}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: MONO,
+                      fontSize: "0.8rem",
+                      fontWeight: 700,
+                      color: "var(--text-soft)",
                       letterSpacing: "0.03em",
                       maxWidth: "100%",
                       wordBreak: "break-all",
@@ -1694,7 +1710,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
                 <span
                   style={{
-                    fontSize: "1.15rem",
+                    fontSize: "1.02rem",
                     fontWeight: 600,
                     color: "var(--text)",
                     flex: "2 1 280px",
@@ -1723,6 +1739,34 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   >
                     {selectedSystem}
                   </span>
+                  {selectedPackage ? (
+                    <span
+                      style={{
+                        fontFamily: MONO,
+                        fontSize: "0.62rem",
+                        letterSpacing: "0.11em",
+                        textTransform: "uppercase",
+                        padding: "0.2rem 0.45rem",
+                        border: "1px solid var(--accent-border)",
+                        borderRadius: 2,
+                        color: "var(--accent)",
+                        background: "var(--accent-soft)",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {selectedPackage.severity === "high"
+                        ? language === "tr"
+                          ? "RİSK: YÜKSEK"
+                          : "RISK: HIGH"
+                        : selectedPackage.severity === "medium"
+                          ? language === "tr"
+                            ? "RİSK: ORTA"
+                            : "RISK: MEDIUM"
+                          : language === "tr"
+                            ? "RİSK: DÜŞÜK"
+                            : "RISK: LOW"}
+                    </span>
+                  ) : null}
                   {visibleReviewState != null ? (
                     <span style={protocolStatePillStyle(displayedReviewState)}>{displayedReviewState}</span>
                   ) : (
@@ -1748,9 +1792,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
                   gap: "0.4rem",
-                  padding: "0.15rem 0 0.5rem",
+                  padding: "0.1rem 0 0.45rem",
                 }}
               >
                 <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.4rem 0.55rem" }}>
@@ -1765,6 +1809,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   <div style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", marginBottom: "0.15rem", letterSpacing: "0.1em" }}>KRİTİK AN</div>
                   <div style={{ fontSize: "0.84rem", color: "var(--text-soft)", lineHeight: 1.45 }}>
                     {language === "tr" ? "Doğrulama öncesi ayrım: kayıtlı/türetilmiş + iz zinciri" : "Pre-verify split: recorded/derived + trace chain"}
+                  </div>
+                </div>
+                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.4rem 0.55rem" }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", marginBottom: "0.15rem", letterSpacing: "0.1em" }}>
+                    {language === "tr" ? "SAHNE KİMLİĞİ" : "SCENE IDENTITY"}
+                  </div>
+                  <div style={{ fontSize: "0.84rem", color: "var(--text-soft)", lineHeight: 1.45 }}>
+                    {selectedPackage.identity}
                   </div>
                 </div>
               </div>
@@ -1831,11 +1883,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <div
               id="verifier-inspection-detail-deck"
               style={{
-                marginTop: "0.2rem",
-                paddingTop: "0.6rem",
+                marginTop: "0.15rem",
+                paddingTop: "0.45rem",
                 paddingBottom: "0.25rem",
                 borderTop: "2px solid var(--border-strong)",
-                background: "var(--bg)",
+                background: "var(--panel-raised)",
                 scrollMarginTop: "0.75rem",
                 minHeight: "12rem",
               }}
@@ -1849,14 +1901,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   borderRadius: 2,
                   border: `1px solid var(--border-strong)`,
                   background: "var(--panel)",
-                  padding: "0.75rem 0.85rem",
+                  padding: "0.7rem 0.8rem",
                 }}
                 aria-live="polite"
               >
                 <div
                   style={{
                     fontFamily: MONO,
-                    fontSize: "0.74rem",
+                    fontSize: "0.7rem",
                     letterSpacing: "0.12em",
                     color: "var(--accent)",
                     fontWeight: 700,
@@ -1865,7 +1917,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 >
                   {msg.verifierWaitingSelectionTitle}
                 </div>
-                <p style={{ margin: 0, fontSize: "0.9rem", lineHeight: 1.55, color: "var(--text-soft)" }}>
+                <p style={{ margin: 0, fontSize: "0.86rem", lineHeight: 1.5, color: "var(--text-soft)" }}>
                   {msg.verifierWaitingSelectionBody}
                 </p>
               </section>

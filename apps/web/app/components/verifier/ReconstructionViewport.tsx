@@ -99,6 +99,22 @@ const svgBase = {
   minHeight: 240,
 };
 
+function familyGrammarLabel(system: ReconstructionSystem, language: "en" | "tr") {
+  if (system === "vehicle") {
+    return language === "tr"
+      ? "ŞERİT · DUR ÇİZGİSİ · GEÇİŞ PENCERESİ"
+      : "LANE · STOP LINE · CROSSING WINDOW";
+  }
+  if (system === "drone") {
+    return language === "tr"
+      ? "KORİDOR · İRTİFA · SINIR İHLAL VEKTÖRÜ"
+      : "CORRIDOR · ALTITUDE · BOUNDARY VECTOR";
+  }
+  return language === "tr"
+    ? "HÜCRE · GÜVENLİK ZARFI · YAKINLIK"
+    : "WORKCELL · SAFETY ENVELOPE · PROXIMITY";
+}
+
 function VehicleIdleScene({ language }: { language: "en" | "tr" }) {
   return (
     <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid meet" aria-hidden style={svgBase}>
@@ -392,6 +408,7 @@ function TelemetryStrip({
                 fontSize: "0.68rem",
                 color: i === 2 ? "var(--accent)" : "var(--text-muted)",
                 borderBottom: i === 2 ? "2px solid var(--accent)" : "1px solid var(--border)",
+                background: i === 2 ? "var(--accent-soft)" : "transparent",
                 paddingBottom: "0.14rem",
               }}
             >
@@ -399,7 +416,41 @@ function TelemetryStrip({
             </span>
           ))}
         </div>
-        <span style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)" }}>±WIN</span>
+        <span style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)" }}>
+          {language === "tr" ? "KRİTİK @t2" : "CRITICAL @t2"}
+        </span>
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gap: "0.3rem",
+          marginBottom: "0.45rem",
+        }}
+      >
+        {[
+          language === "tr" ? "ÖN-EVRE" : "PRE-EVENT",
+          language === "tr" ? "KRİTİK MOMENT" : "EVENT MOMENT",
+          language === "tr" ? "SONRASI" : "POST-EVENT",
+        ].map((label, idx) => (
+          <div
+            key={label}
+            style={{
+              border: idx === 1 ? "1px solid var(--accent-border)" : "1px solid var(--border)",
+              background: idx === 1 ? "var(--accent-soft)" : "var(--panel-raised)",
+              borderRadius: 2,
+              padding: "0.2rem 0.35rem",
+              fontFamily: MONO,
+              fontSize: "0.62rem",
+              letterSpacing: "0.1em",
+              color: idx === 1 ? "var(--accent)" : "var(--text-dim)",
+              textAlign: "center",
+              fontWeight: 700,
+            }}
+          >
+            {label}
+          </div>
+        ))}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: `repeat(${rows.length}, minmax(0, 1fr))`, gap: "0.4rem" }}>
         {rows.map((row) => (
@@ -483,6 +534,19 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
 
   const titleBar = language === "tr" ? "Mühürlü yeniden oluşturma görünümü" : "Sealed reconstruction view";
   const idle = !eventId;
+  const familyGrammar = familyGrammarLabel(system, language);
+  const riskTag =
+    verificationState === "FAIL"
+      ? language === "tr"
+        ? "YÜKSEK GÖZLEM"
+        : "HIGH WATCH"
+      : verificationState === "UNKNOWN"
+        ? language === "tr"
+          ? "BELİRSİZLİK AÇIK"
+          : "UNCERTAINTY OPEN"
+        : language === "tr"
+          ? "KONTROLLÜ İNCELEME"
+          : "CONTROLLED REVIEW";
 
   return (
     <section
@@ -490,22 +554,58 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
       aria-label={language === "tr" ? "Olay mekânı yeniden oluşturma" : "Event spatial reconstruction"}
     >
       <div style={labelBar}>
-        <span style={{ fontFamily: MONO, fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", fontWeight: 700 }}>
-          {titleBar}
-        </span>
-        <span
-          style={{ fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-muted)", maxWidth: "55%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}
-          title={title ?? ""}
-        >
-          {eventId ? `${system.toUpperCase()} · ${title ?? incidentClass ?? ""}` : `${system.toUpperCase()} · ${language === "tr" ? "beklemede" : "standby"}`}
-        </span>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem", minWidth: 0 }}>
+          <span style={{ fontFamily: MONO, fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", fontWeight: 700 }}>
+            {titleBar}
+          </span>
+          <span
+            style={{
+              fontFamily: MONO,
+              fontSize: "0.62rem",
+              color: "var(--text-muted)",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+            }}
+          >
+            {familyGrammar}
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", maxWidth: "60%" }}>
+          <span
+            style={{
+              fontFamily: MONO,
+              fontSize: "0.62rem",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              padding: "0.14rem 0.35rem",
+              border: "1px solid var(--accent-border)",
+              color: "var(--accent)",
+              background: "var(--accent-soft)",
+              fontWeight: 700,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {riskTag}
+          </span>
+          <span
+            style={{ fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}
+            title={title ?? ""}
+          >
+            {eventId ? `${system.toUpperCase()} · ${title ?? incidentClass ?? ""}` : `${system.toUpperCase()} · ${language === "tr" ? "beklemede" : "standby"}`}
+          </span>
+        </div>
       </div>
 
       <div
         style={{
           position: "relative",
           minHeight: STAGE_MIN_H,
-          background: "var(--panel-raised)",
+          background:
+            system === "vehicle"
+              ? "linear-gradient(180deg, rgba(212,86,26,0.05), transparent 26%), var(--panel-raised)"
+              : system === "drone"
+                ? "linear-gradient(180deg, rgba(102,148,255,0.08), transparent 26%), var(--panel-raised)"
+                : "linear-gradient(180deg, rgba(110,210,170,0.06), transparent 26%), var(--panel-raised)",
           borderBottom: "1px solid var(--border-strong)",
         }}
       >
