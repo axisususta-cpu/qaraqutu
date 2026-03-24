@@ -2026,7 +2026,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   {language === "tr" ? "Yeni İnceleme" : "New review"}
                 </button>
               </div>
-              </div>
               <p
                 style={{
                   margin: "0.45rem 0 0",
