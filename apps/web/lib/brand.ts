@@ -18,14 +18,14 @@ export const BRAND = {
 /** Asset paths — QARAQUTU logo family. Final variants from brand-final-variants. */
 export const BRAND_PATHS = {
   /** Explicit variant paths — future-proof for light/dark theme switching. */
-  primaryLight: "/brand/logo-primary-light.svg",
-  primaryDark: "/brand/logo-primary-dark.svg",
+  primaryLight: "/brand/logo-primary.svg",
+  primaryDark: "/brand/logo-qaraqutu.svg",
   sealLight: "/brand/logo-seal-light.svg",
   sealDark: "/brand/logo-seal-dark.svg",
   iconSquareLight: "/brand/logo-icon-square-light.svg",
   iconSquareDark: "/brand/logo-icon-square-dark.svg",
   /** Live defaults — light theme (current QARAQUTU UI). */
-  primaryLogo: "/brand/logo-primary-light.svg",
+  primaryLogo: "/brand/logo-primary.svg",
   seal: "/brand/logo-seal-light.svg",
   iconMark: "/brand/logo-icon-square-light.svg",
   iconMarkPng: "/brand/logo-icon-square.png",

@@ -22,6 +22,7 @@ import {
   getArtifactProfilesForDomain,
 } from "../../lib/artifact-profiles";
 import { LogoPrimary } from "../components/LogoPrimary";
+import { BrandSignatureBand } from "../components/BrandSignatureBand";
 import { ReconstructionViewport } from "../components/verifier/ReconstructionViewport";
 import { DocumentShell } from "../components/documents/DocumentShell";
 import { DocumentSection } from "../components/documents/DocumentSection";
@@ -55,7 +56,7 @@ const UI = {
   sectionGap: "1.1rem",
 } as const;
 
-const CH = { spinePx: 260, topNavPx: 48 } as const;
+const CH = { spinePx: 300, topNavPx: 48 } as const;
 
 type TranscriptStep = VerificationTranscriptEntry;
 
@@ -684,6 +685,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedRoleLens, setSelectedRoleLens] = useState<RoleLensId>("insurance");
+  const [expandedUniverse, setExpandedUniverse] = useState<MockSystemId>(selectedSystem);
   const [activeSpineSection, setActiveSpineSection] = useState<string>("source");
   type ReviewTabId = "scene" | "recorded" | "derived" | "unknownDisputed" | "transcript" | "issuance";
   const [activeReviewTab, setActiveReviewTab] = useState<ReviewTabId>("scene");
@@ -727,6 +729,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   useEffect(() => {
     setIssuanceAudience(DEFAULT_AUDIENCE_BY_PROFILE[exportProfile]);
   }, [exportProfile]);
+
+  useEffect(() => {
+    setExpandedUniverse(selectedSystem);
+  }, [selectedSystem]);
 
   /** New event selection must not inherit verify/export identity from a previous package. */
   useEffect(() => {
@@ -909,10 +915,112 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const msg = MSG[language];
   const selectedRoleLensMeta =
     ROLE_LENSES.find((role) => role.id === selectedRoleLens) ?? ROLE_LENSES[0];
+  const roleSignals: Record<RoleLensId, string[]> = {
+    insurance: ["Teminat bagi", "Hasar zinciri", "Kapsam ayraci"],
+    police: ["Kayit butunlugu", "Zaman cizgisi", "Sahne tutarliligi"],
+    adjudication: ["Kayit/turetilmis ayrimi", "Iz bagi", "Acik hususlar"],
+    expert: ["Teknik baglam", "Bulgu karsilastirma", "Belirsizlik notu"],
+    manufacturer: ["Sistem davranisi", "Guvenlik zarfi", "Tepki penceresi"],
+    software: ["Telemetri izi", "Surum etkisi", "Karar akis izi"],
+    engineering: ["Sensor/aktuatör bagi", "Mekansal vektor", "Sinir kosullari"],
+  };
 
   function professionalScenarioLabel(name: string) {
     if (language === "tr") return PROFESSIONAL_SCENARIO_LABELS_TR[name] ?? name;
     return PROFESSIONAL_SCENARIO_LABELS_EN[name] ?? name;
+  }
+
+  function issuanceFamilyLabel(profile: string) {
+    if (language === "tr") {
+      if (profile === "claims") return "Hasar / Sigorta Belgesi";
+      if (profile === "legal") return "Hukuk / Muhakeme Belgesi";
+      if (profile === "technical") return "Teknik İnceleme Belgesi";
+    }
+    if (profile === "claims") return "Claims / Insurance Dossier";
+    if (profile === "legal") return "Legal / Adjudication Dossier";
+    if (profile === "technical") return "Technical Inspection Dossier";
+    return profile;
+  }
+
+  function renderIssuanceDocumentBody(meta: ExportArtifactResponse) {
+    const commonSections = (
+      <>
+        <DocumentSection variant="authority" title={language === "tr" ? "Olay Kimliği ve Kapsam" : "Event Identity and Scope"}>
+          <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
+            {language === "tr"
+              ? "Belge, olay kimliği, zaman bağlamı, cihaz/sistem çevresi ve kaynak kayıt özetiyle dosyalanabilir bir inceleme çerçevesi sunar."
+              : "This document provides a file-ready review frame with event identity, temporal context, device/system context, and source-record summary."}
+          </p>
+        </DocumentSection>
+        <DocumentSection variant="authority" title={language === "tr" ? "Kaynak Kayıt Özeti ve Uzman Okumaları" : "Source Record Summary and Expert Readings"}>
+          <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
+            {language === "tr"
+              ? "Kayıtlı materyal, uzman okumalarıyla aynılaştırılmaz; iki katman ayrı gösterilir ve yorum alanı açık bırakılır."
+              : "Recorded material is not conflated with expert readings; both layers stay explicit and interpretation remains bounded."}
+          </p>
+        </DocumentSection>
+      </>
+    );
+
+    const profileSpecific = meta.export_profile === "claims"
+      ? (
+        <DocumentSection variant="authority" title={language === "tr" ? "Hasar Akışı ve Belge Ekleri" : "Claims Flow and Filing Attachments"}>
+          <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
+            {language === "tr"
+              ? "Tarafsız olay kronolojisi, hasar/teminat incelemesine yardımcı olacak şekilde öne alınır; belge ekleri referans zinciriyle belirtilir."
+              : "Neutral chronology is prioritized for claims/coverage review, with filing attachments linked to the reference chain."}
+          </p>
+        </DocumentSection>
+      )
+      : meta.export_profile === "legal"
+      ? (
+        <DocumentSection variant="authority" title={language === "tr" ? "Kronoloji, Delil Zinciri ve Açık Hususlar" : "Chronology, Evidence Chain, and Open Issues"}>
+          <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
+            {language === "tr"
+              ? "Muhakeme dosyası için olay sırası, inceleme izi ve açık hususlar birlikte görünür; yorum alanı korunur."
+              : "For adjudication files, event sequence, review trace, and open issues are shown together while interpretation space is preserved."}
+          </p>
+        </DocumentSection>
+      )
+      : (
+        <DocumentSection variant="authority" title={language === "tr" ? "Sistem Davranışı ve Teknik Okuma" : "System Behavior and Technical Reading"}>
+          <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
+            {language === "tr"
+              ? "Telemetri özeti, olay anı teknik okuma ve geliştirme/doğrulama notları teknik inceleme ekibi için öne alınır."
+              : "Telemetry summary, moment-level technical reading, and development/validation notes are prioritized for technical teams."}
+          </p>
+        </DocumentSection>
+      );
+
+    return (
+      <>
+        {commonSections}
+        {profileSpecific}
+        <DocumentMetadataBlock
+          variant="authority"
+          label={language === "tr" ? "İnceleme İzi ve Düzenleme Notu" : "Review Trace and Issuance Note"}
+          note={
+            language === "tr"
+              ? "Doktrin: kayıtlı ≠ türetilmiş; iz ≠ nihai gerçek; düzenleme ≠ sorumluluk."
+              : "Doctrine: recorded ≠ derived; trace ≠ final truth; issuance ≠ blame."
+          }
+        >
+          <ul style={{ margin: 0, paddingLeft: "1.1rem", fontSize: "0.9rem", lineHeight: 1.55 }}>
+            <li>{language === "tr" ? "Hüküm vermez. Şahitlik eder." : "It does not issue verdicts; it testifies."}</li>
+            <li>
+              {language === "tr"
+                ? "Bu belge, kayıtlı materyal ile uzman okumalarını aynılaştırmaz."
+                : "This document does not collapse recorded material and expert readings."}
+            </li>
+            <li>
+              {language === "tr"
+                ? "Bu belge, nihai kusur/hüküm kararı üretmez."
+                : "This document does not produce final fault or adjudication outcomes."}
+            </li>
+          </ul>
+        </DocumentMetadataBlock>
+      </>
+    );
   }
 
   function selectReviewTab(tabId: ReviewTabId) {
@@ -1103,6 +1211,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     !canResetVerificationRun || loading || !!exportLoading;
   const isPackageSelected = Boolean(selectedId);
   const isVerificationReady = Boolean(verificationState || verifyIdentityMatchesSelection);
+  const workstationLive = Boolean(selectedEventCard);
 
   return (
     <div
@@ -1130,25 +1239,56 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", minWidth: 0, flex: "1 1 auto" }}>
-          <LogoPrimary href="/" height={22} />
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "0.16rem 0.34rem",
+              border: "1px solid #2f2f2f",
+              background: "#151515",
+            }}
+          >
+            <LogoPrimary href="/" height={16} variant="onDarkSurface" />
+          </span>
           <span style={{ color: "var(--border-strong)", fontFamily: MONO, fontSize: "0.72rem", flexShrink: 0 }}>·</span>
-          <Link
-            href="/verifier"
+          <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+            <Link
+              href="/verifier"
+              style={{
+                fontFamily: MONO,
+                fontSize: "0.72rem",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--text-muted)",
+                textDecoration: "none",
+                fontWeight: 700,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {msg.verifierInspection}
+            </Link>
+            <span style={{ fontFamily: MONO, fontSize: "0.56rem", letterSpacing: "0.08em", color: "var(--text-dim)" }}>
+              Hüküm vermez. Şahitlik eder.
+            </span>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexShrink: 0 }}>
+          <span
             style={{
               fontFamily: MONO,
-              fontSize: "0.72rem",
-              letterSpacing: "0.14em",
+              fontSize: "0.62rem",
+              letterSpacing: "0.1em",
               textTransform: "uppercase",
-              color: "var(--text-muted)",
-              textDecoration: "none",
-              fontWeight: 700,
+              color: workstationLive ? "var(--accent)" : "var(--text-dim)",
+              padding: "0.18rem 0.4rem",
+              border: `1px solid ${workstationLive ? "var(--accent-border)" : "var(--border)"}`,
+              background: workstationLive ? "var(--accent-soft)" : "var(--panel)",
+              borderRadius: 2,
               whiteSpace: "nowrap",
             }}
           >
-            {msg.verifierInspection}
-          </Link>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexShrink: 0 }}>
+            {workstationLive ? "Istasyon aktif" : "Istasyon hazir"}
+          </span>
           <span
             style={{
               fontFamily: MONO,
@@ -1492,53 +1632,72 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {section.id === "family" && (
                         <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                           {MOCK_SYSTEMS.map((sys) => (
-                            <button
+                            <div
                               key={sys.id}
-                              type="button"
-                              onClick={() => {
-                                setSelectedSystem(sys.id);
-                              }}
                               style={{
-                                padding: "0.35rem 0.5rem",
-                                textAlign: "left",
-                                borderRadius: 4,
-                                border:
-                                  selectedSystem === sys.id
-                                    ? "1px solid var(--accent)"
-                                    : "1px solid var(--border)",
-                                background:
-                                  selectedSystem === sys.id ? "var(--accent-soft)" : "transparent",
-                                color: "var(--text)",
-                                cursor: "pointer",
-                                fontSize: "0.92rem",
+                                border: selectedSystem === sys.id ? "1px solid var(--accent-border)" : "1px solid var(--border)",
+                                background: selectedSystem === sys.id ? "var(--accent-soft)" : "var(--panel-card)",
                               }}
                             >
-                              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "0.35rem" }}>
-                                <span>
-                                  {language === "tr"
-                                    ? `${SYSTEM_LABELS[sys.id].tr} Evreni`
-                                    : `${SYSTEM_LABELS[sys.id].en} Universe`}
-                                </span>
-                                <span style={{ fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-dim)" }}>{sys.label}</span>
-                              </div>
-                              <div style={{ marginTop: "0.2rem", display: "flex", flexWrap: "wrap", gap: "0.2rem" }}>
-                                {DEMO_DEVICES_BY_SYSTEM[sys.id].map((device) => (
-                                  <span
-                                    key={device}
-                                    style={{
-                                      fontFamily: MONO,
-                                      fontSize: "0.64rem",
-                                      color: "var(--text-dim)",
-                                      border: "1px solid var(--border-muted)",
-                                      padding: "0.05rem 0.26rem",
-                                      borderRadius: 2,
-                                    }}
-                                  >
-                                    {device}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedSystem(sys.id);
+                                  setExpandedUniverse(sys.id);
+                                }}
+                                style={{
+                                  width: "100%",
+                                  padding: "0.35rem 0.5rem",
+                                  textAlign: "left",
+                                  border: "none",
+                                  borderLeft: selectedSystem === sys.id ? "2px solid var(--accent)" : "2px solid transparent",
+                                  background: "transparent",
+                                  color: "var(--text)",
+                                  cursor: "pointer",
+                                  fontSize: "0.92rem",
+                                }}
+                              >
+                                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "0.35rem" }}>
+                                  <span>
+                                    {language === "tr"
+                                      ? `${SYSTEM_LABELS[sys.id].tr} Evreni`
+                                      : `${SYSTEM_LABELS[sys.id].en} Universe`}
                                   </span>
-                                ))}
-                              </div>
-                            </button>
+                                  <span style={{ fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-dim)" }}>
+                                    {expandedUniverse === sys.id ? "Acik" : "Izlemede"}
+                                  </span>
+                                </div>
+                              </button>
+                              {expandedUniverse === sys.id ? (
+                                <div style={{ borderTop: "1px solid var(--border-muted)", padding: "0.3rem 0.5rem 0.42rem" }}>
+                                  <div style={{ marginBottom: "0.2rem", fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", letterSpacing: "0.08em" }}>
+                                    {language === "tr" ? "Bagli varliklar" : "Bound assets"}
+                                  </div>
+                                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem" }}>
+                                    {DEMO_DEVICES_BY_SYSTEM[sys.id].map((device) => (
+                                      <span
+                                        key={device}
+                                        style={{
+                                          fontFamily: MONO,
+                                          fontSize: "0.64rem",
+                                          color: "var(--text-dim)",
+                                          border: "1px solid var(--border-muted)",
+                                          padding: "0.05rem 0.26rem",
+                                          borderRadius: 2,
+                                          background: "var(--panel)",
+                                        }}
+                                      >
+                                        {device}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div style={{ borderTop: "1px solid var(--border-muted)", padding: "0.24rem 0.5rem", fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)" }}>
+                                  {language === "tr" ? "Ikincil evren gorunumu" : "Secondary universe view"}
+                                </div>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )}
@@ -1853,12 +2012,28 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               zIndex: 1,
               minWidth: 0,
               borderLeft: "1px solid var(--border-muted)",
-              background: "var(--bg)",
+              background: workstationLive
+                ? "linear-gradient(180deg, rgba(255,102,0,0.045), transparent 24%), var(--bg)"
+                : "var(--bg)",
               maxHeight: `calc(100vh - ${CH.topNavPx}px)`,
               overflowY: "auto",
             }}
           >
             <div style={{ padding: "0.5rem 0.85rem 1.5rem" }}>
+            <div
+              style={{
+                border: `1px solid ${workstationLive ? "var(--accent-border)" : "var(--border)"}`,
+                background: workstationLive ? "var(--accent-soft)" : "var(--panel)",
+                padding: "0.3rem 0.5rem",
+                marginBottom: "0.42rem",
+              }}
+            >
+              <span style={{ fontFamily: MONO, fontSize: "0.66rem", letterSpacing: "0.08em", color: workstationLive ? "var(--accent)" : "var(--text-dim)" }}>
+                {workstationLive
+                  ? "Paket secildi: olay sahasi, metadata ve zaman izi aktif."
+                  : "Paket secimi bekleniyor: olay sahasi pasif izleme modunda."}
+              </span>
+            </div>
             <div
               style={{
                 border: "1px solid var(--border-strong)",
@@ -2080,6 +2255,25 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               <p style={{ margin: 0, fontSize: "0.76rem", color: "var(--text-soft)", lineHeight: 1.38 }}>
                 {language === "tr" ? selectedRoleLensMeta.insightTr : selectedRoleLensMeta.insightEn}
               </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem", marginTop: "0.28rem" }}>
+                {roleSignals[selectedRoleLens].map((signal) => (
+                  <span
+                    key={signal}
+                    style={{
+                      fontFamily: MONO,
+                      fontSize: "0.62rem",
+                      letterSpacing: "0.04em",
+                      border: "1px solid var(--border)",
+                      background: "var(--panel)",
+                      color: "var(--text-dim)",
+                      padding: "0.1rem 0.3rem",
+                      borderRadius: 2,
+                    }}
+                  >
+                    {signal}
+                  </span>
+                ))}
+              </div>
             </div>
             <nav
               aria-label={language === "tr" ? "İnceleme sekmeleri" : "Inspection tabs"}
@@ -2136,7 +2330,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   style={{
                     border: "1px solid var(--border)",
                     borderBottom: "none",
-                    background: "var(--panel)",
+                    background: workstationLive ? "var(--accent-soft)" : "var(--panel)",
                     padding: "0.34rem 0.55rem",
                   }}
                 >
@@ -3458,7 +3652,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               fontWeight: exportProfile === "claims" ? 700 : 500,
                             }}
                           >
-                            {language === "tr" ? "Hasar / Claim" : "Claims"}
+                            {language === "tr" ? "Hasar / Sigorta Belgesi" : "Claims / Insurance"}
                           </button>
                         )}
                         {selectedCase.artifactProfiles.some((ap) => ap.profileCode === "legal" && ap.enabled && ap.apiBacked) && (
@@ -3478,13 +3672,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               fontWeight: exportProfile === "legal" ? 700 : 500,
                             }}
                           >
-                            {language === "tr" ? "Hukukî inceleme" : "Legal"}
+                            {language === "tr" ? "Hukuk / Muhakeme Belgesi" : "Legal / Adjudication"}
                           </button>
                         )}
                       </div>
                       <p style={{ fontSize: "0.84rem", color: "var(--text-muted)", margin: "0.5rem 0 0.35rem", lineHeight: 1.5 }}>
                         {language === "tr"
-                          ? "Kontrollü issuance: artifact manifest ve iz ile sınırlı kalır; suçlama veya nihai hüküm değildir."
+                          ? "Kontrollü belge düzenleme: çıktı, manifest ve inceleme izi ile sınırlıdır; suçlama veya nihai hüküm değildir."
                           : "Controlled issuance: artifact remains bound to manifest and trace; not a blame or final verdict."}
                       </p>
                       {!hasConnectedApiIssuanceProfile ? (
@@ -3535,7 +3729,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       ) : (
                         <p style={{ fontSize: "0.8125rem", color: "var(--text-dim)", marginTop: "0.45rem", marginBottom: 0 }}>
                           {language === "tr"
-                            ? "Sınırlı JSON/PDF düzenlemesi sol şeritteki eylem alanından."
+                            ? "Belge üretimi JSON/PDF hattı sol şeritteki inceleme işlemlerinden yürütülür."
                             : "Bounded JSON/PDF issuance from the left spine action area."}
                         </p>
                       )}
@@ -3754,7 +3948,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                       ))}
                                     </select>
                                     <DocumentShell
-                                      documentType={documentFamilyLabel(primary, language)}
+                                      documentType={issuanceFamilyLabel(meta.export_profile) || documentFamilyLabel(primary, language)}
                                       documentId={`QEV-${meta.export_id}`}
                                       eventId={meta.event_id}
                                       bundleId={meta.bundle_id}
@@ -3776,57 +3970,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                       institutionMetadataEmphasis={framing.metadataEmphasis}
                                       institutionOutputFraming={framing.outputFraming}
                                     >
-                                      <DocumentSection
-                                        variant="authority"
-                                        title={
-                                          language === "tr"
-                                            ? "Düzenleme özeti"
-                                            : "Issuance summary"
-                                        }
-                                      >
-                                        <p
-                                          style={{
-                                            margin: "0 0 0.5rem",
-                                            fontSize: "0.92rem",
-                                            lineHeight: 1.6,
-                                          }}
-                                        >
-                                          {language === "tr"
-                                            ? "Bu yüzey, seçilen profil ve muhatap çerçevesiyle protokole bağlı kimlik alanlarını gösterir. Kayıtlı ve türetilmiş kanıt katmanları birleştirilmez."
-                                            : "This surface shows protocol-bound identity fields for the selected profile and recipient framing. Recorded and derived evidence layers are not merged."}
-                                        </p>
-                                      </DocumentSection>
-                                      <DocumentMetadataBlock
-                                        variant="authority"
-                                        label={
-                                          language === "tr" ? "Katman ayrımı" : "Layer separation"
-                                        }
-                                        note={
-                                          language === "tr"
-                                            ? "Doktrin: kayıtlı ≠ türetilmiş; iz ≠ nihai gerçek; düzenleme ≠ sorumluluk."
-                                            : "Doctrine: recorded ≠ derived; trace ≠ final truth; issuance ≠ blame."
-                                        }
-                                      >
-                                        <ul
-                                          style={{
-                                            margin: 0,
-                                            paddingLeft: "1.1rem",
-                                            fontSize: "0.9rem",
-                                            lineHeight: 1.55,
-                                          }}
-                                        >
-                                          <li>
-                                            {language === "tr"
-                                              ? "Kusur veya suç isnadı dili kullanılmaz."
-                                              : "No fault or criminal-attribution language is used."}
-                                          </li>
-                                          <li>
-                                            {language === "tr"
-                                              ? "Çıktı, bounded issuance kurallarına tabidir."
-                                              : "Output remains subject to bounded issuance rules."}
-                                          </li>
-                                        </ul>
-                                      </DocumentMetadataBlock>
+                                      {renderIssuanceDocumentBody(meta)}
                                     </DocumentShell>
                                   </div>
                                 );
@@ -3867,7 +4011,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         opacity: exportLoading ? 0.6 : 1,
                       }}
                     >
-                      {language === "tr" ? "Hasar / Claim" : "Claims"}
+                      {language === "tr" ? "Hasar / Sigorta Belgesi" : "Claims / Insurance"}
                     </button>
                     <button
                       type="button"
@@ -3884,7 +4028,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         opacity: exportLoading ? 0.6 : 1,
                       }}
                     >
-                      {language === "tr" ? "Hukukî inceleme" : "Legal"}
+                      {language === "tr" ? "Hukuk / Muhakeme Belgesi" : "Legal / Adjudication"}
                     </button>
                   </div>
                   {!hasConnectedApiIssuanceProfile ? (
@@ -3927,7 +4071,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   ) : (
                     <p style={{ fontSize: "0.8125rem", color: "var(--text-dim)", marginTop: "0.45rem", marginBottom: 0 }}>
                       {language === "tr"
-                        ? "Sınırlı JSON/PDF düzenlemesi sol şeritteki eylem alanından."
+                        ? "Belge üretimi JSON/PDF hattı sol şeritteki inceleme işlemlerinden yürütülür."
                         : "Bounded JSON/PDF issuance from the left spine action area."}
                     </p>
                   )}
@@ -3955,7 +4099,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           </p>
                         ) : null}
                         <DocumentShell
-                          documentType={documentFamilyLabel(primary, language)}
+                          documentType={issuanceFamilyLabel(meta.export_profile) || documentFamilyLabel(primary, language)}
                           documentId={`QEV-${meta.export_id}`}
                           eventId={meta.event_id}
                           bundleId={meta.bundle_id}
@@ -3977,16 +4121,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           institutionMetadataEmphasis={framing.metadataEmphasis}
                           institutionOutputFraming={framing.outputFraming}
                         >
-                          <DocumentSection
-                            variant="authority"
-                            title={language === "tr" ? "Düzenleme özeti" : "Issuance summary"}
-                          >
-                            <p style={{ margin: "0 0 0.5rem", fontSize: "0.92rem", lineHeight: 1.6 }}>
-                              {language === "tr"
-                                ? "Bu yüzey, seçilen profil ve muhatap çerçevesiyle protokole bağlı kimlik alanlarını gösterir. Kayıtlı ve türetilmiş kanıt katmanları birleştirilmez."
-                                : "This surface shows protocol-bound identity fields for the selected profile and recipient framing. Recorded and derived evidence layers are not merged."}
-                            </p>
-                          </DocumentSection>
+                          {renderIssuanceDocumentBody(meta)}
                         </DocumentShell>
                       </div>
                     );
@@ -4071,7 +4206,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           ))}
                         </select>
                         <DocumentShell
-                          documentType={documentFamilyLabel(primary, language)}
+                          documentType={issuanceFamilyLabel(meta.export_profile) || documentFamilyLabel(primary, language)}
                           documentId={`QEV-${meta.export_id}`}
                           eventId={meta.event_id}
                           bundleId={meta.bundle_id}
@@ -4093,27 +4228,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           institutionMetadataEmphasis={framing.metadataEmphasis}
                           institutionOutputFraming={framing.outputFraming}
                         >
-                          <DocumentSection variant="authority" title={language === "tr" ? "Düzenleme özeti" : "Issuance summary"}>
-                            <p style={{ margin: "0 0 0.5rem", fontSize: "0.92rem", lineHeight: 1.6 }}>
-                              {language === "tr"
-                                ? "Bu yüzey, seçilen profil ve muhatap çerçevesiyle protokole bağlı kimlik alanlarını gösterir. Kayıtlı ve türetilmiş kanıt katmanları birleştirilmez."
-                                : "This surface shows protocol-bound identity fields for the selected profile and recipient framing. Recorded and derived evidence layers are not merged."}
-                            </p>
-                          </DocumentSection>
-                          <DocumentMetadataBlock
-                            variant="authority"
-                            label={language === "tr" ? "Katman ayrımı" : "Layer separation"}
-                            note={
-                              language === "tr"
-                                ? "Doktrin: kayıtlı ≠ türetilmiş; iz ≠ nihai gerçek; düzenleme ≠ sorumluluk."
-                                : "Doctrine: recorded ≠ derived; trace ≠ final truth; issuance ≠ blame."
-                            }
-                          >
-                            <ul style={{ margin: 0, paddingLeft: "1.1rem", fontSize: "0.9rem", lineHeight: 1.55 }}>
-                              <li>{language === "tr" ? "Kusur veya suç isnadı dili kullanılmaz." : "No fault or criminal-attribution language is used."}</li>
-                              <li>{language === "tr" ? "Çıktı, bounded issuance kurallarına tabidir." : "Output remains subject to bounded issuance rules."}</li>
-                            </ul>
-                          </DocumentMetadataBlock>
+                          {renderIssuanceDocumentBody(meta)}
                         </DocumentShell>
                       </div>
                     );
@@ -4127,6 +4242,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             </div>
           </main>
       </div>
+      <BrandSignatureBand mode="surface" label="Qaraqutu sahiplilik imzasi" />
     </div>
   );
 }

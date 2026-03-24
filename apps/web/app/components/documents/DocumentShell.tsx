@@ -116,13 +116,13 @@ export function DocumentShell({
       style={{
         maxWidth: 820,
         margin: "0 auto",
-        background: "var(--panel)",
-        color: "var(--text)",
+        background: "#fcfcfd",
+        color: "#111827",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        border: "1px solid var(--border-strong)",
+        border: "1px solid #d1d5db",
         borderRadius: 2,
         overflow: "hidden",
-        boxShadow: "0 1px 0 rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.06)",
+        boxShadow: "0 1px 0 rgba(15,23,42,0.08), 0 14px 34px rgba(15,23,42,0.08)",
       }}
     >
       {showCover && (
@@ -130,8 +130,8 @@ export function DocumentShell({
           className="qaraqutu-document-cover"
           style={{
             padding: "2rem 2.25rem 1.75rem",
-            borderBottom: "2px solid var(--border)",
-            background: "var(--panel-raised)",
+            borderBottom: "2px solid #cbd5e1",
+            background: "#f8fafc",
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
@@ -146,7 +146,7 @@ export function DocumentShell({
                 fontSize: "0.65rem",
                 letterSpacing: "0.16em",
                 textTransform: "uppercase",
-                color: "var(--text-muted)",
+                color: "#6b7280",
                 fontFamily: "'JetBrains Mono', monospace",
               }}
             >
@@ -157,7 +157,7 @@ export function DocumentShell({
                 style={{
                   marginTop: "0.45rem",
                   fontSize: "0.72rem",
-                  color: "var(--text-soft)",
+                  color: "#4b5563",
                   fontFamily: "'JetBrains Mono', monospace",
                   letterSpacing: "0.06em",
                 }}
@@ -170,7 +170,7 @@ export function DocumentShell({
                 marginTop: "0.65rem",
                 fontSize: "1.05rem",
                 fontFamily: "'JetBrains Mono', monospace",
-                color: "var(--text)",
+                color: "#111827",
                 letterSpacing: "0.03em",
                 fontWeight: 600,
               }}
@@ -182,7 +182,7 @@ export function DocumentShell({
                 style={{
                   marginTop: "0.5rem",
                   fontSize: "0.68rem",
-                  color: "var(--accent)",
+                  color: "#0f766e",
                   fontFamily: "'JetBrains Mono', monospace",
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
@@ -196,7 +196,7 @@ export function DocumentShell({
                 style={{
                   marginTop: "0.35rem",
                   fontSize: "0.68rem",
-                  color: "var(--text-muted)",
+                  color: "#6b7280",
                   fontFamily: "'JetBrains Mono', monospace",
                   letterSpacing: "0.03em",
                 }}
@@ -215,11 +215,11 @@ export function DocumentShell({
       <div
         className="qaraqutu-document-running-head"
         style={{
-          padding: "0.55rem 2rem",
+          padding: "0.62rem 2rem",
           fontSize: "0.62rem",
-          color: "var(--text-muted)",
-          borderBottom: "1px solid var(--border-soft)",
-          background: "var(--panel-card)",
+          color: "#4b5563",
+          borderBottom: "1px solid #dbe2ea",
+          background: "#f1f5f9",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -234,7 +234,7 @@ export function DocumentShell({
       </div>
 
       <div style={{ padding: "0 2rem" }}>
-        <div style={{ fontSize: "0.62rem", color: "var(--text-dim)", padding: "0.5rem 0 0", fontFamily: "'JetBrains Mono', monospace" }}>
+        <div style={{ fontSize: "0.62rem", color: "#6b7280", padding: "0.5rem 0 0", fontFamily: "'JetBrains Mono', monospace" }}>
           {messages.docPrintHint}
         </div>
 
@@ -245,7 +245,7 @@ export function DocumentShell({
               fontWeight: 700,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              color: "var(--text)",
+              color: "#111827",
               fontFamily: "'JetBrains Mono', monospace",
               marginBottom: "0.5rem",
             }}
@@ -260,9 +260,9 @@ export function DocumentShell({
             style={{
               marginTop: "1rem",
               padding: "0.85rem 1rem",
-              border: "1px solid var(--border)",
+              border: "1px solid #d1d5db",
               borderRadius: 2,
-              background: "var(--surface)",
+              background: "#ffffff",
             }}
           >
             <div
@@ -271,7 +271,7 @@ export function DocumentShell({
                 fontWeight: 700,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
-                color: "var(--text-muted)",
+                color: "#4b5563",
                 fontFamily: "'JetBrains Mono', monospace",
                 marginBottom: "0.55rem",
               }}
@@ -279,28 +279,28 @@ export function DocumentShell({
               {messages.docInstitutionLayer_title}
             </div>
             {institutionHeadingTone && (
-              <div style={{ fontSize: "0.88rem", fontWeight: 600, marginBottom: "0.35rem", color: "var(--text)" }}>
+              <div style={{ fontSize: "0.88rem", fontWeight: 600, marginBottom: "0.35rem", color: "#111827" }}>
                 {institutionHeadingTone}
               </div>
             )}
             {institutionSubtitle && (
-              <div style={{ fontSize: "0.78rem", color: "var(--text-soft)", lineHeight: 1.55, marginBottom: "0.45rem" }}>
+              <div style={{ fontSize: "0.78rem", color: "#374151", lineHeight: 1.55, marginBottom: "0.45rem" }}>
                 {institutionSubtitle}
               </div>
             )}
             {institutionSummary && (
-              <div style={{ fontSize: "0.76rem", color: "var(--text)", lineHeight: 1.6, marginBottom: "0.35rem" }}>
+              <div style={{ fontSize: "0.76rem", color: "#111827", lineHeight: 1.6, marginBottom: "0.35rem" }}>
                 {institutionSummary}
               </div>
             )}
             {institutionMetadataEmphasis && (
-              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.55, marginBottom: "0.35rem" }}>
-                <strong style={{ color: "var(--text-soft)" }}>Metadata: </strong>
+              <div style={{ fontSize: "0.72rem", color: "#4b5563", lineHeight: 1.55, marginBottom: "0.35rem" }}>
+                <strong style={{ color: "#111827" }}>Metadata: </strong>
                 {institutionMetadataEmphasis}
               </div>
             )}
             {institutionOutputFraming && (
-              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.55 }}>
+              <div style={{ fontSize: "0.72rem", color: "#4b5563", lineHeight: 1.55 }}>
                 {institutionOutputFraming}
               </div>
             )}
@@ -327,11 +327,11 @@ export function DocumentShell({
           style={{
             marginTop: "0.85rem",
             padding: "0.65rem 0.85rem",
-            borderLeft: "3px solid var(--accent)",
-            background: "var(--accent-soft)",
+            borderLeft: "3px solid #0f766e",
+            background: "#ecfeff",
             fontSize: "0.72rem",
             lineHeight: 1.55,
-            color: "var(--text-soft)",
+            color: "#0f172a",
           }}
         >
           {authNote}
@@ -343,8 +343,9 @@ export function DocumentShell({
         style={{
           padding: "1.35rem 2rem 1.75rem",
           minHeight: 100,
-          borderTop: "1px solid var(--border-soft)",
+          borderTop: "1px solid #e5e7eb",
           marginTop: "1rem",
+          background: "#ffffff",
         }}
       >
         <div
@@ -352,7 +353,7 @@ export function DocumentShell({
             fontSize: "0.62rem",
             letterSpacing: "0.14em",
             textTransform: "uppercase",
-            color: "var(--text-muted)",
+            color: "#4b5563",
             fontFamily: "'JetBrains Mono', monospace",
             marginBottom: "0.75rem",
           }}
@@ -367,16 +368,31 @@ export function DocumentShell({
         style={{
           padding: "0.85rem 2rem 1rem",
           fontSize: "0.62rem",
-          color: "var(--text-muted)",
-          borderTop: "2px solid var(--border)",
-          background: "var(--panel-raised)",
+          color: "#4b5563",
+          borderTop: "2px solid #d1d5db",
+          background: "#f8fafc",
           lineHeight: 1.55,
           fontFamily: "'JetBrains Mono', monospace",
           letterSpacing: "0.02em",
         }}
       >
-        <div style={{ marginBottom: "0.35rem", fontWeight: 600, color: "var(--text-soft)" }}>{documentId}</div>
-        {messages.docFooter_doctrineShort}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "1rem" }}>
+          <div style={{ minWidth: 0 }}>
+            <div style={{ marginBottom: "0.35rem", fontWeight: 600, color: "#111827" }}>{documentId}</div>
+            {messages.docFooter_doctrineShort}
+          </div>
+          <div
+            style={{
+              flexShrink: 0,
+              border: "1px solid #2f2f2f",
+              background: "#161616",
+              padding: "0.2rem 0.38rem",
+              opacity: 0.82,
+            }}
+          >
+            <LogoPrimary href={undefined} height={12} variant="onDarkSurface" />
+          </div>
+        </div>
       </div>
     </div>
   );

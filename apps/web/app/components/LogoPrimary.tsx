@@ -27,7 +27,7 @@ export function LogoPrimary({ href = "/", height = 28, className, variant = "def
     <Image
       src={src}
       alt={BRAND.name}
-      width={Math.round(height * 5.625)}
+      width={Math.round(height * 4.7)}
       height={height}
       priority
       style={{ height, width: "auto" }}
