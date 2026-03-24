@@ -227,8 +227,19 @@ body {
     overflow: visible !important;
   }
   .verifier-chassis-grid > main {
+    position: static !important;
+    z-index: auto !important;
     max-height: none !important;
     overflow: visible !important;
+  }
+  .verifier-chassis-grid > aside [aria-label="Eylem alanı"] {
+    position: static !important;
+    z-index: auto !important;
+  }
+  .verifier-chassis-grid > main [aria-label="İnceleme sekmeleri"] {
+    position: relative !important;
+    z-index: 1 !important;
+    isolation: isolate;
   }
 }
 

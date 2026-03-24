@@ -1622,6 +1622,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   color: "var(--text-dim)",
                   lineHeight: 1.25,
                   opacity: 0.62,
+                  pointerEvents: "none",
                 }}
               >
                 {msg.verifierActionBarDoctrineTrace} · {msg.verifierActionBarDoctrineIssuance}
