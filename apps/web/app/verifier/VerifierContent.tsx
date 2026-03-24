@@ -119,9 +119,9 @@ const SOURCE_CHANNELS: {
 ];
 
 const DEMO_DEVICES_BY_SYSTEM: Record<MockSystemId, string[]> = {
-  vehicle: ["Demo cihaz 01", "Demo cihaz 02"],
-  drone: ["Demo cihaz 01"],
-  robot: ["Demo cihaz 01"],
+  vehicle: ["Demo Araç A", "Demo Araç B"],
+  drone: ["Demo Drone A"],
+  robot: ["Demo Robot A"],
 };
 
 const SYSTEM_LABELS: Record<MockSystemId, { tr: string; en: string }> = {
@@ -811,6 +811,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
   const selectedCase = selectedEventId ? getCanonicalCaseByEventId(selectedEventId) : null;
   const selectedPackage = displayEvents.find((e) => e.eventId === selectedEventId) ?? null;
+  const packageSummaryMain =
+    selectedPackage?.summary.split(language === "tr" ? " Bağlam:" : " Context:")[0] ??
+    null;
+  const packageOperationalContext =
+    selectedPackage?.summary.split(language === "tr" ? " Bağlam:" : " Context:")[1]?.trim() ??
+    null;
 
   // When user selects an event from cards: set selectedEventId; for Vehicle also set selectedId for API.
   const handleSelectEvent = (eventId: string) => {
@@ -1692,11 +1698,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               <div
                 style={{
                   fontFamily: MONO,
-                  fontSize: "0.68rem",
-                  letterSpacing: "0.14em",
+                  fontSize: "0.66rem",
+                  letterSpacing: "0.12em",
                   color: "var(--text-dim)",
                   fontWeight: 700,
-                  marginBottom: "0.45rem",
+                  marginBottom: "0.38rem",
                   textTransform: "uppercase",
                 }}
               >
@@ -1709,9 +1715,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   disabled={!isPackageSelected || loading}
                   style={{
                     fontFamily: MONO,
-                    fontSize: "0.78rem",
-                    letterSpacing: "0.05em",
-                    padding: "0.42rem 0.55rem",
+                    fontSize: "0.74rem",
+                    letterSpacing: "0.04em",
+                    lineHeight: 1.25,
+                    padding: "0.4rem 0.5rem",
                     borderRadius: UI.radius.xs,
                     border: loading ? "1px solid var(--border-strong)" : "1px solid var(--accent)",
                     background: loading ? "var(--panel-card)" : "var(--accent-soft)",
@@ -1721,6 +1728,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     fontWeight: 700,
                     width: "100%",
                     textAlign: "center",
+                    whiteSpace: "normal",
+                    wordBreak: "break-word",
                   }}
                 >
                   {loading
@@ -1759,7 +1768,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         ? "JSON…"
                         : "JSON…"
                       : language === "tr"
-                      ? "Delile Dayalı Geliştirme Raporu"
+                      ? "Delile Dayalı Rapor"
                       : "Evidence-Based Development Report"}
                   </button>
                   <button
@@ -1768,8 +1777,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     disabled={!isVerificationReady || !!exportLoading}
                     style={{
                       fontFamily: MONO,
-                      fontSize: "0.74rem",
-                      padding: "0.38rem 0.5rem",
+                      fontSize: "0.72rem",
+                      letterSpacing: "0.02em",
+                      lineHeight: 1.25,
+                      padding: "0.34rem 0.46rem",
                       borderRadius: UI.radius.xs,
                       border: "1px solid var(--border)",
                       background: "var(--panel-card)",
@@ -1778,6 +1789,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       opacity: !isVerificationReady || exportLoading ? 0.55 : 1,
                       fontWeight: 600,
                       width: "100%",
+                      whiteSpace: "normal",
+                      wordBreak: "break-word",
                     }}
                   >
                     {exportLoading === "pdf"
@@ -1785,7 +1798,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         ? "PDF…"
                         : "PDF…"
                       : language === "tr"
-                      ? "Delile Dayalı Belge Oluştur"
+                      ? "Delile Dayalı Belge"
                       : "Generate Evidence-Based Document"}
                   </button>
                 </div>
@@ -1795,9 +1808,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   disabled={resetRunDisabled}
                   style={{
                     fontFamily: MONO,
-                    fontSize: "0.72rem",
-                    letterSpacing: "0.04em",
-                    padding: "0.36rem 0.5rem",
+                    fontSize: "0.69rem",
+                    letterSpacing: "0.03em",
+                    lineHeight: 1.2,
+                    padding: "0.32rem 0.46rem",
                     borderRadius: UI.radius.xs,
                     border: "1px solid var(--border-strong)",
                     background: "var(--panel-raised)",
@@ -1996,46 +2010,48 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-                  gap: "0.4rem",
-                  padding: "0.1rem 0 0.45rem",
+                  gap: "0.32rem",
+                  padding: "0.08rem 0 0.35rem",
                 }}
               >
-                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.4rem 0.55rem" }}>
-                  <div style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", marginBottom: "0.15rem", letterSpacing: "0.1em" }}>BAĞLAM</div>
-                  <div style={{ fontSize: "0.84rem", color: "var(--text-soft)", lineHeight: 1.45 }}>{selectedPackage.summary}</div>
-                </div>
-                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.4rem 0.55rem" }}>
-                  <div style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", marginBottom: "0.15rem", letterSpacing: "0.1em" }}>OPERASYON</div>
-                  <div style={{ fontSize: "0.84rem", color: "var(--text-soft)", lineHeight: 1.45 }}>{selectedPackage.title}</div>
-                </div>
-                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.4rem 0.55rem" }}>
-                  <div style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", marginBottom: "0.15rem", letterSpacing: "0.1em" }}>KRİTİK AN</div>
-                  <div style={{ fontSize: "0.84rem", color: "var(--text-soft)", lineHeight: 1.45 }}>
-                    {language === "tr" ? "Doğrulama öncesi ayrım: kayıtlı/türetilmiş + iz zinciri" : "Pre-verify split: recorded/derived + trace chain"}
+                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.34rem 0.45rem" }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginBottom: "0.12rem", letterSpacing: "0.09em" }}>BAĞLAM</div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.38 }}>
+                    {packageSummaryMain ?? selectedPackage.summary}
                   </div>
                 </div>
-                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.4rem 0.55rem" }}>
-                  <div style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)", marginBottom: "0.15rem", letterSpacing: "0.1em" }}>
+                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.34rem 0.45rem" }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginBottom: "0.12rem", letterSpacing: "0.09em" }}>OPERASYON</div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.38 }}>{selectedPackage.title}</div>
+                </div>
+                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.34rem 0.45rem" }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginBottom: "0.12rem", letterSpacing: "0.09em" }}>KRİTİK AN</div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.38 }}>
+                    {language === "tr" ? "Kayıtlı/türetilmiş ayrımı ve iz bağı" : "Recorded/derived split and trace linkage"}
+                  </div>
+                </div>
+                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.34rem 0.45rem" }}>
+                  <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginBottom: "0.12rem", letterSpacing: "0.09em" }}>
                     {language === "tr" ? "SAHNE KİMLİĞİ" : "SCENE IDENTITY"}
                   </div>
-                  <div style={{ fontSize: "0.84rem", color: "var(--text-soft)", lineHeight: 1.45 }}>
-                    {selectedPackage.identity}
+                  <div style={{ fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.38 }}>
+                    {packageOperationalContext ?? selectedPackage.identity}
                   </div>
                 </div>
               </div>
             ) : null}
             <div
               style={{
-                margin: selectedPackage ? "0.1rem 0 0.5rem" : "0.2rem 0 0.5rem",
+                margin: selectedPackage ? "0.06rem 0 0.4rem" : "0.16rem 0 0.42rem",
                 border: "1px solid var(--border)",
                 background: "var(--panel-card)",
-                padding: "0.42rem 0.5rem",
+                padding: "0.34rem 0.44rem",
               }}
             >
-              <div style={{ fontFamily: MONO, fontSize: "0.64rem", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "0.25rem" }}>
-                {language === "tr" ? "ROL PROFİLİ ODAĞI" : "ROLE PROFILE FOCUS"}
+              <div style={{ fontFamily: MONO, fontSize: "0.61rem", letterSpacing: "0.09em", color: "var(--text-dim)", marginBottom: "0.2rem" }}>
+                {language === "tr" ? "ROL ODAĞI" : "ROLE FOCUS"}
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.22rem", marginBottom: "0.28rem" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.18rem", marginBottom: "0.2rem" }}>
                 {ROLE_LENSES.map((role) => {
                   const selected = selectedRoleLens === role.id;
                   return (
@@ -2045,13 +2061,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       onClick={() => setSelectedRoleLens(role.id)}
                       style={{
                         fontFamily: MONO,
-                        fontSize: "0.66rem",
-                        letterSpacing: "0.04em",
-                        padding: "0.16rem 0.36rem",
+                        fontSize: "0.63rem",
+                        letterSpacing: "0.02em",
+                        lineHeight: 1.15,
+                        padding: "0.13rem 0.3rem",
                         border: selected ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                         background: selected ? "var(--accent-soft)" : "var(--panel)",
                         color: selected ? "var(--text)" : "var(--text-muted)",
-                        fontWeight: selected ? 700 : 500,
+                        fontWeight: selected ? 600 : 500,
                         cursor: "pointer",
                       }}
                     >
@@ -2060,7 +2077,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   );
                 })}
               </div>
-              <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.45 }}>
+              <p style={{ margin: 0, fontSize: "0.76rem", color: "var(--text-soft)", lineHeight: 1.38 }}>
                 {language === "tr" ? selectedRoleLensMeta.insightTr : selectedRoleLensMeta.insightEn}
               </p>
             </div>
