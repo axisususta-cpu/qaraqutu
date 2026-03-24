@@ -76,6 +76,151 @@ const MOCK_SYSTEMS: { id: MockSystemId; label: string }[] = [
   { id: "robot", label: "Robot Pack" },
 ];
 
+const SOURCE_CHANNELS: {
+  id: SourceId;
+  tr: string;
+  en: string;
+  badgeTr: string;
+  badgeEn: string;
+  infoTr: string;
+  infoEn: string;
+}[] = [
+  {
+    id: "demo_archive",
+    tr: "Demo Arşivi",
+    en: "Demo Archive",
+    badgeTr: "Canlı kanal",
+    badgeEn: "Live channel",
+    infoTr: "Yerel inceleme turunda etkin kaynak. Demo cihaz evreni ve olay paketleri bu kanaldan yönetilir.",
+    infoEn: "Active source for local review. Demo device universe and event packages are managed from this channel.",
+  },
+  {
+    id: "connected_device",
+    tr: "Bağlı Cihazlar",
+    en: "Connected Devices",
+    badgeTr: "Pilot kanal",
+    badgeEn: "Pilot channel",
+    infoTr:
+      "Bu kanal pilot kurulumlarda kurumsal cihaza bağlanır. Aktif cihazlar burada görünür. Pilot başlatmak için erişim gerekir.",
+    infoEn:
+      "This channel binds to institutional devices during pilot deployments. Active devices appear here. Pilot start requires access.",
+  },
+  {
+    id: "uploaded_package",
+    tr: "Yüklenen Dosya Paketi",
+    en: "Uploaded File Package",
+    badgeTr: "Kurumsal entegrasyon",
+    badgeEn: "Institutional integration",
+    infoTr:
+      "Bu kanal dışarıdan sağlanan olay paketlerini içeri alır; log, telemetri, medya, manifest, operatör notu, önceki belge ve zincir kayıtlarını okuyabilir.",
+    infoEn:
+      "This channel ingests externally provided event packages and can read logs, telemetry, media, manifests, operator notes, prior documents, and chain records.",
+  },
+];
+
+const DEMO_DEVICES_BY_SYSTEM: Record<MockSystemId, string[]> = {
+  vehicle: ["Demo cihaz 01", "Demo cihaz 02"],
+  drone: ["Demo cihaz 01"],
+  robot: ["Demo cihaz 01"],
+};
+
+const SYSTEM_LABELS: Record<MockSystemId, { tr: string; en: string }> = {
+  vehicle: { tr: "Araç", en: "Vehicle" },
+  drone: { tr: "Drone", en: "Drone" },
+  robot: { tr: "Robot", en: "Robot" },
+};
+
+const PROFESSIONAL_SCENARIO_LABELS_TR: Record<string, string> = {
+  "Sinyal ve yol geçiş ihlali": "Sinyal Geçiş Uyum İncelemesi",
+  "Temas ve yaya güvenliği": "Yaya Temas Güvenlik İncelemesi",
+  "Yön ve sinyal uyumu": "Yön-Sinyal Tutarlılık İncelemesi",
+  "Hat koridoru ihlali": "Hat Koridoru Emniyet İncelemesi",
+  "Saha sınırı ihlali": "Saha Sınırı Geçiş İncelemesi",
+  "Uçuş stabilitesi": "Uçuş Stabilite İncelemesi",
+  "Hassas yönlendirme sapması": "Hassas Yönlendirme Sapma İncelemesi",
+  "Kamusal stabilite olayı": "Kamusal Stabilite Olay İncelemesi",
+  "Rota engel çarpması": "Rota Engel Temas İncelemesi",
+};
+
+const PROFESSIONAL_SCENARIO_LABELS_EN: Record<string, string> = {
+  "Sinyal ve yol geçiş ihlali": "Signal Crossing Compliance Review",
+  "Temas ve yaya güvenliği": "Pedestrian Contact Safety Review",
+  "Yön ve sinyal uyumu": "Direction-Signal Consistency Review",
+  "Hat koridoru ihlali": "Line Corridor Safety Review",
+  "Saha sınırı ihlali": "Boundary Intrusion Review",
+  "Uçuş stabilitesi": "Flight Stability Review",
+  "Hassas yönlendirme sapması": "Precision Guidance Drift Review",
+  "Kamusal stabilite olayı": "Public Stability Incident Review",
+  "Rota engel çarpması": "Route Obstacle Contact Review",
+};
+
+type RoleLensId =
+  | "insurance"
+  | "police"
+  | "adjudication"
+  | "expert"
+  | "manufacturer"
+  | "software"
+  | "engineering";
+
+const ROLE_LENSES: {
+  id: RoleLensId;
+  tr: string;
+  en: string;
+  insightTr: string;
+  insightEn: string;
+}[] = [
+  {
+    id: "insurance",
+    tr: "Sigorta",
+    en: "Insurance",
+    insightTr: "Hasar, teminat ve olay akışı özeti öne alınır.",
+    insightEn: "Damage, coverage, and incident flow summary are prioritized.",
+  },
+  {
+    id: "police",
+    tr: "Polis",
+    en: "Police",
+    insightTr: "Zaman çizgisi, olay kaydı ve ekler görünümü öne alınır.",
+    insightEn: "Timeline, incident record, and attachments are prioritized.",
+  },
+  {
+    id: "adjudication",
+    tr: "Muhakeme",
+    en: "Adjudication",
+    insightTr: "Kayıtlı/türetilmiş ayrımı korunarak tam paket okumaya yönlendirir.",
+    insightEn: "Guides toward full package reading with recorded/derived separation preserved.",
+  },
+  {
+    id: "expert",
+    tr: "Bilirkişi",
+    en: "Expert",
+    insightTr: "Teknik bulgu zinciri, karşılaştırma notları ve açık hususlar öne alınır.",
+    insightEn: "Technical finding chain, comparison notes, and open issues are prioritized.",
+  },
+  {
+    id: "manufacturer",
+    tr: "Üretici",
+    en: "Manufacturer",
+    insightTr: "Sistem davranışı, emniyet sınırı ve olay-tepki ilişkisi öne alınır.",
+    insightEn: "System behavior, safety envelope, and event-response relation are prioritized.",
+  },
+  {
+    id: "software",
+    tr: "Yazılım",
+    en: "Software",
+    insightTr: "Telemetri, sürüm izi ve karar akışı okumaları öne alınır.",
+    insightEn: "Telemetry, version trail, and decision-flow readings are prioritized.",
+  },
+  {
+    id: "engineering",
+    tr: "Mühendislik",
+    en: "Engineering",
+    insightTr: "Sensör/aktüasyon bağı, model tepkisi ve teknik sınır notları öne alınır.",
+    insightEn: "Sensor/actuation linkage, model response, and technical boundary notes are prioritized.",
+  },
+];
+
 type DemoPackageDef = {
   packageKey: string;
   system: MockSystemId;
@@ -534,9 +679,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const { lang: language, setLang: setLanguage } = useLanguage();
   const { mode, toggle: toggleTheme } = useTheme();
   const [selectedSource, setSelectedSource] = useState<SourceId>("demo_archive");
+  const [activeSourcePanel, setActiveSourcePanel] = useState<SourceId>("demo_archive");
   const [selectedSystem, setSelectedSystem] = useState<MockSystemId>(() => resolveInitialSystem(initialEventId));
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedRoleLens, setSelectedRoleLens] = useState<RoleLensId>("insurance");
   const [activeSpineSection, setActiveSpineSection] = useState<string>("source");
   type ReviewTabId = "scene" | "recorded" | "derived" | "unknownDisputed" | "transcript" | "issuance";
   const [activeReviewTab, setActiveReviewTab] = useState<ReviewTabId>("scene");
@@ -754,6 +901,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       : null);
 
   const msg = MSG[language];
+  const selectedRoleLensMeta =
+    ROLE_LENSES.find((role) => role.id === selectedRoleLens) ?? ROLE_LENSES[0];
+
+  function professionalScenarioLabel(name: string) {
+    if (language === "tr") return PROFESSIONAL_SCENARIO_LABELS_TR[name] ?? name;
+    return PROFESSIONAL_SCENARIO_LABELS_EN[name] ?? name;
+  }
 
   function selectReviewTab(tabId: ReviewTabId) {
     setActiveReviewTab(tabId);
@@ -921,14 +1075,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
   const reviewTabs: { id: string; label: string }[] = [
     { id: "scene", label: "Sahne" },
-    { id: "recorded", label: "Kayıtlı" },
-    { id: "derived", label: "Türetilmiş" },
+    { id: "recorded", label: "Kaynak Kayıtlar" },
+    { id: "derived", label: "Uzman Okumaları" },
     {
       id: "unknownDisputed",
-      label: "Belirsiz / Tartışmalı",
+      label: "Açık Hususlar",
     },
-    { id: "transcript", label: "İz" },
-    { id: "issuance", label: "Artefakt" },
+    { id: "transcript", label: "İnceleme İzi" },
+    { id: "issuance", label: "Belgeleme" },
   ];
 
   const canResetVerificationRun =
@@ -1278,34 +1432,55 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     >
                       {section.id === "source" && (
                         <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                          {[
-                            { id: "demo_archive" as const, tr: "Demo Arşivi", en: "Demo Archive", active: true },
-                            { id: "connected_device" as const, tr: "Bağlı Cihaz", en: "Connected Device", active: false },
-                            { id: "uploaded_package" as const, tr: "Yüklenen Paket", en: "Uploaded Package", active: false },
-                          ].map((src) => (
-                            <button
-                              key={src.id}
-                              type="button"
-                              onClick={() => {
-                                if (!src.active) return;
-                                setSelectedSource(src.id);
-                              }}
-                              style={{
-                                padding: "0.35rem 0.5rem",
-                                textAlign: "left",
-                                borderRadius: 4,
-                                border: selectedSource === src.id ? "1px solid var(--accent)" : "1px solid var(--border)",
-                                background: selectedSource === src.id ? "var(--accent-soft)" : "transparent",
-                                color: src.active ? "var(--text)" : "var(--text-dim)",
-                                cursor: src.active ? "pointer" : "not-allowed",
-                                fontSize: "0.9rem",
-                                opacity: src.active ? 1 : 0.7,
-                              }}
-                            >
-                              {language === "tr" ? src.tr : src.en}
-                              {!src.active ? ` · ${language === "tr" ? "Sınırlı" : "Bounded"}` : ""}
-                            </button>
-                          ))}
+                          {SOURCE_CHANNELS.map((src) => {
+                            const isSelected = selectedSource === src.id;
+                            const isOpen = activeSourcePanel === src.id;
+                            return (
+                              <div key={src.id} style={{ border: "1px solid var(--border)", background: "var(--panel-card)" }}>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveSourcePanel((prev) => (prev === src.id ? "demo_archive" : src.id));
+                                    setSelectedSource(src.id);
+                                  }}
+                                  style={{
+                                    width: "100%",
+                                    padding: "0.35rem 0.5rem",
+                                    textAlign: "left",
+                                    border: "none",
+                                    borderLeft: isSelected ? "2px solid var(--accent)" : "2px solid transparent",
+                                    background: isSelected ? "var(--accent-soft)" : "transparent",
+                                    color: "var(--text)",
+                                    cursor: "pointer",
+                                    fontSize: "0.9rem",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    gap: "0.4rem",
+                                  }}
+                                >
+                                  <span>{language === "tr" ? src.tr : src.en}</span>
+                                  <span style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)" }}>
+                                    {(language === "tr" ? src.badgeTr : src.badgeEn) + (isOpen ? " ▾" : " ▸")}
+                                  </span>
+                                </button>
+                                {isOpen ? (
+                                  <div style={{ borderTop: "1px solid var(--border-muted)", padding: "0.35rem 0.5rem" }}>
+                                    <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
+                                      {language === "tr" ? src.infoTr : src.infoEn}
+                                    </p>
+                                    {src.id !== "demo_archive" ? (
+                                      <p style={{ margin: "0.28rem 0 0", fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-dim)" }}>
+                                        {language === "tr"
+                                          ? "Demo dışı kurumsal kullanımda açılır."
+                                          : "Enabled in non-demo institutional operation."}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                ) : null}
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                       {section.id === "family" && (
@@ -1332,13 +1507,31 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 fontSize: "0.92rem",
                               }}
                             >
-                              {language === "tr"
-                                ? sys.id === "vehicle"
-                                  ? "Vehicle Pack"
-                                  : sys.id === "drone"
-                                  ? "Drone Pack"
-                                  : "Robot Pack"
-                                : sys.label}
+                              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "0.35rem" }}>
+                                <span>
+                                  {language === "tr"
+                                    ? `${SYSTEM_LABELS[sys.id].tr} Evreni`
+                                    : `${SYSTEM_LABELS[sys.id].en} Universe`}
+                                </span>
+                                <span style={{ fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-dim)" }}>{sys.label}</span>
+                              </div>
+                              <div style={{ marginTop: "0.2rem", display: "flex", flexWrap: "wrap", gap: "0.2rem" }}>
+                                {DEMO_DEVICES_BY_SYSTEM[sys.id].map((device) => (
+                                  <span
+                                    key={device}
+                                    style={{
+                                      fontFamily: MONO,
+                                      fontSize: "0.64rem",
+                                      color: "var(--text-dim)",
+                                      border: "1px solid var(--border-muted)",
+                                      padding: "0.05rem 0.26rem",
+                                      borderRadius: 2,
+                                    }}
+                                  >
+                                    {device}
+                                  </span>
+                                ))}
+                              </div>
                             </button>
                           ))}
                         </div>
@@ -1365,7 +1558,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 fontSize: "0.875rem",
                               }}
                             >
-                              {name}
+                              <span style={{ display: "block", fontWeight: 600 }}>
+                                {professionalScenarioLabel(name)}
+                              </span>
+                              <span style={{ display: "block", marginTop: "0.08rem", fontFamily: MONO, fontSize: "0.65rem", color: "var(--text-dim)" }}>
+                                {name}
+                              </span>
                             </button>
                           ))}
                         </div>
@@ -1502,7 +1700,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   textTransform: "uppercase",
                 }}
               >
-                {language === "tr" ? "Eylem hiyerarşisi" : "Action hierarchy"}
+                {language === "tr" ? "İnceleme İşlemleri" : "Review operations"}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                 <button
@@ -1534,8 +1732,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       ? "Demo olayı aç / Paket seç"
                       : "Open demo event / Select package"
                     : language === "tr"
-                    ? "OLAYI DOĞRULA"
-                    : "VERIFY PACKAGE"}
+                    ? "İNCELEMEYİ BAŞLAT"
+                    : "START REVIEW"}
                 </button>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.28rem" }}>
                   <button
@@ -1561,8 +1759,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         ? "JSON…"
                         : "JSON…"
                       : language === "tr"
-                      ? "JSON dışa aktar"
-                      : "Export JSON"}
+                      ? "Delile Dayalı Geliştirme Raporu"
+                      : "Evidence-Based Development Report"}
                   </button>
                   <button
                     type="button"
@@ -1587,8 +1785,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         ? "PDF…"
                         : "PDF…"
                       : language === "tr"
-                      ? "PDF dışa aktar"
-                      : "Export PDF"}
+                      ? "Delile Dayalı Belge Oluştur"
+                      : "Generate Evidence-Based Document"}
                   </button>
                 </div>
                 <button
@@ -1610,7 +1808,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     width: "100%",
                   }}
                 >
-                  {msg.verifierActionBarReset}
+                  {language === "tr" ? "Yeni İnceleme" : "New review"}
                 </button>
               </div>
               <p
@@ -1826,6 +2024,46 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </div>
               </div>
             ) : null}
+            <div
+              style={{
+                margin: selectedPackage ? "0.1rem 0 0.5rem" : "0.2rem 0 0.5rem",
+                border: "1px solid var(--border)",
+                background: "var(--panel-card)",
+                padding: "0.42rem 0.5rem",
+              }}
+            >
+              <div style={{ fontFamily: MONO, fontSize: "0.64rem", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "0.25rem" }}>
+                {language === "tr" ? "ROL PROFİLİ ODAĞI" : "ROLE PROFILE FOCUS"}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.22rem", marginBottom: "0.28rem" }}>
+                {ROLE_LENSES.map((role) => {
+                  const selected = selectedRoleLens === role.id;
+                  return (
+                    <button
+                      key={role.id}
+                      type="button"
+                      onClick={() => setSelectedRoleLens(role.id)}
+                      style={{
+                        fontFamily: MONO,
+                        fontSize: "0.66rem",
+                        letterSpacing: "0.04em",
+                        padding: "0.16rem 0.36rem",
+                        border: selected ? "1px solid var(--accent-border)" : "1px solid var(--border)",
+                        background: selected ? "var(--accent-soft)" : "var(--panel)",
+                        color: selected ? "var(--text)" : "var(--text-muted)",
+                        fontWeight: selected ? 700 : 500,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {language === "tr" ? role.tr : role.en}
+                    </button>
+                  );
+                })}
+              </div>
+              <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.45 }}>
+                {language === "tr" ? selectedRoleLensMeta.insightTr : selectedRoleLensMeta.insightEn}
+              </p>
+            </div>
             <nav
               aria-label={language === "tr" ? "İnceleme sekmeleri" : "Inspection tabs"}
               style={{
@@ -1877,6 +2115,23 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   marginBottom: "0.35rem",
                 }}
               >
+                <div
+                  style={{
+                    border: "1px solid var(--border)",
+                    borderBottom: "none",
+                    background: "var(--panel)",
+                    padding: "0.34rem 0.55rem",
+                  }}
+                >
+                  <div style={{ fontFamily: MONO, fontSize: "0.66rem", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "0.1rem" }}>
+                    {language === "tr" ? "OLAY SAHASI" : "INCIDENT FIELD"}
+                  </div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
+                    {language === "tr"
+                      ? "Kayıtlı katman, uzman okuması ve inceleme izi aynı sahada fakat ayrı doktrin çizgilerinde görünür."
+                      : "Recorded layer, expert reading, and review trace are shown in one field with doctrine boundaries preserved."}
+                  </div>
+                </div>
                 <ReconstructionViewport
                   language={language}
                   system={selectedSystem}
@@ -2212,7 +2467,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             >
                               {msg.verifierRoleContextLabel}
                             </div>
-                            <p style={{ margin: 0, fontSize: "0.84rem", lineHeight: 1.5, color: "var(--text-muted)" }}>{msg.verifierRoleContextBody}</p>
+                            <p style={{ margin: 0, fontSize: "0.84rem", lineHeight: 1.5, color: "var(--text-muted)" }}>
+                              {(language === "tr" ? selectedRoleLensMeta.insightTr : selectedRoleLensMeta.insightEn) +
+                                (language === "tr"
+                                  ? " Kayıtlı ve uzman okuması katmanları birleştirilmez."
+                                  : " Recorded and expert-reading layers are not merged.")}
+                            </p>
                           </div>
                           <div style={{ padding: "0.5rem 0.65rem", background: "var(--panel)" }}>
                             <div
