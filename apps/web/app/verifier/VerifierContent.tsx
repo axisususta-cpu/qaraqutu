@@ -48,15 +48,37 @@ const API_BASE =
 
 // ── Design language: light theme, institutional review station ──────────────
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
-const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+const SANS = "'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
 // UI now uses CSS custom properties; verifier chassis uses minimal radius
 const UI = {
-  radius: { xs: 2, sm: 2, md: 2, lg: 2, xl: 2, pill: 999 },
-  sectionGap: "1.1rem",
+  radius: { xs: 6, sm: 8, md: 10, lg: 12, xl: 14, pill: 999 },
+  sectionGap: "1rem",
 } as const;
+const INNER_TILE_RADIUS = 4;
+const INNER_TILE_PAD = "0.42rem 0.56rem";
+const INNER_TILE_PAD_COMPACT = "0.34rem 0.5rem";
 
-const CH = { spinePx: 300, topNavPx: 48 } as const;
+const CH = { spinePx: 328, topNavPx: 56 } as const;
+const VERIFIER_SURFACE_VARS = {
+  "--bg": "#080a0f",
+  "--header-bg": "#101520",
+  "--panel": "#131a22",
+  "--panel-raised": "#1b2430",
+  "--panel-card": "#222d3d",
+  "--surface": "rgba(255, 102, 0, 0.18)",
+  "--text": "#e9e5df",
+  "--text-soft": "#cabfb8",
+  "--text-muted": "#9f9992",
+  "--text-dim": "#78736f",
+  "--border": "#2a303a",
+  "--border-soft": "#222a34",
+  "--border-muted": "#1c222a",
+  "--border-strong": "#4d5765",
+  "--accent": "#FF6600",
+  "--accent-soft": "rgba(255, 102, 0, 0.20)",
+  "--accent-border": "#d66200",
+} as CSSProperties;
 
 type TranscriptStep = VerificationTranscriptEntry;
 
@@ -1216,8 +1238,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   return (
     <div
       style={{
+        ...VERIFIER_SURFACE_VARS,
         minHeight: "100vh",
-        background: "var(--bg)",
+        background:
+          "linear-gradient(180deg, rgba(255,102,0,0.045), transparent 18%), radial-gradient(circle at 80% 11%, rgba(255,102,0,0.06), transparent 34%), radial-gradient(circle at 14% 86%, rgba(255,255,255,0.025), transparent 38%), var(--bg)",
         color: "var(--text)",
         fontFamily: SANS,
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
@@ -1229,13 +1253,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           top: 0,
           zIndex: 40,
           height: CH.topNavPx,
-          borderBottom: "1px solid var(--border-strong)",
-          background: "var(--header-bg)",
+          borderBottom: "1px solid var(--border)",
+          background: "linear-gradient(180deg, #181818, var(--header-bg))",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: "0.75rem",
-          padding: "0 0.65rem 0 0.5rem",
+          gap: "0.7rem",
+          padding: "0 0.72rem 0 0.6rem",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", minWidth: 0, flex: "1 1 auto" }}>
@@ -1243,9 +1267,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             style={{
               display: "inline-flex",
               alignItems: "center",
-              padding: "0.16rem 0.34rem",
-              border: "1px solid #2f2f2f",
-              background: "#151515",
+              padding: "0.2rem 0.42rem",
+              border: "1px solid var(--border)",
+              borderRadius: 6,
+              background: "linear-gradient(180deg, #1d1d1d, #151515)",
             }}
           >
             <LogoPrimary href="/" height={16} variant="onDarkSurface" />
@@ -1280,14 +1305,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               color: workstationLive ? "var(--accent)" : "var(--text-dim)",
-              padding: "0.18rem 0.4rem",
+              padding: "0.2rem 0.42rem",
               border: `1px solid ${workstationLive ? "var(--accent-border)" : "var(--border)"}`,
               background: workstationLive ? "var(--accent-soft)" : "var(--panel)",
-              borderRadius: 2,
+              borderRadius: 4,
               whiteSpace: "nowrap",
             }}
           >
-            {workstationLive ? "Istasyon aktif" : "Istasyon hazir"}
+            {workstationLive ? "İstasyon aktif" : "İstasyon hazır"}
           </span>
           <span
             style={{
@@ -1296,10 +1321,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               color: "var(--text-dim)",
-              padding: "0.18rem 0.4rem",
+              padding: "0.2rem 0.42rem",
               border: "1px solid var(--border)",
               background: "var(--panel)",
-              borderRadius: 2,
+              borderRadius: 4,
               maxWidth: 160,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -1314,7 +1339,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           <div
             style={{
               display: "inline-flex",
-              borderRadius: 2,
+              borderRadius: 4,
               border: "1px solid var(--border)",
               overflow: "hidden",
             }}
@@ -1327,7 +1352,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 type="button"
                 onClick={() => setLanguage(l)}
                 style={{
-                  padding: "0.15rem 0.42rem",
+                  padding: "0.18rem 0.45rem",
                   background: language === l ? "var(--accent-soft)" : "transparent",
                   color: language === l ? "var(--accent)" : "var(--text-muted)",
                   border: "none",
@@ -1348,8 +1373,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             onClick={toggleTheme}
             aria-label={mode === "dark" ? "Light theme" : "Dark theme"}
             style={{
-              padding: "0.15rem 0.42rem",
-              borderRadius: 2,
+              padding: "0.18rem 0.45rem",
+              borderRadius: 4,
               border: "1px solid var(--border)",
               background: "var(--panel)",
               color: "var(--text-muted)",
@@ -1386,9 +1411,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               alignSelf: "start",
               display: "flex",
               flexDirection: "column",
-              borderRight: "1px solid var(--border-strong)",
+              borderRight: "1px solid var(--border)",
               borderBottom: "1px solid var(--border)",
-              background: "var(--panel-raised)",
+              background: "linear-gradient(180deg, #1f1f1f, var(--panel-raised))",
+              boxShadow: "inset -1px 0 0 rgba(255,102,0,0.06)",
               overflowY: "auto",
               overflowX: "hidden",
             }}
@@ -1397,8 +1423,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             {/* Sidebar header */}
             <div
               style={{
-                padding: "0.5rem 0.65rem",
-                borderBottom: "1px solid var(--border-strong)",
+                padding: "0.58rem 0.7rem",
+                borderBottom: "1px solid var(--border)",
                 background: "var(--panel)",
                 display: "flex",
                 alignItems: "center",
@@ -1425,19 +1451,19 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   letterSpacing: "0.04em",
                 }}
               >
-                {language === "tr" ? "1→2→3" : "1→2→3"}
+                {language === "tr" ? "1→2→3→4" : "1→2→3→4"}
               </span>
             </div>
 
             {/* Workflow hint */}
             <div
               style={{
-                margin: "0.45rem 0.5rem",
-                padding: "0.35rem 0.5rem",
+                margin: "0.42rem 0.5rem",
+                padding: "0.34rem 0.5rem",
                 background: "var(--panel)",
                 border: "1px solid var(--border)",
-                borderLeft: "2px solid var(--accent)",
-                borderRadius: 2,
+                borderLeft: "3px solid var(--accent)",
+                borderRadius: UI.radius.xs,
               }}
               role="status"
               aria-live="polite"
@@ -1463,7 +1489,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 overflow: "visible",
               }}
             >
-            <div style={{ padding: "0 0.5rem 0.65rem" }}>
+            <div style={{ padding: "0 0.5rem 0.58rem" }}>
             <div
               style={{
                 fontFamily: MONO,
@@ -1504,13 +1530,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 <div key={section.id}>
                   <div
                     style={{
-                      marginBottom: "0.15rem",
-                      borderRadius: 2,
+                      marginBottom: "0.18rem",
+                      borderRadius: UI.radius.xs,
                       border: "1px solid",
                       borderColor: isActive ? "var(--accent-border)" : "var(--border)",
                       background: isActive ? "var(--surface)" : "transparent",
                       borderLeft: isActive
-                        ? "3px solid var(--accent)"
+                        ? "4px solid var(--accent)"
                         : isStep
                         ? "2px solid var(--border-muted)"
                         : "2px solid transparent",
@@ -1524,12 +1550,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     style={{
                       width: "100%",
                       textAlign: "left",
-                      padding: "0.45rem 0.6rem",
+                      padding: "0.42rem 0.6rem",
                       background: "transparent",
                       border: "none",
                       color: isActive ? "var(--text)" : "var(--text-muted)",
-                      fontSize: "0.875rem",
-                      fontWeight: isActive ? 600 : 400,
+                      fontSize: "0.83rem",
+                      fontWeight: isActive ? 600 : 500,
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
@@ -1550,7 +1576,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       }}
                     >
                       {section.step != null && (
-                        <span style={{ fontFamily: MONO, fontSize: "0.74rem", color: isActive ? "var(--accent)" : "var(--text-dim)", fontWeight: 700, flexShrink: 0 }}>
+                        <span style={{ fontFamily: MONO, fontSize: "0.7rem", color: isActive ? "var(--accent)" : "var(--text-dim)", fontWeight: 700, flexShrink: 0 }}>
                           {section.step}
                         </span>
                       )}
@@ -1571,7 +1597,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   {isActive && (
                     <div
                       style={{
-                        padding: "0.5rem 0.65rem 0.65rem",
+                        padding: "0.46rem 0.56rem 0.58rem",
                         borderTop: `1px solid ${"var(--border-muted)"}`,
                         fontSize: "0.86rem",
                       }}
@@ -1655,6 +1681,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                   color: "var(--text)",
                                   cursor: "pointer",
                                   fontSize: "0.92rem",
+                                  borderRadius: UI.radius.xs,
                                 }}
                               >
                                 <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "0.35rem" }}>
@@ -1848,9 +1875,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <div
               style={{
                 flexShrink: 0,
-                borderTop: "1px solid var(--border-strong)",
-                padding: "0.5rem 0.55rem calc(0.55rem + env(safe-area-inset-bottom, 0px))",
-                background: "var(--panel)",
+                borderTop: "1px solid var(--border)",
+                padding: "0.52rem 0.56rem calc(0.58rem + env(safe-area-inset-bottom, 0px))",
+                background: workstationLive
+                  ? "linear-gradient(180deg, rgba(255,102,0,0.06), var(--panel))"
+                  : "var(--panel)",
               }}
               aria-label={language === "tr" ? "Eylem alanı" : "Action area"}
             >
@@ -1861,13 +1890,24 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   letterSpacing: "0.12em",
                   color: "var(--text-dim)",
                   fontWeight: 700,
-                  marginBottom: "0.38rem",
+                  marginBottom: "0.4rem",
                   textTransform: "uppercase",
                 }}
               >
                 {language === "tr" ? "İnceleme İşlemleri" : "Review operations"}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.34rem",
+                  border: "1px solid var(--border)",
+                  borderRadius: UI.radius.xs,
+                  padding: "0.38rem",
+                  background: "var(--panel-raised)",
+                  boxShadow: workstationLive ? "inset 0 0 0 1px rgba(255,102,0,0.07)" : "none",
+                }}
+              >
                 <button
                   type="button"
                   onClick={runVerification}
@@ -1877,10 +1917,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     fontSize: "0.74rem",
                     letterSpacing: "0.04em",
                     lineHeight: 1.25,
-                    padding: "0.4rem 0.5rem",
+                    padding: "0.44rem 0.54rem",
                     borderRadius: UI.radius.xs,
                     border: loading ? "1px solid var(--border-strong)" : "1px solid var(--accent)",
-                    background: loading ? "var(--panel-card)" : "var(--accent-soft)",
+                    background: loading
+                      ? "var(--panel-card)"
+                      : "linear-gradient(180deg, rgba(255,102,0,0.22), rgba(255,102,0,0.11))",
                     color: "var(--text)",
                     cursor: loading ? "wait" : !isPackageSelected ? "not-allowed" : "pointer",
                     opacity: !isPackageSelected ? 0.55 : 1,
@@ -1903,7 +1945,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     ? "İNCELEMEYİ BAŞLAT"
                     : "START REVIEW"}
                 </button>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.28rem" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.26rem" }}>
                   <button
                     type="button"
                     onClick={runExportJson}
@@ -1911,10 +1953,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     style={{
                       fontFamily: MONO,
                       fontSize: "0.74rem",
-                      padding: "0.38rem 0.5rem",
+                      padding: "0.4rem 0.52rem",
                       borderRadius: UI.radius.xs,
                       border: "1px solid var(--border)",
-                      background: "var(--panel-card)",
+                      background: "linear-gradient(180deg, var(--panel-card), var(--panel-raised))",
                       color: "var(--text)",
                       cursor: !isVerificationReady || exportLoading ? "not-allowed" : "pointer",
                       opacity: !isVerificationReady || exportLoading ? 0.55 : 1,
@@ -1939,10 +1981,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       fontSize: "0.72rem",
                       letterSpacing: "0.02em",
                       lineHeight: 1.25,
-                      padding: "0.34rem 0.46rem",
+                      padding: "0.36rem 0.5rem",
                       borderRadius: UI.radius.xs,
                       border: "1px solid var(--border)",
-                      background: "var(--panel-card)",
+                      background: "linear-gradient(180deg, var(--panel-card), var(--panel-raised))",
                       color: "var(--text)",
                       cursor: !isVerificationReady || exportLoading ? "not-allowed" : "pointer",
                       opacity: !isVerificationReady || exportLoading ? 0.55 : 1,
@@ -1970,10 +2012,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     fontSize: "0.69rem",
                     letterSpacing: "0.03em",
                     lineHeight: 1.2,
-                    padding: "0.32rem 0.46rem",
+                    padding: "0.34rem 0.5rem",
                     borderRadius: UI.radius.xs,
                     border: "1px solid var(--border-strong)",
-                    background: "var(--panel-raised)",
+                    background: "var(--panel)",
                     color: "var(--text-muted)",
                     cursor: resetRunDisabled ? "not-allowed" : "pointer",
                     opacity: resetRunDisabled ? 0.45 : 1,
@@ -1983,6 +2025,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 >
                   {language === "tr" ? "Yeni İnceleme" : "New review"}
                 </button>
+              </div>
               </div>
               <p
                 style={{
@@ -2011,36 +2054,44 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               position: "relative",
               zIndex: 1,
               minWidth: 0,
-              borderLeft: "1px solid var(--border-muted)",
+              borderLeft: "1px solid var(--border-soft)",
               background: workstationLive
-                ? "linear-gradient(180deg, rgba(255,102,0,0.045), transparent 24%), var(--bg)"
-                : "var(--bg)",
+                ? "linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.16) 22%, rgba(255,102,0,0.14) 44%, var(--panel))"
+                : "var(--panel)",
               maxHeight: `calc(100vh - ${CH.topNavPx}px)`,
               overflowY: "auto",
             }}
           >
-            <div style={{ padding: "0.5rem 0.85rem 1.5rem" }}>
+            <div style={{ padding: "0.56rem 0.92rem 1.45rem" }}>
             <div
               style={{
                 border: `1px solid ${workstationLive ? "var(--accent-border)" : "var(--border)"}`,
-                background: workstationLive ? "var(--accent-soft)" : "var(--panel)",
+                background: workstationLive
+                  ? "linear-gradient(90deg, rgba(255,102,0,0.16), rgba(255,102,0,0.08) 45%, rgba(255,102,0,0.03) 100%)"
+                  : "var(--panel)",
                 padding: "0.3rem 0.5rem",
-                marginBottom: "0.42rem",
+                marginBottom: "0.46rem",
+                borderRadius: UI.radius.xs,
+                boxShadow: workstationLive ? "0 0 0 1px rgba(255,102,0,0.09) inset" : "none",
               }}
             >
               <span style={{ fontFamily: MONO, fontSize: "0.66rem", letterSpacing: "0.08em", color: workstationLive ? "var(--accent)" : "var(--text-dim)" }}>
                 {workstationLive
-                  ? "Paket secildi: olay sahasi, metadata ve zaman izi aktif."
-                  : "Paket secimi bekleniyor: olay sahasi pasif izleme modunda."}
+                  ? "Paket seçildi: olay sahası, metadata ve zaman izi aktif."
+                  : "Paket seçimi bekleniyor: olay sahası pasif izleme modunda."}
               </span>
             </div>
             <div
               style={{
-                border: "1px solid var(--border-strong)",
-                background: "var(--panel)",
+                border: "1px solid var(--border-soft)",
+                background: "var(--panel-card)",
                 borderTop: "2px solid var(--accent-border)",
-                padding: "0.45rem 0.55rem 0.5rem",
-                marginBottom: "0.45rem",
+                padding: "0.38rem 0.48rem 0.5rem",
+                marginBottom: "0.4rem",
+                borderRadius: UI.radius.sm,
+                boxShadow: workstationLive
+                  ? "0 16px 32px rgba(0,0,0,0.38), inset 0 0 0 1px rgba(255,102,0,0.10)"
+                  : "0 8px 16px rgba(0,0,0,0.18)",
               }}
             >
               <div
@@ -2086,9 +2137,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontSize: "0.62rem",
                         letterSpacing: "0.14em",
                         textTransform: "uppercase",
-                        padding: "0.14rem 0.38rem",
+                        padding: "0.16rem 0.4rem",
                         border: "1px solid var(--border)",
-                        borderRadius: 2,
+                        borderRadius: INNER_TILE_RADIUS,
                         color: "var(--text-dim)",
                         background: "var(--panel-card)",
                         fontWeight: 600,
@@ -2123,7 +2174,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       textTransform: "uppercase",
                       padding: "0.22rem 0.5rem",
                       border: "1px solid var(--border-strong)",
-                      borderRadius: 2,
+                      borderRadius: INNER_TILE_RADIUS,
                       color: "var(--text-soft)",
                       background: "var(--panel-raised)",
                       fontWeight: 700,
@@ -2140,7 +2191,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         textTransform: "uppercase",
                         padding: "0.2rem 0.45rem",
                         border: "1px solid var(--accent-border)",
-                        borderRadius: 2,
+                        borderRadius: INNER_TILE_RADIUS,
                         color: "var(--accent)",
                         background: "var(--accent-soft)",
                         fontWeight: 700,
@@ -2170,7 +2221,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         color: "var(--text-dim)",
                         padding: "0.22rem 0.5rem",
                         border: "1px dashed var(--border-strong)",
-                        borderRadius: 2,
+                        borderRadius: INNER_TILE_RADIUS,
                         fontWeight: 600,
                       }}
                     >
@@ -2185,27 +2236,27 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-                  gap: "0.32rem",
-                  padding: "0.08rem 0 0.35rem",
+                  gap: "0.34rem",
+                  padding: "0.1rem 0 0.4rem",
                 }}
               >
-                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.34rem 0.45rem" }}>
+                <div style={{ border: "1px solid var(--border)", borderRadius: INNER_TILE_RADIUS, background: "var(--panel-card)", padding: INNER_TILE_PAD_COMPACT }}>
                   <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginBottom: "0.12rem", letterSpacing: "0.09em" }}>BAĞLAM</div>
                   <div style={{ fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.38 }}>
                     {packageSummaryMain ?? selectedPackage.summary}
                   </div>
                 </div>
-                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.34rem 0.45rem" }}>
+                <div style={{ border: "1px solid var(--border)", borderRadius: INNER_TILE_RADIUS, background: "var(--panel-card)", padding: INNER_TILE_PAD_COMPACT }}>
                   <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginBottom: "0.12rem", letterSpacing: "0.09em" }}>OPERASYON</div>
                   <div style={{ fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.38 }}>{selectedPackage.title}</div>
                 </div>
-                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.34rem 0.45rem" }}>
+                <div style={{ border: "1px solid var(--border)", borderRadius: INNER_TILE_RADIUS, background: "var(--panel-card)", padding: INNER_TILE_PAD_COMPACT }}>
                   <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginBottom: "0.12rem", letterSpacing: "0.09em" }}>KRİTİK AN</div>
                   <div style={{ fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.38 }}>
                     {language === "tr" ? "Kayıtlı/türetilmiş ayrımı ve iz bağı" : "Recorded/derived split and trace linkage"}
                   </div>
                 </div>
-                <div style={{ border: "1px solid var(--border)", background: "var(--panel-card)", padding: "0.34rem 0.45rem" }}>
+                <div style={{ border: "1px solid var(--border)", borderRadius: INNER_TILE_RADIUS, background: "var(--panel-card)", padding: INNER_TILE_PAD_COMPACT }}>
                   <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginBottom: "0.12rem", letterSpacing: "0.09em" }}>
                     {language === "tr" ? "SAHNE KİMLİĞİ" : "SCENE IDENTITY"}
                   </div>
@@ -2220,13 +2271,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 margin: selectedPackage ? "0.06rem 0 0.4rem" : "0.16rem 0 0.42rem",
                 border: "1px solid var(--border)",
                 background: "var(--panel-card)",
-                padding: "0.34rem 0.44rem",
+                padding: "0.38rem 0.5rem",
+                borderRadius: UI.radius.sm,
+                boxShadow: workstationLive ? "inset 0 0 0 1px rgba(255,102,0,0.06)" : "none",
               }}
             >
-              <div style={{ fontFamily: MONO, fontSize: "0.61rem", letterSpacing: "0.09em", color: "var(--text-dim)", marginBottom: "0.2rem" }}>
+              <div style={{ fontFamily: MONO, fontSize: "0.61rem", letterSpacing: "0.09em", color: "var(--text-dim)", marginBottom: "0.24rem" }}>
                 {language === "tr" ? "ROL ODAĞI" : "ROLE FOCUS"}
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.18rem", marginBottom: "0.2rem" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem", marginBottom: "0.24rem" }}>
                 {ROLE_LENSES.map((role) => {
                   const selected = selectedRoleLens === role.id;
                   return (
@@ -2239,12 +2292,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         fontSize: "0.63rem",
                         letterSpacing: "0.02em",
                         lineHeight: 1.15,
-                        padding: "0.13rem 0.3rem",
+                        padding: "0.15rem 0.34rem",
                         border: selected ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                         background: selected ? "var(--accent-soft)" : "var(--panel)",
                         color: selected ? "var(--text)" : "var(--text-muted)",
                         fontWeight: selected ? 600 : 500,
                         cursor: "pointer",
+                        borderRadius: INNER_TILE_RADIUS,
                       }}
                     >
                       {language === "tr" ? role.tr : role.en}
@@ -2252,10 +2306,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   );
                 })}
               </div>
-              <p style={{ margin: 0, fontSize: "0.76rem", color: "var(--text-soft)", lineHeight: 1.38 }}>
+              <p style={{ margin: 0, fontSize: "0.76rem", color: "var(--text-soft)", lineHeight: 1.4 }}>
                 {language === "tr" ? selectedRoleLensMeta.insightTr : selectedRoleLensMeta.insightEn}
               </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem", marginTop: "0.28rem" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem", marginTop: "0.3rem" }}>
                 {roleSignals[selectedRoleLens].map((signal) => (
                   <span
                     key={signal}
@@ -2266,8 +2320,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       border: "1px solid var(--border)",
                       background: "var(--panel)",
                       color: "var(--text-dim)",
-                      padding: "0.1rem 0.3rem",
-                      borderRadius: 2,
+                      padding: "0.12rem 0.34rem",
+                      borderRadius: INNER_TILE_RADIUS,
                     }}
                   >
                     {signal}
@@ -2282,7 +2336,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 zIndex: 2,
                 display: "flex",
                 flexWrap: "wrap",
-                gap: "0.25rem",
+                gap: "0.22rem",
                 alignItems: "center",
                 paddingBottom: "0.45rem",
                 marginBottom: "0.35rem",
@@ -2301,8 +2355,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       fontSize: "0.72rem",
                       letterSpacing: "0.08em",
                       textTransform: "uppercase",
-                      padding: "0.3rem 0.55rem",
-                      borderRadius: 2,
+                      padding: "0.32rem 0.56rem",
+                      borderRadius: INNER_TILE_RADIUS,
                       border: `1px solid ${on ? "var(--accent-border)" : "var(--border)"}`,
                       background: on ? "var(--accent-soft)" : "var(--panel)",
                       color: on ? "var(--text)" : "var(--text-muted)",
@@ -2331,7 +2385,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     border: "1px solid var(--border)",
                     borderBottom: "none",
                     background: workstationLive ? "var(--accent-soft)" : "var(--panel)",
-                    padding: "0.34rem 0.55rem",
+                    padding: INNER_TILE_PAD_COMPACT,
+                    borderTopLeftRadius: INNER_TILE_RADIUS,
+                    borderTopRightRadius: INNER_TILE_RADIUS,
                   }}
                 >
                   <div style={{ fontFamily: MONO, fontSize: "0.66rem", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "0.1rem" }}>
@@ -2364,6 +2420,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 background: "var(--panel-raised)",
                 scrollMarginTop: "0.75rem",
                 minHeight: "12rem",
+                borderRadius: INNER_TILE_RADIUS,
               }}
             >
             {activeReviewTab === "scene" && (
@@ -2372,10 +2429,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               <section
                 style={{
                   marginBottom: UI.sectionGap,
-                  borderRadius: 2,
+                  borderRadius: INNER_TILE_RADIUS,
                   border: `1px solid var(--border-strong)`,
                   background: "var(--panel)",
-                  padding: "0.7rem 0.8rem",
+                  padding: "0.68rem 0.76rem",
                 }}
                 aria-live="polite"
               >
@@ -2576,7 +2633,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             <div
                               key={cell.k}
                               style={{
-                                padding: "0.45rem 0.6rem",
+                                padding: INNER_TILE_PAD,
                                 borderRight: i % 2 === 0 ? "1px solid var(--border)" : undefined,
                                 borderBottom: i < 2 ? "1px solid var(--border)" : undefined,
                                 background: i % 2 === 0 ? "var(--panel)" : "var(--panel-card)",
@@ -2603,7 +2660,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         {selectedCase ? (
                           <div
                             style={{
-                              padding: "0.5rem 0.65rem",
+                              padding: INNER_TILE_PAD,
                               borderBottom: "1px solid var(--border)",
                               background: "var(--panel)",
                             }}
@@ -2625,7 +2682,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             </p>
                           </div>
                         ) : null}
-                        <div style={{ padding: "0.55rem 0.65rem", borderBottom: "1px solid var(--border)", background: "var(--panel-card)" }}>
+                        <div style={{ padding: INNER_TILE_PAD, borderBottom: "1px solid var(--border)", background: "var(--panel-card)" }}>
                           <div
                             style={{
                               fontFamily: MONO,
@@ -2641,7 +2698,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           <p style={{ margin: 0, lineHeight: 1.55, fontSize: "0.95rem", fontWeight: 500, color: "var(--text)" }}>{sum.what}</p>
                         </div>
                         {sum.why ? (
-                          <div style={{ padding: "0.55rem 0.65rem", borderBottom: "1px solid var(--border)", background: "var(--panel)" }}>
+                          <div style={{ padding: INNER_TILE_PAD, borderBottom: "1px solid var(--border)", background: "var(--panel)" }}>
                             <div
                               style={{
                                 fontFamily: MONO,
@@ -2665,7 +2722,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             borderBottom: sum.next ? "1px solid var(--border)" : undefined,
                           }}
                         >
-                          <div style={{ padding: "0.5rem 0.65rem", borderRight: "1px solid var(--border)", background: "var(--panel-card)" }}>
+                          <div style={{ padding: INNER_TILE_PAD, borderRight: "1px solid var(--border)", background: "var(--panel-card)" }}>
                             <div
                               style={{
                                 fontFamily: MONO,
@@ -2685,7 +2742,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                   : " Recorded and expert-reading layers are not merged.")}
                             </p>
                           </div>
-                          <div style={{ padding: "0.5rem 0.65rem", background: "var(--panel)" }}>
+                          <div style={{ padding: INNER_TILE_PAD, background: "var(--panel)" }}>
                             <div
                               style={{
                                 fontFamily: MONO,
@@ -2725,7 +2782,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   <div
                     style={{
                       border: "1px solid var(--border-strong)",
-                      borderRadius: 2,
+                      borderRadius: INNER_TILE_RADIUS,
                       overflow: "hidden",
                       borderLeft: "2px solid var(--success)",
                       background: "var(--panel)",
@@ -2733,7 +2790,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   >
                     <div
                       style={{
-                        padding: "0.38rem 0.55rem",
+                        padding: INNER_TILE_PAD_COMPACT,
                         background: "var(--panel-raised)",
                         borderBottom: "1px solid var(--border-strong)",
                         display: "flex",
@@ -2752,7 +2809,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             fontSize: "0.66rem",
                             padding: "0.08rem 0.32rem",
                             border: "1px solid var(--success-border)",
-                            borderRadius: 2,
+                            borderRadius: INNER_TILE_RADIUS,
                             color: "var(--success)",
                             fontWeight: 700,
                             letterSpacing: "0.06em",
@@ -2763,7 +2820,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       </div>
                       <span style={{ fontFamily: MONO, fontSize: "0.72rem", color: "var(--text-dim)" }}>{msg.verifierRawLayer}</span>
                     </div>
-                    <div style={{ padding: "0.55rem 0.6rem" }}>
+                    <div style={{ padding: INNER_TILE_PAD }}>
                       <p style={{ margin: "0 0 0.65rem", fontFamily: MONO, fontSize: "0.76rem", color: "var(--text-dim)", lineHeight: 1.55 }}>
                         {msg.verifierEvidenceRecordedCaption}
                       </p>
@@ -2781,8 +2838,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         return (
                           <div style={{ display: "flex", flexDirection: "column", gap: "0.28rem" }}>
                             {visibleRecorded.map((r, i) => (
-                              <div key={i} style={{ borderRadius: 2, border: "1px solid var(--border)", overflow: "hidden" }}>
-                                <div style={{ padding: "0.28rem 0.45rem", background: "var(--panel-raised)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.4rem" }}>
+                              <div key={i} style={{ borderRadius: INNER_TILE_RADIUS, border: "1px solid var(--border)", overflow: "hidden" }}>
+                                <div style={{ padding: "0.3rem 0.46rem", background: "var(--panel-raised)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.4rem" }}>
                                   <span style={{ fontSize: "0.84rem", fontWeight: 600, color: "var(--text-soft)" }}>{r.source}</span>
                                   <span
                                     style={{
@@ -2802,7 +2859,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                     {r.status}
                                   </span>
                                 </div>
-                                <div style={{ padding: "0.28rem 0.45rem", background: "var(--bg)" }}>
+                                <div style={{ padding: "0.3rem 0.46rem", background: "var(--bg)" }}>
                                   <div style={{ fontSize: "0.8125rem", color: "var(--text-soft)", lineHeight: 1.45, marginBottom: "0.2rem" }}>{r.description}</div>
                                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0.15rem 0.55rem", fontFamily: MONO, fontSize: "0.74rem", color: "var(--text-dim)" }}>
                                     <span>ts:{r.timestamp}</span>
@@ -2822,7 +2879,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   <div
                     style={{
                       border: "1px solid var(--border-strong)",
-                      borderRadius: 2,
+                      borderRadius: INNER_TILE_RADIUS,
                       overflow: "hidden",
                       borderLeft: "2px solid var(--warning)",
                       background: "var(--panel)",
@@ -2830,7 +2887,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   >
                     <div
                       style={{
-                        padding: "0.38rem 0.55rem",
+                        padding: INNER_TILE_PAD_COMPACT,
                         background: "var(--panel-raised)",
                         borderBottom: "1px solid var(--border-strong)",
                         display: "flex",
@@ -2849,7 +2906,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             fontSize: "0.66rem",
                             padding: "0.08rem 0.32rem",
                             border: "1px solid var(--warning-border)",
-                            borderRadius: 2,
+                            borderRadius: INNER_TILE_RADIUS,
                             color: "var(--warning)",
                             fontWeight: 700,
                             letterSpacing: "0.06em",
@@ -2860,7 +2917,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       </div>
                       <span style={{ fontFamily: MONO, fontSize: "0.72rem", color: "var(--text-dim)" }}>{msg.verifierSecondLayer}</span>
                     </div>
-                    <div style={{ padding: "0.55rem 0.6rem" }}>
+                    <div style={{ padding: INNER_TILE_PAD }}>
                       <p style={{ margin: "0 0 0.65rem", fontFamily: MONO, fontSize: "0.76rem", color: "var(--text-dim)", lineHeight: 1.55 }}>
                         {msg.verifierEvidenceDerivedCaption}
                       </p>
@@ -2879,11 +2936,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         return (
                           <div style={{ display: "flex", flexDirection: "column", gap: "0.28rem" }}>
                             {derived.map((d, i) => (
-                              <div key={i} style={{ borderRadius: 2, border: "1px solid var(--border)", overflow: "hidden" }}>
-                                <div style={{ padding: "0.28rem 0.45rem", background: "var(--panel-raised)", borderBottom: "1px solid var(--border)" }}>
+                              <div key={i} style={{ borderRadius: INNER_TILE_RADIUS, border: "1px solid var(--border)", overflow: "hidden" }}>
+                                <div style={{ padding: "0.3rem 0.46rem", background: "var(--panel-raised)", borderBottom: "1px solid var(--border)" }}>
                                   <span style={{ fontSize: "0.84rem", fontWeight: 600, color: "var(--text-soft)" }}>{d.type}</span>
                                 </div>
-                                <div style={{ padding: "0.28rem 0.45rem", background: "var(--bg)" }}>
+                                <div style={{ padding: "0.3rem 0.46rem", background: "var(--bg)" }}>
                                   <div style={{ fontSize: "0.8125rem", color: "var(--text-soft)", lineHeight: 1.45, marginBottom: "0.2rem" }}>{d.explanation}</div>
                                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0.15rem 0.55rem", fontFamily: MONO, fontSize: "0.74rem", color: "var(--text-dim)" }}>
                                     <span>basis:{d.basisReferences}</span>
@@ -2927,14 +2984,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 style={{
                   border: "1px solid var(--border-strong)",
                   borderLeft: "2px solid var(--warning)",
-                  borderRadius: 2,
+                  borderRadius: INNER_TILE_RADIUS,
                   overflow: "hidden",
                   background: "var(--panel)",
                 }}
               >
                 <div
                   style={{
-                    padding: "0.38rem 0.55rem",
+                    padding: INNER_TILE_PAD_COMPACT,
                     background: "var(--panel-raised)",
                     borderBottom: "1px solid var(--border-strong)",
                     display: "flex",
@@ -2950,7 +3007,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     {msg.verifierHumanReview}
                   </span>
                 </div>
-                <div style={{ padding: "0.55rem 0.6rem", background: "var(--panel)", fontSize: "0.9rem" }}>
+                <div style={{ padding: INNER_TILE_PAD, background: "var(--panel)", fontSize: "0.9rem" }}>
                   <p style={{ margin: "0 0 0.55rem", fontSize: "0.92rem", lineHeight: 1.5, color: "var(--text-muted)", fontFamily: SANS }}>
                     {msg.verifierUnknownIntro}
                   </p>
@@ -2975,10 +3032,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                         {visibleUnknownItems.length ? (
                           visibleUnknownItems.map((item, i) => (
-                            <div key={i} style={{ borderRadius: 2, border: "1px solid var(--border-strong)", overflow: "hidden" }}>
+                            <div key={i} style={{ borderRadius: INNER_TILE_RADIUS, border: "1px solid var(--border-strong)", overflow: "hidden" }}>
                               <div
                                 style={{
-                                  padding: "0.28rem 0.45rem",
+                                  padding: "0.3rem 0.46rem",
                                   background: "var(--panel-raised)",
                                   borderBottom: "1px solid var(--border)",
                                   display: "flex",
@@ -2998,17 +3055,17 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                     letterSpacing: "0.08em",
                                     color: "var(--warning)",
                                     border: "1px solid var(--warning-border)",
-                                    borderRadius: 2,
+                                    borderRadius: INNER_TILE_RADIUS,
                                     padding: "0.06rem 0.28rem",
                                   }}
                                 >
                                   OPEN
                                 </span>
                               </div>
-                              <div style={{ padding: "0.35rem 0.45rem", background: "var(--bg)" }}>
+                              <div style={{ padding: "0.36rem 0.46rem", background: "var(--bg)" }}>
                                 <div style={{ fontSize: "0.86rem", lineHeight: 1.5, color: "var(--text-soft)" }}>{item}</div>
                               </div>
-                              <div style={{ padding: "0.22rem 0.45rem", background: "var(--panel)", borderTop: "1px solid var(--border)" }}>
+                              <div style={{ padding: "0.22rem 0.46rem", background: "var(--panel)", borderTop: "1px solid var(--border)" }}>
                                 <span style={{ fontFamily: MONO, fontSize: "0.72rem", color: "var(--text-dim)", letterSpacing: "0.04em" }}>
                                   {msg.verifierHumanReviewTag}
                                 </span>
@@ -3049,14 +3106,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 style={{
                   border: "1px solid var(--border-strong)",
                   borderLeft: "2px solid var(--blue)",
-                  borderRadius: 2,
+                  borderRadius: INNER_TILE_RADIUS,
                   overflow: "hidden",
                   background: "var(--panel)",
                 }}
               >
                 <div
                   style={{
-                    padding: "0.38rem 0.55rem",
+                    padding: INNER_TILE_PAD_COMPACT,
                     background: "var(--panel-raised)",
                     borderBottom: "1px solid var(--border-strong)",
                     display: "flex",
@@ -3075,7 +3132,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       fontWeight: 700,
                       color: "var(--text-dim)",
                       padding: "0.12rem 0.38rem",
-                      borderRadius: 2,
+                      borderRadius: INNER_TILE_RADIUS,
                       border: "1px solid var(--border)",
                       background: "var(--panel)",
                       letterSpacing: "0.06em",

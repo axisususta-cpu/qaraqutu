@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 
 /** Minimum stage height: primary forensic workstation surface (scene-first) */
-const STAGE_MIN_H = "clamp(360px, 52vh, 620px)";
+const STAGE_MIN_H = "clamp(390px, 58vh, 690px)";
 
 export type ReconstructionSystem = "vehicle" | "drone" | "robot";
 
@@ -71,17 +71,17 @@ function resolveSceneKind(
 }
 
 const panel: CSSProperties = {
-  border: "2px solid var(--border-strong)",
-  borderRadius: 2,
-  background: "var(--panel)",
+  border: "1px solid var(--border-soft)",
+  borderRadius: 10,
+  background: "var(--panel-card)",
   overflow: "hidden",
-  boxShadow: "none",
+  boxShadow: "0 18px 36px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,102,0,0.08)",
 };
 
 const labelBar: CSSProperties = {
-  padding: "0.38rem 0.65rem",
-  borderBottom: "1px solid var(--border-strong)",
-  background: "var(--panel-raised)",
+  padding: "0.48rem 0.72rem",
+  borderBottom: "1px solid var(--border)",
+  background: "linear-gradient(180deg, #242424, var(--panel))",
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
@@ -340,6 +340,66 @@ function SceneRenderer({ kind, language }: { kind: SceneKind; language: "en" | "
   }
 }
 
+function SpatialReadinessLayer({
+  seed,
+  active,
+  language,
+}: {
+  seed: number;
+  active: boolean;
+  language: "en" | "tr";
+}) {
+  const points = Array.from({ length: 28 }, (_, i) => {
+    const x = 6 + ((seed + i * 37) % 88);
+    const y = 12 + ((seed + i * 53) % 76);
+    const o = 0.18 + (((seed + i * 17) % 55) / 100);
+    return { x, y, o };
+  });
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 1,
+        pointerEvents: "none",
+        border: active ? "1px solid var(--accent-border)" : "1px solid var(--border)",
+        background:
+          "linear-gradient(180deg, rgba(255,102,0,0.11) 0%, rgba(255,102,0,0.04) 36%, transparent 100%)",
+      }}
+      aria-hidden
+    >
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
+        {points.map((p, idx) => (
+          <circle key={idx} cx={p.x} cy={p.y} r={active ? 0.38 : 0.28} fill="var(--accent)" opacity={active ? p.o : p.o * 0.66} />
+        ))}
+        <polyline points="8,80 24,65 42,72 57,50 74,58 90,36" fill="none" stroke="var(--accent)" strokeWidth="0.32" strokeDasharray="1.4 1.1" opacity={active ? 0.75 : 0.45} />
+        <polyline points="12,22 30,26 47,18 60,24 79,14" fill="none" stroke="var(--text-dim)" strokeWidth="0.26" strokeDasharray="1 1.2" opacity={0.55} />
+        <polyline points="10,68 28,60 45,62 63,44 84,47" fill="none" stroke="var(--border-strong)" strokeWidth="0.24" strokeDasharray="0.8 1.3" opacity={0.62} />
+        <line x1="20" y1="84" x2="36" y2="66" stroke="var(--accent)" strokeWidth="0.3" opacity={active ? 0.72 : 0.4} />
+        <line x1="60" y1="55" x2="82" y2="44" stroke="var(--accent)" strokeWidth="0.3" opacity={active ? 0.72 : 0.4} />
+        <line x1="24" y1="64" x2="24" y2="84" stroke="var(--border)" strokeWidth="0.22" opacity={0.55} />
+        <line x1="58" y1="50" x2="58" y2="72" stroke="var(--border)" strokeWidth="0.22" opacity={0.55} />
+        <rect x="6" y="6" width="88" height="88" fill="none" stroke="var(--border-muted)" strokeWidth="0.35" />
+      </svg>
+      <div
+        style={{
+          position: "absolute",
+          left: 10,
+          bottom: 8,
+          fontFamily: MONO,
+          fontSize: "0.62rem",
+          letterSpacing: "0.1em",
+          color: "var(--text-dim)",
+          textTransform: "uppercase",
+        }}
+      >
+        {language === "tr" ? "NOKTA BULUTU / VEKTÖR HAZIRLIK KATI" : "POINT-CLOUD / VECTOR READINESS LAYER"}
+      </div>
+    </div>
+  );
+}
+
 function TelemetryStrip({
   language,
   system,
@@ -388,9 +448,11 @@ function TelemetryStrip({
   return (
     <div
       style={{
-        borderTop: "2px solid var(--border-strong)",
-        background: "var(--panel)",
-        padding: "0.45rem 0.6rem 0.5rem",
+        borderTop: idle ? "1px solid var(--border)" : "2px solid var(--accent-border)",
+        background: idle
+          ? "linear-gradient(180deg, var(--panel), var(--panel-raised))"
+          : "linear-gradient(180deg, rgba(255,102,0,0.1), rgba(255,102,0,0.03) 38%, var(--panel) 100%)",
+        padding: "0.5rem 0.64rem 0.58rem",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.38rem", flexWrap: "wrap" }}>
@@ -407,9 +469,9 @@ function TelemetryStrip({
                 fontFamily: MONO,
                 fontSize: "0.68rem",
                 color: i === 2 ? "var(--accent)" : "var(--text-muted)",
-                borderBottom: i === 2 ? "2px solid var(--accent)" : "1px solid var(--border)",
-                background: i === 2 ? "var(--accent-soft)" : "transparent",
-                paddingBottom: "0.14rem",
+                borderBottom: i === 2 ? "2px solid var(--accent)" : "1px solid var(--border-soft)",
+                background: i === 2 ? "var(--accent-soft)" : "rgba(255,255,255,0.02)",
+                paddingBottom: "0.18rem",
               }}
             >
               {m}
@@ -438,8 +500,8 @@ function TelemetryStrip({
             style={{
               border: idx === 1 ? "1px solid var(--accent-border)" : "1px solid var(--border)",
               background: idx === 1 ? "var(--accent-soft)" : "var(--panel-raised)",
-              borderRadius: 2,
-              padding: "0.2rem 0.35rem",
+              borderRadius: 4,
+              padding: "0.24rem 0.36rem",
               fontFamily: MONO,
               fontSize: "0.62rem",
               letterSpacing: "0.1em",
@@ -454,7 +516,16 @@ function TelemetryStrip({
       </div>
       <div style={{ display: "grid", gridTemplateColumns: `repeat(${rows.length}, minmax(0, 1fr))`, gap: "0.4rem" }}>
         {rows.map((row) => (
-          <div key={row.k} style={{ border: "1px solid var(--border-strong)", borderRadius: 2, padding: "0.32rem 0.4rem", background: "var(--panel-raised)" }}>
+          <div
+            key={row.k}
+            style={{
+              border: "1px solid var(--border)",
+              borderRadius: 4,
+              padding: "0.34rem 0.42rem",
+              background: "var(--panel-raised)",
+              boxShadow: idle ? "none" : "inset 0 0 0 1px rgba(255,102,0,0.06)",
+            }}
+          >
             <div style={{ fontFamily: MONO, fontSize: "0.64rem", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "0.1rem" }}>{row.k}</div>
             <div style={{ fontFamily: MONO, fontSize: "0.78rem", color: "var(--text-soft)", fontWeight: 600 }}>{row.v}</div>
           </div>
@@ -494,7 +565,7 @@ function MetaCluster({
         padding: "0.4rem 0.45rem",
         background: "var(--panel)",
         border: "1px solid var(--border-strong)",
-        borderRadius: 2,
+        borderRadius: 4,
         boxShadow: "none",
       }}
     >
@@ -535,6 +606,7 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
 
   const titleBar = language === "tr" ? "Mühürlü yeniden oluşturma görünümü" : "Sealed reconstruction view";
   const idle = !eventId;
+  const sceneActive = Boolean(eventId);
   const familyGrammar = familyGrammarLabel(system, language);
   const riskTag =
     verificationState === "FAIL"
@@ -551,7 +623,12 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
 
   return (
     <section
-      style={{ ...panel, marginBottom: "0.5rem" }}
+      style={{
+        ...panel,
+        marginBottom: "0.5rem",
+        borderColor: sceneActive ? "var(--accent-border)" : "var(--border)",
+        boxShadow: sceneActive ? "0 18px 34px rgba(0,0,0,0.32), inset 0 0 0 1px rgba(255,102,0,0.12)" : panel.boxShadow,
+      }}
       aria-label={language === "tr" ? "Olay mekânı yeniden oluşturma" : "Event spatial reconstruction"}
     >
       <div style={labelBar}>
@@ -603,10 +680,10 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
           minHeight: STAGE_MIN_H,
           background:
             system === "vehicle"
-              ? "linear-gradient(180deg, rgba(212,86,26,0.05), transparent 26%), var(--panel-raised)"
+              ? "linear-gradient(180deg, rgba(212,86,26,0.09), transparent 30%), var(--panel-raised)"
               : system === "drone"
-                ? "linear-gradient(180deg, rgba(102,148,255,0.08), transparent 26%), var(--panel-raised)"
-                : "linear-gradient(180deg, rgba(110,210,170,0.06), transparent 26%), var(--panel-raised)",
+                ? "linear-gradient(180deg, rgba(102,148,255,0.11), transparent 30%), var(--panel-raised)"
+                : "linear-gradient(180deg, rgba(110,210,170,0.09), transparent 30%), var(--panel-raised)",
           borderBottom: "1px solid var(--border-strong)",
         }}
       >
@@ -623,6 +700,7 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
             <SceneRenderer kind={scene} language={language} />
           </div>
         </div>
+        <SpatialReadinessLayer seed={seed} active={sceneActive} language={language} />
         <MetaCluster lat={lat} lon={lon} zone={zone} conf={conf} />
       </div>
 
