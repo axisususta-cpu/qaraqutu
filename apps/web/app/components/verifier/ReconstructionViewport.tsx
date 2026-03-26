@@ -16,6 +16,7 @@ export type ReconstructionViewportProps = {
   eventId: string | null;
   title: string | null;
   verificationState: string | null;
+  role: string | null;
 };
 
 function stableHash(s: string): number {
@@ -213,7 +214,7 @@ function VehicleNearMissScene() {
   );
 }
 
-function VehicleCollisionScene() {
+function VehicleCollisionScene({ role }: { role: string | null }) {
   return (
     <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid meet" aria-hidden style={svgBase}>
       <rect width="640" height="360" fill="var(--panel-raised)" />
@@ -226,11 +227,11 @@ function VehicleCollisionScene() {
       <text x="280" y="204" textAnchor="middle" fill="var(--text-muted)" fontSize="12" fontFamily={MONO} fontWeight={700}>
         EGO
       </text>
-      <rect x="360" y="162" width="88" height="44" rx="3" fill="var(--accent-soft)" stroke={accentOrange} strokeWidth="1.5" />
-      <text x="404" y="188" textAnchor="middle" fill="var(--accent)" fontSize="11" fontFamily={MONO} fontWeight={700}>
+      <rect x="360" y="162" width="88" height="44" rx="3" fill={role === "police" ? "var(--accent-soft)" : "var(--accent-soft)"} stroke={role === "police" ? "var(--error)" : accentOrange} strokeWidth={role === "police" ? 2 : 1.5} />
+      <text x="404" y="188" textAnchor="middle" fill={role === "police" ? "var(--error)" : "var(--accent)"} fontSize="11" fontFamily={MONO} fontWeight={700}>
         CONTACT
       </text>
-      <circle cx="404" cy="218" r="36" fill="none" stroke={accentOrange} strokeWidth="1.5" opacity={0.8} />
+      <circle cx="404" cy="218" r="36" fill="none" stroke={role === "police" ? "var(--error)" : accentOrange} strokeWidth={role === "police" ? 2 : 1.5} opacity={0.8} />
     </svg>
   );
 }
@@ -313,7 +314,7 @@ function RobotStopScene() {
   );
 }
 
-function SceneRenderer({ kind, language }: { kind: SceneKind; language: "en" | "tr" }) {
+function SceneRenderer({ kind, language, role }: { kind: SceneKind; language: "en" | "tr"; role: string | null }) {
   switch (kind) {
     case "idle_vehicle":
       return <VehicleIdleScene language={language} />;
@@ -326,7 +327,7 @@ function SceneRenderer({ kind, language }: { kind: SceneKind; language: "en" | "
     case "vehicle_near_miss":
       return <VehicleNearMissScene />;
     case "vehicle_collision":
-      return <VehicleCollisionScene />;
+      return <VehicleCollisionScene role={role} />;
     case "drone_link":
       return <DroneLinkScene />;
     case "drone_mission":
@@ -349,12 +350,20 @@ function SpatialReadinessLayer({
   active: boolean;
   language: "en" | "tr";
 }) {
-  const points = Array.from({ length: 28 }, (_, i) => {
+  const points = Array.from({ length: 140 }, (_, i) => {
     const x = 6 + ((seed + i * 37) % 88);
-    const y = 12 + ((seed + i * 53) % 76);
-    const o = 0.18 + (((seed + i * 17) % 55) / 100);
-    return { x, y, o };
+    const y = 6 + ((seed + i * 53) % 88);
+    const o = 0.18 + (((seed + i * 97) % 60) / 100);
+    const r = 0.28 + (((seed + i * 19) % 40) / 100);
+    return { x, y, o, r };
   });
+
+  const eventGeometryPoints = [
+    { x: 26, y: 48 },
+    { x: 44, y: 34 },
+    { x: 72, y: 38 },
+    { x: 68, y: 60 },
+  ];
 
   return (
     <div
@@ -365,21 +374,76 @@ function SpatialReadinessLayer({
         pointerEvents: "none",
         border: active ? "1px solid var(--accent-border)" : "1px solid var(--border)",
         background:
-          "linear-gradient(180deg, rgba(255,102,0,0.11) 0%, rgba(255,102,0,0.04) 36%, transparent 100%)",
+          "linear-gradient(180deg, rgba(10,25,40,0.24) 0%, rgba(16,36,58,0.14) 40%, rgba(20,42,72,0.0) 100%)",
       }}
       aria-hidden
     >
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
         {points.map((p, idx) => (
-          <circle key={idx} cx={p.x} cy={p.y} r={active ? 0.38 : 0.28} fill="var(--accent)" opacity={active ? p.o : p.o * 0.66} />
+          <circle
+            key={idx}
+            cx={p.x}
+            cy={p.y}
+            r={active ? p.r : p.r * 0.7}
+            fill={active ? "rgba(255,174,88,0.92)" : "rgba(204,133,66,0.64)"}
+            opacity={active ? Math.min(1, p.o + 0.2) : p.o * 0.65}
+          />
         ))}
-        <polyline points="8,80 24,65 42,72 57,50 74,58 90,36" fill="none" stroke="var(--accent)" strokeWidth="0.32" strokeDasharray="1.4 1.1" opacity={active ? 0.75 : 0.45} />
-        <polyline points="12,22 30,26 47,18 60,24 79,14" fill="none" stroke="var(--text-dim)" strokeWidth="0.26" strokeDasharray="1 1.2" opacity={0.55} />
-        <polyline points="10,68 28,60 45,62 63,44 84,47" fill="none" stroke="var(--border-strong)" strokeWidth="0.24" strokeDasharray="0.8 1.3" opacity={0.62} />
-        <line x1="20" y1="84" x2="36" y2="66" stroke="var(--accent)" strokeWidth="0.3" opacity={active ? 0.72 : 0.4} />
-        <line x1="60" y1="55" x2="82" y2="44" stroke="var(--accent)" strokeWidth="0.3" opacity={active ? 0.72 : 0.4} />
-        <line x1="24" y1="64" x2="24" y2="84" stroke="var(--border)" strokeWidth="0.22" opacity={0.55} />
-        <line x1="58" y1="50" x2="58" y2="72" stroke="var(--border)" strokeWidth="0.22" opacity={0.55} />
+
+        {eventGeometryPoints.map((p, idx) => (
+          <g key={`geom-${idx}`}>
+            <circle cx={p.x} cy={p.y} r={active ? 1.4 : 1.0} fill="rgba(255,180,80,0.85)" />
+            <circle cx={p.x} cy={p.y} r={active ? 2.8 : 2.2} stroke="rgba(255,180,80,0.5)" strokeWidth={0.16} fill="none" />
+          </g>
+        ))}
+
+        <polyline
+          points="8,80 24,65 42,72 57,50 74,58 90,36"
+          fill="none"
+          stroke="rgba(255,173,92,0.95)"
+          strokeWidth="0.45"
+          strokeDasharray="1.2 1.0"
+          opacity={active ? 0.94 : 0.66}
+        />
+        <polyline
+          points="12,22 30,26 47,18 60,24 79,14"
+          fill="none"
+          stroke="rgba(164,216,255,0.8)"
+          strokeWidth="0.42"
+          strokeDasharray="1 1.1"
+          opacity={active ? 0.85 : 0.58}
+        />
+        <polyline
+          points="10,68 28,60 45,62 63,44 84,47"
+          fill="none"
+          stroke="rgba(162,212,255,0.8)"
+          strokeWidth="0.36"
+          strokeDasharray="0.8 1.2"
+          opacity={active ? 0.78 : 0.56}
+        />
+
+        {eventGeometryPoints.map((p, idx) => {
+          const center = eventGeometryPoints[0];
+          const target = p;
+          return (
+            <line
+              key={`link-${idx}`}
+              x1={center.x}
+              y1={center.y}
+              x2={target.x}
+              y2={target.y}
+              stroke="rgba(255,200,120,0.55)"
+              strokeWidth="0.24"
+              strokeDasharray="2 1"
+              opacity={active ? 0.85 : 0.6}
+            />
+          );
+        })}
+
+        <line x1="20" y1="84" x2="36" y2="66" stroke="rgba(255,175,106,0.72)" strokeWidth="0.42" opacity={active ? 0.89 : 0.62} />
+        <line x1="60" y1="55" x2="82" y2="44" stroke="rgba(255,175,106,0.72)" strokeWidth="0.42" opacity={active ? 0.89 : 0.62} />
+        <line x1="24" y1="64" x2="24" y2="84" stroke="var(--border)" strokeWidth="0.32" opacity={0.68} />
+        <line x1="58" y1="50" x2="58" y2="72" stroke="var(--border)" strokeWidth="0.32" opacity={0.68} />
         <rect x="6" y="6" width="88" height="88" fill="none" stroke="var(--border-muted)" strokeWidth="0.35" />
       </svg>
       <div
@@ -394,7 +458,7 @@ function SpatialReadinessLayer({
           textTransform: "uppercase",
         }}
       >
-        {language === "tr" ? "NOKTA BULUTU / VEKTÖR HAZIRLIK KATI" : "POINT-CLOUD / VECTOR READINESS LAYER"}
+        NOKTA BULUTU / VEKTÖR HAZIRLIK KATI
       </div>
     </div>
   );
@@ -580,7 +644,7 @@ function MetaCluster({
 }
 
 export function ReconstructionViewport(props: ReconstructionViewportProps) {
-  const { language, system, incidentClass, eventId, title, verificationState } = props;
+  const { language, system, incidentClass, eventId, title, verificationState, role } = props;
   const scene = resolveSceneKind(system, incidentClass, eventId);
   const seed = eventId ? stableHash(eventId) : stableHash(system + (title ?? ""));
   const lat = eventId ? fmtCoord(seed, 41.0, 4) : "—";
@@ -697,7 +761,7 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
           }}
         >
           <div style={{ width: "100%", height: "100%", minHeight: STAGE_MIN_H }}>
-            <SceneRenderer kind={scene} language={language} />
+            <SceneRenderer kind={scene} language={language} role={role} />
           </div>
         </div>
         <SpatialReadinessLayer seed={seed} active={sceneActive} language={language} />

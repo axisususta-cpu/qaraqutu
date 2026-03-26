@@ -13,6 +13,7 @@ export interface DocumentIdentity {
   exportPurpose: string;
   schemaVersion: string;
   tenantId?: string;
+  outputTitle?: string;
   redactionApplied?: boolean;
   redactedItemCount?: number;
   redactionBasis?: string | null;

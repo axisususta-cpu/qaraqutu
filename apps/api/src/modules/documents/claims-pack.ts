@@ -32,7 +32,7 @@ export function renderClaimsPdf(
   const footerText = `Event ${identity.eventId} · Export ${identity.exportId} · Receipt ${identity.receiptId ?? "N/A"}`;
   attachFooterIdentity(doc, footerText);
 
-  drawCoverHeaderBand(doc, "Claims Review Evidence Pack", identity);
+  drawCoverHeaderBand(doc, identity.outputTitle ?? "Claims Review Evidence Pack", identity);
 
   drawExportAndIdentityGrid(ctx);
 

@@ -192,27 +192,39 @@ const ROLE_LENSES: {
   en: string;
   insightTr: string;
   insightEn: string;
+  primaryOutputTr: string;
+  primaryOutputEn: string;
+  exportProfile: "claims" | "legal";
 }[] = [
-  {
-    id: "insurance",
-    tr: "Sigorta",
-    en: "Insurance",
-    insightTr: "Hasar, teminat ve olay akışı özeti öne alınır.",
-    insightEn: "Damage, coverage, and incident flow summary are prioritized.",
-  },
   {
     id: "police",
     tr: "Polis",
     en: "Police",
-    insightTr: "Zaman çizgisi, olay kaydı ve ekler görünümü öne alınır.",
-    insightEn: "Timeline, incident record, and attachments are prioritized.",
+    insightTr: "Olay yeri, zaman çizgisi ve kaza tutanağı öncelikli.",
+    insightEn: "Incident scene, timeline, and accident report prioritized.",
+    primaryOutputTr: "Kaza Tutanağı",
+    primaryOutputEn: "Accident Report",
+    exportProfile: "legal",
+  },
+  {
+    id: "insurance",
+    tr: "Sigorta",
+    en: "Insurance",
+    insightTr: "Hasar akışı, teminat incelemesi ve belge zinciri öncelikli.",
+    insightEn: "Claims flow, coverage review, and document chain prioritized.",
+    primaryOutputTr: "Hasar / Sigorta Belgesi",
+    primaryOutputEn: "Claims / Insurance Document",
+    exportProfile: "claims",
   },
   {
     id: "adjudication",
     tr: "Muhakeme",
     en: "Adjudication",
-    insightTr: "Kayıtlı/türetilmiş ayrımı korunarak tam paket okumaya yönlendirir.",
-    insightEn: "Guides toward full package reading with recorded/derived separation preserved.",
+    insightTr: "Delil zinciri, inceleme izi ve açık hususlar öncelikli.",
+    insightEn: "Evidence chain, review trace, and open issues prioritized.",
+    primaryOutputTr: "Hukuk / Muhakeme Belgesi",
+    primaryOutputEn: "Legal / Adjudication Document",
+    exportProfile: "legal",
   },
   {
     id: "expert",
@@ -220,6 +232,9 @@ const ROLE_LENSES: {
     en: "Expert",
     insightTr: "Teknik bulgu zinciri, karşılaştırma notları ve açık hususlar öne alınır.",
     insightEn: "Technical finding chain, comparison notes, and open issues are prioritized.",
+    primaryOutputTr: "Teknik İnceleme Belgesi",
+    primaryOutputEn: "Technical Inspection Document",
+    exportProfile: "legal",
   },
   {
     id: "manufacturer",
@@ -227,6 +242,9 @@ const ROLE_LENSES: {
     en: "Manufacturer",
     insightTr: "Sistem davranışı, emniyet sınırı ve olay-tepki ilişkisi öne alınır.",
     insightEn: "System behavior, safety envelope, and event-response relation are prioritized.",
+    primaryOutputTr: "Üretim İnceleme Belgesi",
+    primaryOutputEn: "Manufacturing Inspection Document",
+    exportProfile: "legal",
   },
   {
     id: "software",
@@ -234,6 +252,9 @@ const ROLE_LENSES: {
     en: "Software",
     insightTr: "Telemetri, sürüm izi ve karar akışı okumaları öne alınır.",
     insightEn: "Telemetry, version trail, and decision-flow readings are prioritized.",
+    primaryOutputTr: "Yazılım İnceleme Belgesi",
+    primaryOutputEn: "Software Inspection Document",
+    exportProfile: "legal",
   },
   {
     id: "engineering",
@@ -241,6 +262,9 @@ const ROLE_LENSES: {
     en: "Engineering",
     insightTr: "Sensör/aktüasyon bağı, model tepkisi ve teknik sınır notları öne alınır.",
     insightEn: "Sensor/actuation linkage, model response, and technical boundary notes are prioritized.",
+    primaryOutputTr: "Mühendislik İnceleme Belgesi",
+    primaryOutputEn: "Engineering Inspection Document",
+    exportProfile: "legal",
   },
 ];
 
@@ -726,9 +750,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const [loading, setLoading] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(null);
   const [verificationJustCompleted, setVerificationJustCompleted] = useState(false);
-  const [exportProfile, setExportProfile] = useState<"claims" | "legal">(
-    "claims"
-  );
+  const exportProfile = ROLE_LENSES.find((role) => role.id === selectedRoleLens)?.exportProfile ?? "claims";
   const [selectedFormat, setSelectedFormat] = useState<"json" | "pdf" | null>(
     null
   );
@@ -938,13 +960,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const selectedRoleLensMeta =
     ROLE_LENSES.find((role) => role.id === selectedRoleLens) ?? ROLE_LENSES[0];
   const roleSignals: Record<RoleLensId, string[]> = {
-    insurance: ["Teminat bagi", "Hasar zinciri", "Kapsam ayraci"],
-    police: ["Kayit butunlugu", "Zaman cizgisi", "Sahne tutarliligi"],
-    adjudication: ["Kayit/turetilmis ayrimi", "Iz bagi", "Acik hususlar"],
-    expert: ["Teknik baglam", "Bulgu karsilastirma", "Belirsizlik notu"],
-    manufacturer: ["Sistem davranisi", "Guvenlik zarfi", "Tepki penceresi"],
-    software: ["Telemetri izi", "Surum etkisi", "Karar akis izi"],
-    engineering: ["Sensor/aktuatör bagi", "Mekansal vektor", "Sinir kosullari"],
+    insurance: [selectedRoleLensMeta.primaryOutputTr, "Teminat bağı", "Hasar zinciri", "Kapsam ayracı"],
+    police: [selectedRoleLensMeta.primaryOutputTr, "Zaman çizgisi", "Sahne tutarlılığı"],
+    adjudication: [selectedRoleLensMeta.primaryOutputTr, "Kayıt/türetilmiş ayrımı", "İz bağı", "Açık hususlar"],
+    expert: [selectedRoleLensMeta.primaryOutputTr, "Teknik bağlam", "Bulgu karşılaştırma", "Belirsizlik notu"],
+    manufacturer: [selectedRoleLensMeta.primaryOutputTr, "Sistem davranışı", "Güvenlik zarfı", "Tepki penceresi"],
+    software: [selectedRoleLensMeta.primaryOutputTr, "Telemetri izi", "Sürüm etkisi", "Karar akış izi"],
+    engineering: [selectedRoleLensMeta.primaryOutputTr, "Sensör/aktüatör bağı", "Mekansal vektör", "Sınır koşulları"],
   };
 
   function professionalScenarioLabel(name: string) {
@@ -952,7 +974,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     return PROFESSIONAL_SCENARIO_LABELS_EN[name] ?? name;
   }
 
-  function issuanceFamilyLabel(profile: string) {
+  function issuanceFamilyLabel(profile: string, role?: RoleLensId) {
+    if (role) {
+      const roleMeta = ROLE_LENSES.find((r) => r.id === role);
+      if (roleMeta) {
+        return language === "tr" ? roleMeta.primaryOutputTr : roleMeta.primaryOutputEn;
+      }
+    }
+
     if (language === "tr") {
       if (profile === "claims") return "Hasar / Sigorta Belgesi";
       if (profile === "legal") return "Hukuk / Muhakeme Belgesi";
@@ -964,7 +993,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     return profile;
   }
 
-  function renderIssuanceDocumentBody(meta: ExportArtifactResponse) {
+  function renderIssuanceDocumentBody(meta: ExportArtifactResponse, role: RoleLensId) {
     const commonSections = (
       <>
         <DocumentSection variant="authority" title={language === "tr" ? "Olay Kimliği ve Kapsam" : "Event Identity and Scope"}>
@@ -984,35 +1013,71 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       </>
     );
 
-    const profileSpecific = meta.export_profile === "claims"
-      ? (
-        <DocumentSection variant="authority" title={language === "tr" ? "Hasar Akışı ve Belge Ekleri" : "Claims Flow and Filing Attachments"}>
-          <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
-            {language === "tr"
-              ? "Tarafsız olay kronolojisi, hasar/teminat incelemesine yardımcı olacak şekilde öne alınır; belge ekleri referans zinciriyle belirtilir."
-              : "Neutral chronology is prioritized for claims/coverage review, with filing attachments linked to the reference chain."}
-          </p>
-        </DocumentSection>
-      )
-      : meta.export_profile === "legal"
-      ? (
-        <DocumentSection variant="authority" title={language === "tr" ? "Kronoloji, Delil Zinciri ve Açık Hususlar" : "Chronology, Evidence Chain, and Open Issues"}>
-          <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
-            {language === "tr"
-              ? "Muhakeme dosyası için olay sırası, inceleme izi ve açık hususlar birlikte görünür; yorum alanı korunur."
-              : "For adjudication files, event sequence, review trace, and open issues are shown together while interpretation space is preserved."}
-          </p>
-        </DocumentSection>
-      )
-      : (
-        <DocumentSection variant="authority" title={language === "tr" ? "Sistem Davranışı ve Teknik Okuma" : "System Behavior and Technical Reading"}>
-          <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
-            {language === "tr"
-              ? "Telemetri özeti, olay anı teknik okuma ve geliştirme/doğrulama notları teknik inceleme ekibi için öne alınır."
-              : "Telemetry summary, moment-level technical reading, and development/validation notes are prioritized for technical teams."}
+    const profileSpecific = (() => {
+      // Role-specific primary document sections
+      const primaryDocumentSection = (
+        <DocumentSection variant="authority" title={language === "tr" ? selectedRoleLensMeta.primaryOutputTr : selectedRoleLensMeta.primaryOutputEn}>
+          <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", lineHeight: 1.6, fontWeight: 600 }}>
+            {role === "police" && language === "tr"
+              ? "Polis için birincil belge: Olay yeri, zaman çizgisi ve ilk tespitler detaylandırılır. İşin içinden çıkılamıyorsa ilk resmi kayıt burada başlar."
+              : role === "police" && language === "en"
+              ? "Primary document for police: Incident scene, timeline, and initial findings are detailed. If things are unclear, the first official record starts here."
+              : role === "insurance" && language === "tr"
+              ? "Sigorta için birincil belge: Hasar akışı, teminat incelemesi ve olay zinciri öne çıkarılır."
+              : role === "insurance" && language === "en"
+              ? "Primary document for insurance: Claims flow, coverage review, and incident chain are prioritized."
+              : role === "adjudication" && language === "tr"
+              ? "Muhakeme için birincil belge: Delil zinciri, inceleme izi ve açık hususlar üçüncü seviye okumada öne çıkarılır."
+              : role === "adjudication" && language === "en"
+              ? "Primary document for adjudication: Evidence chain, review trace, and open issues are prioritized in third-level reading."
+              : language === "tr"
+              ? `${selectedRoleLensMeta.primaryOutputTr} rolüne özel birincil inceleme belgesi.`
+              : `Primary inspection document specific to ${selectedRoleLensMeta.primaryOutputEn} role.`}
           </p>
         </DocumentSection>
       );
+
+      if (meta.export_profile === "claims") {
+        return (
+          <>
+            {primaryDocumentSection}
+            <DocumentSection variant="authority" title={language === "tr" ? "Hasar Akışı ve Belge Ekleri" : "Claims Flow and Filing Attachments"}>
+              <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
+                {language === "tr"
+                  ? "Tarafsız olay kronolojisi, hasar/teminat incelemesine yardımcı olacak şekilde öne alınır; belge ekleri referans zinciriyle belirtilir."
+                  : "Neutral chronology is prioritized for claims/coverage review, with filing attachments linked to the reference chain."}
+              </p>
+            </DocumentSection>
+          </>
+        );
+      } else if (meta.export_profile === "legal") {
+        return (
+          <>
+            {primaryDocumentSection}
+            <DocumentSection variant="authority" title={language === "tr" ? "Kronoloji, Delil Zinciri ve Açık Hususlar" : "Chronology, Evidence Chain, and Open Issues"}>
+              <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
+                {language === "tr"
+                  ? "Muhakeme dosyası için olay sırası, inceleme izi ve açık hususlar birlikte görünür; yorum alanı korunur."
+                  : "For adjudication files, event sequence, review trace, and open issues are shown together while interpretation space is preserved."}
+              </p>
+            </DocumentSection>
+          </>
+        );
+      } else {
+        return (
+          <>
+            {primaryDocumentSection}
+            <DocumentSection variant="authority" title={language === "tr" ? "Sistem Davranışı ve Teknik Okuma" : "System Behavior and Technical Reading"}>
+              <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", lineHeight: 1.6 }}>
+                {language === "tr"
+                  ? "Telemetri özeti, olay anı teknik okuma ve geliştirme/doğrulama notları teknik inceleme ekibi için öne alınır."
+                  : "Telemetry summary, moment-level technical reading, and development/validation notes are prioritized for technical teams."}
+              </p>
+            </DocumentSection>
+          </>
+        );
+      }
+    })();
 
     return (
       <>
@@ -1140,10 +1205,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     setLastIssuedArtifact(null);
 
     try {
+      const selectedRoleLensMeta = ROLE_LENSES.find((r) => r.id === selectedRoleLens);
       const requestBody: CreateExportRequest = {
         profile: exportProfile,
         format,
         purpose: selectedPurpose,
+        outputTitle: language === "tr" ? selectedRoleLensMeta?.primaryOutputTr : selectedRoleLensMeta?.primaryOutputEn,
       };
       const res = await fetch(`/api/events/${selectedId}/exports`, {
         method: "POST",
@@ -2405,6 +2472,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   eventId={selectedEventCard != null ? selectedEventCard.eventId ?? selectedId : null}
                   title={selectedEventCard?.title ?? null}
                   verificationState={visibleReviewState}
+                  role={selectedRoleLens}
                 />
               </div>
             )}
@@ -3691,44 +3759,23 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border)" }}>
                       <div style={{ fontSize: "0.92rem", marginBottom: "0.25rem", display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
                         <span style={{ opacity: 0.8 }}>{language === "tr" ? "Issuance profili:" : "Issuance profile:"}</span>
-                        {selectedCase.artifactProfiles.some((ap) => ap.profileCode === "claims" && ap.enabled && ap.apiBacked) && (
+                        {selectedCase.artifactProfiles.some((ap) => ap.profileCode === selectedRoleLensMeta.exportProfile && ap.enabled && ap.apiBacked) && (
                           <button
                             type="button"
-                            onClick={() => setExportProfile("claims")}
                             disabled={!!exportLoading}
                             style={{
                               fontSize: "0.92rem",
                               padding: "0.35rem 0.75rem",
                               borderRadius: 999,
-                              border: exportProfile === "claims" ? `1px solid ${"var(--accent-border)"}` : "1px solid var(--border)",
-                              background: exportProfile === "claims" ? "var(--accent-soft)" : "var(--panel)",
+                              border: exportProfile === selectedRoleLensMeta.exportProfile ? `1px solid ${"var(--accent-border)"}` : "1px solid var(--border)",
+                              background: exportProfile === selectedRoleLensMeta.exportProfile ? "var(--accent-soft)" : "var(--panel)",
                               color: "var(--text)",
                               cursor: exportLoading ? "not-allowed" : "pointer",
                               opacity: exportLoading ? 0.6 : 1,
-                              fontWeight: exportProfile === "claims" ? 700 : 500,
+                              fontWeight: exportProfile === selectedRoleLensMeta.exportProfile ? 700 : 500,
                             }}
                           >
-                            {language === "tr" ? "Hasar / Sigorta Belgesi" : "Claims / Insurance"}
-                          </button>
-                        )}
-                        {selectedCase.artifactProfiles.some((ap) => ap.profileCode === "legal" && ap.enabled && ap.apiBacked) && (
-                          <button
-                            type="button"
-                            onClick={() => setExportProfile("legal")}
-                            disabled={!!exportLoading}
-                            style={{
-                              fontSize: "0.92rem",
-                              padding: "0.35rem 0.75rem",
-                              borderRadius: 999,
-                              border: exportProfile === "legal" ? `1px solid ${"var(--accent-border)"}` : "1px solid var(--border)",
-                              background: exportProfile === "legal" ? "var(--accent-soft)" : "var(--panel)",
-                              color: "var(--text)",
-                              cursor: exportLoading ? "not-allowed" : "pointer",
-                              opacity: exportLoading ? 0.6 : 1,
-                              fontWeight: exportProfile === "legal" ? 700 : 500,
-                            }}
-                          >
-                            {language === "tr" ? "Hukuk / Muhakeme Belgesi" : "Legal / Adjudication"}
+                            {language === "tr" ? selectedRoleLensMeta.primaryOutputTr : selectedRoleLensMeta.primaryOutputEn}
                           </button>
                         )}
                       </div>
@@ -4004,7 +4051,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                       ))}
                                     </select>
                                     <DocumentShell
-                                      documentType={issuanceFamilyLabel(meta.export_profile) || documentFamilyLabel(primary, language)}
+                                      documentType={issuanceFamilyLabel(meta.export_profile, selectedRoleLens) || documentFamilyLabel(primary, language)}
                                       documentId={`QEV-${meta.export_id}`}
                                       eventId={meta.event_id}
                                       bundleId={meta.bundle_id}
@@ -4026,7 +4073,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                       institutionMetadataEmphasis={framing.metadataEmphasis}
                                       institutionOutputFraming={framing.outputFraming}
                                     >
-                                      {renderIssuanceDocumentBody(meta)}
+                                      {renderIssuanceDocumentBody(meta, selectedRoleLens)}
                                     </DocumentShell>
                                   </div>
                                 );
@@ -4054,37 +4101,20 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                     <button
                       type="button"
-                      onClick={() => setExportProfile("claims")}
                       disabled={!!exportLoading}
                       style={{
                         fontSize: "0.92rem",
                         padding: "0.25rem 0.6rem",
                         borderRadius: 4,
-                        border: exportProfile === "claims" ? "1px solid var(--accent)" : "1px solid var(--border)",
-                        background: exportProfile === "claims" ? "var(--accent-soft)" : "var(--panel)",
+                        border: exportProfile === selectedRoleLensMeta.exportProfile ? "1px solid var(--accent)" : "1px solid var(--border)",
+                        background: exportProfile === selectedRoleLensMeta.exportProfile ? "var(--accent-soft)" : "var(--panel)",
                         color: "var(--text)",
                         cursor: exportLoading ? "not-allowed" : "pointer",
                         opacity: exportLoading ? 0.6 : 1,
+                        fontWeight: exportProfile === selectedRoleLensMeta.exportProfile ? 600 : 400,
                       }}
                     >
-                      {language === "tr" ? "Hasar / Sigorta Belgesi" : "Claims / Insurance"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setExportProfile("legal")}
-                      disabled={!!exportLoading}
-                      style={{
-                        fontSize: "0.92rem",
-                        padding: "0.25rem 0.6rem",
-                        borderRadius: 4,
-                        border: exportProfile === "legal" ? "1px solid var(--accent)" : "1px solid var(--border)",
-                        background: exportProfile === "legal" ? "var(--accent-soft)" : "var(--panel)",
-                        color: "var(--text)",
-                        cursor: exportLoading ? "not-allowed" : "pointer",
-                        opacity: exportLoading ? 0.6 : 1,
-                      }}
-                    >
-                      {language === "tr" ? "Hukuk / Muhakeme Belgesi" : "Legal / Adjudication"}
+                      {language === "tr" ? selectedRoleLensMeta.primaryOutputTr : selectedRoleLensMeta.primaryOutputEn}
                     </button>
                   </div>
                   {!hasConnectedApiIssuanceProfile ? (
@@ -4155,7 +4185,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           </p>
                         ) : null}
                         <DocumentShell
-                          documentType={issuanceFamilyLabel(meta.export_profile) || documentFamilyLabel(primary, language)}
+                          documentType={issuanceFamilyLabel(meta.export_profile, selectedRoleLens) || documentFamilyLabel(primary, language)}
                           documentId={`QEV-${meta.export_id}`}
                           eventId={meta.event_id}
                           bundleId={meta.bundle_id}
@@ -4177,7 +4207,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           institutionMetadataEmphasis={framing.metadataEmphasis}
                           institutionOutputFraming={framing.outputFraming}
                         >
-                          {renderIssuanceDocumentBody(meta)}
+                          {renderIssuanceDocumentBody(meta, selectedRoleLens)}
                         </DocumentShell>
                       </div>
                     );
@@ -4262,7 +4292,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           ))}
                         </select>
                         <DocumentShell
-                          documentType={issuanceFamilyLabel(meta.export_profile) || documentFamilyLabel(primary, language)}
+                          documentType={issuanceFamilyLabel(meta.export_profile, selectedRoleLens) || documentFamilyLabel(primary, language)}
                           documentId={`QEV-${meta.export_id}`}
                           eventId={meta.event_id}
                           bundleId={meta.bundle_id}
@@ -4284,7 +4314,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           institutionMetadataEmphasis={framing.metadataEmphasis}
                           institutionOutputFraming={framing.outputFraming}
                         >
-                          {renderIssuanceDocumentBody(meta)}
+                          {renderIssuanceDocumentBody(meta, selectedRoleLens)}
                         </DocumentShell>
                       </div>
                     );

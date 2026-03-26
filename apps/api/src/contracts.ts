@@ -24,6 +24,7 @@ export interface CreateExportRequest {
   profile: ExportProfileCode;
   format: ExportFormat;
   purpose: string;
+  outputTitle?: string;
 }
 
 export interface ExportArtifactResponse {

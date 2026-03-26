@@ -56,6 +56,7 @@ function hasBearerAccess(request: any): boolean {
 
 type RateKey = string;
 const RATE_BUCKETS = new Map<RateKey, { count: number; resetAt: number }>();
+const EXPORT_TITLES: Map<string, string> = new Map();
 function rateLimit(opts: { windowMs: number; max: number; keyPrefix: string }) {
   return async function onRequest(request: any, reply: any) {
     const now = Date.now();
@@ -533,6 +534,10 @@ fastify.post<{
     },
   });
 
+  if (request.body.outputTitle) {
+    EXPORT_TITLES.set(exportId, request.body.outputTitle);
+  }
+
   const response: ExportArtifactResponse = {
     export_id: exportId,
     receipt_id: receiptId,
@@ -679,6 +684,7 @@ fastify.get<{
       exportPurpose: exp.purpose,
       schemaVersion: "v1",
       tenantId: event.tenantId,
+      outputTitle: EXPORT_TITLES.get(exportId) || undefined,
       redactionApplied,
       redactedItemCount,
       redactionBasis,
