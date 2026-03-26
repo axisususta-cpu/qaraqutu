@@ -97,6 +97,20 @@ export type CanonicalSystemId = "vehicle" | "drone" | "robot";
 
 export type IncidentPhase = "t0" | "t1" | "t2" | "t3";
 
+export type PhaseVerificationPosture = "UNVERIFIED" | "SUPPORTED" | "CONTESTED" | "INSUFFICIENT" | "RESTRICTED";
+export type ArtifactReadiness = "ready" | "bounded" | "limited" | "not_ready";
+
+export interface IncidentPhaseVerificationSummary {
+  posture: PhaseVerificationPosture;
+  recordedPosture: PhaseVerificationPosture;
+  derivedPosture: PhaseVerificationPosture;
+  unknownDisputedPosture: PhaseVerificationPosture;
+  tracePosture: PhaseVerificationPosture;
+  artifactReadiness: ArtifactReadiness;
+  note?: string;
+  noteTr?: string;
+}
+
 export interface IncidentPhaseSpec {
   phase: IncidentPhase;
   labelTr: string;
@@ -106,6 +120,7 @@ export interface IncidentPhaseSpec {
   recordedLayerHint: string;
   derivedLayerHint: string;
   traceMarker: string;
+  verification: IncidentPhaseVerificationSummary;
 }
 
 export interface IncidentSpine {

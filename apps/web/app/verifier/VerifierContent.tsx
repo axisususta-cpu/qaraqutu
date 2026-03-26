@@ -2531,6 +2531,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   verificationState={visibleReviewState}
                   role={selectedRoleLens}
                   incidentPhase={selectedPhase}
+                  incidentSpine={selectedCase?.incidentSpine ?? null}
                 />
               </div>
             )}

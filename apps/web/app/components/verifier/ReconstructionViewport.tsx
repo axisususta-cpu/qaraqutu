@@ -18,6 +18,21 @@ export type ReconstructionViewportProps = {
   verificationState: string | null;
   role: string | null;
   incidentPhase?: "t0" | "t1" | "t2" | "t3" | null;
+  incidentSpine?: {
+    phases?: Array<{
+      phase: "t0" | "t1" | "t2" | "t3";
+      verification?: {
+        posture: "UNVERIFIED" | "SUPPORTED" | "CONTESTED" | "INSUFFICIENT" | "RESTRICTED";
+        recordedPosture: "UNVERIFIED" | "SUPPORTED" | "CONTESTED" | "INSUFFICIENT" | "RESTRICTED";
+        derivedPosture: "UNVERIFIED" | "SUPPORTED" | "CONTESTED" | "INSUFFICIENT" | "RESTRICTED";
+        unknownDisputedPosture: "UNVERIFIED" | "SUPPORTED" | "CONTESTED" | "INSUFFICIENT" | "RESTRICTED";
+        tracePosture: "UNVERIFIED" | "SUPPORTED" | "CONTESTED" | "INSUFFICIENT" | "RESTRICTED";
+        artifactReadiness: "ready" | "bounded" | "limited" | "not_ready";
+        note?: string;
+        noteTr?: string;
+      };
+    }>;
+  } | null;
 };
 
 function stableHash(s: string): number {
@@ -679,7 +694,7 @@ function MetaCluster({
 }
 
 export function ReconstructionViewport(props: ReconstructionViewportProps) {
-  const { language, system, incidentClass, eventId, title, verificationState, role, incidentPhase } = props;
+  const { language, system, incidentClass, eventId, title, verificationState, role, incidentPhase, incidentSpine } = props;
   const scene = resolveSceneKind(system, incidentClass, eventId);
   const seed = eventId ? stableHash(eventId) : stableHash(system + (title ?? ""));
   const lat = eventId ? fmtCoord(seed, 41.0, 4) : "—";
@@ -753,6 +768,49 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
           ? { color: "#e17055", label: language === "tr" ? "Kırmızı kritik" : "Critical", detail: language === "tr" ? "Aktif olay penceresi; çekirdek risk" : "Active event window; core risk", zone: language === "tr" ? "Kritik olay bölgesi" : "Critical incident locus" }
           : { color: "#00b894", label: language === "tr" ? "Yeşil sonrası" : "Post-Event", detail: language === "tr" ? "İz ve doğrulama sonlandırma" : "Trace review and closure", zone: language === "tr" ? "Olay sonrası inceleme" : "Post-event review" }
     : { color: "#95a5a6", label: language === "tr" ? "Standby" : "Standby", detail: language === "tr" ? "Olay seçilmedi" : "No event selected", zone: language === "tr" ? "Bekleme" : "Standby" };
+
+  const phaseVerification = incidentPhase
+    ? incidentSpine?.phases?.find((p) => p.phase === incidentPhase)?.verification
+    : undefined;
+  const phaseVerificationPosture = phaseVerification?.posture ?? "UNVERIFIED";
+  const phaseArtifactReadiness = phaseVerification?.artifactReadiness ?? "not_ready";
+
+  const statusColor = (status: string): string => {
+    switch (status) {
+      case "SUPPORTED":
+        return "#f39c12";
+      case "CONTESTED":
+        return "#e17055";
+      case "INSUFFICIENT":
+        return "#fdcb6e";
+      case "RESTRICTED":
+        return "#d63031";
+      case "UNVERIFIED":
+      default:
+        return "#95a5a6";
+    }
+  };
+
+  const statusChip = (label: string, value: string) => (
+    <span
+      style={{
+        fontFamily: MONO,
+        fontSize: "0.56rem",
+        letterSpacing: "0.06em",
+        fontWeight: 700,
+        padding: "0.12rem 0.28rem",
+        borderRadius: 3,
+        border: `1px solid ${statusColor(value)}`,
+        color: statusColor(value),
+        background: "rgba(0,0,0,0.28)",
+        marginRight: "0.22rem",
+        marginBottom: "0.18rem",
+        display: "inline-block",
+      }}
+    >
+      {label}: {value}
+    </span>
+  );
 
 
   return (
@@ -868,6 +926,8 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
             color: "var(--text-soft)",
             fontFamily: MONO,
             fontSize: "0.64rem",
+            minWidth: 220,
+            maxWidth: 300,
           }}
         >
           <div style={{ fontWeight: 700, color: phaseVisual.color }}>{phaseVisual.label}</div>
@@ -885,6 +945,30 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
                 : language === "tr"
                   ? "Robot hücre güvenirliği sahne dili"
                   : "Robot workcell context"}
+          </div>
+          <div
+            style={{
+              marginTop: "0.35rem",
+              borderTop: "1px solid var(--border-strong)",
+              paddingTop: "0.3rem",
+            }}
+          >
+            <div style={{ fontSize: "0.58rem", letterSpacing: "0.08em", color: "var(--text-dim)", marginBottom: "0.15rem" }}>
+              {language === "tr" ? "Doğrulama Durumu" : "Verification Posture"}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem" }}>
+              {statusChip(language === "tr" ? "Genel" : "Overall", phaseVerificationPosture)}
+              {statusChip(language === "tr" ? "Kayıtlı" : "Recorded", phaseVerification?.recordedPosture ?? "UNVERIFIED")}
+              {statusChip(language === "tr" ? "Türetilmiş" : "Derived", phaseVerification?.derivedPosture ?? "UNVERIFIED")}
+              {statusChip(language === "tr" ? "Bilinmeyen" : "Unknown", phaseVerification?.unknownDisputedPosture ?? "UNVERIFIED")}
+              {statusChip(language === "tr" ? "İz" : "Trace", phaseVerification?.tracePosture ?? "UNVERIFIED")}
+              {statusChip(language === "tr" ? "Düzenleme" : "Artifact", phaseArtifactReadiness)}
+            </div>
+            {phaseVerification?.note ? (
+              <div style={{ marginTop: "0.2rem", fontSize: "0.55rem", color: "var(--text-muted)" }}>
+                {language === "tr" ? phaseVerification.noteTr ?? phaseVerification.note : phaseVerification.note}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
