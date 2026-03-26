@@ -79,8 +79,16 @@ export function ConditionalSiteFooter() {
             </div>
           </div>
           <div style={{ marginTop: "2rem", paddingTop: "1.1rem", borderTop: "1px solid rgba(255,255,255,0.07)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-            <span style={{ fontFamily: MONO, fontSize: "0.56rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.32)" }}>QARAQUTU · 2026</span>
-            <span style={{ fontFamily: MONO, fontSize: "0.56rem", color: "rgba(255,255,255,0.32)" }}>{lang === "tr" ? "Tek zincir · role bağlı kabuk" : "One chain · role-scoped shells"}</span>
+            <span style={{ fontFamily: MONO, fontSize: "0.56rem", letterSpacing: "0.1em", color: "rgba(255,255,255,0.32)" }}>QARAQUTU by AxisUS</span>
+            <a
+              href="https://www.behance.net/sekare"
+              target="_blank"
+              rel="noreferrer noopener"
+              style={{ fontFamily: MONO, fontSize: "0.56rem", color: "rgba(255,255,255,0.38)", textDecoration: "none", letterSpacing: "0.06em" }}
+            >
+              idemitus by Serhat Kadir KARATAŞ
+            </a>
+            <span style={{ fontFamily: MONO, fontSize: "0.56rem", color: "rgba(255,255,255,0.32)" }}>© 2026</span>
           </div>
         </div>
       </footer>
