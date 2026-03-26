@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useLanguage } from "../../lib/LanguageContext";
-import { useTheme } from "../../lib/ThemeContext";
 import type {
   CanonicalEvent,
   CreateExportRequest,
@@ -47,19 +46,19 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE;
 
 // ── Design language: light theme, institutional review station ──────────────
-const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
-const SANS = "'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+const MONO = "'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace";
+const SANS = "'IBM Plex Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
 // UI now uses CSS custom properties; verifier chassis uses minimal radius
 const UI = {
-  radius: { xs: 6, sm: 8, md: 10, lg: 12, xl: 14, pill: 999 },
-  sectionGap: "1rem",
+  radius: { xs: 2, sm: 3, md: 4, lg: 6, xl: 8, pill: 999 },
+  sectionGap: "0.88rem",
 } as const;
-const INNER_TILE_RADIUS = 4;
-const INNER_TILE_PAD = "0.42rem 0.56rem";
-const INNER_TILE_PAD_COMPACT = "0.34rem 0.5rem";
+const INNER_TILE_RADIUS = 2;
+const INNER_TILE_PAD = "0.38rem 0.5rem";
+const INNER_TILE_PAD_COMPACT = "0.3rem 0.44rem";
 
-const CH = { spinePx: 328, topNavPx: 56 } as const;
+const CH = { spinePx: 220, topNavPx: 44 } as const;
 const VERIFIER_SURFACE_VARS = {
   "--bg": "#080a0f",
   "--header-bg": "#101520",
@@ -722,9 +721,44 @@ function protocolStatePillStyle(label: string): CSSProperties {
   };
 }
 
+function phaseUiLabel(
+  phase: "t0" | "t1" | "t2" | "t3",
+  language: "en" | "tr"
+): string {
+  if (language === "tr") {
+    if (phase === "t0") return "T0 / Olay Öncesi";
+    if (phase === "t1") return "T1 / Yaklaşım";
+    if (phase === "t2") return "T2 / Kritik An";
+    return "T3 / Olay Sonrası";
+  }
+  if (phase === "t0") return "T0 / Pre-Event";
+  if (phase === "t1") return "T1 / Approach";
+  if (phase === "t2") return "T2 / Critical Moment";
+  return "T3 / Post-Event";
+}
+
+function phasePostureLabel(value: string | undefined, language: "en" | "tr") {
+  if (!value) return language === "tr" ? "Doğrulanmadı" : "Unverified";
+  if (language === "tr") {
+    if (value === "UNVERIFIED") return "Doğrulanmadı";
+    if (value === "SUPPORTED") return "Destekleniyor";
+    if (value === "CONTESTED") return "Çekişmeli";
+    if (value === "INSUFFICIENT") return "Yetersiz";
+    if (value === "RESTRICTED") return "Kısıtlı";
+    if (value === "ready") return "Hazır";
+    if (value === "bounded") return "Sınırlı Hazır";
+    if (value === "limited") return "Sınırlı";
+    if (value === "not_ready") return "Hazır Değil";
+  }
+  if (value === "ready") return "Ready";
+  if (value === "bounded") return "Bounded";
+  if (value === "limited") return "Limited";
+  if (value === "not_ready") return "Not Ready";
+  return value;
+}
+
 export function VerifierContent({ initialEventId }: { initialEventId?: string }) {
   const { lang: language, setLang: setLanguage } = useLanguage();
-  const { mode, toggle: toggleTheme } = useTheme();
   const [selectedSource, setSelectedSource] = useState<SourceId>("demo_archive");
   const [activeSourcePanel, setActiveSourcePanel] = useState<SourceId>("demo_archive");
   const [selectedSystem, setSelectedSystem] = useState<MockSystemId>(() => resolveInitialSystem(initialEventId));
@@ -861,6 +895,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     displayEvents.find((e) => e.eventId === selectedEventId) ?? null;
 
   const selectedCase = selectedEventId ? getCanonicalCaseByEventId(selectedEventId) : null;
+  const selectedPhaseSpec = selectedCase?.incidentSpine?.phases?.find((phase) => phase.phase === selectedPhase) ?? null;
   const selectedPackage = displayEvents.find((e) => e.eventId === selectedEventId) ?? null;
 
   useEffect(() => {
@@ -1331,13 +1366,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           top: 0,
           zIndex: 40,
           height: CH.topNavPx,
-          borderBottom: "1px solid var(--border)",
-          background: "linear-gradient(180deg, #181818, var(--header-bg))",
+          borderBottom: "1px solid var(--border-strong)",
+          background: "#161820",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: "0.7rem",
-          padding: "0 0.72rem 0 0.6rem",
+          gap: "0.55rem",
+          padding: "0 0.72rem 0 0.68rem",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", minWidth: 0, flex: "1 1 auto" }}>
@@ -1345,24 +1380,23 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             style={{
               display: "inline-flex",
               alignItems: "center",
-              padding: "0.2rem 0.42rem",
-              border: "1px solid var(--border)",
-              borderRadius: 6,
-              background: "linear-gradient(180deg, #1d1d1d, #151515)",
+              padding: "0.12rem 0.4rem",
+              border: "1px solid var(--accent-border)",
+              borderRadius: 0,
+              background: "rgba(255,102,0,0.08)",
             }}
           >
             <LogoPrimary href="/" height={16} variant="onDarkSurface" />
           </span>
-          <span style={{ color: "var(--border-strong)", fontFamily: MONO, fontSize: "0.72rem", flexShrink: 0 }}>·</span>
           <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
             <Link
               href="/verifier"
               style={{
                 fontFamily: MONO,
-                fontSize: "0.72rem",
-                letterSpacing: "0.14em",
+                fontSize: "0.62rem",
+                letterSpacing: "0.15em",
                 textTransform: "uppercase",
-                color: "var(--text-muted)",
+                color: "var(--text-secondary)",
                 textDecoration: "none",
                 fontWeight: 700,
                 whiteSpace: "nowrap",
@@ -1370,8 +1404,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             >
               {msg.verifierInspection}
             </Link>
-            <span style={{ fontFamily: MONO, fontSize: "0.56rem", letterSpacing: "0.08em", color: "var(--text-dim)" }}>
-              Hüküm vermez. Şahitlik eder.
+            <span style={{ fontFamily: MONO, fontSize: "0.54rem", letterSpacing: "0.12em", color: "var(--text-dim)", textTransform: "uppercase" }}>
+              {language === "tr" ? "İnceleme istasyonu" : "Inspection station"}
             </span>
           </div>
         </div>
@@ -1379,14 +1413,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           <span
             style={{
               fontFamily: MONO,
-              fontSize: "0.62rem",
-              letterSpacing: "0.1em",
+              fontSize: "0.56rem",
+              letterSpacing: "0.12em",
               textTransform: "uppercase",
               color: workstationLive ? "var(--accent)" : "var(--text-dim)",
-              padding: "0.2rem 0.42rem",
+              padding: "0.16rem 0.38rem",
               border: `1px solid ${workstationLive ? "var(--accent-border)" : "var(--border)"}`,
               background: workstationLive ? "var(--accent-soft)" : "var(--panel)",
-              borderRadius: 4,
+              borderRadius: 0,
               whiteSpace: "nowrap",
             }}
           >
@@ -1395,14 +1429,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           <span
             style={{
               fontFamily: MONO,
-              fontSize: "0.66rem",
-              letterSpacing: "0.1em",
+              fontSize: "0.6rem",
+              letterSpacing: "0.11em",
               textTransform: "uppercase",
               color: "var(--text-dim)",
-              padding: "0.2rem 0.42rem",
+              padding: "0.16rem 0.34rem",
               border: "1px solid var(--border)",
               background: "var(--panel)",
-              borderRadius: 4,
+              borderRadius: 0,
               maxWidth: 160,
               overflow: "hidden",
               textOverflow: "ellipsis",
@@ -1417,7 +1451,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           <div
             style={{
               display: "inline-flex",
-              borderRadius: 4,
+              borderRadius: 0,
               border: "1px solid var(--border)",
               overflow: "hidden",
             }}
@@ -1430,13 +1464,13 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 type="button"
                 onClick={() => setLanguage(l)}
                 style={{
-                  padding: "0.18rem 0.45rem",
+                  padding: "0.14rem 0.34rem",
                   background: language === l ? "var(--accent-soft)" : "transparent",
                   color: language === l ? "var(--accent)" : "var(--text-muted)",
                   border: "none",
                   cursor: "pointer",
                   fontFamily: MONO,
-                  fontSize: "0.68rem",
+                  fontSize: "0.62rem",
                   fontWeight: language === l ? 700 : 500,
                   letterSpacing: "0.08em",
                   textTransform: "uppercase",
@@ -1446,25 +1480,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={mode === "dark" ? "Light theme" : "Dark theme"}
-            style={{
-              padding: "0.18rem 0.45rem",
-              borderRadius: 4,
-              border: "1px solid var(--border)",
-              background: "var(--panel)",
-              color: "var(--text-muted)",
-              cursor: "pointer",
-              fontFamily: MONO,
-              fontSize: "0.68rem",
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-            }}
-          >
-            {mode === "dark" ? "LT" : "DK"}
-          </button>
         </div>
       </header>
 
@@ -1491,8 +1506,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               flexDirection: "column",
               borderRight: "1px solid var(--border)",
               borderBottom: "1px solid var(--border)",
-              background: "linear-gradient(180deg, #1f1f1f, var(--panel-raised))",
-              boxShadow: "inset -1px 0 0 rgba(255,102,0,0.06)",
+              background: "#161820",
               overflowY: "auto",
               overflowX: "hidden",
             }}
@@ -1501,9 +1515,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             {/* Sidebar header */}
             <div
               style={{
-                padding: "0.58rem 0.7rem",
+                padding: "0.48rem 0.6rem",
                 borderBottom: "1px solid var(--border)",
-                background: "var(--panel)",
+                background: "#141518",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -1512,8 +1526,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               <span
                 style={{
                   fontFamily: MONO,
-                  fontSize: "0.74rem",
-                  letterSpacing: "0.1em",
+                  fontSize: "0.62rem",
+                  letterSpacing: "0.18em",
                   color: "var(--text-dim)",
                   fontWeight: 600,
                   textTransform: "uppercase",
@@ -1524,7 +1538,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               <span
                 style={{
                   fontFamily: MONO,
-                  fontSize: "0.72rem",
+                  fontSize: "0.62rem",
                   color: "var(--text-dim)",
                   letterSpacing: "0.04em",
                 }}
@@ -1536,12 +1550,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             {/* Workflow hint */}
             <div
               style={{
-                margin: "0.42rem 0.5rem",
-                padding: "0.34rem 0.5rem",
-                background: "var(--panel)",
+                margin: "0.34rem 0.42rem",
+                padding: "0.28rem 0.42rem",
+                background: "#1a1c21",
                 border: "1px solid var(--border)",
-                borderLeft: "3px solid var(--accent)",
-                borderRadius: UI.radius.xs,
+                borderLeft: "2px solid var(--accent)",
+                borderRadius: 0,
               }}
               role="status"
               aria-live="polite"
@@ -1549,8 +1563,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               <div
                 style={{
                   fontFamily: MONO,
-                  fontSize: "0.74rem",
-                  fontWeight: 700,
+                  fontSize: "0.62rem",
+                  fontWeight: 500,
                   letterSpacing: "0.08em",
                   color: "var(--text-muted)",
                   lineHeight: 1.35,
@@ -1571,8 +1585,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             <div
               style={{
                 fontFamily: MONO,
-                fontSize: "0.72rem",
-                letterSpacing: "0.16em",
+                fontSize: "0.62rem",
+                letterSpacing: "0.18em",
                 color: "var(--text-dim)",
                 fontWeight: 700,
                 margin: "0 0.15rem 0.4rem",
@@ -1608,8 +1622,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 <div key={section.id}>
                   <div
                     style={{
-                      marginBottom: "0.18rem",
-                      borderRadius: UI.radius.xs,
+                      marginBottom: "0.14rem",
+                      borderRadius: 0,
                       border: "1px solid",
                       borderColor: isActive ? "var(--accent-border)" : "var(--border)",
                       background: isActive ? "var(--surface)" : "transparent",
@@ -1628,7 +1642,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     style={{
                       width: "100%",
                       textAlign: "left",
-                      padding: "0.42rem 0.6rem",
+                      padding: "0.34rem 0.52rem",
                       background: "transparent",
                       border: "none",
                       color: isActive ? "var(--text)" : "var(--text-muted)",
@@ -2356,7 +2370,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               <div style={{ fontFamily: MONO, fontSize: "0.61rem", letterSpacing: "0.09em", color: "var(--text-dim)", marginBottom: "0.24rem" }}>
                 {language === "tr" ? "ROL ODAĞI" : "ROLE FOCUS"}
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem", marginBottom: "0.24rem" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.14rem", marginBottom: "0.2rem" }}>
                 {ROLE_LENSES.map((role) => {
                   const selected = selectedRoleLens === role.id;
                   return (
@@ -2386,7 +2400,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               <p style={{ margin: 0, fontSize: "0.76rem", color: "var(--text-soft)", lineHeight: 1.4 }}>
                 {language === "tr" ? selectedRoleLensMeta.insightTr : selectedRoleLensMeta.insightEn}
               </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem", marginTop: "0.3rem" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.14rem", marginTop: "0.24rem" }}>
                 {roleSignals[selectedRoleLens].map((signal) => (
                   <span
                     key={signal}
@@ -2432,7 +2446,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       fontSize: "0.72rem",
                       letterSpacing: "0.08em",
                       textTransform: "uppercase",
-                      padding: "0.32rem 0.56rem",
+                      padding: "0.24rem 0.44rem",
                       borderRadius: INNER_TILE_RADIUS,
                       border: `1px solid ${on ? "var(--accent-border)" : "var(--border)"}`,
                       background: on ? "var(--accent-soft)" : "var(--panel)",
@@ -2494,11 +2508,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             border: active ? "1px solid var(--accent-border)" : "1px solid var(--border)",
                             background: active ? "var(--accent-soft)" : "var(--panel)",
                             color: active ? "var(--accent)" : "var(--text-muted)",
-                            padding: "0.24rem 0.34rem",
+                            padding: "0.2rem 0.3rem",
                             cursor: "pointer",
                           }}
                         >
-                          {language === "tr" ? phase.labelTr : phase.labelEn} ({phase.phase})
+                          {phaseUiLabel(phase.phase, language)}
                         </button>
                       );
                     })}
@@ -2521,6 +2535,65 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       : "Incident spine not found; defaulted to t2 (critical) phase."}
                   </div>
                 )}
+
+                {selectedPhaseSpec?.verification ? (
+                  <div
+                    style={{
+                      margin: "-0.15rem 0 0.55rem",
+                      border: "1px solid var(--border)",
+                      background: "var(--panel-card)",
+                      borderRadius: INNER_TILE_RADIUS,
+                      padding: "0.42rem 0.5rem",
+                      display: "grid",
+                      gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr)",
+                      gap: "0.4rem 0.6rem",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "0.14rem" }}>
+                        {language === "tr" ? "FAZ DİSİPLİNİ" : "PHASE DISCIPLINE"}
+                      </div>
+                      <div style={{ fontSize: "0.82rem", color: "var(--text-soft)", fontWeight: 600, lineHeight: 1.3 }}>
+                        {phaseUiLabel(selectedPhaseSpec.phase, language)}
+                      </div>
+                      <div style={{ marginTop: "0.1rem", fontSize: "0.74rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
+                        {language === "tr" ? selectedPhaseSpec.descriptionTr : selectedPhaseSpec.descriptionEn}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "0.14rem" }}>
+                        {language === "tr" ? "DOĞRULAMA DURUŞU" : "VERIFICATION POSTURE"}
+                      </div>
+                      <div style={{ fontSize: "0.82rem", color: "var(--accent)", fontWeight: 700, lineHeight: 1.3 }}>
+                        {phasePostureLabel(selectedPhaseSpec.verification.posture, language)}
+                      </div>
+                      <div style={{ marginTop: "0.1rem", fontSize: "0.74rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
+                        {language === "tr" ? selectedPhaseSpec.verification.noteTr ?? selectedPhaseSpec.verification.note : selectedPhaseSpec.verification.note}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "0.14rem" }}>
+                        {language === "tr" ? "DÜZENLEME HAZIRLIĞI" : "ARTIFACT READINESS"}
+                      </div>
+                      <div style={{ fontSize: "0.82rem", color: "var(--text-soft)", fontWeight: 700, lineHeight: 1.3 }}>
+                        {phasePostureLabel(selectedPhaseSpec.verification.artifactReadiness, language)}
+                      </div>
+                      <div style={{ marginTop: "0.1rem", fontSize: "0.74rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
+                        {selectedSystem === "drone"
+                          ? language === "tr"
+                            ? "Drone hattı faza göre açıkça sınırlanır; link ve el değişimi görünür kalır."
+                            : "Drone lane remains visibly bounded by phase; link and handoff stay explicit."
+                          : selectedSystem === "robot"
+                            ? language === "tr"
+                              ? "Robot hattı faza göre görünür ve kamusal bağlam sorularını açık bırakır."
+                              : "Robot lane stays visibly phased and leaves public-context questions open."
+                            : language === "tr"
+                              ? "Araç hattı faza göre görünür, ancak açık hususların üstüne yazmaz."
+                              : "Vehicle lane remains visibly phased without outranking open items."}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
 
                 <ReconstructionViewport
                   language={language}

@@ -1,788 +1,363 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { LogoPrimary } from "./components/LogoPrimary";
 import { useLanguage } from "../lib/LanguageContext";
-import { MSG } from "../lib/i18n/messages";
-import { SectionHeader } from "./components/ui/SectionHeader";
-import { VerticalsDiagram } from "./components/diagrams/VerticalsDiagram";
-import { CanonicalSpineDiagram } from "./components/diagrams/CanonicalSpineDiagram";
-import { EvidenceLayerDiagram } from "./components/diagrams/EvidenceLayerDiagram";
-import { RoleExportDiagram } from "./components/diagrams/RoleExportDiagram";
-import { InstitutionalUseFamilies } from "./components/institutional/InstitutionalUseFamilies";
-import { SectorScenarioCards } from "./components/sector/SectorScenarioCards";
-import { HomeRoleInstitutionGrid } from "./components/home/HomeRoleInstitutionGrid";
-import { HomeCommandSpineFlow } from "./components/home/HomeCommandSpineFlow";
-const MEDIA = {
-  hero: "/media/home/home-hero-vehicle.jpg",
-  vehicle: "/media/home/vehicle-section-dashboard.jpg",
-  drone: "/media/home/drone-section.jpg",
-  robot: "/media/home/robot-section-factory.jpg",
-  documentProtocol: "/media/home/document-protocol-section.jpg",
+
+const MONO = "'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', monospace";
+const SANS = "'IBM Plex Sans', 'Inter', 'Segoe UI', sans-serif";
+
+const COPY = {
+  tr: {
+    heroTagline: "Kurumsal Tanık Protokolü",
+    heroHeadline: [
+      "Aynı olayı sigorta, hukuk ve teknik",
+      "farklı nesnelerde okuduğunda",
+      "kurumun ihtiyacı tek zincir,",
+      "üç ayrı öykü değil.",
+    ],
+    heroBody:
+      "QARAQUTU sensör, günlük ve operatör bağlamını tek kanonik olay paketinde birleştirir; ardından ayrılmış bir Doğrulayıcı istasyonunda inceler: kayıtlı materyal, türetilmiş okumalar, açık bilinmeyenler, doğrulama izi ve role sınırlı belge düzenlemesi.",
+    heroProps: [
+      ["Hüküm vermez", "Şahitlik eder. Yorum ile kaydı asla aynı yüzeyde birleştirmez."],
+      ["Rol sınırlı okuma", "Polis, sigorta, hukuk ve teknik aynı omurgadan farklı belge kabuğu alır."],
+      ["Araç · İHA · Robot", "Üç alanda aynı protokol; kayıt, iz ve düzenleme ayrımı korunur."],
+      ["Bağlayıcı hazır", "Gerçek araç, İHA ve robot veri uç noktaları doğrudan bağlanır."],
+    ],
+    doctrineNote:
+      "Mimari notu: Doğrulayıcı birincil inceleme istasyonudur. Araç, İHA ve Robot tek kanonik model üzerindedir. Golden ayrı ürün değil; doğrulayıcı sürekliliği için dahili referanstır.",
+    howLabel: "Nasıl Çalışır",
+    howTitle: "Tek omurgada kayıt, türetme ve belgeleme; ayrımı bozulmadan",
+    howBody:
+      "Hasar, vekil, saha ve mühendislik aynı omurgadan çalışsın diye tasarlanmıştır; tanık ile yorumun aynı yüzeyde erimesine izin vermez.",
+    howCards: [
+      ["01", "Olay Paketi Oluşturulur", "Sensör, günlük ve operatör bağlamı tek kanonik pakette birleşir. Kayıt katmanı ve türetilmiş katman aynı nesneye yazılmaz.", ["LiDAR", "IMU", "GPS", "CAN"]],
+      ["02", "Doğrulayıcı İstasyonunda İncelenir", "Nokta bulutu sahne görünümü etrafında T0→T3 faz okuma, kayıt/türetilmiş/bilinmeyen ayrımı, doğrulama izi ve belge hazırlığı görünür olur.", ["T0 T1 T2 T3", "Kayıt Katmanı"]],
+      ["03", "Rol Odaklı Belge Çıkarılır", "Aynı olay paketi polis, sigorta, hukuk ve teknik kabuğa dönüştürülür. Her kurum yalnızca kendi katmanını okur.", ["Polis", "Sigorta", "Hukuk"]],
+    ],
+    domainLabel: "Alanlar",
+    domainTitle: "Araç · Drone · Robot; üç alan, tek protokol",
+    domainBody: "Üç alanda aynı protokol; kayıtlı, türetilmiş, iz ve düzenleme ayrımı korunur.",
+    domains: [
+      ["ARC", "Araç", "Şerit, dur çizgisi, geçiş, bordür ve nesne alanı tek olay omurgasında tutulur. Hız, ivme ve brakaj kayıt katmanında mühürlüdür.", ["Event", "Bundle", "Manifest"]],
+      ["UAV", "Drone / İHA", "Koridor, irtifa bandı, ihlal sınırı ve engel alanı tek protokole bağlanır. Uçuş planı sapması ve devralma anı görünür kalır.", ["Mission", "Telemetry", "Link"]],
+      ["RBT", "Robot", "Hücre, güvenlik zarfı, rota koridoru ve insan yakınlığı aynı istasyonda okunur. PLC ve güvenlik ihlali ayrıştırılmış kalır.", ["Interaction", "Safety", "Handoff"]],
+    ],
+    doctrineLabel: "Doktrin",
+    doctrineTitle: "Doktrin ayrımları ürün yüzeyinde açık kalır",
+    doctrineBody: "Aynı istasyon içinde her katman görünür olabilir; fakat hiçbiri diğeri gibi davranmaz.",
+    doctrineCards: [
+      ["Kayıt Katmanı", "Kayıtlı materyal türetilmiş yoruma dönüşmez.", "Sensör, günlük, telemetri ve operatör girdisi mühürlü katmanda kalır."],
+      ["Türetilmiş Katman", "Türetilmiş okuma hüküm değildir.", "Uzman yorumu, model okuması ve skorlar ayrı epistemik statü taşır."],
+      ["Doğrulama İzi", "İz, gerçeğin kendisi değildir.", "Yapılan adımlar, kullanılan kayıtlar ve açık hususlar zincir halinde görünür olur."],
+      ["Belgeleme", "Belge düzenleme suçlama değildir.", "Role bağlı çıktı aynı olay omurgasından gelir; kurumsal öncelik değişir, olay değişmez."],
+    ],
+    rolesLabel: "Roller",
+    rolesTitle: "Roller omurgayı paylaşır, belge kabukları ayrılır",
+    rolesBody: "Aynı paket, farklı kurumsal okuma yüzeylerine dönüşür.",
+    roles: [
+      ["ROL", "Polis", "Olay yeri, zaman çizgisi ve kaza tutanağı önceliklidir."],
+      ["ROL", "Sigorta", "Hasar akışı, teminat incelemesi ve belge zinciri önceliklidir."],
+      ["ROL", "Muhakeme", "Delil zinciri, inceleme izi ve açık hususlar önceliklidir."],
+      ["ROL", "Bilirkişi", "Teknik okuma, neden-sonuç sınırı ve karşılaştırmalı değerlendirme görünür olur."],
+      ["ROL", "Üretici", "Sistem davranışı, komponent ilişkisi ve hata bağlamı ayrıştırılır."],
+      ["ROL", "Operatör", "Yakında", true],
+    ],
+    statsLabel: "İşletim ritmi",
+    statsTitle: "İşletim ritmi",
+    statsBody: "Canonical landing HTML’deki sade cadence bandını koruyarak ölçüleri öne çıkarır.",
+    stats: [["01", "Tek kanonik olay omurgası"], ["03", "Araç / Drone / Robot alanı"], ["05", "Sınırlı protokol adımı"], ["24/7", "İnceleme yüzeyi erişimi"]],
+    ctaTitle: "Tek omurga üzerinde olay incelemesini açın; tanık ile yorumu karıştırmayın.",
+    ctaBody: "Doğrulayıcı, araç, drone ve robot olaylarını aynı kurumsal tanık protokolünde tutar. Belgeler ve erişim yüzeyleri aynı çekirdeğe bağlı kalır.",
+    openVerifier: "Doğrulayıcıyı Aç",
+    howLink: "Nasıl Çalışır?",
+    previewTitle: "Mühürlü Yeniden Oluşturma Görünümü",
+    previewLabel: "HÜCRE · GÜVENLİK ZARFI · YAKINLIK",
+    doctrineChips: ["Kayıtlı ≠ Türetilmiş", "İz ≠ Nihai Gerçek", "Düzenleme ≠ Suçlama"],
+    previewBadges: ["ROBOT", "RİSK: YÜKSEK", "İNCELENMEDİ"],
+  },
+  en: {
+    heroTagline: "Institutional Witness Protocol",
+    heroHeadline: [
+      "When insurance, legal, and engineering",
+      "read the same incident differently,",
+      "institutions need one chain,",
+      "not three separate stories.",
+    ],
+    heroBody:
+      "QARAQUTU unifies sensor data, event logs, and operator context into a single canonical incident package, then inspects it in a separated Verifier station: recorded material, derived readings, open unknowns, verification trace, and role-scoped document issuance.",
+    heroProps: [
+      ["Does not judge", "It witnesses. Interpretation is never merged with recording on the same surface."],
+      ["Role-scoped reading", "Police, insurance, legal, and technical shells read from the same spine."],
+      ["Vehicle · UAV · Robot", "One protocol across three domains. Recording, trace, and issuance remain separated."],
+      ["Connector-ready", "Real vehicle, drone, and robot data endpoints plug in directly."],
+    ],
+    doctrineNote:
+      "Architecture note: the Verifier is the primary inspection station. Vehicle, Drone, and Robot share one canonical model. Golden is not a separate product; it is an internal continuity reference.",
+    howLabel: "How It Works",
+    howTitle: "Recording, derivation, and documentation on one spine; separation never breaks",
+    howBody:
+      "Designed so that claims, legal, field, and engineering teams work from the same spine without melting witness material into interpretation.",
+    howCards: [
+      ["01", "Incident Package Is Formed", "Sensors, logs, and operator context are unified into one canonical package. The recording layer and derived layer never write to the same object.", ["LiDAR", "IMU", "GPS", "CAN"]],
+      ["02", "Inspected in the Verifier Station", "Around a point-cloud scene view, T0→T3 phase reading, recorded/derived/unknown separation, verification trace, and document readiness stay visible.", ["T0 T1 T2 T3", "Recording Layer"]],
+      ["03", "Role-Scoped Document Is Issued", "The same package becomes police, insurance, legal, and technical shells. Each institution reads only its own layer.", ["Police", "Insurance", "Legal"]],
+    ],
+    domainLabel: "Domains",
+    domainTitle: "Vehicle · Drone · Robot; three domains, one protocol",
+    domainBody: "One protocol across three domains, with recorded, derived, trace, and issuance always separated.",
+    domains: [
+      ["VEH", "Vehicle", "Lane, stop-line, crossing, curb, and object field stay on one event spine. Speed, acceleration, and braking remain sealed in the recording layer.", ["Event", "Bundle", "Manifest"]],
+      ["UAV", "Drone / UAV", "Corridor, altitude band, intrusion boundary, and obstacle field bind into one protocol. Flight-plan deviation and handoff remain explicit.", ["Mission", "Telemetry", "Link"]],
+      ["RBT", "Robot", "Workcell, safety envelope, route corridor, and human proximity are read in one station. PLC and safety violations remain separated.", ["Interaction", "Safety", "Handoff"]],
+    ],
+    doctrineLabel: "Doctrine",
+    doctrineTitle: "Doctrine separations stay explicit on the product surface",
+    doctrineBody: "The same station can show every layer without letting one impersonate another.",
+    doctrineCards: [
+      ["Recorded Layer", "Recorded material never becomes derived interpretation.", "Sensors, logs, telemetry, and operator input remain sealed in the witness layer."],
+      ["Derived Layer", "Derived reading is not judgement.", "Expert reading, model interpretation, and scores carry a separate epistemic status."],
+      ["Verification Trace", "Trace is not final truth.", "Executed steps, used records, and open issues stay visible as a chain."],
+      ["Issuance", "Document issuance is not blame.", "Role-scoped outputs come from the same event spine; institutional priority changes, the event does not."],
+    ],
+    rolesLabel: "Roles",
+    rolesTitle: "Roles share the spine while document shells stay distinct",
+    rolesBody: "The same package becomes different institutional reading surfaces.",
+    roles: [
+      ["ROLE", "Police", "Scene, timeline, and incident reporting are prioritized."],
+      ["ROLE", "Insurance", "Claims flow, coverage review, and document chain are prioritized."],
+      ["ROLE", "Adjudication", "Evidence chain, review trace, and open issues are prioritized."],
+      ["ROLE", "Expert", "Technical reading, cause boundary, and comparison stay explicit."],
+      ["ROLE", "Manufacturer", "System behavior, component relation, and fault context are separated."],
+      ["ROLE", "Operator", "Coming soon", true],
+    ],
+    statsLabel: "Operational cadence",
+    statsTitle: "Operational cadence",
+    statsBody: "The canonical landing HTML uses a restrained stats band; this keeps that same rhythm.",
+    stats: [["01", "One canonical event spine"], ["03", "Vehicle / Drone / Robot domains"], ["05", "Bounded protocol steps"], ["24/7", "Inspection surface availability"]],
+    ctaTitle: "Open incident review on one spine; stop mixing witness material with interpretation.",
+    ctaBody: "The Verifier keeps vehicle, drone, and robot incidents inside one institutional witness protocol. Docs and access surfaces remain tied to the same core.",
+    openVerifier: "Open Verifier",
+    howLink: "How It Works",
+    previewTitle: "Sealed Reconstruction View",
+    previewLabel: "WORKCELL · SAFETY ENVELOPE · PROXIMITY",
+    doctrineChips: ["Recorded ≠ Derived", "Trace ≠ Final Truth", "Issuance ≠ Blame"],
+    previewBadges: ["ROBOT", "RISK: HIGH", "UNREVIEWED"],
+  },
 } as const;
 
-const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
-const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+function ChainRow({ items }: { items: readonly string[] }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+      {items.map((item, index) => (
+        <span key={item} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ padding: "2px 7px", border: "1px solid rgba(255,255,255,0.07)", color: "#44464e" }}>{item}</span>
+          {index < items.length - 1 ? <span style={{ color: "#44464e", fontSize: 8 }}>→</span> : null}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function Preview({ copy }: { copy: (typeof COPY)["tr"] | (typeof COPY)["en"] }) {
+  return (
+    <div style={{ position: "relative", zIndex: 1, marginTop: 32 }}>
+      <div style={{ border: "1px solid rgba(255,255,255,0.13)", background: "#141518", overflow: "hidden" }}>
+        <div style={{ background: "#1a1c21", borderBottom: "1px solid rgba(255,255,255,0.13)", padding: "8px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#e8650a" }} />
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#44464e" }} />
+          <span style={{ fontFamily: MONO, fontSize: 9, color: "#44464e", letterSpacing: "0.12em", flex: 1 }}>{copy.previewTitle}</span>
+          <span style={{ fontFamily: MONO, fontSize: 9, padding: "2px 6px", background: "rgba(232,101,10,0.14)", border: "1px solid rgba(232,101,10,0.3)", color: "#e8650a", letterSpacing: "0.08em" }}>T2 — CRITICAL</span>
+        </div>
+        <div style={{ position: "relative", height: 308, background: "#08090b", overflow: "hidden" }}>
+          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 50% at 70% 40%, rgba(232,101,10,0.09) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 20% 80%, rgba(232,101,10,0.04) 0%, transparent 60%)" }} />
+          <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)", backgroundSize: "42px 42px", opacity: 0.6 }} />
+          <span style={{ position: "absolute", top: 12, left: 12, fontFamily: MONO, fontSize: 9, color: "rgba(255,255,255,0.3)", letterSpacing: "0.1em" }}>{copy.previewLabel}</span>
+          {Array.from({ length: 64 }).map((_, index) => (
+            <span key={index} style={{ position: "absolute", left: `${8 + ((index * 13) % 82)}%`, top: `${12 + ((index * 19) % 64)}%`, width: index % 6 === 0 ? 4 : 2, height: index % 6 === 0 ? 4 : 2, borderRadius: index % 6 === 0 ? 0 : "50%", background: index % 5 === 0 ? "rgba(232,101,10,0.9)" : "rgba(230,227,220,0.5)", boxShadow: index % 5 === 0 ? "0 0 10px rgba(232,101,10,0.32)" : "none" }} />
+          ))}
+          <div style={{ position: "absolute", left: "15%", top: "60%", width: "54%", height: 1, background: "linear-gradient(90deg, transparent, rgba(232,101,10,0.9), transparent)", transform: "rotate(-11deg)" }} />
+          <div style={{ position: "absolute", left: "39%", top: "35%", width: "28%", height: 1, borderTop: "1px dashed rgba(78,201,176,0.6)", transform: "rotate(19deg)" }} />
+        </div>
+        <div style={{ background: "rgba(255,255,255,0.07)", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 1 }}>
+          {[
+            { key: "ZONE", value: "SAFE-Z", orange: true },
+            { key: "CONF", value: "0.82", orange: true },
+            { key: "PHASE", value: "T2", orange: false },
+            { key: "PKT", value: "RSF-001", orange: false },
+          ].map(({ key, value, orange }) => (
+            <div key={key} style={{ background: "#1a1c21", padding: "7px 9px" }}>
+              <div style={{ fontFamily: MONO, fontSize: 8, color: "#44464e", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 3 }}>{key}</div>
+              <div style={{ fontFamily: MONO, fontSize: key === "PKT" ? 9 : 11, fontWeight: 600, color: orange ? "#e8650a" : "#e6e3dc" }}>{value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ marginTop: 10, display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {copy.previewBadges.map((item, index) => (
+          <span key={item} style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: "0.12em", padding: "3px 9px", border: `1px solid ${index === 1 ? "rgba(232,101,10,0.4)" : "rgba(255,255,255,0.13)"}`, color: index === 1 ? "#e8650a" : "#8a8880", textTransform: "uppercase", background: index === 1 ? "rgba(232,101,10,0.14)" : "transparent" }}>{item}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function LandingPage() {
   const { lang } = useLanguage();
-  const m = MSG[lang];
-  const protocolTags =
-    lang === "tr"
-      ? ["KAYITLI ≠ TÜRETİLMİŞ", "İZ ≠ NİHAİ GERÇEK", "DÜZENLEME ≠ SUÇLAMA"]
-      : ["RECORDED ≠ DERIVED", "TRACE ≠ TRUTH", "ISSUANCE ≠ BLAME"];
+  const copy = COPY[lang];
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        margin: 0,
-        padding: 0,
-        background: "var(--bg)",
-        color: "var(--text)",
-        fontFamily: SANS,
-      }}
-    >
-      {/* Full-bleed dark hero — inspection-station landing grammar */}
-      <section
-        className="home-dark-hero"
-        style={{
-          position: "relative",
-          minHeight: "min(92vh, 880px)",
-          background: "#090908",
-          color: "#eceae6",
-          borderBottom: "1px solid #1a1a18",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1180,
-            margin: "0 auto",
-            padding: "2.25rem 2rem 2.75rem",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          <div
-            className="home-hero-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(0, 1.85fr) minmax(0, 1.35fr)",
-              gap: "2rem",
-              alignItems: "stretch",
-            }}
-          >
-            <div>
-              <div style={{ marginBottom: "1rem" }}>
-                <LogoPrimary href="/" height={56} variant="onDarkSurface" />
-              </div>
-              <p
-                style={{
-                  margin: "0 0 0.65rem 0",
-                  fontSize: "0.72rem",
-                  fontWeight: 600,
-                  color: "rgba(255,255,255,0.45)",
-                  letterSpacing: "0.16em",
-                  textTransform: "uppercase",
-                  fontFamily: MONO,
-                  lineHeight: 1.4,
-                }}
-              >
-                {m.homeHeroEyebrow}
-              </p>
-              <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "0.4rem",
-                  marginBottom: "0.75rem",
-                }}
-              >
-                {protocolTags.map((tag) => (
-                  <span
-                    key={tag}
-                    style={{
-                      padding: "0.22rem 0.55rem",
-                      borderRadius: 2,
-                      border: "1px solid rgba(255,255,255,0.14)",
-                      background: "rgba(255,255,255,0.04)",
-                      fontSize: "0.62rem",
-                      fontWeight: 600,
-                      letterSpacing: "0.08em",
-                      fontFamily: MONO,
-                      color: "rgba(255,255,255,0.7)",
-                    }}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  padding: "0.28rem 0.65rem",
-                  borderRadius: 2,
-                  marginBottom: "0.75rem",
-                  background: "rgba(212,86,26,0.12)",
-                  border: "1px solid rgba(212,86,26,0.35)",
-                  color: "var(--accent)",
-                  fontSize: "0.68rem",
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  fontFamily: MONO,
-                }}
-              >
-                {m.homeHeroChip}
-              </div>
-              <p
-                style={{
-                  margin: "0 0 0.55rem 0",
-                  fontSize: "1.12rem",
-                  fontWeight: 500,
-                  color: "rgba(255,255,255,0.72)",
-                  letterSpacing: "-0.02em",
-                  lineHeight: 1.38,
-                  fontFamily: SANS,
-                }}
-              >
-                {m.motto}
-              </p>
-              <h1
-                style={{
-                  fontSize: "clamp(1.5rem, 4vw, 2.35rem)",
-                  margin: 0,
-                  lineHeight: 1.15,
-                  fontWeight: 600,
-                  letterSpacing: "-0.03em",
-                  color: "#f7f5f0",
-                }}
-              >
-                {m.homeHeroHeading}
-              </h1>
-              <p
-                style={{
-                  fontSize: "1rem",
-                  color: "rgba(255,255,255,0.58)",
-                  maxWidth: 640,
-                  lineHeight: 1.62,
-                  marginTop: "1rem",
-                }}
-              >
-                {m.homeHeroBody}
-              </p>
-              <div
-                style={{
-                  marginTop: "1.1rem",
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                  gap: "0.55rem",
-                  maxWidth: 720,
-                }}
-              >
-                {[m.homeHeroPillar1, m.homeHeroPillar2, m.homeHeroPillar3, m.homeHeroPillar4].map((line) => (
-                  <div
-                    key={line}
-                    style={{
-                      borderRadius: 2,
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      background: "rgba(255,255,255,0.03)",
-                      padding: "0.52rem 0.68rem",
-                      fontSize: "0.8125rem",
-                      color: "rgba(255,255,255,0.62)",
-                      lineHeight: 1.45,
-                    }}
-                  >
-                    {line}
-                  </div>
-                ))}
-              </div>
-              <p
-                style={{
-                  marginTop: "1rem",
-                  marginBottom: 0,
-                  fontSize: "0.8rem",
-                  lineHeight: 1.58,
-                  color: "rgba(255,255,255,0.42)",
-                  maxWidth: 720,
-                  fontFamily: MONO,
-                }}
-              >
-                {m.homeHeroArchitectureNote}
-              </p>
-              <div
-                style={{
-                  marginTop: "1.35rem",
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "0.65rem",
-                  alignItems: "center",
-                }}
-              >
-                <Link
-                  href="/verifier"
-                  style={{
-                    padding: "0.65rem 1.5rem",
-                    borderRadius: 2,
-                    border: "1px solid var(--accent-border)",
-                    background: "var(--accent)",
-                    textDecoration: "none",
-                    color: "#ffffff",
-                    fontWeight: 700,
-                    fontFamily: MONO,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    fontSize: "0.72rem",
-                  }}
-                >
-                  {m.homeHeroCta}
-                </Link>
-                <Link
-                  href="/docs"
-                  style={{
-                    padding: "0.62rem 1.25rem",
-                    borderRadius: 2,
-                    border: "1px solid rgba(255,255,255,0.22)",
-                    background: "transparent",
-                    textDecoration: "none",
-                    color: "rgba(255,255,255,0.78)",
-                    fontFamily: MONO,
-                    fontSize: "0.7rem",
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {m.homeHeroCtaSecondary}
-                </Link>
-              </div>
+    <main style={{ minHeight: "100vh", background: "#0c0d0f", color: "#e6e3dc", fontFamily: SANS }}>
+      <section style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr", padding: "100px 32px 60px", position: "relative", overflow: "hidden", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 50% at 70% 40%, rgba(232,101,10,0.06) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 20% 80%, rgba(232,101,10,0.03) 0%, transparent 60%)" }} />
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)", backgroundSize: "60px 60px", opacity: 0.7 }} />
+        <div style={{ maxWidth: 1280, width: "100%", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 52, alignItems: "center", position: "relative", zIndex: 1 }}>
+          <div>
+            <div style={{ marginBottom: 28 }}>
+              <LogoPrimary href="/" height={44} variant="onDarkSurface" />
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
-              <div
-                style={{
-                  position: "relative",
-                  borderRadius: 2,
-                  overflow: "hidden",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  aspectRatio: "16/10",
-                  background: "#121211",
-                }}
-              >
-                <Image
-                  src={MEDIA.hero}
-                  alt="Vehicle incident review - QARAQUTU verifier-first witness protocol in fleet and claims context"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 420px"
-                  style={{ objectFit: "cover", opacity: 0.92 }}
-                  priority
-                />
-              </div>
-              <div style={{ borderRadius: 2, border: "1px solid rgba(255,255,255,0.08)", padding: "0.65rem 0.75rem", background: "rgba(255,255,255,0.02)" }}>
-                <VerticalsDiagram lang={lang} />
-              </div>
-              <p style={{ margin: 0, fontSize: "0.8rem", lineHeight: 1.55, color: "rgba(255,255,255,0.5)" }}>{m.homeVerticalsCaption}</p>
-              <div
-                style={{
-                  borderRadius: 2,
-                  border: "1px dashed rgba(255,255,255,0.18)",
-                  padding: "0.6rem 0.75rem",
-                  fontSize: "0.78rem",
-                  color: "rgba(255,255,255,0.45)",
-                  lineHeight: 1.55,
-                  fontFamily: MONO,
-                }}
-              >
-                {lang === "tr"
-                  ? "Protokol konumu: Doğrulayıcı bir inceleme istasyonudur; zincir disiplinini korur, sorumluluk motoru veya mahkeme ikamesi değildir."
-                  : "Protocol position: the Verifier is an inspection station—it preserves chain discipline; it is not a liability engine or a substitute for court judgement."}
-              </div>
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.2em", color: "#44464e", textTransform: "uppercase", marginBottom: 20 }}>{copy.heroTagline}</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 24 }}>
+              {copy.doctrineChips.map((chip) => (
+                <span key={chip} style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", padding: "4px 10px", border: "1px solid rgba(255,255,255,0.13)", color: "#8a8880", textTransform: "uppercase" }}>{chip}</span>
+              ))}
             </div>
+            <h1 style={{ fontSize: "clamp(24px, 4vw, 42px)", fontWeight: 500, lineHeight: 1.2, color: "#e6e3dc", margin: "0 0 20px", letterSpacing: "-0.01em" }}>
+              {copy.heroHeadline.slice(0, 3).map((line) => (
+                <span key={line} style={{ display: "block" }}>{line}</span>
+              ))}
+              <span style={{ display: "block", color: "#e8650a" }}>{copy.heroHeadline[3]}</span>
+            </h1>
+            <p style={{ fontSize: 15, color: "#8a8880", lineHeight: 1.7, maxWidth: 560, margin: "0 0 28px" }}>{copy.heroBody}</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.07)", marginBottom: 32, maxWidth: 540 }}>
+              {copy.heroProps.map(([title, body]) => (
+                <div key={title} style={{ background: "#141518", padding: "11px 13px", fontSize: 12, color: "#8a8880", lineHeight: 1.5 }}>
+                  <strong style={{ display: "block", fontFamily: MONO, fontSize: 9, color: "#44464e", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 4, fontWeight: 400 }}>{title}</strong>
+                  {body}
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+              <Link href="/verifier" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", padding: "12px 24px", background: "#e8650a", color: "#0c0d0f", textDecoration: "none", fontWeight: 600 }}>{copy.openVerifier}</Link>
+              <a href="#how" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", padding: "12px 24px", background: "transparent", color: "#8a8880", border: "1px solid rgba(255,255,255,0.13)", textDecoration: "none" }}>{copy.howLink}</a>
+            </div>
+            <div style={{ fontFamily: MONO, fontSize: 9, color: "#44464e", marginTop: 16, lineHeight: 1.8 }}>{copy.doctrineNote}</div>
+          </div>
+          <Preview copy={copy} />
+        </div>
+      </section>
+
+      <div style={{ height: 1, background: "rgba(255,255,255,0.07)" }} />
+
+      <section id="how" style={{ background: "#141518", borderTop: "1px solid rgba(255,255,255,0.07)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "100px 80px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8650a", marginBottom: 16 }}>{copy.howLabel}</div>
+          <h2 style={{ fontSize: "clamp(22px,3.5vw,38px)", fontWeight: 500, lineHeight: 1.2, margin: "0 0 16px", letterSpacing: "-0.01em" }}>{copy.howTitle}</h2>
+          <p style={{ fontSize: 15, color: "#8a8880", lineHeight: 1.7, maxWidth: 600 }}>{copy.howBody}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.07)", marginTop: 48 }}>
+            {copy.howCards.map(([num, title, body, tags]) => (
+              <div key={num} style={{ background: "#1a1c21", padding: "28px 24px" }}>
+                <div style={{ fontFamily: MONO, fontSize: 11, color: "#e8650a", letterSpacing: "0.15em", marginBottom: 12 }}>{num}</div>
+                <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 10, lineHeight: 1.3 }}>{title}</div>
+                <div style={{ fontSize: 13, color: "#8a8880", lineHeight: 1.7 }}>{body}</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14 }}>
+                  {tags.map((tag) => (
+                    <span key={tag} style={{ fontFamily: MONO, fontSize: 8, letterSpacing: "0.1em", padding: "3px 8px", border: "1px solid rgba(255,255,255,0.13)", color: "#44464e", textTransform: "uppercase" }}>{tag}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <div
-        className="home-below-fold home-hero-with-grid"
-        style={{ maxWidth: 1180, margin: "0 auto", padding: "2rem 2rem 2.5rem", display: "flex", flexDirection: "column", gap: "1.75rem" }}
-      >
-        <HomeCommandSpineFlow lang={lang} />
+      <div style={{ height: 1, background: "rgba(255,255,255,0.07)" }} />
 
-        {/* Problem — institutional cards */}
-        <section
-          style={{
-            borderRadius: 4,
-            border: "1px solid var(--border-strong)",
-            background: "var(--panel)",
-            padding: "1.45rem 1.5rem",
-            boxShadow: "none",
-          }}
-        >
-          <SectionHeader badge={lang === "tr" ? "Ba\u011flam" : "Context"} heading={m.sectionProblem} />
-          <p style={{ margin: "0 0 1.15rem", fontSize: "0.92rem", lineHeight: 1.58, color: "var(--text-soft)", maxWidth: 820 }}>
-            {m.homeProblemIntro}
-          </p>
-          <div
-            className="home-problem-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              gap: "1rem",
-            }}
-          >
-            {[
-              { title: m.homeProblemCard1Title, body: m.homeProblemCard1Body },
-              { title: m.homeProblemCard2Title, body: m.homeProblemCard2Body },
-              { title: m.homeProblemCard3Title, body: m.homeProblemCard3Body },
-            ].map((card) => (
-              <div
-                key={card.title}
-                style={{
-                  borderRadius: 2,
-                  border: "1px solid var(--border)",
-                  background: "var(--panel-card)",
-                  padding: "1rem 1.05rem",
-                  borderLeft: "3px solid var(--accent)",
-                }}
-              >
-                <div style={{ fontFamily: MONO, fontSize: "0.74rem", fontWeight: 700, color: "var(--text)", marginBottom: "0.45rem", letterSpacing: "0.04em" }}>
-                  {card.title}
-                </div>
-                <p style={{ margin: 0, fontSize: "0.875rem", lineHeight: 1.58, color: "var(--text-soft)" }}>{card.body}</p>
+      <section id="domain" style={{ padding: "100px 80px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8650a", marginBottom: 16 }}>{copy.domainLabel}</div>
+          <h2 style={{ fontSize: "clamp(22px,3.5vw,38px)", fontWeight: 500, lineHeight: 1.2, margin: "0 0 16px", letterSpacing: "-0.01em" }}>{copy.domainTitle}</h2>
+          <p style={{ fontSize: 15, color: "#8a8880", lineHeight: 1.7, maxWidth: 600 }}>{copy.domainBody}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginTop: 48 }}>
+            {copy.domains.map(([icon, title, body, chain]) => (
+              <div key={title} style={{ border: "1px solid rgba(255,255,255,0.13)", background: "#141518", padding: 24 }}>
+                <div style={{ width: 40, height: 40, border: "1px solid rgba(255,255,255,0.13)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, fontFamily: MONO, fontSize: 13, color: "#e8650a", fontWeight: 600 }}>{icon}</div>
+                <div style={{ fontSize: 17, fontWeight: 500, marginBottom: 8 }}>{title}</div>
+                <div style={{ fontSize: 13, color: "#8a8880", lineHeight: 1.6, marginBottom: 14 }}>{body}</div>
+                <div style={{ fontFamily: MONO, fontSize: 9, color: "#44464e" }}><ChainRow items={chain} /></div>
               </div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* How the protocol runs — dark band */}
-        <section
-          style={{
-            borderRadius: 2,
-            border: "1px solid #1f1f1d",
-            background: "#0b0b0a",
-            color: "#e8e6e1",
-            padding: "1.75rem 1.65rem",
-            boxShadow: "none",
-          }}
-        >
-          <SectionHeader tone="dark" badge={lang === "tr" ? "Akış" : "Flow"} heading={m.homeHowItWorksTitle} />
-          <p style={{ margin: "0 0 1.25rem", fontSize: "0.9rem", lineHeight: 1.58, color: "rgba(255,255,255,0.52)", maxWidth: 860 }}>
-            {m.homeHowItWorksLead}
-          </p>
-          <div
-            className="home-how-steps-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-              gap: "0.75rem",
-            }}
-          >
-            {[m.homeHowStep1, m.homeHowStep2, m.homeHowStep3, m.homeHowStep4, m.homeHowStep5].map((step, i) => (
-              <div
-                key={i}
-                style={{
-                  borderRadius: 2,
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  background: "#121211",
-                  padding: "0.85rem 0.8rem",
-                  minWidth: 0,
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: MONO,
-                    fontSize: "0.85rem",
-                    color: "var(--accent)",
-                    fontWeight: 700,
-                    marginBottom: "0.45rem",
-                    letterSpacing: "0.06em",
-                  }}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </div>
-                <p style={{ margin: 0, fontSize: "0.8125rem", lineHeight: 1.52, color: "rgba(255,255,255,0.62)" }}>{step}</p>
+      <section id="doctrine" style={{ background: "#141518", borderTop: "1px solid rgba(255,255,255,0.07)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "100px 80px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8650a", marginBottom: 16 }}>{copy.doctrineLabel}</div>
+          <h2 style={{ fontSize: "clamp(22px,3.5vw,38px)", fontWeight: 500, lineHeight: 1.2, margin: "0 0 16px", letterSpacing: "-0.01em" }}>{copy.doctrineTitle}</h2>
+          <p style={{ fontSize: 15, color: "#8a8880", lineHeight: 1.7, maxWidth: 600 }}>{copy.doctrineBody}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.07)", marginTop: 48 }}>
+            {copy.doctrineCards.map(([label, statement, note]) => (
+              <div key={label} style={{ background: "#1a1c21", padding: 24 }}>
+                <div style={{ fontFamily: MONO, fontSize: 9, color: "#44464e", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 10 }}>{label}</div>
+                <div style={{ fontSize: 15, color: "#e6e3dc", lineHeight: 1.5, marginBottom: 8 }}>{statement}</div>
+                <div style={{ fontSize: 12, color: "#8a8880", lineHeight: 1.6 }}>{note}</div>
               </div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Product system summary */}
-        <section
-          style={{
-            borderRadius: 12,
-            border: "1px solid var(--border)",
-            background: "var(--panel)",
-            padding: "1.1rem 1.25rem",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-          }}
-        >
-          <SectionHeader badge={lang === "tr" ? "Mimari" : "Architecture"} heading={m.sectionProductSystem} />
-          <div style={{ marginBottom: "0.75rem" }}>
-            <CanonicalSpineDiagram lang={lang} />
-          </div>
-          <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
-            <li>
-              <strong>{lang === "tr" ? "Tek ürün:" : "Single product:"}</strong> {lang === "tr" ? "Araç, İHA ve Robot genelinde tek kanonik olay modeli." : "one canonical event model across Vehicle, Drone, and Robot."}
-            </li>
-            <li>
-              <strong>{lang === "tr" ? "Doğrulayıcı:" : "Verifier:"}</strong> {lang === "tr" ? "sorumluluk hükmü üretmeyen, sınırlı protokol durumlarına sahip ana inceleme istasyonu." : "primary review station with bounded protocol states, not liability judgement."}
-            </li>
-            <li>
-              <strong>Golden:</strong> {lang === "tr" ? "doğrulayıcı sürekliliği için dahili kalite referansı; bağımsız ürün değil." : "internal quality reference for verifier continuity, not an independent product."}
-            </li>
-            <li>
-              <strong>{lang === "tr" ? "Belge ailesi:" : "Issuance family:"}</strong> {lang === "tr" ? "makbuz ve manifest bağlantısına bağlı, role duyarlı hasar/hukuk artefaktları." : "role-aware claims/legal artifacts tied to receipts and manifest linkage."}
-            </li>
-          </ul>
-        </section>
+      <div style={{ height: 1, background: "rgba(255,255,255,0.07)" }} />
 
-        {/* Doctrine-safe demo verticals — class illustrations only */}
-        <section
-          style={{
-            borderRadius: 4,
-            border: "1px solid var(--border-strong)",
-            background: "var(--panel-raised)",
-            padding: "1.35rem 1.45rem",
-            boxShadow: "none",
-          }}
-        >
-          <SectionHeader
-            badge={lang === "tr" ? "Demo" : "Demo"}
-            heading={m.homeDemoDoctrineTitle}
-            accentWord={lang === "tr" ? "kaçınılmaz" : "inevitable"}
-            subtitle={m.homeDemoDoctrineSubtitle}
-          />
-          <div
-            className="home-verticals-grid"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-              gap: "1.1rem",
-              marginTop: "0.5rem",
-            }}
-          >
-            {[
-              {
-                key: "vehicle",
-                img: MEDIA.vehicle,
-                label: lang === "tr" ? "Araç" : "Vehicle",
-                trace: "Event \u2192 Bundle \u2192 Manifest",
-                alt: "Vehicle incident dashboard - canonical event review and verification trace",
-                why: m.homeDemoVehicleWhy,
-                sep: m.homeDemoVehicleSeparation,
-              },
-              {
-                key: "drone",
-                img: MEDIA.drone,
-                label: "Drone",
-                trace: "Mission \u2192 Telemetry \u2192 Link",
-                alt: "Drone operations - mission and telemetry linkage for QARAQUTU witness protocol",
-                why: m.homeDemoDroneWhy,
-                sep: m.homeDemoDroneSeparation,
-              },
-              {
-                key: "robot",
-                img: MEDIA.robot,
-                label: "Robot",
-                trace: "Interaction \u2192 Safety \u2192 Handoff",
-                alt: "Robot and industrial safety - interaction and handoff trace for protocol-grade review",
-                why: m.homeDemoRobotWhy,
-                sep: m.homeDemoRobotSeparation,
-              },
-            ].map((v) => (
-              <div
-                key={v.key}
-                style={{
-                  borderRadius: 2,
-                  border: "1px solid var(--border-strong)",
-                  background: "var(--panel)",
-                  overflow: "hidden",
-                  boxShadow: "none",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                <div
-                  style={{
-                    position: "relative",
-                    aspectRatio: "4/3",
-                    background: "var(--border-muted)",
-                  }}
-                >
-                  <Image
-                    src={v.img}
-                    alt={v.alt}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 340px"
-                    style={{ objectFit: "cover" }}
-                  />
-                </div>
-                <div style={{ padding: "0.85rem 0.95rem", borderTop: "1px solid var(--border)", flex: 1 }}>
-                  <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text)", marginBottom: "0.3rem", fontFamily: MONO }}>{v.label}</div>
-                  <div style={{ fontSize: "0.7rem", color: "var(--text-dim)", fontFamily: MONO, marginBottom: "0.55rem", letterSpacing: "0.04em" }}>{v.trace}</div>
-                  <p style={{ margin: "0 0 0.5rem", fontSize: "0.875rem", lineHeight: 1.55, color: "var(--text-soft)" }}>{v.why}</p>
-                  <p style={{ margin: "0 0 0.55rem", fontSize: "0.75rem", lineHeight: 1.52, color: "var(--text-muted)", fontFamily: MONO }}>{v.sep}</p>
-                  <Link
-                    href="/verifier"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.25rem",
-                      fontSize: "0.74rem",
-                      fontWeight: 600,
-                      color: "var(--accent)",
-                      textDecoration: "none",
-                      fontFamily: MONO,
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    {m.homeDemoCardCta}
-                    <span aria-hidden>→</span>
-                  </Link>
-                </div>
+      <section id="roles" style={{ padding: "100px 80px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8650a", marginBottom: 16 }}>{copy.rolesLabel}</div>
+          <h2 style={{ fontSize: "clamp(22px,3.5vw,38px)", fontWeight: 500, lineHeight: 1.2, margin: "0 0 16px", letterSpacing: "-0.01em" }}>{copy.rolesTitle}</h2>
+          <p style={{ fontSize: 15, color: "#8a8880", lineHeight: 1.7, maxWidth: 600 }}>{copy.rolesBody}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 12, marginTop: 48 }}>
+            {copy.roles.map(([tag, name, desc, future]) => (
+              <div key={name} style={{ border: "1px solid rgba(255,255,255,0.07)", background: "#141518", padding: "20px 16px", opacity: future ? 0.4 : 1, borderStyle: future ? "dashed" : "solid" }}>
+                <div style={{ fontFamily: MONO, fontSize: 8, color: "#e8650a", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8 }}>{tag}</div>
+                <div style={{ fontSize: 15, fontWeight: 500, marginBottom: 6 }}>{name}</div>
+                <div style={{ fontSize: 11, color: "#8a8880", lineHeight: 1.5 }}>{desc}</div>
               </div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Role / institution grid */}
-        <section
-          style={{
-            borderRadius: 12,
-            border: "1px solid var(--border)",
-            background: "var(--panel)",
-            padding: "1.25rem 1.4rem",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-          }}
-        >
-          <SectionHeader
-            badge={lang === "tr" ? "Kurumsal" : "Institutional"}
-            heading={m.homeRoleGridTitle}
-            accentWord={lang === "tr" ? "kullanır" : "uses"}
-          />
-          <HomeRoleInstitutionGrid lang={lang} />
-        </section>
+      <div style={{ height: 1, background: "rgba(255,255,255,0.07)" }} />
 
-        {/* Role-aware review + export family */}
-        <section
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
-            gap: "1rem",
-          }}
-        >
-          <section
-            style={{
-              borderRadius: 12,
-              border: "1px solid var(--border)",
-              background: "var(--panel)",
-              padding: "1.1rem 1.25rem",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-            }}
-          >
-            <SectionHeader badge={lang === "tr" ? "Roller" : "Roles"} heading={m.sectionRoleFlow} />
-            <div style={{ marginBottom: "0.75rem" }}>
-              <RoleExportDiagram />
-            </div>
-            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
-              <li>
-                <strong>{lang === "tr" ? "Hasar" : "Claims"}</strong>{" "}
-                {lang === "tr"
-                  ? "kanonik referanslara bağlı, uyuşmazlık-odaklı kısa özetler alır."
-                  : "receives concise dispute-ready summaries tied to canonical references."}
-              </li>
-              <li>
-                <strong>{lang === "tr" ? "Hukuk" : "Legal"}</strong>{" "}
-                {lang === "tr"
-                  ? "manifest, makbuz ve provenans çerçevesiyle zincir-merkezli artefaktlar alır."
-                  : "receives chain-centric artifacts with manifest, receipt, and provenance framing."}
-              </li>
-              <li>
-                <strong>{lang === "tr" ? "Teknik" : "Technical"}</strong>{" "}
-                {lang === "tr"
-                  ? "kanonik olay nesnesi ve kanıt ayrımı omurgasına bağlı kalır."
-                  : "remains anchored to the canonical event object and evidence separation."}
-              </li>
-            </ul>
-          </section>
-          <section
-            style={{
-              borderRadius: 12,
-              border: "1px solid var(--border)",
-              background: "var(--panel)",
-              padding: "1.1rem 1.25rem",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-            }}
-          >
-            <SectionHeader badge={lang === "tr" ? "Disiplin" : "Discipline"} heading={m.sectionEvidenceLayer} />
-            <div
-              style={{
-                marginBottom: "0.75rem",
-                borderRadius: 8,
-                overflow: "hidden",
-                border: "1px solid var(--border)",
-                boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
-                aspectRatio: "16/9",
-                maxHeight: 200,
-                position: "relative",
-                background: "var(--border-muted)",
-              }}
-            >
-              <Image
-                src={MEDIA.documentProtocol}
-                alt="Document and protocol artifact family - trace-linked, role-bounded evidence outputs"
-                fill
-                sizes="(max-width: 768px) 100vw, 500px"
-                style={{ objectFit: "cover" }}
-              />
-            </div>
-            <div style={{ marginBottom: "0.75rem" }}>
-              <EvidenceLayerDiagram />
-            </div>
-            <p style={{ fontSize: "0.84rem", opacity: 0.9, color: "var(--text-soft)", marginTop: 0, marginBottom: "0.45rem" }}>
-              {lang === "tr"
-                ? "Kontrollü artifact çıktıları role bağlı ve ize bağlı kalır:"
-                : "Controlled artifact outputs remain role-bounded and trace-linked:"}
-            </p>
-            <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", margin: 0 }}>
-              <li>
-              <strong>{lang === "tr" ? "Hasar paketi:" : "Claims pack:"}</strong>{" "}
-                {lang === "tr"
-                  ? "hasar inceleme duruşu için JSON/PDF artifact ailesi."
-                  : "JSON/PDF artifact family for claims review posture."}
-              </li>
-              <li>
-              <strong>{lang === "tr" ? "Hukuk paketi:" : "Legal pack:"}</strong>{" "}
-                {lang === "tr"
-                  ? "açık zincir ve provenans çerçevesi taşıyan JSON/PDF artifact ailesi."
-                  : "JSON/PDF artifact family with explicit chain and provenance framing."}
-              </li>
-            </ul>
-          </section>
-        </section>
-
-        {/* Institutional use families */}
-        <section
-          style={{
-            borderRadius: 12,
-            border: "1px solid var(--border)",
-            background: "var(--panel-raised)",
-            padding: "1.35rem 1.5rem",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-          }}
-        >
-          <SectionHeader
-            badge={lang === "tr" ? "Kurumsal" : "Institutional"}
-            heading={lang === "tr" ? "Kurumsal kullanım aileleri" : "Institutional use families"}
-            accentWord={lang === "tr" ? "aileleri" : "families"}
-            subtitle={lang === "tr" ? "Tek kanonik olay çekirdeği, çok sayıda kurumsal kabuk. Aynı olay omurgası korunur; yalnız öncelik, görünürlük ve belge önerisi role göre değişir." : "One canonical event core, many institutional shells. The same event spine is preserved; only priority, visibility, and document recommendation vary by role."}
-          />
-          <InstitutionalUseFamilies lang={lang} />
-        </section>
-
-        {/* Sector demo scenarios */}
-        <section
-          style={{
-            borderRadius: 12,
-            border: "1px solid var(--border)",
-            background: "var(--panel)",
-            padding: "1.35rem 1.5rem",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-          }}
-        >
-          <SectionHeader
-            badge={lang === "tr" ? "Sektörler" : "Sectors"}
-            heading={lang === "tr" ? "Sektör demo senaryoları" : "Sector demo scenarios"}
-            accentWord={lang === "tr" ? "senaryolar" : "scenarios"}
-            subtitle={lang === "tr" ? "Her sektörün neden QARAQUTU'ya ihtiyaç duyduğu: olay, kurumsal risk, iz-bağlı yanıt ve tercih edilen belge ailesi." : "Why each sector needs QARAQUTU: incident, institutional risk, trace-linked response, and preferred document family."}
-          />
-          <SectorScenarioCards lang={lang} />
-        </section>
-
-        {/* Verification summary */}
-        <section
-          style={{
-            borderRadius: 12,
-            border: "1px solid var(--border)",
-            background: "var(--panel)",
-            padding: "1.1rem 1.25rem",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-          }}
-        >
-          <SectionHeader
-            badge={lang === "tr" ? "Doktrin" : "Doctrine"}
-            heading={lang === "tr" ? "Doğrulama" : "Verification"}
-            subtitle={lang === "tr" ? "Doğrulama, paket üzerinde sınırlı bir değerlendirmedir. Durumlar (PASS, FAIL, UNKNOWN, UNVERIFIED) inceleme duruşunu temsil eder; yargısal gerçeklik, sorumluluk ataması veya bağımsız hukuk/uzman yargısının yerine geçmez." : "Verification remains a bounded package assessment. States (PASS, FAIL, UNKNOWN, UNVERIFIED) represent review posture, not judicial truth, not liability assignment, and not a substitute for independent legal or expert judgement."}
-          />
-        </section>
-
-        {/* Surfaces + CTAs */}
-        <section
-          style={{
-            borderRadius: 12,
-            border: "1px solid var(--border)",
-            background: "var(--panel)",
-            padding: "1.1rem 1.25rem",
-            boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-          }}
-        >
-          <SectionHeader badge={lang === "tr" ? "Y\u00fczeyler" : "Surfaces"} heading={m.sectionProductSurfaces} />
-          <ul style={{ fontSize: "0.84rem", paddingLeft: "1.1rem", lineHeight: 1.6, color: "var(--text-soft)", marginTop: 0 }}>
-            <li>
-              <strong>{lang === "tr" ? "Doğrulayıcı" : "Verifier"}</strong>{" "}
-              {lang === "tr"
-                ? "- birincil inceleme istasyonu; kanonik olay denetimi ve sınırlı doğrulama zinciri."
-                : "- primary review station; canonical event inspection and bounded verification chain."}
-            </li>
-            <li>
-              <strong>{lang === "tr" ? "Belgeler" : "Docs"}</strong>{" "}
-              {lang === "tr"
-                ? "- uygulama hizalaması için protokol ve API çerçevesi."
-                : "- protocol and API framing for implementation alignment."}
-            </li>
-            <li>
-              <strong>{lang === "tr" ? "Erişim" : "Access"}</strong>{" "}
-              {lang === "tr"
-                ? "- korumalı yüzeylere geçiş için yetkili erişim kapısı."
-                : "- authorization gate for protected surfaces."}
-            </li>
-          </ul>
-          <div style={{ marginTop: "0.75rem", display: "flex", flexWrap: "wrap", gap: "0.6rem", fontSize: "0.8rem" }}>
-            <span
-              style={{
-                padding: "0.35rem 0.8rem",
-                borderRadius: 999,
-                border: "1px solid var(--border)",
-                color: "var(--text)",
-                background: "var(--accent-soft)",
-              }}
-            >
-              {lang === "tr" ? "Doğrulayıcı" : "Verifier"}
-            </span>
-            <span
-              style={{
-                padding: "0.35rem 0.8rem",
-                borderRadius: 999,
-                border: "1px solid var(--border)",
-                color: "var(--text-soft)",
-              }}
-            >
-              {lang === "tr" ? "Belgeler" : "Docs"}
-            </span>
-            <span
-              style={{
-                padding: "0.35rem 0.8rem",
-                borderRadius: 999,
-                border: "1px solid var(--border)",
-                color: "var(--text-soft)",
-              }}
-            >
-              {lang === "tr" ? "Erişim" : "Access"}
-            </span>
+      <section style={{ background: "#141518", borderTop: "1px solid rgba(255,255,255,0.07)", padding: "100px 80px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto" }}>
+          <div style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.2em", textTransform: "uppercase", color: "#e8650a", marginBottom: 16 }}>{copy.statsLabel}</div>
+          <h2 style={{ fontSize: "clamp(22px,3.5vw,38px)", fontWeight: 500, lineHeight: 1.2, margin: "0 0 16px", letterSpacing: "-0.01em" }}>{copy.statsTitle}</h2>
+          <p style={{ fontSize: 15, color: "#8a8880", lineHeight: 1.7, maxWidth: 600 }}>{copy.statsBody}</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 1, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.07)", marginTop: 48 }}>
+            {copy.stats.map(([value, label]) => (
+              <div key={value} style={{ background: "#1a1c21", padding: "28px 24px" }}>
+                <div style={{ fontFamily: MONO, fontSize: 32, fontWeight: 600, color: "#e8650a", marginBottom: 6 }}>{value}</div>
+                <div style={{ fontSize: 13, color: "#8a8880" }}>{label}</div>
+              </div>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-      </div>
+      <div style={{ height: 1, background: "rgba(255,255,255,0.07)" }} />
+
+      <section id="cta" style={{ padding: "112px 80px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 60% at 50% 50%, rgba(232,101,10,0.07) 0%, transparent 70%)" }} />
+        <div style={{ position: "relative", zIndex: 1, maxWidth: 640, margin: "0 auto" }}>
+          <h2 style={{ fontSize: "clamp(24px,4vw,42px)", fontWeight: 500, lineHeight: 1.2, marginBottom: 20, letterSpacing: "-0.01em" }}>{copy.ctaTitle}</h2>
+          <p style={{ fontSize: 15, color: "#8a8880", lineHeight: 1.7, marginBottom: 36 }}>{copy.ctaBody}</p>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 12 }}>
+            <Link href="/verifier" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", padding: "12px 24px", background: "#e8650a", color: "#0c0d0f", textDecoration: "none", fontWeight: 600 }}>{copy.openVerifier}</Link>
+            <Link href="/docs" style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase", padding: "12px 24px", background: "transparent", color: "#8a8880", border: "1px solid rgba(255,255,255,0.13)", textDecoration: "none" }}>Docs</Link>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

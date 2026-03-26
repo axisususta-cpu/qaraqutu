@@ -2,10 +2,10 @@
 
 import type { CSSProperties } from "react";
 
-const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
+const MONO = "'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace";
 
 /** Minimum stage height: primary forensic workstation surface (scene-first) */
-const STAGE_MIN_H = "clamp(390px, 58vh, 690px)";
+const STAGE_MIN_H = "clamp(420px, 62vh, 720px)";
 
 export type ReconstructionSystem = "vehicle" | "drone" | "robot";
 
@@ -89,20 +89,20 @@ function resolveSceneKind(
 
 const panel: CSSProperties = {
   border: "1px solid var(--border-soft)",
-  borderRadius: 10,
+  borderRadius: 0,
   background: "var(--panel-card)",
   overflow: "hidden",
-  boxShadow: "0 18px 36px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,102,0,0.08)",
+  boxShadow: "inset 0 0 0 1px rgba(255,102,0,0.06)",
 };
 
 const labelBar: CSSProperties = {
-  padding: "0.48rem 0.72rem",
+  padding: "0.4rem 0.62rem",
   borderBottom: "1px solid var(--border)",
-  background: "linear-gradient(180deg, #242424, var(--panel))",
+  background: "#1a1c21",
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  gap: "0.65rem",
+  gap: "0.52rem",
 };
 
 const accentOrange = "var(--accent)";
@@ -115,6 +115,38 @@ const svgBase = {
   height: "100%",
   minHeight: 240,
 };
+
+function phaseDisplayLabel(phase: "t0" | "t1" | "t2" | "t3", language: "en" | "tr") {
+  if (language === "tr") {
+    if (phase === "t0") return "T0 / Olay Öncesi";
+    if (phase === "t1") return "T1 / Yaklaşım";
+    if (phase === "t2") return "T2 / Kritik An";
+    return "T3 / Olay Sonrası";
+  }
+  if (phase === "t0") return "T0 / Pre-Event";
+  if (phase === "t1") return "T1 / Approach";
+  if (phase === "t2") return "T2 / Critical Moment";
+  return "T3 / Post-Event";
+}
+
+function postureLabel(value: string, language: "en" | "tr") {
+  if (language === "tr") {
+    if (value === "UNVERIFIED") return "Doğrulanmadı";
+    if (value === "SUPPORTED") return "Destekleniyor";
+    if (value === "CONTESTED") return "Çekişmeli";
+    if (value === "INSUFFICIENT") return "Yetersiz";
+    if (value === "RESTRICTED") return "Kısıtlı";
+    if (value === "ready") return "Hazır";
+    if (value === "bounded") return "Sınırlı Hazır";
+    if (value === "limited") return "Sınırlı";
+    if (value === "not_ready") return "Hazır Değil";
+  }
+  if (value === "ready") return "Ready";
+  if (value === "bounded") return "Bounded";
+  if (value === "limited") return "Limited";
+  if (value === "not_ready") return "Not Ready";
+  return value;
+}
 
 function familyGrammarLabel(system: ReconstructionSystem, language: "en" | "tr") {
   if (system === "vehicle") {
@@ -575,25 +607,7 @@ function TelemetryStrip({
           ))}
         </div>
         <span style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)" }}>
-          {phase
-            ? phase === "t0"
-              ? language === "tr"
-                ? "ÖNCEPHE @t0"
-                : "PRE-EVENT @t0"
-              : phase === "t1"
-                ? language === "tr"
-                  ? "YAKLAŞIM @t1"
-                  : "APPROACH @t1"
-                : phase === "t2"
-                  ? language === "tr"
-                    ? "KRİTİK @t2"
-                    : "CRITICAL @t2"
-                  : language === "tr"
-                    ? "SONRASI @t3"
-                    : "POST-EVENT @t3"
-            : language === "tr"
-              ? "KRİTİK @t2"
-              : "CRITICAL @t2"}
+          {phase ? phaseDisplayLabel(phase, language) : phaseDisplayLabel("t2", language)}
         </span>
       </div>
       <div
@@ -605,17 +619,18 @@ function TelemetryStrip({
         }}
       >
         {[
-          language === "tr" ? "ÖN-EVRE" : "PRE-EVENT",
-          language === "tr" ? "KRİTİK MOMENT" : "EVENT MOMENT",
-          language === "tr" ? "SONRASI" : "POST-EVENT",
+          phaseDisplayLabel("t0", language),
+          phaseDisplayLabel("t1", language),
+          phaseDisplayLabel("t2", language),
+          phaseDisplayLabel("t3", language),
         ].map((label, idx) => (
           <div
             key={label}
             style={{
-              border: idx === 1 ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-              background: idx === 1 ? "var(--accent-soft)" : "var(--panel-raised)",
-              borderRadius: 4,
-              padding: "0.24rem 0.36rem",
+              border: phase === `t${idx}` ? "1px solid var(--accent-border)" : "1px solid var(--border)",
+              background: phase === `t${idx}` ? "var(--accent-soft)" : "var(--panel-raised)",
+              borderRadius: 0,
+              padding: "0.2rem 0.32rem",
               fontFamily: MONO,
               fontSize: "0.62rem",
               letterSpacing: "0.1em",
@@ -634,8 +649,8 @@ function TelemetryStrip({
             key={row.k}
             style={{
               border: "1px solid var(--border)",
-              borderRadius: 4,
-              padding: "0.34rem 0.42rem",
+              borderRadius: 0,
+              padding: "0.28rem 0.36rem",
               background: "var(--panel-raised)",
               boxShadow: idle ? "none" : "inset 0 0 0 1px rgba(255,102,0,0.06)",
             }}
@@ -679,7 +694,7 @@ function MetaCluster({
         padding: "0.4rem 0.45rem",
         background: "var(--panel)",
         border: "1px solid var(--border-strong)",
-        borderRadius: 4,
+        borderRadius: 0,
         boxShadow: "none",
       }}
     >
@@ -723,25 +738,7 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
   const sceneActive = Boolean(eventId);
   const familyGrammar = familyGrammarLabel(system, language);
   const phaseLabel = incidentPhase
-    ? incidentPhase === "t0"
-      ? language === "tr"
-        ? "Ön Olay"
-        : "Pre-Event"
-      : incidentPhase === "t1"
-        ? language === "tr"
-          ? "Yaklaşım"
-          : "Approach"
-        : incidentPhase === "t2"
-          ? language === "tr"
-            ? "Kritik"
-            : "Critical"
-          : incidentPhase === "t3"
-            ? language === "tr"
-              ? "Olay Sonrası"
-              : "Post-Event"
-            : language === "tr"
-              ? "Aşama: bilinmiyor"
-              : "Phase: unknown"
+    ? phaseDisplayLabel(incidentPhase, language)
     : language === "tr"
       ? "Aşama: bilinmiyor"
       : "Phase: unknown";
@@ -799,7 +796,7 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
         letterSpacing: "0.06em",
         fontWeight: 700,
         padding: "0.12rem 0.28rem",
-        borderRadius: 3,
+        borderRadius: 0,
         border: `1px solid ${statusColor(value)}`,
         color: statusColor(value),
         background: "rgba(0,0,0,0.28)",
@@ -808,9 +805,34 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
         display: "inline-block",
       }}
     >
-      {label}: {value}
+      {label}: {postureLabel(value, language)}
     </span>
   );
+
+  const readinessContext =
+    system === "vehicle"
+      ? language === "tr"
+        ? phaseArtifactReadiness === "bounded"
+          ? "Araç düzenleme hattı iz ve açık hususlarla sınırlı hazır tutulur."
+          : "Araç düzenleme hattı belirsizlik açılmadan serbest bırakılmaz."
+        : phaseArtifactReadiness === "bounded"
+          ? "Vehicle issuance lane stays ready only within trace and open-item bounds."
+          : "Vehicle issuance lane does not open beyond uncertainty limits."
+      : system === "drone"
+        ? language === "tr"
+          ? phaseArtifactReadiness === "bounded"
+            ? "Drone görev hattı görünür ve sınırlı issuance duruşuna bağlıdır."
+            : "Drone görev hattı, bağlantı ve el değişimi belirsizliklerine koşulludur."
+          : phaseArtifactReadiness === "bounded"
+            ? "Drone mission lane is visible and held to bounded issuance posture."
+            : "Drone mission lane remains conditioned by link and handoff uncertainty."
+        : language === "tr"
+          ? phaseArtifactReadiness === "bounded"
+            ? "Robot etkileşim hattı görünür, fakat kamusal bağlam sorularını aşmaz."
+            : "Robot etkileşim hattı, saha bağlamı kapanmadan tam hazır sayılmaz."
+          : phaseArtifactReadiness === "bounded"
+            ? "Robot interaction lane is visible, but does not outrank public-context questions."
+            : "Robot interaction lane stays short of full readiness until field context closes.";
 
 
   return (
@@ -819,7 +841,7 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
         ...panel,
         marginBottom: "0.5rem",
         borderColor: sceneActive ? "var(--accent-border)" : "var(--border)",
-        boxShadow: sceneActive ? "0 18px 34px rgba(0,0,0,0.32), inset 0 0 0 1px rgba(255,102,0,0.12)" : panel.boxShadow,
+        boxShadow: sceneActive ? "inset 0 0 0 1px rgba(255,102,0,0.1)" : panel.boxShadow,
       }}
       aria-label={language === "tr" ? "Olay mekânı yeniden oluşturma" : "Event spatial reconstruction"}
     >
@@ -921,8 +943,8 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
             pointerEvents: "none",
             border: `1px solid ${phaseVisual.color}`,
             background: "rgba(0,0,0,0.45)",
-            borderRadius: 4,
-            padding: "0.3rem 0.45rem",
+            borderRadius: 0,
+            padding: "0.26rem 0.4rem",
             color: "var(--text-soft)",
             fontFamily: MONO,
             fontSize: "0.64rem",
@@ -969,6 +991,9 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
                 {language === "tr" ? phaseVerification.noteTr ?? phaseVerification.note : phaseVerification.note}
               </div>
             ) : null}
+            <div style={{ marginTop: "0.18rem", fontSize: "0.54rem", color: "var(--text-dim)", lineHeight: 1.45 }}>
+              {readinessContext}
+            </div>
           </div>
         </div>
       </div>

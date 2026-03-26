@@ -1,0 +1,1502 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --coal: #0e0f11;
+    --graphite: #161820;
+    --surface: #1c1e24;
+    --surface2: #22252e;
+    --surface3: #2a2d38;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --orange: #e8650a;
+    --orange-dim: rgba(232,101,10,0.15);
+    --orange-glow: rgba(232,101,10,0.08);
+    --text-primary: #e8e6e0;
+    --text-secondary: #8a8880;
+    --text-muted: #4a4c52;
+    --cyan: #4ec9b0;
+    --cyan-dim: rgba(78,201,176,0.12);
+    --blue-dim: rgba(88,130,200,0.12);
+    --danger: #c0392b;
+    --success: #2e7d55;
+    --warning: #c07a10;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  .station {
+    font-family: var(--sans);
+    background: var(--coal);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: 44px 1fr;
+    grid-template-columns: 220px 1fr;
+    grid-template-areas: "hdr hdr" "nav main";
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  /* HEADER */
+  .hdr {
+    grid-area: hdr;
+    background: var(--graphite);
+    border-bottom: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 16px;
+    z-index: 100;
+  }
+
+  .logo-mark {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--orange);
+    letter-spacing: 0.12em;
+    border: 1px solid var(--orange);
+    padding: 3px 8px;
+    flex-shrink: 0;
+  }
+
+  .hdr-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-secondary);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .hdr-sep { width: 1px; height: 20px; background: var(--border2); flex-shrink: 0; }
+
+  .hdr-pkg {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  .pkg-id {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .pkg-name {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-primary);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chip {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    padding: 2px 6px;
+    border: 1px solid;
+    flex-shrink: 0;
+    text-transform: uppercase;
+  }
+
+  .chip-robot { color: #7aade8; border-color: rgba(122,173,232,0.4); background: rgba(122,173,232,0.08); }
+  .chip-risk { color: #e07a20; border-color: rgba(224,122,32,0.4); background: rgba(224,122,32,0.1); }
+  .chip-unreviewed { color: var(--text-secondary); border-color: var(--border2); }
+  .chip-active { color: #5fc87a; border-color: rgba(95,200,122,0.4); background: rgba(95,200,122,0.08); }
+  .chip-orange { color: var(--orange); border-color: rgba(232,101,10,0.4); background: var(--orange-dim); }
+
+  .hdr-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .lang-switcher {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border2);
+  }
+
+  .lang-btn {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 3px 7px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+    border: none;
+    background: transparent;
+    transition: all 0.15s;
+  }
+
+  .lang-btn.active { background: var(--orange-dim); color: var(--orange); }
+
+  /* NAV */
+  .nav {
+    grid-area: nav;
+    background: var(--graphite);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nav-section {
+    padding: 12px 14px 8px;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-item {
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-item:hover { background: var(--surface); }
+  .nav-item.active { background: var(--orange-dim); border-left: 2px solid var(--orange); }
+
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .nav-item.active .nav-dot { background: var(--orange); }
+
+  .nav-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-secondary);
+    flex: 1;
+  }
+
+  .nav-item.active .nav-label { color: var(--orange); }
+
+  .nav-meta {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+  }
+
+  .nav-actions {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-primary {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 8px 12px;
+    background: var(--orange);
+    color: #0e0f11;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+    transition: background 0.15s;
+  }
+
+  .btn-primary:hover { background: #f07520; }
+
+  .btn-ghost {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 6px 12px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border2);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+
+  .btn-ghost:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* MAIN */
+  .main {
+    grid-area: main;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* INCIDENT HEADER BAR */
+  .incident-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border2);
+    padding: 10px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 1px;
+  }
+
+  .incident-cell {
+    padding: 0 14px;
+    border-right: 1px solid var(--border);
+  }
+
+  .incident-cell:first-child { padding-left: 0; }
+  .incident-cell:last-child { border-right: none; }
+
+  .ic-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .ic-value {
+    font-size: 11px;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  /* ROLE LENS BAR */
+  .role-bar {
+    background: var(--graphite);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .role-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    margin-right: 4px;
+  }
+
+  .role-chip {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 3px 10px;
+    border: 1px solid var(--border2);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .role-chip:hover { border-color: var(--orange); color: var(--orange); }
+  .role-chip.selected { background: var(--orange-dim); border-color: var(--orange); color: var(--orange); }
+  .role-chip.future { opacity: 0.4; cursor: default; border-style: dashed; }
+
+  .role-desc {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  /* TABS */
+  .tab-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border2);
+    display: flex;
+    gap: 0;
+    padding: 0 16px;
+  }
+
+  .tab {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 10px 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+  /* CONTENT AREA */
+  .content-area {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    overflow: hidden;
+  }
+
+  /* VIEWPORT COLUMN */
+  .viewport-col {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid var(--border);
+  }
+
+  /* PHASE SELECTOR */
+  .phase-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 0;
+  }
+
+  .phase-label-pre {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-right: 12px;
+  }
+
+  .phase-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 9px 16px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  .phase-btn:hover { color: var(--text-primary); background: var(--surface3); }
+
+  .phase-btn.active { color: var(--orange); border-bottom-color: var(--orange); background: var(--orange-glow); }
+
+  .phase-sep { width: 1px; height: 16px; background: var(--border2); }
+
+  .phase-controls {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .control-btn {
+    width: 26px; height: 26px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.15s;
+  }
+
+  .control-btn:hover { border-color: var(--orange); color: var(--orange); }
+  .control-btn.playing { border-color: var(--orange); color: var(--orange); background: var(--orange-dim); }
+
+  /* VIEWPORT */
+  .viewport-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #0a0b0e;
+  }
+
+  .viewport-title-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    z-index: 10;
+    background: linear-gradient(to bottom, rgba(10,11,14,0.9) 0%, transparent 100%);
+  }
+
+  .vp-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-secondary);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .vp-badge {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 2px 8px;
+    background: var(--orange-dim);
+    border: 1px solid rgba(232,101,10,0.3);
+    color: var(--orange);
+    margin-left: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .vp-phase-badge {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-secondary);
+    letter-spacing: 0.12em;
+  }
+
+  canvas#pointcloud {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Viewport overlay info */
+  .vp-coord-box {
+    position: absolute;
+    bottom: 12px; right: 12px;
+    background: rgba(10,11,14,0.85);
+    border: 1px solid var(--border2);
+    padding: 8px 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    line-height: 1.8;
+    z-index: 10;
+  }
+
+  .vp-coord-row { display: flex; justify-content: space-between; gap: 16px; }
+  .vp-coord-key { color: var(--text-muted); letter-spacing: 0.1em; font-size: 9px; }
+  .vp-coord-val { color: var(--text-primary); font-weight: 500; }
+
+  .vp-legend {
+    position: absolute;
+    bottom: 12px; left: 12px;
+    background: rgba(10,11,14,0.85);
+    border: 1px solid var(--border2);
+    padding: 8px 10px;
+    font-family: var(--mono);
+    font-size: 9px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .legend-row { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend-line { width: 16px; height: 1px; flex-shrink: 0; }
+
+  /* BOTTOM EVIDENCE PANELS */
+  .bottom-panels {
+    height: 140px;
+    border-top: 1px solid var(--border2);
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    background: var(--graphite);
+  }
+
+  .evidence-panel {
+    padding: 10px 12px;
+    border-right: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .evidence-panel:last-child { border-right: none; }
+
+  .ep-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .ep-title {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    flex: 1;
+  }
+
+  .ep-count {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+  }
+
+  .ep-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .ep-row:hover { background: var(--surface); margin: 0 -12px; padding: 3px 12px; }
+  .ep-row:last-child { border-bottom: none; }
+
+  .ep-indicator {
+    width: 3px;
+    height: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .ep-text {
+    font-size: 10px;
+    color: var(--text-secondary);
+    flex: 1;
+    line-height: 1.4;
+  }
+
+  .ep-meta {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+  }
+
+  /* RIGHT PANEL */
+  .right-col {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background: var(--graphite);
+  }
+
+  .rp-block {
+    border-bottom: 1px solid var(--border);
+    padding: 12px 14px;
+  }
+
+  .rp-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .rp-title {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    flex: 1;
+  }
+
+  .rp-status {
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 1px 5px;
+    border: 1px solid;
+  }
+
+  .status-ok { color: #4a9e6a; border-color: rgba(74,158,106,0.4); background: rgba(74,158,106,0.08); }
+  .status-warn { color: #c07a10; border-color: rgba(192,122,16,0.4); background: rgba(192,122,16,0.08); }
+  .status-dispute { color: #9b6fa8; border-color: rgba(155,111,168,0.4); background: rgba(155,111,168,0.08); }
+  .status-ready { color: var(--orange); border-color: rgba(232,101,10,0.4); background: var(--orange-dim); }
+
+  .trace-item {
+    display: flex;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+
+  .trace-item:hover { background: var(--surface); margin: 0 -14px; padding: 5px 14px; }
+  .trace-item:last-child { border-bottom: none; }
+
+  .trace-step {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--orange);
+    flex-shrink: 0;
+    width: 22px;
+    padding-top: 1px;
+  }
+
+  .trace-content { flex: 1; }
+
+  .trace-label {
+    font-size: 10px;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+  }
+
+  .trace-sub {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+  }
+
+  .artifact-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .artifact-item:last-child { border-bottom: none; }
+
+  .artifact-icon {
+    width: 24px; height: 24px;
+    border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+  }
+
+  .artifact-label {
+    flex: 1;
+    font-size: 10px;
+    color: var(--text-secondary);
+  }
+
+  .artifact-ready { color: #5fc87a; font-family: var(--mono); font-size: 9px; }
+  .artifact-pending { color: var(--text-muted); font-family: var(--mono); font-size: 9px; }
+
+  .alert-banner {
+    background: rgba(192,122,16,0.12);
+    border-left: 3px solid var(--warning);
+    padding: 8px 12px;
+    font-size: 10px;
+    color: #d4901a;
+    margin-bottom: 8px;
+  }
+
+  /* Timeline scrubber */
+  .scrubber-bar {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .time-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .scrubber {
+    flex: 1;
+    position: relative;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .scrubber-track {
+    width: 100%;
+    height: 2px;
+    background: var(--surface3);
+    position: relative;
+    border-radius: 1px;
+  }
+
+  .scrubber-fill {
+    height: 100%;
+    background: var(--orange);
+    border-radius: 1px;
+    transition: width 0.1s;
+  }
+
+  .scrubber-thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px; height: 10px;
+    background: var(--orange);
+    border-radius: 50%;
+    cursor: grab;
+  }
+
+  /* Phase markers on scrubber */
+  .phase-marker {
+    position: absolute;
+    top: -8px;
+    width: 1px;
+    height: 18px;
+    background: var(--border2);
+  }
+
+  .phase-marker-label {
+    position: absolute;
+    top: -18px;
+    font-family: var(--mono);
+    font-size: 8px;
+    color: var(--text-muted);
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  .phase-marker.current { background: var(--orange); }
+  .phase-marker.current .phase-marker-label { color: var(--orange); }
+
+  .dispute-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: #9b6fa8;
+    background: rgba(155,111,168,0.1);
+    border: 1px solid rgba(155,111,168,0.3);
+    padding: 2px 6px;
+    margin: 2px 0;
+  }
+
+  .unknown-item {
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .unknown-item:last-child { border-bottom: none; }
+
+  .unknown-label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+  }
+
+  .unknown-reason {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: #9b6fa8;
+  }
+
+  .confidence-bar {
+    height: 2px;
+    background: var(--surface3);
+    border-radius: 1px;
+    margin-top: 4px;
+    overflow: hidden;
+  }
+
+  .confidence-fill {
+    height: 100%;
+    border-radius: 1px;
+    transition: width 0.3s ease;
+  }
+</style>
+
+<div class="station" id="station">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="logo-mark">QARAQUTU</div>
+    <div class="hdr-title">İnceleme İstasyonu</div>
+    <div class="hdr-sep"></div>
+    <div class="hdr-pkg">
+      <span class="pkg-id">PKT:</span>
+      <span class="pkg-name" id="pkg-name">robot-safety-001 · Public Stability Collapse</span>
+      <span class="chip chip-robot">ROBOT</span>
+      <span class="chip chip-risk" id="risk-chip">RİSK: YÜKSEK</span>
+      <span class="chip chip-unreviewed" id="review-chip">İNCELENMEDİ</span>
+    </div>
+    <div class="hdr-right">
+      <span class="chip chip-active">İSTASYON AKTİF</span>
+      <div class="lang-switcher">
+        <button class="lang-btn active">TR</button>
+        <button class="lang-btn">EN</button>
+        <button class="lang-btn">LT</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- LEFT NAV -->
+  <nav class="nav">
+    <div class="nav-section">Komut Omurgası</div>
+
+    <div class="nav-item">
+      <div class="nav-dot"></div>
+      <span class="nav-label" style="font-size:9px; color:var(--text-muted);">1 Kaynak → 2 Aile → 3 Sınıf → 4 Paket</span>
+    </div>
+
+    <div class="nav-section" style="margin-top:4px;">Seçim</div>
+
+    <div class="nav-item" onclick="selectNav(this, 'kaynak')">
+      <div class="nav-dot"></div>
+      <span class="nav-label">1 Kaynak</span>
+      <span class="nav-meta">›</span>
+    </div>
+    <div class="nav-item" onclick="selectNav(this, 'aile')">
+      <div class="nav-dot"></div>
+      <span class="nav-label">2 Cihaz Ailesi</span>
+      <span class="nav-meta">›</span>
+    </div>
+    <div class="nav-item" onclick="selectNav(this, 'sinif')">
+      <div class="nav-dot"></div>
+      <span class="nav-label">3 Olay Sınıfı</span>
+      <span class="nav-meta">›</span>
+    </div>
+    <div class="nav-item active" onclick="selectNav(this, 'paket')">
+      <div class="nav-dot"></div>
+      <span class="nav-label">4 Olay Paketi</span>
+      <span class="nav-meta">›</span>
+    </div>
+
+    <div style="margin: 6px 14px 0; padding: 8px 10px; background: var(--surface); border: 1px solid var(--border2); border-left: 2px solid var(--orange);">
+      <div style="font-family: var(--mono); font-size: 10px; color: var(--orange); margin-bottom: 4px;">robot-safety-001</div>
+      <div style="font-size: 10px; color: var(--text-secondary);">Public Stability Collapse</div>
+      <div style="display:flex; gap:4px; margin-top:6px; flex-wrap:wrap;">
+        <span class="chip chip-unreviewed" style="font-size:8px; padding:1px 4px;">İNCELENMEDİ</span>
+      </div>
+    </div>
+
+    <div class="nav-section" style="margin-top:8px;">İnceleme İşlemleri</div>
+
+    <div class="nav-actions">
+      <button class="btn-primary" onclick="startReview()">İNCELEMEYİ BAŞLAT</button>
+      <button class="btn-ghost" onclick="showReport()">Delile Dayalı Rapor</button>
+      <button class="btn-ghost" onclick="showDoc()">Delile Dayalı Belge</button>
+      <button class="btn-ghost" style="color: var(--text-muted); font-size:9px;" onclick="newReview()">+ Yeni İnceleme</button>
+      <div style="font-family: var(--mono); font-size:9px; color: var(--text-muted); margin-top:4px; line-height:1.6; padding-top:4px; border-top: 1px solid var(--border);">iz ≠ nihai gerçek · düzenleme ≠ suçlama</div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- INCIDENT INFO BAR -->
+    <div class="incident-bar">
+      <div class="incident-cell">
+        <div class="ic-label">Bağlam</div>
+        <div class="ic-value">Kamusal bölgede stabilite kaybı ve güvenlik durdurma gecikmesi</div>
+      </div>
+      <div class="incident-cell">
+        <div class="ic-label">Operasyon</div>
+        <div class="ic-value">Public Stability Collapse</div>
+      </div>
+      <div class="incident-cell">
+        <div class="ic-label">Writim Anı</div>
+        <div class="ic-value">Kayıtlı/türetilmiş ayrımı ve iz bağı</div>
+      </div>
+      <div class="incident-cell">
+        <div class="ic-label">Sahne Kimliği</div>
+        <div class="ic-value">İnsan yakınlığı, hız limiti ve operatör devralma penceresi</div>
+      </div>
+    </div>
+
+    <!-- ROLE LENS BAR -->
+    <div class="role-bar">
+      <span class="role-label">Rol Odağı:</span>
+      <span class="role-chip" onclick="selectRole(this, 'polis')">Polis</span>
+      <span class="role-chip selected" onclick="selectRole(this, 'sigorta')">Sigorta</span>
+      <span class="role-chip" onclick="selectRole(this, 'muhakeme')">Muhakeme</span>
+      <span class="role-chip" onclick="selectRole(this, 'bilirkisi')">Bilirkişi</span>
+      <span class="role-chip" onclick="selectRole(this, 'uretici')">Üretici</span>
+      <span class="role-chip" onclick="selectRole(this, 'yazilim')">Yazılım</span>
+      <span class="role-chip" onclick="selectRole(this, 'muhendis')">Mühendislik</span>
+      <span class="role-chip future" title="Yakında">Operatör ↗</span>
+      <span class="role-desc" id="role-desc">Hasar akışı, teminat incelemesi ve belge zinciri öncelikli</span>
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-bar">
+      <div class="tab active" onclick="selectTab(this, 'sahne')">Sahne</div>
+      <div class="tab" onclick="selectTab(this, 'kaynak')">Kaynak Kayıtlar</div>
+      <div class="tab" onclick="selectTab(this, 'uzman')">Uzman Okumaları</div>
+      <div class="tab" onclick="selectTab(this, 'hususlar')">Açık Hususlar</div>
+      <div class="tab" onclick="selectTab(this, 'iz')">İnceleme İzi</div>
+      <div class="tab" onclick="selectTab(this, 'belgeleme')">Belgeleme</div>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div class="content-area">
+
+      <!-- VIEWPORT + PANELS -->
+      <div class="viewport-col">
+
+        <!-- PHASE SELECTOR -->
+        <div class="phase-bar">
+          <span class="phase-label-pre">Zaman Fazı:</span>
+          <button class="phase-btn" onclick="selectPhase(this, 0)" data-phase="0">T₀ — Olay Öncesi</button>
+          <div class="phase-sep"></div>
+          <button class="phase-btn" onclick="selectPhase(this, 1)" data-phase="1">T₁ — Yaklaşım</button>
+          <div class="phase-sep"></div>
+          <button class="phase-btn active" onclick="selectPhase(this, 2)" data-phase="2">T₂ — Kritik An</button>
+          <div class="phase-sep"></div>
+          <button class="phase-btn" onclick="selectPhase(this, 3)" data-phase="3">T₃ — Sonrası</button>
+          <div class="phase-controls">
+            <button class="control-btn" onclick="prevPhase()" title="Önceki faz">◀</button>
+            <button class="control-btn playing" id="play-btn" onclick="togglePlay()" title="Oynat/Durdur">⏸</button>
+            <button class="control-btn" onclick="nextPhase()" title="Sonraki faz">▶</button>
+          </div>
+        </div>
+
+        <!-- POINT CLOUD VIEWPORT -->
+        <div class="viewport-wrap">
+          <div class="viewport-title-bar">
+            <span class="vp-title">Mühürlü Yeniden Oluşturma Görünümü</span>
+            <span style="font-family:var(--mono); font-size:9px; color:var(--text-muted); margin-left:10px;">HÜCRE · GÜVENLİK ZARFI · YAKINLIK</span>
+            <span class="vp-badge" id="vp-mode-badge">KONTROLLÜ İNCELEME</span>
+            <span class="vp-phase-badge" id="vp-phase-label">AŞAMA: KRİTİK · ROBOT · Public Stability Collapse</span>
+          </div>
+
+          <canvas id="pointcloud"></canvas>
+
+          <div class="vp-coord-box">
+            <div class="vp-coord-row"><span class="vp-coord-key">LAT</span><span class="vp-coord-val" id="coord-lat">41.0743</span></div>
+            <div class="vp-coord-row"><span class="vp-coord-key">LON</span><span class="vp-coord-val" id="coord-lon">28.9750</span></div>
+            <div class="vp-coord-row"><span class="vp-coord-key">ZONE</span><span class="vp-coord-val" id="coord-zone">SAFE-Z</span></div>
+            <div class="vp-coord-row"><span class="vp-coord-key">CONF</span><span class="vp-coord-val" id="coord-conf" style="color:var(--orange)">0.82</span></div>
+          </div>
+
+          <div class="vp-legend">
+            <div class="legend-row"><div class="legend-dot" style="background:#e8650a;"></div><span>Nokta bulutu — yüksek yoğunluk</span></div>
+            <div class="legend-row"><div class="legend-dot" style="background:rgba(232,101,10,0.4);"></div><span>Nokta bulutu — orta yoğunluk</span></div>
+            <div class="legend-row"><div class="legend-line" style="background:#e8650a;"></div><span>Sınır / güvenlik zarfı</span></div>
+            <div class="legend-row"><div class="legend-line" style="background:rgba(78,201,176,0.6); height:1px; border-top: 1px dashed rgba(78,201,176,0.6);"></div><span>Türetilmiş iz</span></div>
+            <div class="legend-row"><div class="legend-dot" style="background:rgba(78,201,176,0.8); width:8px; height:8px; border-radius:0;"></div><span>Kritik nesne / obje</span></div>
+          </div>
+        </div>
+
+        <!-- TIMELINE SCRUBBER -->
+        <div class="scrubber-bar">
+          <span class="time-label">00:00:00</span>
+          <div class="scrubber" id="scrubber" onclick="scrubberClick(event)">
+            <div class="scrubber-track">
+              <div class="scrubber-fill" id="scrubber-fill" style="width:55%;"></div>
+              <!-- Phase markers -->
+              <div class="phase-marker" style="left:0%;"><span class="phase-marker-label">T₀</span></div>
+              <div class="phase-marker" style="left:25%;"><span class="phase-marker-label">T₁</span></div>
+              <div class="phase-marker current" style="left:50%;"><span class="phase-marker-label" style="color:var(--orange);">T₂</span></div>
+              <div class="phase-marker" style="left:75%;"><span class="phase-marker-label">T₃</span></div>
+              <div class="scrubber-thumb" id="scrubber-thumb" style="left:55%;"></div>
+            </div>
+          </div>
+          <span class="time-label">00:04:32</span>
+        </div>
+
+        <!-- BOTTOM EVIDENCE PANELS -->
+        <div class="bottom-panels">
+
+          <!-- RECORDED -->
+          <div class="evidence-panel">
+            <div class="ep-header">
+              <div class="ep-title">Kayıt Katmanı</div>
+              <span class="ep-count">7 kayıt</span>
+            </div>
+            <div id="recorded-items"></div>
+          </div>
+
+          <!-- DERIVED -->
+          <div class="evidence-panel">
+            <div class="ep-header">
+              <div class="ep-title">Türetilmiş Değerlendirme</div>
+              <span class="ep-count">4 çıkarım</span>
+            </div>
+            <div id="derived-items"></div>
+          </div>
+
+          <!-- UNKNOWN -->
+          <div class="evidence-panel">
+            <div class="ep-header">
+              <div class="ep-title">Bilinmeyen / İtirazlı</div>
+              <span class="ep-count">2 açık</span>
+            </div>
+            <div id="unknown-items"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="right-col">
+
+        <!-- VERIFICATION TRACE -->
+        <div class="rp-block">
+          <div class="rp-header">
+            <div class="rp-title">Doğrulama İzi</div>
+            <span class="rp-status status-ok">AKTİF</span>
+          </div>
+          <div id="trace-items"></div>
+        </div>
+
+        <!-- ARTIFACT READINESS -->
+        <div class="rp-block">
+          <div class="rp-header">
+            <div class="rp-title">Belge Hazırlık Durumu</div>
+            <span class="rp-status status-ready">KISMİ</span>
+          </div>
+          <div id="artifact-items"></div>
+          <button class="btn-primary" style="width:100%; margin-top:10px; font-size:9px;" onclick="issueArtifact()">BELGEYİ ÇIKAR</button>
+        </div>
+
+        <!-- POINT CLOUD STATUS -->
+        <div class="rp-block">
+          <div class="rp-header">
+            <div class="rp-title">Nokta Bulutu / Vektör Durumu</div>
+            <span class="rp-status status-warn">KISMİ TARAMA</span>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                <span style="font-family:var(--mono); font-size:9px; color:var(--text-muted);">Tarama Yoğunluğu</span>
+                <span style="font-family:var(--mono); font-size:9px; color:var(--text-primary);">78%</span>
+              </div>
+              <div class="confidence-bar"><div class="confidence-fill" style="width:78%; background: var(--orange);"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                <span style="font-family:var(--mono); font-size:9px; color:var(--text-muted);">Obje Tanıma</span>
+                <span style="font-family:var(--mono); font-size:9px; color:var(--text-primary);">91%</span>
+              </div>
+              <div class="confidence-bar"><div class="confidence-fill" style="width:91%; background: #4a9e6a;"></div></div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+                <span style="font-family:var(--mono); font-size:9px; color:var(--text-muted);">Zaman Uyumu</span>
+                <span style="font-family:var(--mono); font-size:9px; color:var(--warning);">64%</span>
+              </div>
+              <div class="confidence-bar"><div class="confidence-fill" style="width:64%; background: var(--warning);"></div></div>
+            </div>
+          </div>
+          <div class="alert-banner" style="margin-top:8px; margin-bottom:0;">
+            Olay omurgası bulunamadı; t2 kritik aşamasına varsayılan geçiş yapıldı.
+          </div>
+        </div>
+
+        <!-- DOCTRINE NOTE -->
+        <div class="rp-block">
+          <div style="font-family:var(--mono); font-size:9px; color:var(--text-muted); line-height:1.8; letter-spacing:0.04em;">
+            <div>Kayıt ≠ Türetilmiş</div>
+            <div>Türetilmiş ≠ Karar</div>
+            <div>Doğrulama İzi ≠ Gerçeğin Kendisi</div>
+            <div>Belge İstimlaki ≠ Suç</div>
+            <div style="margin-top:8px; color: var(--text-muted); font-size:8px; opacity:0.6;">AXISUS · USTA · QARAQUTU protokolü</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+const canvas = document.getElementById('pointcloud');
+const ctx = canvas.getContext('2d');
+
+let currentPhase = 2;
+let animFrame = null;
+let isPlaying = true;
+let tick = 0;
+let scrubPos = 0.55;
+
+const phaseData = [
+  { label: 'T₀ — OLAY ÖNCESİ', vp: 'OLAY ÖNCESİ · ROBOT · Public Stability Collapse', zone: 'NORMAL', conf: '0.95', color: 'rgba(232,101,10,0.5)' },
+  { label: 'T₁ — YAKLAŞIM',     vp: 'YAKLAŞIM · ROBOT · Public Stability Collapse',    zone: 'CAUTION', conf: '0.88', color: 'rgba(232,101,10,0.7)' },
+  { label: 'T₂ — KRİTİK AN',    vp: 'AŞAMA: KRİTİK · ROBOT · Public Stability Collapse', zone: 'SAFE-Z', conf: '0.82', color: '#e8650a' },
+  { label: 'T₃ — SONRASI',      vp: 'OLAY SONRASI · ROBOT · Public Stability Collapse', zone: 'REVIEW', conf: '0.71', color: 'rgba(232,101,10,0.4)' }
+];
+
+const roleDescs = {
+  polis: 'Olay kronolojisi, müdahale süresi ve kamu güvenliği protokolü odaklı',
+  sigorta: 'Hasar akışı, teminat incelemesi ve belge zinciri öncelikli',
+  muhakeme: 'Delil zinciri, prosedürel uyum ve hukuki sorumlu tespiti',
+  bilirkisi: 'Teknik parametre analizi ve standart sapma değerlendirmesi',
+  uretici: 'Yazılım/donanım sürüm kaydı, fabrika ayarı ve kalibrasyon izi',
+  yazilim: 'Algoritma davranışı, otonom karar logu ve yazılım versiyonu',
+  muhendis: 'Sistem bütünlüğü, mekanik uyumluluk ve güvenlik zarfı analizi'
+};
+
+const recordedData = [
+  { text: 'LiDAR T₂:14.2sn — obje algılama kaydı', time: '14.2s', color: '#e8650a' },
+  { text: 'IMU veri paketi — stabilite kaybı', time: '14.8s', color: '#e8650a' },
+  { text: 'Kamera karesi #2847 — görüntü kaydı', time: '15.1s', color: '#5a8cc8' },
+  { text: 'Motor torku anomalisi — aktuatör logu', time: '15.4s', color: '#e8650a' },
+  { text: 'Güvenlik zarfı ihlali — sınır kaydı', time: '15.9s', color: '#c07a10' }
+];
+
+const derivedData = [
+  { text: 'Olası yük dengesizliği — zemin reaksiyonu analizi', conf: 0.74, color: '#c07a10' },
+  { text: 'Gecikmiş operatör devralma — 2.3sn', conf: 0.88, color: '#e8650a' },
+  { text: 'İnsan alanı ihlali tespiti', conf: 0.91, color: '#c0392b' },
+  { text: 'Acil durdurma tetikleyici — otonom karar', conf: 0.69, color: '#5a8cc8' }
+];
+
+const unknownData = [
+  { label: 'Zemin durumu t₁ öncesi', reason: 'Sensör boşluğu — 3.2sn kayıt yok' },
+  { label: 'Operatör müdahale kasıt tespiti', reason: 'İtirazlı · İnsansız analiz yetersiz' }
+];
+
+const traceData = [
+  { step: '01', label: 'Paket alındı ve mühürlendi', sub: '2026-03-26 · 09:41 UTC' },
+  { step: '02', label: 'Nokta bulutu katmanı doğrulandı', sub: 'LiDAR-R3 · %78 kapsam' },
+  { step: '03', label: 'Faz ayrımı oluşturuldu', sub: 'T₀→T₃ otomatik segmentasyon' },
+  { step: '04', label: 'Rol odağı ataması: Sigorta', sub: 'Kullanıcı seçimi · aktif' },
+  { step: '05', label: 'Belge hazırlık durumu güncellendi', sub: 'Kısmi · 2/4 panel tamamlandı' }
+];
+
+const artifactData = [
+  { icon: '📄', label: 'Hasar / Sigorta Belgesi', status: 'ready' },
+  { icon: '🔗', label: 'Teminat Bağı Kaydı', status: 'ready' },
+  { icon: '⚖', label: 'Hukuki Delil Paketi', status: 'pending' },
+  { icon: '📊', label: 'Teknik Analiz Raporu', status: 'pending' }
+];
+
+function populatePanels() {
+  const ri = document.getElementById('recorded-items');
+  ri.innerHTML = recordedData.slice(0,4).map(d => `
+    <div class="ep-row">
+      <div class="ep-indicator" style="background:${d.color};"></div>
+      <div class="ep-text">${d.text}</div>
+      <div class="ep-meta">${d.time}</div>
+    </div>`).join('');
+
+  const di = document.getElementById('derived-items');
+  di.innerHTML = derivedData.map(d => `
+    <div class="ep-row">
+      <div class="ep-indicator" style="background:${d.color};"></div>
+      <div class="ep-text">${d.text}</div>
+      <div class="ep-meta">${Math.round(d.conf*100)}%</div>
+    </div>`).join('');
+
+  const ui = document.getElementById('unknown-items');
+  ui.innerHTML = unknownData.map(d => `
+    <div class="unknown-item">
+      <div class="unknown-label">${d.label}</div>
+      <div class="unknown-reason">${d.reason}</div>
+      <div class="confidence-bar"><div class="confidence-fill" style="width:30%; background:#9b6fa8;"></div></div>
+    </div>`).join('');
+
+  const ti = document.getElementById('trace-items');
+  ti.innerHTML = traceData.map(d => `
+    <div class="trace-item">
+      <div class="trace-step">${d.step}</div>
+      <div class="trace-content">
+        <div class="trace-label">${d.label}</div>
+        <div class="trace-sub">${d.sub}</div>
+      </div>
+    </div>`).join('');
+
+  const ai = document.getElementById('artifact-items');
+  ai.innerHTML = artifactData.map(d => `
+    <div class="artifact-item">
+      <div class="artifact-icon">${d.icon}</div>
+      <div class="artifact-label">${d.label}</div>
+      <div class="${d.status === 'ready' ? 'artifact-ready' : 'artifact-pending'}">${d.status === 'ready' ? 'HAZIR' : 'BEKLE'}</div>
+    </div>`).join('');
+}
+
+// Point cloud drawing
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  canvas.width = wrap.offsetWidth;
+  canvas.height = wrap.offsetHeight;
+}
+
+function generatePoints(phase, count) {
+  const pts = [];
+  const cx = canvas.width * 0.5;
+  const cy = canvas.height * 0.52;
+  const spread = Math.min(canvas.width, canvas.height) * 0.38;
+
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const r = Math.random() * spread;
+    const perspFactor = 1 - (Math.random() * 0.4);
+    const x = cx + Math.cos(angle) * r * 1.7;
+    const y = cy + Math.sin(angle) * r * perspFactor * 0.6;
+    const density = Math.random();
+    pts.push({ x, y, density, phase });
+  }
+  return pts;
+}
+
+let points = [];
+let derivedTraces = [];
+
+function initScene() {
+  points = generatePoints(currentPhase, 280);
+  derivedTraces = [];
+  const cx = canvas.width * 0.5;
+  const cy = canvas.height * 0.52;
+  for (let t = 0; t < 6; t++) {
+    const startAngle = Math.random() * Math.PI * 2;
+    const len = 60 + Math.random() * 140;
+    derivedTraces.push({
+      x1: cx + Math.cos(startAngle) * (40 + Math.random() * 80),
+      y1: cy + Math.sin(startAngle) * (20 + Math.random() * 40),
+      x2: cx + Math.cos(startAngle) * (40 + Math.random() * 80) + Math.cos(startAngle + 0.5) * len,
+      y2: cy + Math.sin(startAngle) * (20 + Math.random() * 40) + Math.sin(startAngle + 0.5) * len * 0.5
+    });
+  }
+}
+
+function drawScene() {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const cx = canvas.width * 0.5;
+  const cy = canvas.height * 0.52;
+  const spread = Math.min(canvas.width, canvas.height) * 0.38;
+  const t = tick * 0.006;
+  const pd = phaseData[currentPhase];
+
+  // Grid lines (perspective)
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 0.5;
+  for (let i = -8; i <= 8; i++) {
+    const x = cx + i * (canvas.width * 0.055);
+    ctx.beginPath();
+    ctx.moveTo(x, cy - spread * 0.6);
+    ctx.lineTo(cx + (x - cx) * 2.2, cy + spread * 0.65);
+    ctx.stroke();
+  }
+  for (let j = 0; j <= 6; j++) {
+    const frac = j / 6;
+    const yw = spread * 0.6;
+    const yl = cy - yw + frac * yw * 1.6;
+    const xw = spread * 0.5 * (0.3 + frac * 0.8);
+    ctx.beginPath();
+    ctx.moveTo(cx - xw, yl);
+    ctx.lineTo(cx + xw, yl);
+    ctx.stroke();
+  }
+
+  // Safety boundary box
+  const bw = canvas.width * 0.28;
+  const bh = canvas.height * 0.22;
+  const bx = cx - bw * 0.5 + Math.sin(t * 0.3) * 4;
+  const by = cy - bh * 0.3;
+  ctx.strokeStyle = 'rgba(232,101,10,0.6)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([6, 4]);
+  ctx.strokeRect(bx, by, bw, bh);
+  ctx.setLineDash([]);
+
+  // STOP label
+  ctx.font = '500 11px IBM Plex Mono, monospace';
+  ctx.fillStyle = 'rgba(232,101,10,0.7)';
+  ctx.textAlign = 'center';
+  ctx.fillText('STOP', cx + bw * 0.02, by + bh * 0.55);
+
+  // Safety / Exclusion / Halt labels
+  if (currentPhase >= 2) {
+    ctx.font = '400 10px IBM Plex Mono, monospace';
+    ctx.fillStyle = 'rgba(180,180,180,0.35)';
+    ctx.textAlign = 'center';
+    ctx.fillText('SAFETY · EXCLUSION · HALT', cx + canvas.width * 0.06, cy - spread * 0.32);
+  }
+
+  // Derived trace lines (dashed cyan)
+  ctx.strokeStyle = 'rgba(78,201,176,0.45)';
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([4, 6]);
+  derivedTraces.forEach((tr, i) => {
+    const pulse = 0.45 + 0.15 * Math.sin(t * 2 + i);
+    ctx.strokeStyle = `rgba(78,201,176,${pulse})`;
+    ctx.beginPath();
+    ctx.moveTo(tr.x1, tr.y1);
+    ctx.lineTo(tr.x2, tr.y2);
+    ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  // PLC label
+  ctx.font = '400 9px IBM Plex Mono, monospace';
+  ctx.fillStyle = 'rgba(180,180,180,0.4)';
+  ctx.textAlign = 'right';
+  const plcX = cx - bw * 0.7;
+  const plcY = cy + 5;
+  ctx.fillText('PLC', plcX - 8, plcY);
+  ctx.strokeStyle = 'rgba(232,101,10,0.5)';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(plcX, plcY - 4);
+  ctx.lineTo(bx, plcY - 4);
+  ctx.stroke();
+
+  // Point cloud dots
+  const baseAlpha = currentPhase === 2 ? 0.85 : 0.55;
+  points.forEach((p, i) => {
+    const drift = Math.sin(t * 1.2 + i * 0.15) * (isPlaying ? 1.2 : 0);
+    const px = p.x + drift;
+    const py = p.y + Math.cos(t * 0.8 + i * 0.1) * (isPlaying ? 0.5 : 0);
+    const size = 1.5 + p.density * 2.2;
+    const alpha = (0.3 + p.density * 0.6) * baseAlpha;
+
+    if (p.density > 0.75) {
+      ctx.fillStyle = `rgba(232,101,10,${alpha})`;
+    } else if (p.density > 0.4) {
+      ctx.fillStyle = `rgba(210,90,15,${alpha * 0.7})`;
+    } else {
+      ctx.fillStyle = `rgba(180,80,10,${alpha * 0.4})`;
+    }
+
+    ctx.beginPath();
+    ctx.arc(px, py, size, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Critical objects (ellipses)
+  const objects = [
+    { ox: cx - 0.05 * canvas.width, oy: cy - 0.04 * canvas.height, rx: 22, ry: 10 },
+    { ox: cx + 0.16 * canvas.width, oy: cy - 0.01 * canvas.height, rx: 30, ry: 12 },
+    { ox: cx + 0.05 * canvas.width, oy: cy + 0.12 * canvas.height, rx: 18, ry: 8 },
+    { ox: cx - 0.15 * canvas.width, oy: cy + 0.08 * canvas.height, rx: 20, ry: 9 }
+  ];
+
+  objects.forEach((o, i) => {
+    const pulse = 0.5 + 0.25 * Math.sin(t * 1.8 + i * 1.2);
+    ctx.strokeStyle = `rgba(232,101,10,${pulse})`;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.ellipse(o.ox, o.oy + Math.sin(t + i) * (isPlaying ? 1.5 : 0), o.rx, o.ry, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+
+  // Scan sweep line (only when playing)
+  if (isPlaying) {
+    const sweepAngle = (t * 0.7) % (Math.PI * 2);
+    const sweepLen = spread * 1.0;
+    const sweepAlpha = 0.15 + 0.1 * Math.sin(t * 3);
+    ctx.strokeStyle = `rgba(232,101,10,${sweepAlpha})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(sweepAngle) * sweepLen, cy + Math.sin(sweepAngle) * sweepLen * 0.5);
+    ctx.stroke();
+  }
+
+  // Phase overlay texts
+  if (currentPhase === 2) {
+    ctx.font = '400 9px IBM Plex Mono, monospace';
+    ctx.fillStyle = 'rgba(192,122,16,0.7)';
+    ctx.textAlign = 'left';
+    ctx.fillText('▲ KRİTİK ZON AKTİF', bx, by - 6);
+  }
+
+  tick++;
+}
+
+function animate() {
+  drawScene();
+  animFrame = requestAnimationFrame(animate);
+}
+
+function selectPhase(btn, idx) {
+  currentPhase = idx;
+  document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const pd = phaseData[idx];
+  document.getElementById('vp-phase-label').textContent = pd.vp;
+  document.getElementById('coord-zone').textContent = pd.zone;
+  document.getElementById('coord-conf').textContent = pd.conf;
+  const scrubPositions = [0.08, 0.30, 0.55, 0.82];
+  setScrubPos(scrubPositions[idx]);
+  initScene();
+}
+
+function prevPhase() {
+  const idx = Math.max(0, currentPhase - 1);
+  selectPhase(document.querySelectorAll('.phase-btn')[idx], idx);
+}
+
+function nextPhase() {
+  const idx = Math.min(3, currentPhase + 1);
+  selectPhase(document.querySelectorAll('.phase-btn')[idx], idx);
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  const btn = document.getElementById('play-btn');
+  if (isPlaying) { btn.textContent = '⏸'; btn.classList.add('playing'); }
+  else { btn.textContent = '▶'; btn.classList.remove('playing'); }
+}
+
+function setScrubPos(pos) {
+  scrubPos = pos;
+  const pct = (pos * 100).toFixed(1) + '%';
+  document.getElementById('scrubber-fill').style.width = pct;
+  document.getElementById('scrubber-thumb').style.left = pct;
+}
+
+function scrubberClick(e) {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  setScrubPos(pos);
+  const phaseIdx = pos < 0.2 ? 0 : pos < 0.45 ? 1 : pos < 0.68 ? 2 : 3;
+  selectPhase(document.querySelectorAll('.phase-btn')[phaseIdx], phaseIdx);
+}
+
+function selectNav(el, key) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function selectTab(el, key) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function selectRole(el, key) {
+  document.querySelectorAll('.role-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const desc = document.getElementById('role-desc');
+  desc.textContent = roleDescs[key] || '';
+}
+
+function startReview() {
+  const chip = document.getElementById('review-chip');
+  chip.textContent = 'İNCELEMEDE';
+  chip.className = 'chip chip-orange';
+}
+
+function showReport() { alert('Delile Dayalı Rapor — belge oluşturuluyor...'); }
+function showDoc() { alert('Delile Dayalı Belge — şablon yükleniyor...'); }
+function newReview() { alert('Yeni İnceleme — paket seçim ekranına yönlendiriliyor...'); }
+function issueArtifact() { alert('Belge istimlaki başlatıldı — imza protokolüne yönlendiriliyor.'); }
+
+// Init
+window.addEventListener('load', () => {
+  resizeCanvas();
+  populatePanels();
+  initScene();
+  animate();
+});
+
+window.addEventListener('resize', () => {
+  resizeCanvas();
+  initScene();
+});
+</script>

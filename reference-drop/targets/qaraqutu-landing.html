@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QARAQUTU — Kurumsal Tanık Protokolü</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --coal:#0c0d0f;
+  --graphite:#141518;
+  --surface:#1a1c21;
+  --surface2:#20222a;
+  --surface3:#272a34;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.13);
+  --orange:#e8650a;
+  --orange-dim:rgba(232,101,10,0.14);
+  --orange-glow:rgba(232,101,10,0.07);
+  --text-primary:#e6e3dc;
+  --text-secondary:#8a8880;
+  --text-muted:#44464e;
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'IBM Plex Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--coal);color:var(--text-primary);overflow-x:hidden;line-height:1.5}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(12,13,15,0.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border2);
+  height:56px;
+  display:flex;align-items:center;padding:0 32px;gap:24px;
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.nav-logo svg{height:20px;width:auto}
+.nav-tagline{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.18em;text-transform:uppercase;border-left:1px solid var(--border2);padding-left:12px;display:none}
+@media(min-width:640px){.nav-tagline{display:block}}
+.nav-links{margin-left:auto;display:flex;align-items:center;gap:4px}
+.nav-link{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;
+  padding:6px 12px;color:var(--text-secondary);text-decoration:none;
+  border:1px solid transparent;transition:all 0.15s;cursor:pointer;background:none;
+}
+.nav-link:hover{color:var(--text-primary);border-color:var(--border2)}
+.nav-link.cta{color:var(--orange);border-color:rgba(232,101,10,0.4);background:var(--orange-dim)}
+.nav-link.cta:hover{background:var(--orange);color:#0c0d0f}
+.lang-group{display:flex;border:1px solid var(--border2);margin-left:8px}
+.lang-btn{font-family:var(--mono);font-size:9px;padding:5px 9px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;transition:all 0.15s;letter-spacing:0.1em}
+.lang-btn.active{background:var(--orange-dim);color:var(--orange)}
+.nav-mobile-hide{display:none}
+@media(min-width:768px){.nav-mobile-hide{display:flex;align-items:center;gap:4px}}
+
+/* HERO */
+.hero{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:1fr;
+  padding:100px 32px 60px;
+  position:relative;overflow:hidden;
+}
+@media(min-width:960px){
+  .hero{grid-template-columns:1fr 1fr;gap:60px;align-items:center;padding:120px 80px 80px}
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 70% 40%, rgba(232,101,10,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 20% 80%, rgba(232,101,10,0.03) 0%, transparent 60%);
+  pointer-events:none;
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 75%);
+}
+.hero-left{position:relative;z-index:1}
+.hero-logo-block{margin-bottom:28px}
+.hero-logo-block svg{height:36px;width:auto}
+@media(min-width:768px){.hero-logo-block svg{height:44px}}
+.hero-doctrine{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.doctrine-chip{
+  font-family:var(--mono);font-size:9px;letter-spacing:0.12em;
+  padding:4px 10px;border:1px solid var(--border2);
+  color:var(--text-secondary);text-transform:uppercase;
+}
+.hero-tagline{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.2em;
+  color:var(--text-muted);text-transform:uppercase;margin-bottom:20px;
+}
+.hero-headline{
+  font-size:clamp(24px, 4vw, 42px);
+  font-weight:500;line-height:1.2;
+  color:var(--text-primary);margin-bottom:20px;
+  letter-spacing:-0.01em;
+}
+.hero-headline em{font-style:normal;color:var(--orange)}
+.hero-body{
+  font-size:15px;color:var(--text-secondary);
+  line-height:1.7;max-width:560px;margin-bottom:32px;
+}
+.hero-props{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);
+  margin-bottom:32px;max-width:540px;
+}
+.hero-prop{
+  background:var(--graphite);padding:12px 14px;
+  font-size:12px;color:var(--text-secondary);line-height:1.5;
+}
+.hero-prop strong{display:block;font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:4px;font-weight:400}
+.hero-cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn-primary{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+  padding:12px 24px;background:var(--orange);color:#0c0d0f;border:none;
+  cursor:pointer;font-weight:600;transition:all 0.15s;text-decoration:none;display:inline-block;
+}
+.btn-primary:hover{background:#f57520;transform:translateY(-1px)}
+.btn-ghost{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+  padding:12px 24px;background:transparent;color:var(--text-secondary);
+  border:1px solid var(--border2);cursor:pointer;transition:all 0.15s;text-decoration:none;display:inline-block;
+}
+.btn-ghost:hover{border-color:var(--orange);color:var(--orange)}
+.doctrine-note{
+  font-family:var(--mono);font-size:9px;color:var(--text-muted);
+  margin-top:16px;line-height:1.8;
+}
+/* HERO RIGHT — VIEWPORT PREVIEW */
+.hero-right{position:relative;z-index:1;margin-top:40px}
+@media(min-width:960px){.hero-right{margin-top:0}}
+.vp-preview{
+  border:1px solid var(--border2);
+  background:var(--graphite);
+  overflow:hidden;
+}
+.vp-topbar{
+  background:var(--surface);border-bottom:1px solid var(--border2);
+  padding:8px 12px;display:flex;align-items:center;gap:8px;
+}
+.vp-topbar-dot{width:6px;height:6px;border-radius:50%}
+.vp-topbar-title{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.12em;flex:1}
+.vp-topbar-badge{font-family:var(--mono);font-size:9px;padding:2px 6px;background:var(--orange-dim);border:1px solid rgba(232,101,10,0.3);color:var(--orange);letter-spacing:0.08em}
+.vp-canvas-wrap{position:relative;height:260px;background:#08090b;overflow:hidden}
+@media(min-width:640px){.vp-canvas-wrap{height:320px}}
+canvas#hero-canvas{display:block;width:100%;height:100%}
+.vp-overlay-grid{position:absolute;inset:0;pointer-events:none;padding:10px}
+.vp-label{
+  font-family:var(--mono);font-size:9px;color:rgba(255,255,255,0.3);
+  letter-spacing:0.1em;position:absolute;
+}
+.vp-bottom-strip{
+  background:var(--surface);border-top:1px solid var(--border);
+  display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;background-color:var(--border);
+}
+.vp-stat{background:var(--surface);padding:8px 10px}
+.vp-stat-key{font-family:var(--mono);font-size:8px;color:var(--text-muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:3px}
+.vp-stat-val{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--text-primary)}
+.vp-stat-val.orange{color:var(--orange)}
+
+/* SECTION COMMON */
+section{padding:80px 32px}
+@media(min-width:768px){section{padding:100px 80px}}
+.section-label{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--orange);margin-bottom:16px}
+.section-title{font-size:clamp(22px,3.5vw,38px);font-weight:500;line-height:1.2;margin-bottom:16px;letter-spacing:-0.01em}
+.section-sub{font-size:15px;color:var(--text-secondary);line-height:1.7;max-width:600px}
+
+/* HOW IT WORKS */
+.how-section{background:var(--graphite);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.how-grid{
+  display:grid;grid-template-columns:1fr;gap:1px;background:var(--border);
+  border:1px solid var(--border);margin-top:48px;
+}
+@media(min-width:640px){.how-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:960px){.how-grid{grid-template-columns:1fr 1fr 1fr}}
+.how-card{background:var(--surface);padding:28px 24px}
+.how-num{font-family:var(--mono);font-size:11px;color:var(--orange);letter-spacing:0.15em;margin-bottom:12px}
+.how-title{font-size:16px;font-weight:500;margin-bottom:10px;line-height:1.3}
+.how-body{font-size:13px;color:var(--text-secondary);line-height:1.7}
+.how-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.how-tag{font-family:var(--mono);font-size:8px;letter-spacing:0.1em;padding:3px 8px;border:1px solid var(--border2);color:var(--text-muted);text-transform:uppercase}
+
+/* DOMAIN */
+.domain-section{}
+.domain-grid{
+  display:grid;grid-template-columns:1fr;gap:16px;margin-top:48px;
+}
+@media(min-width:640px){.domain-grid{grid-template-columns:repeat(3,1fr)}}
+.domain-card{
+  border:1px solid var(--border2);background:var(--graphite);
+  padding:24px;transition:border-color 0.2s;
+}
+.domain-card:hover{border-color:rgba(232,101,10,0.4)}
+.domain-icon{
+  width:40px;height:40px;border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;
+  font-family:var(--mono);font-size:13px;color:var(--orange);font-weight:600;
+}
+.domain-title{font-size:17px;font-weight:500;margin-bottom:8px}
+.domain-body{font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:14px}
+.domain-chain{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;color:var(--text-muted);flex-wrap:wrap}
+.chain-step{padding:2px 7px;border:1px solid var(--border);color:var(--text-muted)}
+.chain-arrow{color:var(--text-muted);font-size:8px}
+
+/* DOCTRINE */
+.doctrine-section{background:var(--graphite);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.doctrine-grid{
+  display:grid;grid-template-columns:1fr;gap:1px;background:var(--border);
+  border:1px solid var(--border);margin-top:48px;
+}
+@media(min-width:640px){.doctrine-grid{grid-template-columns:1fr 1fr}}
+.doctrine-card{background:var(--surface);padding:24px}
+.doctrine-label{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:10px}
+.doctrine-statement{font-size:15px;color:var(--text-primary);line-height:1.5;margin-bottom:8px}
+.doctrine-note-text{font-size:12px;color:var(--text-secondary);line-height:1.6}
+
+/* ROLES */
+.roles-section{}
+.roles-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:48px;
+}
+@media(min-width:640px){.roles-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:960px){.roles-grid{grid-template-columns:repeat(6,1fr)}}
+.role-card{
+  border:1px solid var(--border);background:var(--graphite);padding:20px 16px;
+  transition:all 0.2s;cursor:default;
+}
+.role-card:hover{border-color:rgba(232,101,10,0.4);background:var(--surface)}
+.role-card.future{opacity:0.4;border-style:dashed}
+.role-tag{font-family:var(--mono);font-size:8px;color:var(--orange);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px}
+.role-name{font-size:15px;font-weight:500;margin-bottom:6px}
+.role-desc{font-size:11px;color:var(--text-secondary);line-height:1.5}
+
+/* ARCHITECTURE NOTE */
+.arch-note{
+  background:var(--surface);border:1px solid var(--border2);
+  border-left:3px solid var(--orange);
+  padding:20px 24px;margin-top:48px;
+}
+.arch-note-text{font-family:var(--mono);font-size:11px;color:var(--text-secondary);line-height:1.8}
+.arch-note-text span{color:var(--text-muted);margin-right:8px}
+
+/* STATS */
+.stats-section{background:var(--graphite);border-top:1px solid var(--border)}
+.stats-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);
+  border:1px solid var(--border);margin-top:48px;
+}
+@media(min-width:640px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+.stat-card{background:var(--surface);padding:28px 24px}
+.stat-num{font-family:var(--mono);font-size:32px;font-weight:600;color:var(--orange);margin-bottom:6px}
+.stat-label{font-size:13px;color:var(--text-secondary)}
+
+/* CTA */
+.cta-section{padding:100px 32px;text-align:center;position:relative;overflow:hidden}
+@media(min-width:768px){.cta-section{padding:120px 80px}}
+.cta-section::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 60% at 50% 50%, rgba(232,101,10,0.07) 0%, transparent 70%);
+  pointer-events:none;
+}
+.cta-content{position:relative;z-index:1;max-width:640px;margin:0 auto}
+.cta-title{font-size:clamp(24px,4vw,42px);font-weight:500;line-height:1.2;margin-bottom:20px;letter-spacing:-0.01em}
+.cta-body{font-size:15px;color:var(--text-secondary);line-height:1.7;margin-bottom:36px}
+.cta-btns{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+
+/* FOOTER */
+footer{
+  background:var(--graphite);border-top:1px solid var(--border2);
+  padding:40px 32px;
+}
+@media(min-width:768px){footer{padding:48px 80px}}
+.footer-inner{
+  display:grid;grid-template-columns:1fr;gap:32px;
+}
+@media(min-width:640px){.footer-inner{grid-template-columns:1fr 1fr 1fr;gap:24px}}
+.footer-brand svg{height:22px;width:auto;margin-bottom:12px}
+.footer-tagline{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:10px}
+.footer-doctrine{font-family:var(--mono);font-size:10px;color:var(--text-muted);line-height:2}
+.footer-col-title{font-family:var(--mono);font-size:9px;letter-spacing:0.15em;color:var(--text-muted);text-transform:uppercase;margin-bottom:12px}
+.footer-link{display:block;font-size:13px;color:var(--text-secondary);text-decoration:none;padding:3px 0;transition:color 0.15s}
+.footer-link:hover{color:var(--orange)}
+.footer-bottom{
+  margin-top:32px;padding-top:20px;border-top:1px solid var(--border);
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;
+}
+.footer-copy{font-family:var(--mono);font-size:9px;color:var(--text-muted);letter-spacing:0.1em}
+.footer-protocol{font-family:var(--mono);font-size:9px;color:var(--text-muted)}
+
+/* DIVIDER */
+.section-divider{height:1px;background:var(--border);margin:0}
+
+/* LANG TOGGLE */
+[data-lang="en"]{display:none}
+body.en [data-lang="tr"]{display:none}
+body.en [data-lang="en"]{display:block}
+.inline-tr,.inline-en{display:inline}
+body.en .inline-tr{display:none}
+body.en .inline-en{display:inline}
+
+/* SCROLL ANIM */
+.fade-up{opacity:0;transform:translateY(24px);transition:opacity 0.6s ease, transform 0.6s ease}
+.fade-up.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <!-- QARAQUTU SVG LOGO (simplified inline) -->
+    <svg viewBox="0 0 944 202" xmlns="http://www.w3.org/2000/svg" fill="none">
+      <polygon fill="#FEFEFE" points="2.62,49.07 87.61,98.14 172.59,49.07 87.61,0"/>
+      <polygon fill="#FEFEFE" points="0,54.3 0,152.44 84.99,201.51 84.99,103.37"/>
+      <path fill="#FEFEFE" d="M124.63 116.73l-0.71 2.53c-0.03,0.08-0.08,0.16-0.15,0.23l-2.14 1.87c-0.08,0.07-0.14,0.17-0.16,0.26-0.01,0.09 0.02,0.16 0.09,0.16l1.79 0.28c0.06,0.01 0.09,0.05 0.09,0.13l-0.08 2.27c-0,0.09 0.04,0.13 0.11,0.13 0.07,-0 0.16,-0.06 0.23,-0.15l1.82-2.36c0.06,-0.08 0.13,-0.13 0.2,-0.15l2.09-0.47c0.08,-0.02 0.16,-0.08 0.22,-0.18 0.06,-0.1 0.08,-0.19 0.06,-0.26l-0.67-1.73c-0.02,-0.06-0.01,-0.14 0.04,-0.22l1.37-2.56c0.05,-0.1 0.06,-0.19 0.02,-0.24-0.04,-0.05-0.11,-0.06-0.2,-0.01l-2.23 1.29c-0.07,0.04-0.14,0.05-0.18,0.01l-1.25-1.12c-0.05,-0.04-0.12,-0.03-0.21,0.03-0.08,0.06-0.15,0.16-0.18,0.25z"/>
+      <!-- TEXT: QARAQUTU -->
+      <path fill="#FEFEFE" d="M258.92 152.36l0 -11.63c-11.52,-1.66 -21.05,-6.73 -28.65,-15.26 -7.55,-8.41 -11.31,-18.39 -11.31,-29.98 0,-12.92 4.56,-23.81 13.69,-32.67 9.18,-8.81 20.35,-13.2 33.56,-13.2 13.2,0 24.35,4.39 33.48,13.2 9.18,8.86 13.76,19.74 13.76,32.67 0,11.59 -3.78,21.57 -11.36,29.98 -7.57,8.53 -17.1,13.6 -28.6,15.26l0 11.63 -14.58 0z"/>
+      <polygon fill="#FEFEFE" points="318.11,139.48 350.21,66.02 330.03,66.02 330.03,51.44 366.53,51.44 403.77,139.48 386.25,139.48 379.54,122.94 342.22,122.94 335.49,139.48"/>
+      <path fill="#FEFEFE" d="M416.22 139.48l0 -37.43 -10.47 0 0 -15.42 10.47 0 0 -35.19 43.67 0c9.56,0 16.87,2.34 21.94,6.99 4.77,4.42 7.15,10.56 7.15,18.41 0,14.49 -7.43,22.74 -22.24,24.79l23.41 37.85 -19.25 0 -22.18 -37.43 -16.1 0 0 37.43 -16.4 0z"/>
+      <polygon fill="#FEFEFE" points="494.6,139.48 526.7,66.02 506.51,66.02 506.51,51.44 543.01,51.44 580.26,139.48 562.73,139.48 556.03,122.94 518.71,122.94 511.98,139.48"/>
+      <!-- Q orange -->
+      <path fill="#FEFEFE" d="M624.82 152.36l0 -11.64c-11.52,-1.66 -21.05,-6.73 -28.65,-15.26 -7.55,-8.41 -11.31,-18.39 -11.31,-29.98 0,-12.92 4.56,-23.81 13.69,-32.67 9.18,-8.81 20.35,-13.2 33.55,-13.2 13.2,0 24.35,4.39 33.48,13.2 9.18,8.86 13.76,19.74 13.76,32.67 0,11.59 -3.79,21.57 -11.36,29.98 -7.57,8.53 -17.1,13.6 -28.6,15.26l0 11.64 -14.58 0z"/>
+      <path fill="#FEFEFE" d="M693.64 103.59l0 -52.15 16.26 0 0 48.6c0,7.83 2.24,14.14 6.71,18.86 4.25,4.56 9.63,6.85 16.14,6.85 6.52,0 11.99,-2.31 16.43,-6.96 4.28,-4.65 6.43,-10.91 6.43,-18.74l0 -48.6 16.26 0 0 52.15c0,10.44 -3.53,19.28 -10.61,26.5 -7.5,7.48 -16.99,11.22 -28.51,11.22 -11.5,0 -20.96,-3.74 -28.37,-11.22 -7.17,-7.22 -10.75,-16.05 -10.75,-26.5z"/>
+      <path fill="#FEFEFE" d="M762.06 103.59l0 -52.15 16.26 0 0 48.6c0,7.83 2.24,14.14 6.71,18.86 4.25,4.56 9.63,6.85 16.15,6.85 6.52,0 11.99,-2.31 16.43,-6.96 4.28,-4.65 6.42,-10.91 6.42,-18.74l0 -48.6 16.26 0 0 52.15c0,10.44 -3.53,19.28 -10.61,26.5 -7.5,7.48 -16.99,11.22 -28.51,11.22 -11.5,0 -20.96,-3.74 -28.37,-11.22 -7.17,-7.22 -10.75,-16.05 -10.75,-26.5z"/>
+      <path fill="#FEFEFE" d="M830.24 139.48l0 -72.62 -25.8 0 0 -15.42 67.86 0 0 15.42 -25.8 0 0 72.62 -16.26 0z"/>
+      <!-- U orange -->
+      <path fill="#FF6600" d="M865.87 103.59l0 -52.15 16.26 0 0 48.6c0,7.83 2.24,14.14 6.71,18.86 4.25,4.56 9.63,6.85 16.15,6.85 6.52,0 11.99,-2.31 16.43,-6.96 4.28,-4.65 6.42,-10.91 6.42,-18.74l0 -48.6 16.26 0 0 52.15c0,10.44 -3.53,19.28 -10.61,26.5 -7.5,7.48 -16.99,11.22 -28.51,11.22 -11.5,0 -20.96,-3.74 -28.37,-11.22 -7.17,-7.22 -10.75,-16.05 -10.75,-26.5z"/>
+    </svg>
+  </a>
+  <span class="nav-tagline">
+    <span class="inline-tr">Tanık · Doğrulayıcı · İz · Belgeleme</span>
+    <span class="inline-en">Witness · Verifier · Trace · Documentation</span>
+  </span>
+  <div class="nav-links">
+    <div class="nav-mobile-hide">
+      <a class="nav-link" href="#how">
+        <span class="inline-tr">Nasıl Çalışır</span>
+        <span class="inline-en">How It Works</span>
+      </a>
+      <a class="nav-link" href="#domain">
+        <span class="inline-tr">Alanlar</span>
+        <span class="inline-en">Domains</span>
+      </a>
+      <a class="nav-link" href="#roles">
+        <span class="inline-tr">Roller</span>
+        <span class="inline-en">Roles</span>
+      </a>
+      <a class="nav-link" href="#doctrine">
+        <span class="inline-tr">Doktrin</span>
+        <span class="inline-en">Doctrine</span>
+      </a>
+      <a class="nav-link cta" href="#cta">
+        <span class="inline-tr">Doğrulayıcıyı Aç</span>
+        <span class="inline-en">Open Verifier</span>
+      </a>
+    </div>
+    <div class="lang-group">
+      <button class="lang-btn active" id="btn-tr" onclick="setLang('tr')">TR</button>
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+
+  <div class="hero-left">
+    <div class="hero-logo-block">
+      <svg viewBox="0 0 944 202" xmlns="http://www.w3.org/2000/svg">
+        <polygon fill="#FEFEFE" points="2.62,49.07 87.61,98.14 172.59,49.07 87.61,0"/>
+        <polygon fill="#FEFEFE" points="0,54.3 0,152.44 84.99,201.51 84.99,103.37"/>
+        <path fill="#FEFEFE" d="M124.63 116.73l-0.71 2.53c-0.03,0.08-0.08,0.16-0.15,0.23l-2.14 1.87c-0.08,0.07-0.14,0.17-0.16,0.26-0.01,0.09 0.02,0.16 0.09,0.16l1.79 0.28 -0.08 2.27c-0,0.09 0.04,0.13 0.11,0.13 0.07,0 0.16,-0.06 0.23,-0.15l1.82-2.36c0.06,-0.08 0.13,-0.13 0.2,-0.15l2.09-0.47c0.08,-0.02 0.16,-0.08 0.22,-0.18 0.06,-0.1 0.08,-0.19 0.06,-0.26l-0.67-1.73c-0.02,-0.06-0.01,-0.14 0.04,-0.22l1.37-2.56c0.05,-0.1 0.06,-0.19 0.02,-0.24-0.04,-0.05-0.11,-0.06-0.2,-0.01l-2.23 1.29c-0.07,0.04-0.14,0.05-0.18,0.01l-1.25-1.12c-0.05,-0.04-0.12,-0.03-0.21,0.03-0.08,0.06-0.15,0.16-0.18,0.25z"/>
+        <path fill="#FEFEFE" d="M258.92 152.36l0 -11.63c-11.52,-1.66 -21.05,-6.73 -28.65,-15.26 -7.55,-8.41 -11.31,-18.39 -11.31,-29.98 0,-12.92 4.56,-23.81 13.69,-32.67 9.18,-8.81 20.35,-13.2 33.56,-13.2 13.2,0 24.35,4.39 33.48,13.2 9.18,8.86 13.76,19.74 13.76,32.67 0,11.59 -3.78,21.57 -11.36,29.98 -7.57,8.53 -17.1,13.6 -28.6,15.26l0 11.63 -14.58 0z"/>
+        <polygon fill="#FEFEFE" points="318.11,139.48 350.21,66.02 330.03,66.02 330.03,51.44 366.53,51.44 403.77,139.48 386.25,139.48 379.54,122.94 342.22,122.94 335.49,139.48"/>
+        <path fill="#FEFEFE" d="M416.22 139.48l0 -37.43 -10.47 0 0 -15.42 10.47 0 0 -35.19 43.67 0c9.56,0 16.87,2.34 21.94,6.99 4.77,4.42 7.15,10.56 7.15,18.41 0,14.49 -7.43,22.74 -22.24,24.79l23.41 37.85 -19.25 0 -22.18 -37.43 -16.1 0 0 37.43 -16.4 0z"/>
+        <polygon fill="#FEFEFE" points="494.6,139.48 526.7,66.02 506.51,66.02 506.51,51.44 543.01,51.44 580.26,139.48 562.73,139.48 556.03,122.94 518.71,122.94 511.98,139.48"/>
+        <path fill="#FEFEFE" d="M624.82 152.36l0 -11.64c-11.52,-1.66 -21.05,-6.73 -28.65,-15.26 -7.55,-8.41 -11.31,-18.39 -11.31,-29.98 0,-12.92 4.56,-23.81 13.69,-32.67 9.18,-8.81 20.35,-13.2 33.55,-13.2 13.2,0 24.35,4.39 33.48,13.2 9.18,8.86 13.76,19.74 13.76,32.67 0,11.59 -3.79,21.57 -11.36,29.98 -7.57,8.53 -17.1,13.6 -28.6,15.26l0 11.64 -14.58 0z"/>
+        <path fill="#FEFEFE" d="M693.64 103.59l0 -52.15 16.26 0 0 48.6c0,7.83 2.24,14.14 6.71,18.86 4.25,4.56 9.63,6.85 16.14,6.85 6.52,0 11.99,-2.31 16.43,-6.96 4.28,-4.65 6.43,-10.91 6.43,-18.74l0 -48.6 16.26 0 0 52.15c0,10.44 -3.53,19.28 -10.61,26.5 -7.5,7.48 -16.99,11.22 -28.51,11.22 -11.5,0 -20.96,-3.74 -28.37,-11.22 -7.17,-7.22 -10.75,-16.05 -10.75,-26.5z"/>
+        <path fill="#FEFEFE" d="M762.06 103.59l0 -52.15 16.26 0 0 48.6c0,7.83 2.24,14.14 6.71,18.86 4.25,4.56 9.63,6.85 16.15,6.85 6.52,0 11.99,-2.31 16.43,-6.96 4.28,-4.65 6.42,-10.91 6.42,-18.74l0 -48.6 16.26 0 0 52.15c0,10.44 -3.53,19.28 -10.61,26.5 -7.5,7.48 -16.99,11.22 -28.51,11.22 -11.5,0 -20.96,-3.74 -28.37,-11.22 -7.17,-7.22 -10.75,-16.05 -10.75,-26.5z"/>
+        <path fill="#FEFEFE" d="M830.24 139.48l0 -72.62 -25.8 0 0 -15.42 67.86 0 0 15.42 -25.8 0 0 72.62 -16.26 0z"/>
+        <path fill="#FF6600" d="M865.87 103.59l0 -52.15 16.26 0 0 48.6c0,7.83 2.24,14.14 6.71,18.86 4.25,4.56 9.63,6.85 16.15,6.85 6.52,0 11.99,-2.31 16.43,-6.96 4.28,-4.65 6.42,-10.91 6.42,-18.74l0 -48.6 16.26 0 0 52.15c0,10.44 -3.53,19.28 -10.61,26.5 -7.5,7.48 -16.99,11.22 -28.51,11.22 -11.5,0 -20.96,-3.74 -28.37,-11.22 -7.17,-7.22 -10.75,-16.05 -10.75,-26.5z"/>
+      </svg>
+    </div>
+
+    <div class="hero-tagline">
+      <span class="inline-tr">Kurumsal Tanık Protokolü</span>
+      <span class="inline-en">Institutional Witness Protocol</span>
+    </div>
+
+    <div class="hero-doctrine">
+      <span class="doctrine-chip"><span class="inline-tr">Kayıtlı ≠ Türetilmiş</span><span class="inline-en">Recorded ≠ Derived</span></span>
+      <span class="doctrine-chip"><span class="inline-tr">İz ≠ Nihai Gerçek</span><span class="inline-en">Trace ≠ Final Truth</span></span>
+      <span class="doctrine-chip"><span class="inline-tr">Düzenleme ≠ Suçlama</span><span class="inline-en">Issuance ≠ Blame</span></span>
+    </div>
+
+    <h1 class="hero-headline" data-lang="tr">
+      Aynı olayı sigorta, hukuk ve teknik<br>
+      farklı nesnelerde okuduğunda<br>
+      kurumun ihtiyacı — <em>tek zincir,<br>
+      üç ayrı öykü değil.</em>
+    </h1>
+    <h1 class="hero-headline" data-lang="en">
+      When insurance, law, and engineering<br>
+      read the same incident differently —<br>
+      institutions need <em>one chain,<br>
+      not three separate stories.</em>
+    </h1>
+
+    <p class="hero-body" data-lang="tr">
+      QARAQUTU sensör, günlük ve operatör bağlamını tek kanonik olay paketinde birleştirir; ardından ayrılmış bir Doğrulayıcı istasyonunda inceler: kayıtlı materyal, türetilmiş okumalar, açık bilinmeyenler, doğrulama izi ve role sınırlı belge düzenlemesi.
+    </p>
+    <p class="hero-body" data-lang="en">
+      QARAQUTU unifies sensor data, event logs, and operator context into a single canonical incident package — then inspects it in a separated Verifier station: recorded material, derived readings, open unknowns, verification trace, and role-scoped document issuance.
+    </p>
+
+    <div class="hero-props">
+      <div class="hero-prop">
+        <strong><span class="inline-tr">Hüküm vermez</span><span class="inline-en">Does not judge</span></strong>
+        <span class="inline-tr">Şahitlik eder. Yorum ile kaydı asla aynı yüzeyde birleştirmez.</span>
+        <span class="inline-en">It witnesses. Never merges interpretation with recording.</span>
+      </div>
+      <div class="hero-prop">
+        <strong><span class="inline-tr">Rol sınırlı okuma</span><span class="inline-en">Role-scoped reading</span></strong>
+        <span class="inline-tr">Polis, sigorta, hukuk, teknik — aynı omurgadan farklı belge kabuğu.</span>
+        <span class="inline-en">Police, insurance, legal, technical — different shells, same spine.</span>
+      </div>
+      <div class="hero-prop">
+        <strong><span class="inline-tr">Araç · İHA · Robot</span><span class="inline-en">Vehicle · Drone · Robot</span></strong>
+        <span class="inline-tr">Üç alanda aynı protokol. Kayıt, iz ve düzenleme ayrımı korunur.</span>
+        <span class="inline-en">One protocol across three domains. Recording, trace and issuance always separated.</span>
+      </div>
+      <div class="hero-prop">
+        <strong><span class="inline-tr">Bağlayıcı hazır</span><span class="inline-en">Connector-ready</span></strong>
+        <span class="inline-tr">Gerçek araç, İHA ve robot veri uç noktaları doğrudan bağlanır.</span>
+        <span class="inline-en">Real vehicle, drone, and robot data endpoints plug in directly.</span>
+      </div>
+    </div>
+
+    <div class="hero-cta">
+      <a href="#cta" class="btn-primary">
+        <span class="inline-tr">Doğrulayıcıyı Aç</span>
+        <span class="inline-en">Open the Verifier</span>
+      </a>
+      <a href="#how" class="btn-ghost">
+        <span class="inline-tr">Nasıl Çalışır?</span>
+        <span class="inline-en">How It Works</span>
+      </a>
+    </div>
+
+    <div class="doctrine-note">
+      <span class="inline-tr">Mimari notu: Doğrulayıcı birincil inceleme istasyonudur · Araç, İHA ve Robot tek kanonik model üzerindedir · Golden, ayrı ürün değil; doğrulayıcı sürekliliği için dahili referanstır.</span>
+      <span class="inline-en">Architecture note: The Verifier is the primary inspection station · Vehicle, Drone and Robot share a single canonical model · Golden is not a separate product; it's an internal reference for verifier continuity.</span>
+    </div>
+  </div>
+
+  <!-- HERO RIGHT — LIVE PREVIEW -->
+  <div class="hero-right fade-up">
+    <div class="vp-preview">
+      <div class="vp-topbar">
+        <div class="vp-topbar-dot" style="background:#e8650a"></div>
+        <div class="vp-topbar-dot" style="background:#44464e"></div>
+        <span class="vp-topbar-title">
+          <span class="inline-tr">Mühürlü Yeniden Oluşturma Görünümü</span>
+          <span class="inline-en">Sealed Reconstruction View</span>
+        </span>
+        <span class="vp-topbar-badge">
+          <span class="inline-tr">T₂ — KRİTİK</span>
+          <span class="inline-en">T₂ — CRITICAL</span>
+        </span>
+      </div>
+      <div class="vp-canvas-wrap">
+        <canvas id="hero-canvas"></canvas>
+        <span class="vp-label" style="top:14px;left:14px;">
+          <span class="inline-tr">HÜCRE · GÜVENLİK ZARFI · YAKINLIK</span>
+          <span class="inline-en">WORKCELL · SAFETY ENVELOPE · PROXIMITY</span>
+        </span>
+      </div>
+      <div class="vp-bottom-strip">
+        <div class="vp-stat">
+          <div class="vp-stat-key">ZONE</div>
+          <div class="vp-stat-val orange">SAFE-Z</div>
+        </div>
+        <div class="vp-stat">
+          <div class="vp-stat-key">CONF</div>
+          <div class="vp-stat-val orange">0.82</div>
+        </div>
+        <div class="vp-stat">
+          <div class="vp-stat-key">PHASE</div>
+          <div class="vp-stat-val">T₂</div>
+        </div>
+        <div class="vp-stat">
+          <div class="vp-stat-key">PKT</div>
+          <div class="vp-stat-val" style="font-size:9px">RSF-001</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <span class="doctrine-chip">ROBOT</span>
+      <span class="doctrine-chip" style="color:var(--orange);border-color:rgba(232,101,10,0.4)">
+        <span class="inline-tr">RİSK: YÜKSEK</span>
+        <span class="inline-en">RISK: HIGH</span>
+      </span>
+      <span class="doctrine-chip">
+        <span class="inline-tr">İNCELENMEDİ</span>
+        <span class="inline-en">UNREVIEWED</span>
+      </span>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="section-label">
+    <span class="inline-tr">Nasıl Çalışır</span>
+    <span class="inline-en">How It Works</span>
+  </div>
+  <h2 class="section-title fade-up" data-lang="tr">Tek omurgada kayıt, türetme ve belgeleme — ayrımı bozulmadan</h2>
+  <h2 class="section-title fade-up" data-lang="en">Recording, derivation and documentation on a single spine — separation never breaks</h2>
+  <p class="section-sub fade-up" data-lang="tr">Hasar, vekil, saha ve mühendislik aynı omurgadan çalışsın diye tasarlanmıştır; tanık ile yorumun aynı yüzeyde erimesine izin vermez.</p>
+  <p class="section-sub fade-up" data-lang="en">Designed so that claims, legal, field and engineering work from the same spine — never allowing the witness and interpretation to merge on the same surface.</p>
+
+  <div class="how-grid">
+    <div class="how-card fade-up">
+      <div class="how-num">01</div>
+      <div class="how-title" data-lang="tr">Olay Paketi Oluşturulur</div>
+      <div class="how-title" data-lang="en">Incident Package Is Formed</div>
+      <div class="how-body" data-lang="tr">Sensör, günlük ve operatör bağlamı tek kanonik pakette birleştirilir. Kayıt katmanı ve türetilmiş katman hiçbir zaman aynı nesneye yazılmaz.</div>
+      <div class="how-body" data-lang="en">Sensor data, logs, and operator context are unified into a single canonical package. The recording layer and derived layer are never written to the same object.</div>
+      <div class="how-tags">
+        <span class="how-tag">LiDAR</span><span class="how-tag">IMU</span><span class="how-tag">GPS</span><span class="how-tag">CAN</span>
+      </div>
+    </div>
+    <div class="how-card fade-up">
+      <div class="how-num">02</div>
+      <div class="how-title" data-lang="tr">Doğrulayıcı İstasyonunda İncelenir</div>
+      <div class="how-title" data-lang="en">Inspected in the Verifier Station</div>
+      <div class="how-body" data-lang="tr">Nokta bulutu / LiDAR sahne görünümü etrafında: T₀→T₃ faz okuma, kayıt / türetilmiş / bilinmeyen ayrımı, doğrulama izi ve belge hazırlık durumu.</div>
+      <div class="how-body" data-lang="en">Centered on a point-cloud / LiDAR scene view: T₀→T₃ phase reading, recorded / derived / unknown separation, verification trace and document readiness.</div>
+      <div class="how-tags">
+        <span class="how-tag">T₀ T₁ T₂ T₃</span><span class="how-tag"><span class="inline-tr">Kayıt Katmanı</span><span class="inline-en">Recording Layer</span></span>
+      </div>
+    </div>
+    <div class="how-card fade-up">
+      <div class="how-num">03</div>
+      <div class="how-title" data-lang="tr">Rol Odaklı Belge Çıkarılır</div>
+      <div class="how-title" data-lang="en">Role-Scoped Document Issued</div>
+      <div class="how-body" data-lang="tr">Aynı olay paketi; polis, sigorta, hukuk, teknik ve operatör kabuğuna dönüştürülür. Her kurum yalnızca kendi katmanını okur.</div>
+      <div class="how-body" data-lang="en">The same incident package is rendered into police, insurance, legal, technical, and operator shells. Each institution reads only its own layer.</div>
+      <div class="how-tags">
+        <span class="how-tag"><span class="inline-tr">Polis</span><span class="inline-en">Police</span></span>
+        <span class="how-tag"><span class="inline-tr">Sigorta</span><span class="inline-en">Insurance</span></span>
+        <span class="how-tag"><span class="inline-tr">Hukuk</span><span class="inline-en">Legal</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- DOMAINS -->
+<section id="domain">
+  <div class="section-label">
+    <span class="inline-tr">Tek Omurgadaki Alanlar</span>
+    <span class="inline-en">Domains on One Spine</span>
+  </div>
+  <h2 class="section-title fade-up" data-lang="tr">Araç · Drone · Robot — üç alan, tek protokol</h2>
+  <h2 class="section-title fade-up" data-lang="en">Vehicle · Drone · Robot — three domains, one protocol</h2>
+  <p class="section-sub fade-up" data-lang="tr">Üç alanda aynı protokol; kayıtlı, türetilmiş, iz ve düzenleme ayrımı korunur.</p>
+  <p class="section-sub fade-up" data-lang="en">One protocol across three domains. The separation of recorded, derived, trace, and issuance is always preserved.</p>
+
+  <div class="domain-grid">
+    <div class="domain-card fade-up">
+      <div class="domain-icon">ARC</div>
+      <div class="domain-title" data-lang="tr">Araç</div>
+      <div class="domain-title" data-lang="en">Vehicle</div>
+      <div class="domain-body" data-lang="tr">Şerit / dur çizgisi / geçiş / bordür / nesne alanı / gövde ilişkisi. Hız, ivme, brakaj ve kör nokta kayıt katmanında mühürlüdür.</div>
+      <div class="domain-body" data-lang="en">Lane / stop-line / crossing / curb / object field / body relation. Speed, acceleration, braking and blind-spot sealed in the recording layer.</div>
+      <div class="domain-chain">
+        <span class="chain-step">Event</span><span class="chain-arrow">→</span>
+        <span class="chain-step">Bundle</span><span class="chain-arrow">→</span>
+        <span class="chain-step">Manifest</span>
+      </div>
+    </div>
+    <div class="domain-card fade-up">
+      <div class="domain-icon">UAV</div>
+      <div class="domain-title" data-lang="tr">Drone / İHA</div>
+      <div class="domain-title" data-lang="en">Drone / UAV</div>
+      <div class="domain-body" data-lang="tr">Koridor / irtifa bandı / ihlal sınırı / tel hattı / engel alanı. Uçuş planı sapması ve operatör devralma anı kayıtta mühürlüdür.</div>
+      <div class="domain-body" data-lang="en">Corridor / altitude band / intrusion boundary / wire-line / obstacle field. Flight plan deviation and operator handoff moment sealed in record.</div>
+      <div class="domain-chain">
+        <span class="chain-step">Mission</span><span class="chain-arrow">→</span>
+        <span class="chain-step">Telemetry</span><span class="chain-arrow">→</span>
+        <span class="chain-step">Link</span>
+      </div>
+    </div>
+    <div class="domain-card fade-up">
+      <div class="domain-icon">RBT</div>
+      <div class="domain-title" data-lang="tr">Robot</div>
+      <div class="domain-title" data-lang="en">Robot</div>
+      <div class="domain-body" data-lang="tr">Hücre / güvenlik zarfı / rota koridoru / bariyer / işçi / makine ilişkisi. PLC ve güvenlik zarfı ihlali kayıt katmanında ayrılmıştır.</div>
+      <div class="domain-body" data-lang="en">Workcell / safety envelope / route corridor / barrier / worker / machine relation. PLC and safety envelope violation separated in the recording layer.</div>
+      <div class="domain-chain">
+        <span class="chain-step">Interaction</span><span class="chain-arrow">→</span>
+        <span class="chain-step">Safety</span><span class="chain-arrow">→</span>
+        <span class="chain-step">Handoff</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- ROLES -->
+<section id="roles" style="background:var(--graphite);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="section-label">
+    <span class="inline-tr">Rol Odağı</span>
+    <span class="inline-en">Role Lens</span>
+  </div>
+  <h2 class="section-title fade-up" data-lang="tr">Her kurum kendi katmanını okur</h2>
+  <h2 class="section-title fade-up" data-lang="en">Each institution reads its own layer</h2>
+  <p class="section-sub fade-up" data-lang="tr">Aynı olay paketi, farklı kurumsal okuma kabuklarına dönüştürülür. Katman ayrımı hiçbir zaman bozulmaz.</p>
+  <p class="section-sub fade-up" data-lang="en">The same incident package is rendered into different institutional reading shells. The layer separation is never broken.</p>
+
+  <div class="roles-grid">
+    <div class="role-card fade-up">
+      <div class="role-tag"><span class="inline-tr">Kolluk</span><span class="inline-en">Law Enforcement</span></div>
+      <div class="role-name"><span class="inline-tr">Polis</span><span class="inline-en">Police</span></div>
+      <div class="role-desc" data-lang="tr">Olay kronolojisi, müdahale süresi ve kamu güvenliği protokolü</div>
+      <div class="role-desc" data-lang="en">Incident chronology, response time and public safety protocol</div>
+    </div>
+    <div class="role-card fade-up">
+      <div class="role-tag"><span class="inline-tr">Tazminat</span><span class="inline-en">Claims</span></div>
+      <div class="role-name"><span class="inline-tr">Sigorta</span><span class="inline-en">Insurance</span></div>
+      <div class="role-desc" data-lang="tr">Hasar akışı, teminat incelemesi ve belge zinciri</div>
+      <div class="role-desc" data-lang="en">Damage flow, coverage review and document chain</div>
+    </div>
+    <div class="role-card fade-up">
+      <div class="role-tag"><span class="inline-tr">Hukuk</span><span class="inline-en">Legal</span></div>
+      <div class="role-name"><span class="inline-tr">Muhakeme</span><span class="inline-en">Legal Counsel</span></div>
+      <div class="role-desc" data-lang="tr">Delil zinciri, prosedürel uyum ve hukuki sorumluluk tespiti</div>
+      <div class="role-desc" data-lang="en">Evidence chain, procedural compliance and liability determination</div>
+    </div>
+    <div class="role-card fade-up">
+      <div class="role-tag"><span class="inline-tr">Uzmanlık</span><span class="inline-en">Expert</span></div>
+      <div class="role-name"><span class="inline-tr">Bilirkişi</span><span class="inline-en">Expert Witness</span></div>
+      <div class="role-desc" data-lang="tr">Teknik parametre analizi ve standart sapma değerlendirmesi</div>
+      <div class="role-desc" data-lang="en">Technical parameter analysis and standard deviation assessment</div>
+    </div>
+    <div class="role-card fade-up">
+      <div class="role-tag"><span class="inline-tr">Sistem</span><span class="inline-en">System</span></div>
+      <div class="role-name"><span class="inline-tr">Mühendislik</span><span class="inline-en">Engineering</span></div>
+      <div class="role-desc" data-lang="tr">Sistem bütünlüğü, mekanik uyumluluk ve güvenlik zarfı analizi</div>
+      <div class="role-desc" data-lang="en">System integrity, mechanical compliance and safety envelope analysis</div>
+    </div>
+    <div class="role-card future fade-up">
+      <div class="role-tag"><span class="inline-tr">Yakında</span><span class="inline-en">Coming Soon</span></div>
+      <div class="role-name"><span class="inline-tr">Operatör ↗</span><span class="inline-en">Operator ↗</span></div>
+      <div class="role-desc" data-lang="tr">Araç sahibi / operatör kabuğu — sadeleştirilmiş görünüm</div>
+      <div class="role-desc" data-lang="en">Owner / operator shell — simplified view layer</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- DOCTRINE -->
+<section class="doctrine-section" id="doctrine">
+  <div class="section-label">
+    <span class="inline-tr">Protokol Doktrini</span>
+    <span class="inline-en">Protocol Doctrine</span>
+  </div>
+  <h2 class="section-title fade-up" data-lang="tr">QARAQUTU hüküm vermez. Şahitlik eder.</h2>
+  <h2 class="section-title fade-up" data-lang="en">QARAQUTU does not judge. It witnesses.</h2>
+  <p class="section-sub fade-up" data-lang="tr">Protokol konumu: Doğrulayıcı bir inceleme istasyonudur; zincir disiplinini korur, sorumluluk motoru veya mahkeme ikamesi değildir.</p>
+  <p class="section-sub fade-up" data-lang="en">Protocol position: The Verifier is an inspection station; it preserves chain discipline — it is not a liability engine or a court substitute.</p>
+
+  <div class="doctrine-grid">
+    <div class="doctrine-card fade-up">
+      <div class="doctrine-label"><span class="inline-tr">Ayrım 01</span><span class="inline-en">Separation 01</span></div>
+      <div class="doctrine-statement" data-lang="tr">Kayıtlı ≠ Türetilmiş</div>
+      <div class="doctrine-statement" data-lang="en">Recorded ≠ Derived</div>
+      <div class="doctrine-note-text" data-lang="tr">Sensör ve günlük verisi hiçbir zaman türetilmiş yorumla aynı nesneye yazılmaz. Kayıt katmanı mühürlüdür ve değiştirilemez.</div>
+      <div class="doctrine-note-text" data-lang="en">Sensor and log data are never written to the same object as derived interpretation. The recording layer is sealed and immutable.</div>
+    </div>
+    <div class="doctrine-card fade-up">
+      <div class="doctrine-label"><span class="inline-tr">Ayrım 02</span><span class="inline-en">Separation 02</span></div>
+      <div class="doctrine-statement" data-lang="tr">Türetilmiş ≠ Karar</div>
+      <div class="doctrine-statement" data-lang="en">Derived ≠ Verdict</div>
+      <div class="doctrine-note-text" data-lang="tr">Sistem tarafından hesaplanan çıkarımlar olasılık ile etiketlenir. Karar yetkisi her zaman insan kurumundadır.</div>
+      <div class="doctrine-note-text" data-lang="en">System-computed inferences are labeled with probability. Decision authority always resides with the human institution.</div>
+    </div>
+    <div class="doctrine-card fade-up">
+      <div class="doctrine-label"><span class="inline-tr">Ayrım 03</span><span class="inline-en">Separation 03</span></div>
+      <div class="doctrine-statement" data-lang="tr">Doğrulama İzi ≠ Gerçeğin Kendisi</div>
+      <div class="doctrine-statement" data-lang="en">Verification Trace ≠ Truth Itself</div>
+      <div class="doctrine-note-text" data-lang="tr">İz, inceleme sürecinin nasıl yürütüldüğünü belgelendirir. Olayın nihai gerçekliğini iddia etmez.</div>
+      <div class="doctrine-note-text" data-lang="en">The trace documents how the inspection process was conducted. It makes no claim as to the final reality of the incident.</div>
+    </div>
+    <div class="doctrine-card fade-up">
+      <div class="doctrine-label"><span class="inline-tr">Ayrım 04</span><span class="inline-en">Separation 04</span></div>
+      <div class="doctrine-statement" data-lang="tr">Belge İstimlaki ≠ Suçlama</div>
+      <div class="doctrine-statement" data-lang="en">Artifact Issuance ≠ Blame</div>
+      <div class="doctrine-note-text" data-lang="tr">Rol odaklı belge üretimi, kurumların kendi süreçlerini işletmesini kolaylaştırır. Sorumluluk ataması yapmaz.</div>
+      <div class="doctrine-note-text" data-lang="en">Role-scoped document production facilitates institutional processes. It does not assign responsibility.</div>
+    </div>
+  </div>
+
+  <div class="arch-note fade-up">
+    <div class="arch-note-text" data-lang="tr">
+      <span>→</span>Etkin olay başına tek paket omurgası &nbsp;·&nbsp; <span>→</span>İz kontrolleri belgeler; nihai gerçek iddiası taşımaz &nbsp;·&nbsp; <span>→</span>Kayıtlı ve türetilmiş yüzeyde asla birleştirilmez &nbsp;·&nbsp; <span>→</span>Düzenleme sınırlı artefakt; kusur hükmü değildir
+    </div>
+    <div class="arch-note-text" data-lang="en">
+      <span>→</span>Single package spine per active incident &nbsp;·&nbsp; <span>→</span>Trace controls documents; carries no final truth claim &nbsp;·&nbsp; <span>→</span>Recorded and derived never merged on same surface &nbsp;·&nbsp; <span>→</span>Issuance is a bounded artifact; not a finding of fault
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- STATS -->
+<section class="stats-section">
+  <div class="section-label">
+    <span class="inline-tr">Neden QARAQUTU</span>
+    <span class="inline-en">Why QARAQUTU</span>
+  </div>
+  <h2 class="section-title fade-up" data-lang="tr">Kurumsal ölçekte güvenilirlik için tasarlandı</h2>
+  <h2 class="section-title fade-up" data-lang="en">Designed for institutional-grade reliability</h2>
+
+  <div class="stats-grid">
+    <div class="stat-card fade-up">
+      <div class="stat-num">3</div>
+      <div class="stat-label" data-lang="tr">Desteklenen alan: Araç, Drone, Robot</div>
+      <div class="stat-label" data-lang="en">Supported domains: Vehicle, Drone, Robot</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-num">4</div>
+      <div class="stat-label" data-lang="tr">Zaman fazı: T₀ → T₁ → T₂ → T₃</div>
+      <div class="stat-label" data-lang="en">Time phases: T₀ → T₁ → T₂ → T₃</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-num">6+</div>
+      <div class="stat-label" data-lang="tr">Kurumsal rol kabuğu: Polis, Sigorta, Hukuk...</div>
+      <div class="stat-label" data-lang="en">Institutional role shells: Police, Insurance, Legal...</div>
+    </div>
+    <div class="stat-card fade-up">
+      <div class="stat-num">1</div>
+      <div class="stat-label" data-lang="tr">Kanonik omurga — tüm roller için tek kaynak</div>
+      <div class="stat-label" data-lang="en">Canonical spine — single source for all roles</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="cta-content">
+    <div class="section-label" style="text-align:center">
+      <span class="inline-tr">Pilot için hazır</span>
+      <span class="inline-en">Ready for pilot</span>
+    </div>
+    <h2 class="cta-title fade-up" data-lang="tr">Gerçek olay senaryosuyla bugün başlayın</h2>
+    <h2 class="cta-title fade-up" data-lang="en">Start today with a real incident scenario</h2>
+    <p class="cta-body fade-up" data-lang="tr">QARAQUTU Doğrulayıcı istasyonunu demoyla keşfedin. Araç, İHA veya robot verisi — gerçek veri uç noktası bağlantısı hazır.</p>
+    <p class="cta-body fade-up" data-lang="en">Explore the QARAQUTU Verifier station with a demo. Vehicle, drone, or robot data — real endpoint connectivity is ready.</p>
+    <div class="cta-btns fade-up">
+      <a href="#" class="btn-primary">
+        <span class="inline-tr">Doğrulayıcıyı Aç</span>
+        <span class="inline-en">Open the Verifier</span>
+      </a>
+      <a href="#" class="btn-ghost">
+        <span class="inline-tr">Demo Talebi</span>
+        <span class="inline-en">Request a Demo</span>
+      </a>
+    </div>
+    <div style="margin-top:32px;font-family:var(--mono);font-size:10px;color:var(--text-muted);line-height:2">
+      <span class="inline-tr">Hüküm vermez · Şahitlik eder · AXISUS · USTA · QARAQUTU protokolü</span>
+      <span class="inline-en">Does not judge · It witnesses · AXISUS · USTA · QARAQUTU protocol</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <svg viewBox="0 0 944 202" xmlns="http://www.w3.org/2000/svg">
+        <polygon fill="#FEFEFE" points="2.62,49.07 87.61,98.14 172.59,49.07 87.61,0"/>
+        <polygon fill="#FEFEFE" points="0,54.3 0,152.44 84.99,201.51 84.99,103.37"/>
+        <path fill="#FEFEFE" d="M258.92 152.36l0 -11.63c-11.52,-1.66 -21.05,-6.73 -28.65,-15.26 -7.55,-8.41 -11.31,-18.39 -11.31,-29.98 0,-12.92 4.56,-23.81 13.69,-32.67 9.18,-8.81 20.35,-13.2 33.56,-13.2 13.2,0 24.35,4.39 33.48,13.2 9.18,8.86 13.76,19.74 13.76,32.67 0,11.59 -3.78,21.57 -11.36,29.98 -7.57,8.53 -17.1,13.6 -28.6,15.26l0 11.63 -14.58 0z"/>
+        <polygon fill="#FEFEFE" points="318.11,139.48 350.21,66.02 330.03,66.02 330.03,51.44 366.53,51.44 403.77,139.48 386.25,139.48 379.54,122.94 342.22,122.94 335.49,139.48"/>
+        <path fill="#FEFEFE" d="M416.22 139.48l0 -37.43 -10.47 0 0 -15.42 10.47 0 0 -35.19 43.67 0c9.56,0 16.87,2.34 21.94,6.99 4.77,4.42 7.15,10.56 7.15,18.41 0,14.49 -7.43,22.74 -22.24,24.79l23.41 37.85 -19.25 0 -22.18 -37.43 -16.1 0 0 37.43 -16.4 0z"/>
+        <polygon fill="#FEFEFE" points="494.6,139.48 526.7,66.02 506.51,66.02 506.51,51.44 543.01,51.44 580.26,139.48 562.73,139.48 556.03,122.94 518.71,122.94 511.98,139.48"/>
+        <path fill="#FEFEFE" d="M624.82 152.36l0 -11.64c-11.52,-1.66 -21.05,-6.73 -28.65,-15.26 -7.55,-8.41 -11.31,-18.39 -11.31,-29.98 0,-12.92 4.56,-23.81 13.69,-32.67 9.18,-8.81 20.35,-13.2 33.55,-13.2 13.2,0 24.35,4.39 33.48,13.2 9.18,8.86 13.76,19.74 13.76,32.67 0,11.59 -3.79,21.57 -11.36,29.98 -7.57,8.53 -17.1,13.6 -28.6,15.26l0 11.64 -14.58 0z"/>
+        <path fill="#FEFEFE" d="M693.64 103.59l0 -52.15 16.26 0 0 48.6c0,7.83 2.24,14.14 6.71,18.86 4.25,4.56 9.63,6.85 16.14,6.85 6.52,0 11.99,-2.31 16.43,-6.96 4.28,-4.65 6.43,-10.91 6.43,-18.74l0 -48.6 16.26 0 0 52.15c0,10.44 -3.53,19.28 -10.61,26.5 -7.5,7.48 -16.99,11.22 -28.51,11.22 -11.5,0 -20.96,-3.74 -28.37,-11.22 -7.17,-7.22 -10.75,-16.05 -10.75,-26.5z"/>
+        <path fill="#FEFEFE" d="M762.06 103.59l0 -52.15 16.26 0 0 48.6c0,7.83 2.24,14.14 6.71,18.86 4.25,4.56 9.63,6.85 16.15,6.85 6.52,0 11.99,-2.31 16.43,-6.96 4.28,-4.65 6.42,-10.91 6.42,-18.74l0 -48.6 16.26 0 0 52.15c0,10.44 -3.53,19.28 -10.61,26.5 -7.5,7.48 -16.99,11.22 -28.51,11.22 -11.5,0 -20.96,-3.74 -28.37,-11.22 -7.17,-7.22 -10.75,-16.05 -10.75,-26.5z"/>
+        <path fill="#FEFEFE" d="M830.24 139.48l0 -72.62 -25.8 0 0 -15.42 67.86 0 0 15.42 -25.8 0 0 72.62 -16.26 0z"/>
+        <path fill="#FF6600" d="M865.87 103.59l0 -52.15 16.26 0 0 48.6c0,7.83 2.24,14.14 6.71,18.86 4.25,4.56 9.63,6.85 16.15,6.85 6.52,0 11.99,-2.31 16.43,-6.96 4.28,-4.65 6.42,-10.91 6.42,-18.74l0 -48.6 16.26 0 0 52.15c0,10.44 -3.53,19.28 -10.61,26.5 -7.5,7.48 -16.99,11.22 -28.51,11.22 -11.5,0 -20.96,-3.74 -28.37,-11.22 -7.17,-7.22 -10.75,-16.05 -10.75,-26.5z"/>
+      </svg>
+      <div class="footer-tagline">by AxisUs</div>
+      <div class="footer-doctrine">
+        <div data-lang="tr">Kayıt ≠ Türetilmiş</div>
+        <div data-lang="en">Recorded ≠ Derived</div>
+        <div data-lang="tr">Türetilmiş ≠ Karar</div>
+        <div data-lang="en">Derived ≠ Verdict</div>
+        <div data-lang="tr">İz ≠ Gerçeğin Kendisi</div>
+        <div data-lang="en">Trace ≠ Truth Itself</div>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">
+        <span class="inline-tr">Protokol</span>
+        <span class="inline-en">Protocol</span>
+      </div>
+      <a href="#" class="footer-link"><span class="inline-tr">Doğrulayıcı</span><span class="inline-en">Verifier</span></a>
+      <a href="#" class="footer-link"><span class="inline-tr">Kayıt Katmanı</span><span class="inline-en">Recording Layer</span></a>
+      <a href="#" class="footer-link"><span class="inline-tr">Doğrulama İzi</span><span class="inline-en">Verification Trace</span></a>
+      <a href="#" class="footer-link"><span class="inline-tr">Belgeleme</span><span class="inline-en">Documentation</span></a>
+      <a href="#" class="footer-link"><span class="inline-tr">AXISUS Protokolü</span><span class="inline-en">AXISUS Protocol</span></a>
+    </div>
+    <div>
+      <div class="footer-col-title">
+        <span class="inline-tr">Erişim</span>
+        <span class="inline-en">Access</span>
+      </div>
+      <a href="#" class="footer-link"><span class="inline-tr">Demo Talebi</span><span class="inline-en">Request Demo</span></a>
+      <a href="#" class="footer-link"><span class="inline-tr">Pilot Program</span><span class="inline-en">Pilot Program</span></a>
+      <a href="#" class="footer-link"><span class="inline-tr">Belgeler</span><span class="inline-en">Documents</span></a>
+      <a href="#" class="footer-link"><span class="inline-tr">İletişim</span><span class="inline-en">Contact</span></a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 QARAQUTU by AxisUs. <span class="inline-tr">Tüm hakları saklıdır.</span><span class="inline-en">All rights reserved.</span></span>
+    <span class="footer-protocol">
+      <span class="inline-tr">Hüküm vermez. Şahitlik eder.</span>
+      <span class="inline-en">Does not judge. It witnesses.</span>
+    </span>
+  </div>
+</footer>
+
+<script>
+// LANG SWITCH
+function setLang(lang) {
+  document.body.classList.toggle('en', lang === 'en');
+  document.getElementById('btn-tr').classList.toggle('active', lang === 'tr');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+}
+
+// HERO CANVAS POINT CLOUD
+const canvas = document.getElementById('hero-canvas');
+const ctx = canvas.getContext('2d');
+let tick = 0;
+let pts = [];
+let traces = [];
+
+function resize() {
+  const w = canvas.parentElement;
+  canvas.width = w.offsetWidth;
+  canvas.height = w.offsetHeight;
+  initPts();
+}
+
+function initPts() {
+  pts = [];
+  traces = [];
+  const W = canvas.width, H = canvas.height;
+  const cx = W * 0.5, cy = H * 0.55;
+  const sp = Math.min(W, H) * 0.35;
+  for (let i = 0; i < 200; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = Math.random() * sp;
+    pts.push({
+      x: cx + Math.cos(a) * r * 1.6,
+      y: cy + Math.sin(a) * r * 0.55,
+      d: Math.random()
+    });
+  }
+  for (let t = 0; t < 5; t++) {
+    const a = Math.random() * Math.PI * 2;
+    const len = 50 + Math.random() * 100;
+    traces.push({
+      x1: cx + Math.cos(a) * (30 + Math.random() * 60),
+      y1: cy + Math.sin(a) * (15 + Math.random() * 30),
+      x2: cx + Math.cos(a + 0.4) * (50 + len),
+      y2: cy + Math.sin(a + 0.4) * (25 + len * 0.4)
+    });
+  }
+}
+
+function draw() {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const W = canvas.width, H = canvas.height;
+  const cx = W * 0.5, cy = H * 0.55;
+  const sp = Math.min(W, H) * 0.35;
+  const t = tick * 0.005;
+
+  // grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 0.5;
+  for (let i = -6; i <= 6; i++) {
+    const x = cx + i * W * 0.07;
+    ctx.beginPath(); ctx.moveTo(x, cy - sp * 0.5); ctx.lineTo(cx + (x - cx) * 2.2, cy + sp * 0.7); ctx.stroke();
+  }
+  for (let j = 0; j <= 5; j++) {
+    const frac = j / 5;
+    const yw = sp * 0.5;
+    const yl = cy - yw + frac * yw * 1.7;
+    const xw = sp * 0.45 * (0.3 + frac * 0.8);
+    ctx.beginPath(); ctx.moveTo(cx - xw, yl); ctx.lineTo(cx + xw, yl); ctx.stroke();
+  }
+
+  // safety box
+  const bw = W * 0.26, bh = H * 0.24;
+  ctx.strokeStyle = 'rgba(232,101,10,0.55)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([5, 4]);
+  ctx.strokeRect(cx - bw * 0.5, cy - bh * 0.35, bw, bh);
+  ctx.setLineDash([]);
+  ctx.font = '500 10px IBM Plex Mono, monospace';
+  ctx.fillStyle = 'rgba(232,101,10,0.65)';
+  ctx.textAlign = 'center';
+  ctx.fillText('STOP', cx, cy + bh * 0.1);
+
+  // traces
+  ctx.setLineDash([3, 5]);
+  traces.forEach((tr, i) => {
+    const pulse = 0.3 + 0.15 * Math.sin(t * 2 + i);
+    ctx.strokeStyle = `rgba(78,201,176,${pulse})`;
+    ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(tr.x1, tr.y1); ctx.lineTo(tr.x2, tr.y2); ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  // points
+  pts.forEach((p, i) => {
+    const dx = Math.sin(t * 1.1 + i * 0.12) * 1.0;
+    const dy = Math.cos(t * 0.8 + i * 0.09) * 0.4;
+    const sz = 1.2 + p.d * 2;
+    const al = (0.25 + p.d * 0.65) * 0.8;
+    ctx.fillStyle = p.d > 0.65 ? `rgba(232,101,10,${al})` : p.d > 0.35 ? `rgba(200,85,12,${al * 0.7})` : `rgba(160,70,10,${al * 0.4})`;
+    ctx.beginPath(); ctx.arc(p.x + dx, p.y + dy, sz, 0, Math.PI * 2); ctx.fill();
+  });
+
+  // objects
+  const objs = [
+    {ox: cx - W*0.05, oy: cy - H*0.05, rx:18, ry:8},
+    {ox: cx + W*0.14, oy: cy,            rx:25, ry:10},
+    {ox: cx + W*0.04, oy: cy + H*0.1,   rx:14, ry:6}
+  ];
+  objs.forEach((o, i) => {
+    const pulse = 0.4 + 0.2 * Math.sin(t * 1.6 + i * 1.3);
+    ctx.strokeStyle = `rgba(232,101,10,${pulse})`;
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    ctx.ellipse(o.ox, o.oy + Math.sin(t + i) * 1.2, o.rx, o.ry, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  });
+
+  // sweep
+  const sa = (t * 0.5) % (Math.PI * 2);
+  ctx.strokeStyle = `rgba(232,101,10,${0.1 + 0.06 * Math.sin(t * 2.5)})`;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(sa) * sp * 0.9, cy + Math.sin(sa) * sp * 0.45); ctx.stroke();
+
+  tick++;
+  requestAnimationFrame(draw);
+}
+
+// SCROLL FADE
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+window.addEventListener('load', () => { resize(); draw(); });
+window.addEventListener('resize', resize);
+</script>
+</body>
+</html>
