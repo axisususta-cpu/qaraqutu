@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useLanguage } from "../../lib/LanguageContext";
@@ -22,6 +21,7 @@ import {
   getArtifactProfilesForDomain,
 } from "../../lib/artifact-profiles";
 import { BrandSignatureBand } from "../components/BrandSignatureBand";
+import { FooterBottomRow } from "../components/FooterBottomRow";
 import { LogoPrimary } from "../components/LogoPrimary";
 import { ReconstructionViewport } from "../components/verifier/ReconstructionViewport";
 import { DocumentShell } from "../components/documents/DocumentShell";
@@ -4261,52 +4261,20 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       <footer
         style={{
           gridArea: "foot",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
           padding: "0 16px",
           background: "#0c0d10",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          gap: "12px",
-          minWidth: 0,
           overflow: "hidden",
         }}
       >
-        <span
-          style={{
-            fontFamily: MONO,
-            fontSize: "0.56rem",
-            letterSpacing: "0.1em",
-            color: "rgba(255,255,255,0.32)",
-            flexShrink: 0,
-          }}
-        >
-          QARAQUTU by AxisUS
-        </span>
-        <span
-          style={{
-            fontFamily: MONO,
-            fontSize: "0.56rem",
-            color: "rgba(255,255,255,0.32)",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            minWidth: 0,
-            textAlign: "center",
-            flex: "1 1 auto",
-          }}
-        >
-          {language === "tr" ? "Tek zincir · role bağlı kabuk" : "One chain · role-scoped shells"}
-        </span>
-        <Image
-          src="/brand/logo_qaraqutu.svg"
-          alt="QARAQUTU verifier bottom bar logo"
-          aria-label="QARAQUTU verifier bottom bar logo"
-          width={132}
-          height={28}
-          priority
-          unoptimized
-          style={{ height: 14, width: "auto", opacity: 0.5, flexShrink: 0 }}
+        <FooterBottomRow
+          extraRight={(
+            <img
+              src="/brand/logo_qaraqutu.svg"
+              alt="QARAQUTU verifier bottom bar logo"
+              aria-label="QARAQUTU verifier bottom bar logo"
+              style={{ height: 14, width: "auto", opacity: 0.5, display: "block", flexShrink: 0 }}
+            />
+          )}
         />
       </footer>
     </div>
