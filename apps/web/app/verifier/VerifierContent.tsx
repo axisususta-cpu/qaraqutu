@@ -1353,17 +1353,20 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       style={{
         ...VERIFIER_SURFACE_VARS,
         minHeight: "100vh",
-        background:
-          "linear-gradient(180deg, rgba(255,102,0,0.045), transparent 18%), radial-gradient(circle at 80% 11%, rgba(255,102,0,0.06), transparent 34%), radial-gradient(circle at 14% 86%, rgba(255,255,255,0.025), transparent 38%), var(--bg)",
+        background: "var(--bg)",
         color: "var(--text)",
         fontFamily: SANS,
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        display: "grid",
+        gridTemplateRows: `${CH.topNavPx}px 1fr`,
+        gridTemplateColumns: `${CH.spinePx}px 1fr`,
+        gridTemplateAreas: `"hdr hdr" "nav main"`,
+        overflow: "hidden",
       }}
     >
       <header
         style={{
-          position: "sticky",
-          top: 0,
+          gridArea: "hdr",
           zIndex: 40,
           height: CH.topNavPx,
           borderBottom: "1px solid var(--border-strong)",
@@ -1488,27 +1491,24 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         style={{
           position: "relative",
           zIndex: 0,
-          display: "grid",
-          gridTemplateColumns: `${CH.spinePx}px minmax(0, 1fr)`,
+          gridArea: "nav",
+          display: "flex",
+          flexDirection: "column",
           alignItems: "stretch",
-          minHeight: `calc(100vh - ${CH.topNavPx}px)`,
+          borderRight: "1px solid var(--border)",
+          borderBottom: "1px solid var(--border)",
+          background: "#161820",
+          overflowY: "auto",
+          overflowX: "hidden",
         }}
       >
           <aside
             style={{
-              position: "sticky",
-              top: CH.topNavPx,
               zIndex: 20,
-              height: `calc(100vh - ${CH.topNavPx}px)`,
-              minHeight: `calc(100vh - ${CH.topNavPx}px)`,
-              alignSelf: "start",
               display: "flex",
               flexDirection: "column",
-              borderRight: "1px solid var(--border)",
-              borderBottom: "1px solid var(--border)",
-              background: "#161820",
-              overflowY: "auto",
-              overflowX: "hidden",
+              flex: 1,
+              overflow: "hidden",
             }}
             aria-label={language === "tr" ? "Komut omurgası" : "Command spine"}
           >
@@ -2145,11 +2145,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               position: "relative",
               zIndex: 1,
               minWidth: 0,
-              borderLeft: "1px solid var(--border-soft)",
+              gridArea: "main",
               background: workstationLive
                 ? "linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.16) 22%, rgba(255,102,0,0.14) 44%, var(--panel))"
                 : "var(--panel)",
-              maxHeight: `calc(100vh - ${CH.topNavPx}px)`,
+              display: "flex",
+              flexDirection: "column",
               overflowY: "auto",
             }}
           >
