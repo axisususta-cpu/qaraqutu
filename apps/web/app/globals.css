@@ -226,7 +226,7 @@ body {
     max-height: none !important;
     overflow: visible !important;
   }
-  .verifier-chassis-grid > main {
+  .verifier-chassis-grid ~ main {
     position: static !important;
     z-index: auto !important;
     max-height: none !important;
@@ -236,7 +236,7 @@ body {
     position: static !important;
     z-index: auto !important;
   }
-  .verifier-chassis-grid > main [aria-label="İnceleme sekmeleri"] {
+  .verifier-chassis-grid ~ main [aria-label="İnceleme sekmeleri"] {
     position: relative !important;
     z-index: 1 !important;
     isolation: isolate;

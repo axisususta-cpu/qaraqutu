@@ -20,7 +20,6 @@ import {
   getArtifactProfile,
   getArtifactProfilesForDomain,
 } from "../../lib/artifact-profiles";
-import { LogoPrimary } from "../components/LogoPrimary";
 import { BrandSignatureBand } from "../components/BrandSignatureBand";
 import { ReconstructionViewport } from "../components/verifier/ReconstructionViewport";
 import { DocumentShell } from "../components/documents/DocumentShell";
@@ -59,24 +58,42 @@ const INNER_TILE_PAD = "0.38rem 0.5rem";
 const INNER_TILE_PAD_COMPACT = "0.3rem 0.44rem";
 
 const CH = { spinePx: 220, topNavPx: 44 } as const;
+const PX = {
+  headerPadX: 16,
+  headerGap: 16,
+  navSectionPad: "12px 14px 8px",
+  navRowPad: "8px 14px",
+  incidentPad: "10px 16px",
+  rolePad: "8px 16px",
+  tabPadX: 16,
+  phasePadX: 16,
+  rightBlockPad: "12px 14px",
+  evidencePad: "10px 12px",
+} as const;
 const VERIFIER_SURFACE_VARS = {
-  "--bg": "#080a0f",
-  "--header-bg": "#101520",
-  "--panel": "#131a22",
-  "--panel-raised": "#1b2430",
-  "--panel-card": "#222d3d",
-  "--surface": "rgba(255, 102, 0, 0.18)",
-  "--text": "#e9e5df",
-  "--text-soft": "#cabfb8",
-  "--text-muted": "#9f9992",
-  "--text-dim": "#78736f",
-  "--border": "#2a303a",
-  "--border-soft": "#222a34",
-  "--border-muted": "#1c222a",
-  "--border-strong": "#4d5765",
-  "--accent": "#FF6600",
-  "--accent-soft": "rgba(255, 102, 0, 0.20)",
-  "--accent-border": "#d66200",
+  "--bg": "#0e0f11",
+  "--header-bg": "#161820",
+  "--panel": "#161820",
+  "--panel-raised": "#1c1e24",
+  "--panel-card": "#1c1e24",
+  "--surface": "#1c1e24",
+  "--surface2": "#22252e",
+  "--surface3": "#2a2d38",
+  "--text": "#e8e6e0",
+  "--text-primary": "#e8e6e0",
+  "--text-soft": "#8a8880",
+  "--text-secondary": "#8a8880",
+  "--text-muted": "#4a4c52",
+  "--text-dim": "#4a4c52",
+  "--border": "rgba(255,255,255,0.07)",
+  "--border-soft": "rgba(255,255,255,0.07)",
+  "--border-muted": "rgba(255,255,255,0.07)",
+  "--border-strong": "rgba(255,255,255,0.12)",
+  "--accent": "#e8650a",
+  "--accent-soft": "rgba(232,101,10,0.15)",
+  "--accent-border": "rgba(232,101,10,0.3)",
+  "--warning": "#c07a10",
+  "--orange-glow": "rgba(232,101,10,0.08)",
 } as CSSProperties;
 
 type TranscriptStep = VerificationTranscriptEntry;
@@ -767,7 +784,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const [selectedRoleLens, setSelectedRoleLens] = useState<RoleLensId>("insurance");
   const [selectedPhase, setSelectedPhase] = useState<"t0" | "t1" | "t2" | "t3">("t2");
   const [expandedUniverse, setExpandedUniverse] = useState<MockSystemId>(selectedSystem);
-  const [activeSpineSection, setActiveSpineSection] = useState<string>("source");
+  const [activeSpineSection, setActiveSpineSection] = useState<string>("");
   type ReviewTabId = "scene" | "recorded" | "derived" | "unknownDisputed" | "transcript" | "issuance";
   const [activeReviewTab, setActiveReviewTab] = useState<ReviewTabId>("scene");
   const [events, setEvents] = useState<CanonicalEvent[]>([]);
@@ -800,6 +817,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     null
   );
   const [exportError, setExportError] = useState<string | null>(null);
+  const [accessGateConfigured, setAccessGateConfigured] = useState<boolean | null>(null);
   const [issuanceAudience, setIssuanceAudience] = useState<InstitutionAudienceId>(
     DEFAULT_AUDIENCE_BY_PROFILE.claims
   );
@@ -899,6 +917,18 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const selectedPackage = displayEvents.find((e) => e.eventId === selectedEventId) ?? null;
 
   useEffect(() => {
+    if (initialEventId || selectedSource !== "demo_archive" || selectedScenario) return;
+    const firstScenario = DEMO_PACKAGES.find((pkg) => pkg.system === selectedSystem)?.scenarioClass ?? null;
+    if (firstScenario) setSelectedScenario(firstScenario);
+  }, [initialEventId, selectedScenario, selectedSource, selectedSystem]);
+
+  useEffect(() => {
+    if (initialEventId || selectedSource !== "demo_archive" || !selectedScenario || displayEvents.length === 0) return;
+    if (selectedEventId && displayEvents.some((eventCard) => eventCard.eventId === selectedEventId)) return;
+    handleSelectEvent(displayEvents[0].eventId);
+  }, [displayEvents, initialEventId, selectedEventId, selectedScenario, selectedSource]);
+
+  useEffect(() => {
     if (selectedCase?.incidentSpine?.phases?.length) {
       const phaseOptions = selectedCase.incidentSpine.phases.map((p) => p.phase);
       if (phaseOptions.includes(selectedPhase)) return;
@@ -932,6 +962,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     : (selected?.manifestId ?? selectedEventCard?.manifestId ?? "—");
   const visibleRecorded = selectedCase?.recordedEvidence?.length
     ? toRecordedRows(selectedCase.recordedEvidence, language)
+    : [];
+  const visibleDerived = selectedCase?.derivedAssessment?.length
+    ? toDerivedRows(selectedCase.derivedAssessment, language)
     : [];
   const visibleUnknownItems = getVisibleUnknownItems(
     selectedCase?.caseId,
@@ -977,30 +1010,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const canUseLocalPreviewFallbackArtifact =
     typeof window !== "undefined" &&
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-  const issuedArtifact: IssuanceRecord | null =
-    lastIssuedArtifact ??
-    (canUseLocalPreviewFallbackArtifact &&
-    verificationState === "UNVERIFIED" &&
-    (transcript?.some((s) => s.check === "local_preview_fallback") ||
-      identity?.manifest_id?.includes("LOCAL-PREVIEW"))
-      ? {
-          format: "pdf",
-          localPreview: true,
-          previewReason: "upstream_unreachable",
-          meta: {
-            export_id: `LOCAL-PREVIEW-${(selectedId ?? "EVENT").replace(/[^A-Z0-9-]/gi, "").slice(0, 24)}`,
-            receipt_id: `LPR-${(selectedId ?? "EVENT").slice(-8).toUpperCase()}`,
-            event_id: identity?.event_id ?? selectedId ?? "LOCAL-PREVIEW-EVENT",
-            bundle_id: identity?.bundle_id ?? "LOCAL-PREVIEW-BUNDLE",
-            manifest_id: identity?.manifest_id ?? "LOCAL-PREVIEW-MANIFEST",
-            verification_state: "UNVERIFIED",
-            export_profile: exportProfile,
-            export_purpose: selectedPurpose,
-            schema_version: "preview.local.v1",
-            download_url: "#local-preview",
-          },
-        }
-      : null);
+  /**
+   * issuedArtifact: only reflects an artifact explicitly produced by user action
+   * (runExport / runVerification). No silent auto-construction.
+   */
+  const issuedArtifact: IssuanceRecord | null = lastIssuedArtifact;
 
   const msg = MSG[language];
   const selectedRoleLensMeta =
@@ -1014,6 +1028,63 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     software: [selectedRoleLensMeta.primaryOutputTr, "Telemetri izi", "Sürüm etkisi", "Karar akış izi"],
     engineering: [selectedRoleLensMeta.primaryOutputTr, "Sensör/aktüatör bağı", "Mekansal vektör", "Sınır koşulları"],
   };
+
+  const evidenceRecordedBandItems = (
+    visibleRecorded.length > 0
+      ? visibleRecorded.map((item) => `${item.source} · ${item.referenceId}`)
+      : [
+          language === "tr"
+            ? `Paket kimliği · ${selectedEventCard?.eventId ?? "DEMO-PACKAGE-PENDING"}`
+            : `Package identity · ${selectedEventCard?.eventId ?? "DEMO-PACKAGE-PENDING"}`,
+          language === "tr"
+            ? `Bağ kimliği · ${bundleAnchorId}`
+            : `Bundle link · ${bundleAnchorId}`,
+          language === "tr"
+            ? `Manifest · ${manifestAnchorId}`
+            : `Manifest · ${manifestAnchorId}`,
+          language === "tr"
+            ? `Kaynak durum · ${selectedSource}`
+            : `Source status · ${selectedSource}`,
+        ]
+  ).slice(0, 4);
+
+  const evidenceDerivedBandItems = (
+    visibleDerived.length > 0
+      ? visibleDerived.map((item) => `${item.type} · ${item.confidence}`)
+      : [
+          language === "tr"
+            ? `Faz okuması · ${selectedPhaseSpec ? phaseUiLabel(selectedPhaseSpec.phase, language) : phaseUiLabel(selectedPhase, language)}`
+            : `Phase reading · ${selectedPhaseSpec ? phaseUiLabel(selectedPhaseSpec.phase, language) : phaseUiLabel(selectedPhase, language)}`,
+          language === "tr"
+            ? `Duruş · ${selectedPhaseSpec ? phasePostureLabel(selectedPhaseSpec.verification.posture, language) : "Bekliyor"}`
+            : `Posture · ${selectedPhaseSpec ? phasePostureLabel(selectedPhaseSpec.verification.posture, language) : "Pending"}`,
+          language === "tr"
+            ? `Rol etkisi · ${selectedRoleLensMeta.tr}`
+            : `Role impact · ${selectedRoleLensMeta.en}`,
+          language === "tr"
+            ? `Belge ailesi · ${selectedProfileLabel}`
+            : `Document family · ${selectedProfileLabel}`,
+        ]
+  ).slice(0, 4);
+
+  const evidenceUnknownBandItems = (
+    visibleUnknownItems.length > 0
+      ? visibleUnknownItems
+      : [
+          language === "tr"
+            ? "Açık husus · insan gözden geçirme bekleniyor"
+            : "Open issue · awaiting human review",
+          language === "tr"
+            ? "İtiraz penceresi · doğrulama izi ile birlikte"
+            : "Dispute window · paired with verification trace",
+          language === "tr"
+            ? "Sınır notu · kayıtlı ve türetilmiş ayrımı korunur"
+            : "Boundary note · recorded/derived separation preserved",
+          language === "tr"
+            ? "Nihai hüküm yok · protokol yüzeyi"
+            : "No final verdict · protocol surface",
+        ]
+  ).slice(0, 4);
 
   function professionalScenarioLabel(name: string) {
     if (language === "tr") return PROFESSIONAL_SCENARIO_LABELS_TR[name] ?? name;
@@ -1283,11 +1354,24 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         !successPayload.manifest_id
       ) {
         setIssuanceState("error");
-        setExportError(errorPayload.error ?? `Export failed (HTTP ${res.status})`);
+        const rawError = errorPayload.error ?? `Export failed (HTTP ${res.status})`;
+        if (rawError === "ACCESS_GATE_NOT_CONFIGURED") {
+          setAccessGateConfigured(false);
+          setExportError(
+            language === "tr"
+              ? "Erişim kapısı yapılandırılmamış — belge üretimi için QARAQUTU_ACCESS_TOKEN ortam değişkeni gerekli."
+              : "Access gate not configured — QARAQUTU_ACCESS_TOKEN environment variable required for document issuance."
+          );
+        } else {
+          setExportError(rawError);
+        }
         return;
       }
 
       const meta = successPayload as ExportArtifactResponse;
+      if (isLocalPreview && successPayload.preview_reason === "access_gate_not_configured") {
+        setAccessGateConfigured(false);
+      }
       setIssuanceState("success");
       setLastIssuedAtIso(new Date().toISOString());
       setLastIssuedArtifact({
@@ -1346,16 +1430,45 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     !canResetVerificationRun || loading || !!exportLoading;
   const isPackageSelected = Boolean(selectedId);
   const isVerificationReady = Boolean(verificationState || verifyIdentityMatchesSelection);
+
+  /** Export availability — truthful reflection of backend reachability */
+  type ExportAvailability = "export_ready" | "preview_only" | "access_required" | "backend_unavailable";
+  const exportAvailability: ExportAvailability =
+    accessGateConfigured === false
+      ? "access_required"
+      : hasConnectedApiIssuanceProfile
+      ? "export_ready"
+      : canUseLocalPreviewFallbackArtifact
+      ? "preview_only"
+      : "backend_unavailable";
+  const canExport = exportAvailability === "export_ready";
+  const exportDisabledReason: string | null =
+    exportAvailability === "access_required"
+      ? language === "tr"
+        ? "Erişim kapısı yapılandırılmamış — QARAQUTU_ACCESS_TOKEN gerekli"
+        : "Access gate not configured — QARAQUTU_ACCESS_TOKEN required"
+      : exportAvailability === "backend_unavailable"
+      ? language === "tr"
+        ? "API bağlantısı yok"
+        : "No API connection"
+      : exportAvailability === "preview_only"
+      ? language === "tr"
+        ? "Yalnızca önizleme — backend bağlantısı yok"
+        : "Preview only — no backend connection"
+      : null;
+
   const workstationLive = Boolean(selectedEventCard);
 
   return (
     <div
       style={{
         ...VERIFIER_SURFACE_VARS,
-        minHeight: "100vh",
+        height: "100vh",
         background: "var(--bg)",
         color: "var(--text)",
         fontFamily: SANS,
+        fontSize: "12px",
+        lineHeight: 1.4,
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
         display: "grid",
         gridTemplateRows: `${CH.topNavPx}px 1fr`,
@@ -1373,110 +1486,103 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           background: "#161820",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
-          gap: "0.55rem",
-          padding: "0 0.72rem 0 0.68rem",
+          gap: `${PX.headerGap}px`,
+          padding: `0 ${PX.headerPadX}px`,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", minWidth: 0, flex: "1 1 auto" }}>
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              padding: "0.12rem 0.4rem",
-              border: "1px solid var(--accent-border)",
-              borderRadius: 0,
-              background: "rgba(255,102,0,0.08)",
-            }}
-          >
-            <LogoPrimary href="/" height={16} variant="onDarkSurface" />
-          </span>
-          <div style={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-            <Link
-              href="/verifier"
-              style={{
-                fontFamily: MONO,
-                fontSize: "0.62rem",
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                color: "var(--text-secondary)",
-                textDecoration: "none",
-                fontWeight: 700,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {msg.verifierInspection}
-            </Link>
-            <span style={{ fontFamily: MONO, fontSize: "0.54rem", letterSpacing: "0.12em", color: "var(--text-dim)", textTransform: "uppercase" }}>
-              {language === "tr" ? "İnceleme istasyonu" : "Inspection station"}
-            </span>
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexShrink: 0 }}>
+        <span
+          style={{
+            fontFamily: MONO,
+            fontSize: "13px",
+            fontWeight: 600,
+            color: "var(--accent)",
+            letterSpacing: "0.12em",
+            border: "1px solid var(--accent)",
+            padding: "3px 8px",
+            flexShrink: 0,
+            textTransform: "uppercase",
+          }}
+        >
+          Qaraqutu
+        </span>
+        <span
+          style={{
+            fontFamily: MONO,
+            fontSize: "10px",
+            color: "var(--text-secondary)",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            flexShrink: 0,
+          }}
+        >
+          {language === "tr" ? "İnceleme İstasyonu" : "Inspection Station"}
+        </span>
+        <span style={{ width: 1, height: 20, background: "var(--border-strong)", flexShrink: 0 }} />
+        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "10px", overflow: "hidden", minWidth: 0 }}>
+          <span style={{ fontFamily: MONO, fontSize: "11px", color: "var(--text-secondary)", flexShrink: 0 }}>PKT:</span>
           <span
             style={{
               fontFamily: MONO,
-              fontSize: "0.56rem",
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: workstationLive ? "var(--accent)" : "var(--text-dim)",
-              padding: "0.16rem 0.38rem",
-              border: `1px solid ${workstationLive ? "var(--accent-border)" : "var(--border)"}`,
-              background: workstationLive ? "var(--accent-soft)" : "var(--panel)",
-              borderRadius: 0,
+              fontSize: "11px",
+              color: "var(--text-primary)",
+              fontWeight: 500,
               whiteSpace: "nowrap",
-            }}
-          >
-            {workstationLive ? "İstasyon aktif" : "İstasyon hazır"}
-          </span>
-          <span
-            style={{
-              fontFamily: MONO,
-              fontSize: "0.6rem",
-              letterSpacing: "0.11em",
-              textTransform: "uppercase",
-              color: "var(--text-dim)",
-              padding: "0.16rem 0.34rem",
-              border: "1px solid var(--border)",
-              background: "var(--panel)",
-              borderRadius: 0,
-              maxWidth: 160,
               overflow: "hidden",
               textOverflow: "ellipsis",
+            }}
+          >
+            {selectedEventCard?.eventId ?? "DEMO-PACKAGE-PENDING"} · {selectedEventCard?.title ?? (language === "tr" ? "Paket seçimi bekleniyor" : "Package selection pending")}
+          </span>
+          <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", border: "1px solid rgba(122,173,232,0.4)", color: "#7aade8", background: "rgba(122,173,232,0.08)", textTransform: "uppercase" }}>{selectedSystem}</span>
+          <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", border: "1px solid rgba(232,101,10,0.4)", color: "var(--accent)", background: "var(--accent-soft)", textTransform: "uppercase" }}>{selectedPackage?.severity === "high" ? (language === "tr" ? "RİSK: YÜKSEK" : "RISK: HIGH") : selectedPackage?.severity === "medium" ? (language === "tr" ? "RİSK: ORTA" : "RISK: MEDIUM") : (language === "tr" ? "RİSK: DÜŞÜK" : "RISK: LOW")}</span>
+          <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", border: "1px solid var(--border-strong)", color: "var(--text-secondary)", textTransform: "uppercase" }}>{displayedReviewState}</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+          <span
+            style={{
+              fontFamily: MONO,
+              fontSize: "9px",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              color: workstationLive ? "#5fc87a" : "var(--text-dim)",
+              padding: "1px 5px",
+              border: `1px solid ${workstationLive ? "rgba(95,200,122,0.4)" : "var(--border)"}`,
+              background: workstationLive ? "rgba(95,200,122,0.08)" : "var(--panel)",
+              borderRadius: 0,
               whiteSpace: "nowrap",
             }}
-            title={hasConnectedApiIssuanceProfile ? `${selectedSystem.toUpperCase()} · ${selectedProfileLabel}` : selectedSystem.toUpperCase()}
           >
-            {hasConnectedApiIssuanceProfile
-              ? `${selectedSystem.toUpperCase()} · ${selectedProfileLabel}`
-              : selectedSystem.toUpperCase()}
+            {workstationLive ? (language === "tr" ? "İstasyon Aktif" : "Station Active") : (language === "tr" ? "İstasyon Hazır" : "Station Ready")}
           </span>
           <div
             style={{
               display: "inline-flex",
               borderRadius: 0,
-              border: "1px solid var(--border)",
+              border: "1px solid var(--border-strong)",
               overflow: "hidden",
             }}
             role="group"
             aria-label="Language"
           >
-            {(["tr", "en"] as const).map((l) => (
+            {(["tr", "en", "lt"] as const).map((l) => (
               <button
                 key={l}
                 type="button"
-                onClick={() => setLanguage(l)}
+                onClick={() => {
+                  if (l === "tr" || l === "en") setLanguage(l);
+                }}
                 style={{
-                  padding: "0.14rem 0.34rem",
+                  fontSize: "9px",
+                  padding: "3px 7px",
                   background: language === l ? "var(--accent-soft)" : "transparent",
                   color: language === l ? "var(--accent)" : "var(--text-muted)",
                   border: "none",
-                  cursor: "pointer",
+                  cursor: l === "lt" ? "default" : "pointer",
                   fontFamily: MONO,
-                  fontSize: "0.62rem",
                   fontWeight: language === l ? 700 : 500,
-                  letterSpacing: "0.08em",
+                  letterSpacing: "0.1em",
                   textTransform: "uppercase",
+                  opacity: l === "lt" ? 0.65 : 1,
                 }}
               >
                 {l}
@@ -1496,7 +1602,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           flexDirection: "column",
           alignItems: "stretch",
           borderRight: "1px solid var(--border)",
-          borderBottom: "1px solid var(--border)",
           background: "#161820",
           overflowY: "auto",
           overflowX: "hidden",
@@ -1508,91 +1613,71 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               display: "flex",
               flexDirection: "column",
               flex: 1,
-              overflow: "hidden",
+              overflowY: "auto",
+              overflowX: "hidden",
             }}
             aria-label={language === "tr" ? "Komut omurgası" : "Command spine"}
           >
-            {/* Sidebar header */}
+            {/* Sidebar header — canonical nav-section */}
             <div
               style={{
-                padding: "0.48rem 0.6rem",
+                padding: "12px 14px 8px",
+                fontFamily: MONO,
+                fontSize: "9px",
+                color: "var(--text-dim)",
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
                 borderBottom: "1px solid var(--border)",
-                background: "#141518",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
               }}
             >
-              <span
-                style={{
-                  fontFamily: MONO,
-                  fontSize: "0.62rem",
-                  letterSpacing: "0.18em",
-                  color: "var(--text-dim)",
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                }}
-              >
-                {language === "tr" ? "Komut Omurgası" : "Command Spine"}
-              </span>
-              <span
-                style={{
-                  fontFamily: MONO,
-                  fontSize: "0.62rem",
-                  color: "var(--text-dim)",
-                  letterSpacing: "0.04em",
-                }}
-              >
-                {language === "tr" ? "1→2→3→4" : "1→2→3→4"}
-              </span>
+              {language === "tr" ? "Komut Omurgası" : "Command Spine"}
             </div>
 
-            {/* Workflow hint */}
+            {/* Workflow hint — canonical nav-item row */}
             <div
               style={{
-                margin: "0.34rem 0.42rem",
-                padding: "0.28rem 0.42rem",
-                background: "#1a1c21",
-                border: "1px solid var(--border)",
-                borderLeft: "2px solid var(--accent)",
-                borderRadius: 0,
+                padding: "8px 14px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                borderBottom: "1px solid var(--border)",
               }}
               role="status"
               aria-live="polite"
             >
-              <div
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--text-dim)", flexShrink: 0 }} />
+              <span
                 style={{
                   fontFamily: MONO,
-                  fontSize: "0.62rem",
-                  fontWeight: 500,
-                  letterSpacing: "0.08em",
-                  color: "var(--text-muted)",
-                  lineHeight: 1.35,
+                  fontSize: "9px",
+                  color: "var(--text-dim)",
+                  lineHeight: 1.4,
                 }}
               >
                 {language === "tr"
-                  ? "1 KAYNAK → 2 AİLE → 3 SINIF → 4 PAKET"
-                  : "1 SOURCE → 2 FAMILY → 3 CLASS → 4 PACKAGE"}
-              </div>
+                  ? "1 Kaynak → 2 Aile → 3 Sınıf → 4 Paket"
+                  : "1 Source → 2 Family → 3 Class → 4 Package"}
+              </span>
             </div>
 
             <div
               style={{
                 overflow: "visible",
+                flex: 1,
               }}
             >
-            <div style={{ padding: "0 0.5rem 0.58rem" }}>
             <div
               style={{
                 fontFamily: MONO,
-                fontSize: "0.62rem",
+                fontSize: "9px",
                 letterSpacing: "0.18em",
                 color: "var(--text-dim)",
-                fontWeight: 700,
-                margin: "0 0.15rem 0.4rem",
+                textTransform: "uppercase",
+                padding: "12px 14px 8px",
+                borderBottom: "1px solid var(--border)",
               }}
             >
-              {language === "tr" ? "SEÇİM" : "SELECT"}
+              {language === "tr" ? "Seçim" : "Select"}
             </div>
             {[
               {
@@ -1603,353 +1688,186 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               {
                 id: "family",
                 step: 2,
-                label: language === "tr" ? "Cihaz ailesi" : "Device family",
+                label: language === "tr" ? "Cihaz Ailesi" : "Device Family",
               },
               {
                 id: "scenario",
                 step: 3,
-                label: language === "tr" ? "Olay sınıfı" : "Incident class",
+                label: language === "tr" ? "Olay Sınıfı" : "Incident Class",
               },
               {
                 id: "event",
                 step: 4,
-                label: language === "tr" ? "Olay paketi" : "Event package",
+                label: language === "tr" ? "Olay Paketi" : "Event Package",
               },
             ].map((section) => {
               const isActive = activeSpineSection === section.id;
-              const isStep = section.step != null;
               return (
                 <div key={section.id}>
                   <div
                     style={{
-                      marginBottom: "0.14rem",
-                      borderRadius: 0,
-                      border: "1px solid",
-                      borderColor: isActive ? "var(--accent-border)" : "var(--border)",
-                      background: isActive ? "var(--surface)" : "transparent",
+                      padding: "8px 14px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      cursor: "pointer",
+                      borderBottom: "1px solid var(--border)",
+                      background: isActive ? "var(--accent-soft)" : "transparent",
                       borderLeft: isActive
-                        ? "4px solid var(--accent)"
-                        : isStep
-                        ? "2px solid var(--border-muted)"
+                        ? "2px solid var(--accent)"
                         : "2px solid transparent",
+                      transition: "background 0.15s",
                     }}
-                  >
-                  <button
-                    type="button"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => {
                       setActiveSpineSection((prev) => (prev === section.id ? "" : section.id));
                     }}
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "0.34rem 0.52rem",
-                      background: "transparent",
-                      border: "none",
-                      color: isActive ? "var(--text)" : "var(--text-muted)",
-                      fontSize: "0.83rem",
-                      fontWeight: isActive ? 600 : 500,
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      cursor: "pointer",
-                      fontFamily: SANS,
-                    }}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setActiveSpineSection((prev) => (prev === section.id ? "" : section.id)); } }}
                   >
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: isActive ? "var(--accent)" : "var(--text-dim)", flexShrink: 0 }} />
                     <span
                       style={{
-                        flex: 1,
-                        minWidth: 0,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.4rem",
-                      }}
-                    >
-                      {section.step != null && (
-                        <span style={{ fontFamily: MONO, fontSize: "0.7rem", color: isActive ? "var(--accent)" : "var(--text-dim)", fontWeight: 700, flexShrink: 0 }}>
-                          {section.step}
-                        </span>
-                      )}
-                      {section.label}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "0.74rem",
-                        color: "var(--text-dim)",
-                        fontWeight: 700,
                         fontFamily: MONO,
-                        flexShrink: 0,
+                        fontSize: "10px",
+                        color: isActive ? "var(--accent)" : "var(--text-secondary)",
+                        flex: 1,
                       }}
                     >
-                      {isActive ? "▾" : "▸"}
+                      {section.step} {section.label}
                     </span>
-                  </button>
-                  {isActive && (
-                    <div
+                    <span
                       style={{
-                        padding: "0.46rem 0.56rem 0.58rem",
-                        borderTop: `1px solid ${"var(--border-muted)"}`,
-                        fontSize: "0.86rem",
+                        fontFamily: MONO,
+                        fontSize: "9px",
+                        color: "var(--text-dim)",
                       }}
                     >
-                      {section.id === "source" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                          {SOURCE_CHANNELS.map((src) => {
-                            const isSelected = selectedSource === src.id;
-                            const isOpen = activeSourcePanel === src.id;
-                            return (
-                              <div key={src.id} style={{ border: "1px solid var(--border)", background: "var(--panel-card)" }}>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setActiveSourcePanel((prev) => (prev === src.id ? "demo_archive" : src.id));
-                                    setSelectedSource(src.id);
-                                  }}
-                                  style={{
-                                    width: "100%",
-                                    padding: "0.35rem 0.5rem",
-                                    textAlign: "left",
-                                    border: "none",
-                                    borderLeft: isSelected ? "2px solid var(--accent)" : "2px solid transparent",
-                                    background: isSelected ? "var(--accent-soft)" : "transparent",
-                                    color: "var(--text)",
-                                    cursor: "pointer",
-                                    fontSize: "0.9rem",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "space-between",
-                                    gap: "0.4rem",
-                                  }}
-                                >
-                                  <span>{language === "tr" ? src.tr : src.en}</span>
-                                  <span style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)" }}>
-                                    {(language === "tr" ? src.badgeTr : src.badgeEn) + (isOpen ? " ▾" : " ▸")}
-                                  </span>
-                                </button>
-                                {isOpen ? (
-                                  <div style={{ borderTop: "1px solid var(--border-muted)", padding: "0.35rem 0.5rem" }}>
-                                    <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
-                                      {language === "tr" ? src.infoTr : src.infoEn}
-                                    </p>
-                                    {src.id !== "demo_archive" ? (
-                                      <p style={{ margin: "0.28rem 0 0", fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-dim)" }}>
-                                        {language === "tr"
-                                          ? "Demo dışı kurumsal kullanımda açılır."
-                                          : "Enabled in non-demo institutional operation."}
-                                      </p>
-                                    ) : null}
-                                  </div>
-                                ) : null}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                      {section.id === "family" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                          {MOCK_SYSTEMS.map((sys) => (
+                      ›
+                    </span>
+                  </div>
+                  {isActive && (
+                    <div style={{ borderBottom: "1px solid var(--border)" }}>
+                      {section.id === "source" &&
+                        SOURCE_CHANNELS.map((src) => {
+                          const isSelected = selectedSource === src.id;
+                          return (
+                            <div
+                              key={src.id}
+                              onClick={() => { setActiveSourcePanel(src.id); setSelectedSource(src.id); }}
+                              style={{
+                                padding: "6px 14px 6px 22px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                cursor: "pointer",
+                                borderBottom: "1px solid var(--border)",
+                                borderLeft: isSelected ? "2px solid var(--accent)" : "2px solid transparent",
+                                background: isSelected ? "rgba(232,101,10,0.10)" : "transparent",
+                                transition: "background 0.12s",
+                              }}
+                            >
+                              <span style={{ fontFamily: MONO, fontSize: "10px", color: isSelected ? "var(--accent)" : "var(--text-muted)", flex: 1 }}>
+                                {language === "tr" ? src.tr : src.en}
+                              </span>
+                              <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)" }}>
+                                {language === "tr" ? src.badgeTr : src.badgeEn}
+                              </span>
+                            </div>
+                          );
+                        })
+                      }
+                      {section.id === "family" &&
+                        MOCK_SYSTEMS.map((sys) => {
+                          const isSel = selectedSystem === sys.id;
+                          return (
                             <div
                               key={sys.id}
+                              onClick={() => { setSelectedSystem(sys.id); setExpandedUniverse(sys.id); }}
                               style={{
-                                border: selectedSystem === sys.id ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                                background: selectedSystem === sys.id ? "var(--accent-soft)" : "var(--panel-card)",
+                                padding: "6px 14px 6px 22px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
+                                cursor: "pointer",
+                                borderBottom: "1px solid var(--border)",
+                                borderLeft: isSel ? "2px solid var(--accent)" : "2px solid transparent",
+                                background: isSel ? "rgba(232,101,10,0.10)" : "transparent",
+                                transition: "background 0.12s",
                               }}
                             >
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setSelectedSystem(sys.id);
-                                  setExpandedUniverse(sys.id);
-                                }}
-                                style={{
-                                  width: "100%",
-                                  padding: "0.35rem 0.5rem",
-                                  textAlign: "left",
-                                  border: "none",
-                                  borderLeft: selectedSystem === sys.id ? "2px solid var(--accent)" : "2px solid transparent",
-                                  background: "transparent",
-                                  color: "var(--text)",
-                                  cursor: "pointer",
-                                  fontSize: "0.92rem",
-                                  borderRadius: UI.radius.xs,
-                                }}
-                              >
-                                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "0.35rem" }}>
-                                  <span>
-                                    {language === "tr"
-                                      ? `${SYSTEM_LABELS[sys.id].tr} Evreni`
-                                      : `${SYSTEM_LABELS[sys.id].en} Universe`}
-                                  </span>
-                                  <span style={{ fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-dim)" }}>
-                                    {expandedUniverse === sys.id ? "Acik" : "Izlemede"}
-                                  </span>
-                                </div>
-                              </button>
-                              {expandedUniverse === sys.id ? (
-                                <div style={{ borderTop: "1px solid var(--border-muted)", padding: "0.3rem 0.5rem 0.42rem" }}>
-                                  <div style={{ marginBottom: "0.2rem", fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", letterSpacing: "0.08em" }}>
-                                    {language === "tr" ? "Bagli varliklar" : "Bound assets"}
-                                  </div>
-                                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem" }}>
-                                    {DEMO_DEVICES_BY_SYSTEM[sys.id].map((device) => (
-                                      <span
-                                        key={device}
-                                        style={{
-                                          fontFamily: MONO,
-                                          fontSize: "0.64rem",
-                                          color: "var(--text-dim)",
-                                          border: "1px solid var(--border-muted)",
-                                          padding: "0.05rem 0.26rem",
-                                          borderRadius: 2,
-                                          background: "var(--panel)",
-                                        }}
-                                      >
-                                        {device}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              ) : (
-                                <div style={{ borderTop: "1px solid var(--border-muted)", padding: "0.24rem 0.5rem", fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)" }}>
-                                  {language === "tr" ? "Ikincil evren gorunumu" : "Secondary universe view"}
-                                </div>
-                              )}
+                              <span style={{ fontFamily: MONO, fontSize: "10px", color: isSel ? "var(--accent)" : "var(--text-muted)", flex: 1 }}>
+                                {language === "tr" ? `${SYSTEM_LABELS[sys.id].tr}` : `${SYSTEM_LABELS[sys.id].en}`}
+                              </span>
+                              <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)" }}>
+                                {DEMO_DEVICES_BY_SYSTEM[sys.id].length} {language === "tr" ? "varlık" : "assets"}
+                              </span>
                             </div>
-                          ))}
-                        </div>
-                      )}
-                      {section.id === "scenario" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                          {getScenarioClassesBySystem(selectedSystem).map((name) => (
-                            <button
+                          );
+                        })
+                      }
+                      {section.id === "scenario" &&
+                        getScenarioClassesBySystem(selectedSystem).map((name) => {
+                          const isSel = selectedScenario === name;
+                          return (
+                            <div
                               key={name}
-                              type="button"
                               onClick={() => handleScenarioChange(name)}
                               style={{
-                                padding: "0.35rem 0.5rem",
-                                textAlign: "left",
-                                borderRadius: 4,
-                                border:
-                                  selectedScenario === name
-                                    ? "1px solid var(--accent)"
-                                    : "1px solid var(--border)",
-                                background:
-                                  selectedScenario === name ? "var(--accent-soft)" : "transparent",
-                                color: "var(--text)",
+                                padding: "6px 14px 6px 22px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "6px",
                                 cursor: "pointer",
-                                fontSize: "0.875rem",
+                                borderBottom: "1px solid var(--border)",
+                                borderLeft: isSel ? "2px solid var(--accent)" : "2px solid transparent",
+                                background: isSel ? "rgba(232,101,10,0.10)" : "transparent",
+                                transition: "background 0.12s",
                               }}
                             >
-                              <span style={{ display: "block", fontWeight: 600 }}>
+                              <span style={{ fontFamily: MONO, fontSize: "10px", color: isSel ? "var(--accent)" : "var(--text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                 {professionalScenarioLabel(name)}
                               </span>
-                              <span style={{ display: "block", marginTop: "0.08rem", fontFamily: MONO, fontSize: "0.65rem", color: "var(--text-dim)" }}>
-                                {name}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                              <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", flexShrink: 0 }}>›</span>
+                            </div>
+                          );
+                        })
+                      }
                       {section.id === "event" && (
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "0.6rem",
-                            maxHeight: 440,
-                            overflowY: "auto",
-                            paddingRight: "2px",
-                          }}
-                        >
+                        <div style={{ maxHeight: 320, overflowY: "auto" }}>
                           {displayEvents.length === 0 ? (
-                            <div
-                              role="status"
-                              style={{
-                                margin: 0,
-                                padding: "0.55rem 0.65rem",
-                                borderRadius: UI.radius.xs,
-                                border: `1px dashed ${"var(--border-strong)"}`,
-                                background: "var(--panel-card)",
-                              }}
-                            >
-                              <p style={{ margin: 0, fontSize: "0.84rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
-                                {selectedScenario ? msg.verifierEmptyEventCatalog : msg.verifierPickScenarioFirst}
-                              </p>
+                            <div style={{ padding: "6px 14px 6px 22px", fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)" }}>
+                              {selectedScenario ? msg.verifierEmptyEventCatalog : msg.verifierPickScenarioFirst}
                             </div>
                           ) : (
                             displayEvents.map((ev) => {
-                              const isSelected = selectedEventId === ev.eventId;
+                              const isEvSel = selectedEventId === ev.eventId;
                               const protocolLabel = displayProtocolState(ev.state);
                               return (
-                              <button
-                                key={ev.eventId}
-                                type="button"
-                                onClick={() => handleSelectEvent(ev.eventId)}
-                                style={{
-                                  padding: 0,
-                                  textAlign: "left",
-                                  borderRadius: UI.radius.xs,
-                                  border: isSelected
-                                    ? "1px solid var(--border-strong)"
-                                    : `1px solid ${"var(--border-muted)"}`,
-                                  borderLeft: `3px solid ${isSelected ? "var(--accent)" : "var(--border-muted)"}`,
-                                  background: isSelected ? "var(--surface)" : "var(--panel-card)",
-                                  color: "var(--text)",
-                                  cursor: "pointer",
-                                  width: "100%",
-                                  display: "block",
-                                  overflow: "hidden",
-                                }}
-                              >
-                                {/* card row 1: ID + state */}
                                 <div
+                                  key={ev.eventId}
+                                  onClick={() => handleSelectEvent(ev.eventId)}
                                   style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "space-between",
-                                    padding: "0.36rem 0.52rem 0.28rem",
-                                    borderBottom: `1px solid ${isSelected ? "var(--border)" : "var(--border-muted)"}`,
-                                    background: isSelected ? "var(--panel-raised)" : "var(--panel)",
+                                    padding: "6px 14px 6px 22px",
+                                    cursor: "pointer",
+                                    borderBottom: "1px solid var(--border)",
+                                    borderLeft: isEvSel ? "2px solid var(--accent)" : "2px solid transparent",
+                                    background: isEvSel ? "rgba(232,101,10,0.10)" : "transparent",
+                                    transition: "background 0.12s",
                                   }}
                                 >
-                                  <span
-                                    style={{
-                                      fontFamily: MONO,
-                                      fontSize: "0.76rem",
-                                      fontWeight: 600,
-                                      color: isSelected ? "var(--text)" : "var(--text-muted)",
-                                      letterSpacing: "0.02em",
-                                      overflow: "hidden",
-                                      textOverflow: "ellipsis",
-                                      whiteSpace: "nowrap",
-                                      flex: 1,
-                                      minWidth: 0,
-                                    }}
-                                  >
-                                    {ev.eventId}
-                                  </span>
-                                  <span
-                                    style={{
-                                      ...protocolStatePillStyle(protocolLabel),
-                                      flexShrink: 0,
-                                      marginLeft: "0.32rem",
-                                      minWidth: "4.6rem",
-                                      padding: "0.2rem 0.38rem",
-                                      fontSize: "0.68rem",
-                                    }}
-                                  >
-                                    {protocolLabel}
-                                  </span>
-                                </div>
-                                {/* card row 2: title + summary */}
-                                <div style={{ padding: "0.3rem 0.52rem 0.34rem" }}>
-                                  <div style={{ fontSize: "0.82rem", color: isSelected ? "var(--text-soft)" : "var(--text-muted)", fontWeight: isSelected ? 600 : 500, marginBottom: 0, lineHeight: 1.3 }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                    <span style={{ fontFamily: MONO, fontSize: "10px", color: isEvSel ? "var(--accent)" : "var(--text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                      {ev.eventId}
+                                    </span>
+                                    <span style={{ ...protocolStatePillStyle(protocolLabel), fontSize: "8px", padding: "1px 4px", flexShrink: 0 }}>
+                                      {protocolLabel}
+                                    </span>
+                                  </div>
+                                  <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", marginTop: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                     {ev.title}
                                   </div>
                                 </div>
-                              </button>
                               );
                             })
                           )}
@@ -1957,72 +1875,54 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       )}
                     </div>
                   )}
-                  </div>
                 </div>
               );
             })}
-            </div>{/* end inner padding div */}
             </div>{/* end scroll region */}
 
             <div
               style={{
-                flexShrink: 0,
+                fontFamily: MONO,
+                fontSize: "9px",
+                letterSpacing: "0.18em",
+                color: "var(--text-dim)",
+                textTransform: "uppercase",
+                padding: "12px 14px 8px",
+                borderBottom: "1px solid var(--border)",
+              }}
+            >
+              {language === "tr" ? "İnceleme İşlemleri" : "Review Operations"}
+            </div>
+
+            <div
+              style={{
+                padding: "12px 14px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+                marginTop: "auto",
                 borderTop: "1px solid var(--border)",
-                padding: "0.52rem 0.56rem calc(0.58rem + env(safe-area-inset-bottom, 0px))",
-                background: workstationLive
-                  ? "linear-gradient(180deg, rgba(255,102,0,0.06), var(--panel))"
-                  : "var(--panel)",
               }}
               aria-label={language === "tr" ? "Eylem alanı" : "Action area"}
             >
-              <div
-                style={{
-                  fontFamily: MONO,
-                  fontSize: "0.66rem",
-                  letterSpacing: "0.12em",
-                  color: "var(--text-dim)",
-                  fontWeight: 700,
-                  marginBottom: "0.4rem",
-                  textTransform: "uppercase",
-                }}
-              >
-                {language === "tr" ? "İnceleme İşlemleri" : "Review operations"}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.34rem",
-                  border: "1px solid var(--border)",
-                  borderRadius: UI.radius.xs,
-                  padding: "0.38rem",
-                  background: "var(--panel-raised)",
-                  boxShadow: workstationLive ? "inset 0 0 0 1px rgba(255,102,0,0.07)" : "none",
-                }}
-              >
                 <button
                   type="button"
                   onClick={runVerification}
                   disabled={!isPackageSelected || loading}
                   style={{
                     fontFamily: MONO,
-                    fontSize: "0.74rem",
-                    letterSpacing: "0.04em",
-                    lineHeight: 1.25,
-                    padding: "0.44rem 0.54rem",
-                    borderRadius: UI.radius.xs,
-                    border: loading ? "1px solid var(--border-strong)" : "1px solid var(--accent)",
-                    background: loading
-                      ? "var(--panel-card)"
-                      : "linear-gradient(180deg, rgba(255,102,0,0.22), rgba(255,102,0,0.11))",
-                    color: "var(--text)",
+                    fontSize: "10px",
+                    letterSpacing: "0.1em",
+                    padding: "8px 12px",
+                    border: "none",
+                    background: loading ? "var(--panel-card)" : "var(--accent)",
+                    color: loading ? "var(--text-muted)" : "#0e0f11",
                     cursor: loading ? "wait" : !isPackageSelected ? "not-allowed" : "pointer",
                     opacity: !isPackageSelected ? 0.55 : 1,
-                    fontWeight: 700,
+                    fontWeight: 600,
                     width: "100%",
                     textAlign: "center",
-                    whiteSpace: "normal",
-                    wordBreak: "break-word",
+                    textTransform: "uppercase",
                   }}
                 >
                   {loading
@@ -2031,114 +1931,112 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       : "VERIFYING…"
                     : !isPackageSelected
                     ? language === "tr"
-                      ? "Demo olayı aç / Paket seç"
-                      : "Open demo event / Select package"
+                      ? "PAKET SEÇ"
+                      : "SELECT PACKAGE"
                     : language === "tr"
                     ? "İNCELEMEYİ BAŞLAT"
                     : "START REVIEW"}
                 </button>
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.26rem" }}>
                   <button
                     type="button"
-                    onClick={runExportJson}
-                    disabled={!isVerificationReady || !!exportLoading}
+                    onClick={canExport ? runExportJson : undefined}
+                    disabled={!canExport || !isVerificationReady || !!exportLoading}
+                    title={exportDisabledReason ?? undefined}
                     style={{
                       fontFamily: MONO,
-                      fontSize: "0.74rem",
-                      padding: "0.4rem 0.52rem",
-                      borderRadius: UI.radius.xs,
-                      border: "1px solid var(--border)",
-                      background: "linear-gradient(180deg, var(--panel-card), var(--panel-raised))",
-                      color: "var(--text)",
-                      cursor: !isVerificationReady || exportLoading ? "not-allowed" : "pointer",
-                      opacity: !isVerificationReady || exportLoading ? 0.55 : 1,
-                      fontWeight: 600,
+                      fontSize: "10px",
+                      padding: "6px 12px",
+                      border: "1px solid var(--border-strong)",
+                      background: "transparent",
+                      color: !canExport || !isVerificationReady ? "var(--text-dim)" : "var(--text-secondary)",
+                      cursor: !canExport || !isVerificationReady || exportLoading ? "not-allowed" : "pointer",
+                      opacity: !canExport || !isVerificationReady || exportLoading ? 0.55 : 1,
                       width: "100%",
+                      textAlign: "center",
                     }}
                   >
                     {exportLoading === "json"
-                      ? language === "tr"
-                        ? "JSON…"
-                        : "JSON…"
+                      ? "JSON…"
+                      : !canExport
+                      ? exportAvailability === "access_required"
+                        ? language === "tr" ? "Rapor — erişim gerekli" : "Report — access required"
+                        : exportAvailability === "preview_only"
+                        ? language === "tr" ? "Rapor — yalnızca önizleme" : "Report — preview only"
+                        : language === "tr" ? "Rapor — API bağlantısı yok" : "Report — no API"
                       : language === "tr"
                       ? "Delile Dayalı Rapor"
-                      : "Evidence-Based Development Report"}
+                      : "Evidence-Based Report"}
                   </button>
                   <button
                     type="button"
-                    onClick={runExportPdf}
-                    disabled={!isVerificationReady || !!exportLoading}
+                    onClick={canExport ? runExportPdf : undefined}
+                    disabled={!canExport || !isVerificationReady || !!exportLoading}
+                    title={exportDisabledReason ?? undefined}
                     style={{
                       fontFamily: MONO,
-                      fontSize: "0.72rem",
-                      letterSpacing: "0.02em",
-                      lineHeight: 1.25,
-                      padding: "0.36rem 0.5rem",
-                      borderRadius: UI.radius.xs,
-                      border: "1px solid var(--border)",
-                      background: "linear-gradient(180deg, var(--panel-card), var(--panel-raised))",
-                      color: "var(--text)",
-                      cursor: !isVerificationReady || exportLoading ? "not-allowed" : "pointer",
-                      opacity: !isVerificationReady || exportLoading ? 0.55 : 1,
-                      fontWeight: 600,
+                      fontSize: "10px",
+                      padding: "6px 12px",
+                      border: "1px solid var(--border-strong)",
+                      background: "transparent",
+                      color: !canExport || !isVerificationReady ? "var(--text-dim)" : "var(--text-secondary)",
+                      cursor: !canExport || !isVerificationReady || exportLoading ? "not-allowed" : "pointer",
+                      opacity: !canExport || !isVerificationReady || exportLoading ? 0.55 : 1,
                       width: "100%",
-                      whiteSpace: "normal",
-                      wordBreak: "break-word",
+                      textAlign: "center",
                     }}
                   >
                     {exportLoading === "pdf"
-                      ? language === "tr"
-                        ? "PDF…"
-                        : "PDF…"
+                      ? "PDF…"
+                      : !canExport
+                      ? exportAvailability === "access_required"
+                        ? language === "tr" ? "Belge — erişim gerekli" : "Document — access required"
+                        : exportAvailability === "preview_only"
+                        ? language === "tr" ? "Belge — yalnızca önizleme" : "Document — preview only"
+                        : language === "tr" ? "Belge — API bağlantısı yok" : "Document — no API"
                       : language === "tr"
                       ? "Delile Dayalı Belge"
-                      : "Generate Evidence-Based Document"}
+                      : "Evidence-Based Document"}
                   </button>
-                </div>
                 <button
                   type="button"
                   onClick={resetVerificationRun}
                   disabled={resetRunDisabled}
                   style={{
                     fontFamily: MONO,
-                    fontSize: "0.69rem",
-                    letterSpacing: "0.03em",
-                    lineHeight: 1.2,
-                    padding: "0.34rem 0.5rem",
-                    borderRadius: UI.radius.xs,
+                    fontSize: "9px",
+                    padding: "6px 12px",
                     border: "1px solid var(--border-strong)",
-                    background: "var(--panel)",
-                    color: "var(--text-muted)",
+                    background: "transparent",
+                    color: "var(--text-dim)",
                     cursor: resetRunDisabled ? "not-allowed" : "pointer",
                     opacity: resetRunDisabled ? 0.45 : 1,
-                    fontWeight: 600,
                     width: "100%",
+                    textAlign: "center",
                   }}
                 >
-                  {language === "tr" ? "Yeni İnceleme" : "New review"}
+                  + {language === "tr" ? "Yeni İnceleme" : "New Review"}
                 </button>
-              </div>
-              <p
+              <div
                 style={{
-                  margin: "0.45rem 0 0",
                   fontFamily: MONO,
-                  fontSize: "0.58rem",
-                  letterSpacing: "0.03em",
+                  fontSize: "9px",
                   color: "var(--text-dim)",
-                  lineHeight: 1.25,
-                  opacity: 0.62,
-                  pointerEvents: "none",
+                  marginTop: "4px",
+                  lineHeight: 1.6,
+                  paddingTop: "4px",
+                  borderTop: "1px solid var(--border)",
                 }}
               >
-                {msg.verifierActionBarDoctrineTrace} · {msg.verifierActionBarDoctrineIssuance}
-              </p>
+                {msg.verifierActionBarDoctrineTrace}
+              </div>
               {exportError ? (
-                <p style={{ margin: "0.35rem 0 0", fontFamily: MONO, fontSize: "0.7rem", color: "var(--error)", lineHeight: 1.35 }}>
+                <p style={{ margin: "4px 0 0", fontFamily: MONO, fontSize: "9px", color: "var(--error)", lineHeight: 1.35 }}>
                   {exportError}
                 </p>
               ) : null}
             </div>
           </aside>
+        </div>{/* /verifier-chassis-grid */}
 
           <main
             style={{
@@ -2146,232 +2044,51 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               zIndex: 1,
               minWidth: 0,
               gridArea: "main",
-              background: workstationLive
-                ? "linear-gradient(180deg, rgba(0,0,0,0.22), rgba(0,0,0,0.16) 22%, rgba(255,102,0,0.14) 44%, var(--panel))"
-                : "var(--panel)",
+              background: "var(--bg)",
               display: "flex",
               flexDirection: "column",
-              overflowY: "auto",
+              overflow: "hidden",
             }}
           >
-            <div style={{ padding: "0.56rem 0.92rem 1.45rem" }}>
-            <div
-              style={{
-                border: `1px solid ${workstationLive ? "var(--accent-border)" : "var(--border)"}`,
-                background: workstationLive
-                  ? "linear-gradient(90deg, rgba(255,102,0,0.16), rgba(255,102,0,0.08) 45%, rgba(255,102,0,0.03) 100%)"
-                  : "var(--panel)",
-                padding: "0.3rem 0.5rem",
-                marginBottom: "0.46rem",
-                borderRadius: UI.radius.xs,
-                boxShadow: workstationLive ? "0 0 0 1px rgba(255,102,0,0.09) inset" : "none",
-              }}
-            >
-              <span style={{ fontFamily: MONO, fontSize: "0.66rem", letterSpacing: "0.08em", color: workstationLive ? "var(--accent)" : "var(--text-dim)" }}>
-                {workstationLive
-                  ? "Paket seçildi: olay sahası, metadata ve zaman izi aktif."
-                  : "Paket seçimi bekleniyor: olay sahası pasif izleme modunda."}
-              </span>
-            </div>
-            <div
-              style={{
-                border: "1px solid var(--border-soft)",
-                background: "var(--panel-card)",
-                borderTop: "2px solid var(--accent-border)",
-                padding: "0.38rem 0.48rem 0.5rem",
-                marginBottom: "0.4rem",
-                borderRadius: UI.radius.sm,
-                boxShadow: workstationLive
-                  ? "0 16px 32px rgba(0,0,0,0.38), inset 0 0 0 1px rgba(255,102,0,0.10)"
-                  : "0 8px 16px rgba(0,0,0,0.18)",
-              }}
-            >
+            <div style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, background: "var(--bg)" }}>
+
               <div
                 style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "flex-start",
-                  gap: "0.45rem 0.75rem",
-                }}
-              >
-                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.35rem", minWidth: 0, flex: "1 1 220px" }}>
-                  <span
-                    style={{
-                      fontFamily: MONO,
-                      fontSize: "0.62rem",
-                      letterSpacing: "0.12em",
-                      textTransform: "uppercase",
-                      color: "var(--text-dim)",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {language === "tr" ? "PAKET KİMLİĞİ" : "PACKAGE IDENTITY"}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: MONO,
-                      fontSize: "0.8rem",
-                      fontWeight: 700,
-                      color: "var(--text-soft)",
-                      letterSpacing: "0.03em",
-                      maxWidth: "100%",
-                      wordBreak: "break-all",
-                      lineHeight: 1.25,
-                    }}
-                    title={selectedEventCard?.eventId ?? ""}
-                  >
-                    {selectedEventCard?.eventId ?? "—"}
-                  </span>
-                  {selectedEventCard ? (
-                    <span
-                      style={{
-                        fontFamily: MONO,
-                        fontSize: "0.62rem",
-                        letterSpacing: "0.14em",
-                        textTransform: "uppercase",
-                        padding: "0.16rem 0.4rem",
-                        border: "1px solid var(--border)",
-                        borderRadius: INNER_TILE_RADIUS,
-                        color: "var(--text-dim)",
-                        background: "var(--panel-card)",
-                        fontWeight: 600,
-                        flexShrink: 0,
-                      }}
-                      title={language === "tr" ? "Tanıtım / demo protokol verisi" : "Demo protocol data"}
-                    >
-                      {language === "tr" ? "DEMO OLAY" : "DEMO EVENT"}
-                    </span>
-                  ) : null}
-                </div>
-                <span
-                  style={{
-                    fontSize: "1.02rem",
-                    fontWeight: 600,
-                    color: "var(--text)",
-                    flex: "2 1 280px",
-                    minWidth: 0,
-                    lineHeight: 1.28,
-                    letterSpacing: "-0.01em",
-                  }}
-                >
-                  {selectedEventCard?.title ??
-                    (language === "tr" ? "Paket seçilmedi" : "No package selected")}
-                </span>
-                <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.35rem", flexShrink: 0 }}>
-                  <span
-                    style={{
-                      fontFamily: MONO,
-                      fontSize: "0.68rem",
-                      letterSpacing: "0.12em",
-                      textTransform: "uppercase",
-                      padding: "0.22rem 0.5rem",
-                      border: "1px solid var(--border-strong)",
-                      borderRadius: INNER_TILE_RADIUS,
-                      color: "var(--text-soft)",
-                      background: "var(--panel-raised)",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {selectedSystem}
-                  </span>
-                  {selectedPackage ? (
-                    <span
-                      style={{
-                        fontFamily: MONO,
-                        fontSize: "0.62rem",
-                        letterSpacing: "0.11em",
-                        textTransform: "uppercase",
-                        padding: "0.2rem 0.45rem",
-                        border: "1px solid var(--accent-border)",
-                        borderRadius: INNER_TILE_RADIUS,
-                        color: "var(--accent)",
-                        background: "var(--accent-soft)",
-                        fontWeight: 700,
-                      }}
-                    >
-                      {selectedPackage.severity === "high"
-                        ? language === "tr"
-                          ? "RİSK: YÜKSEK"
-                          : "RISK: HIGH"
-                        : selectedPackage.severity === "medium"
-                          ? language === "tr"
-                            ? "RİSK: ORTA"
-                            : "RISK: MEDIUM"
-                          : language === "tr"
-                            ? "RİSK: DÜŞÜK"
-                            : "RISK: LOW"}
-                    </span>
-                  ) : null}
-                  {visibleReviewState != null ? (
-                    <span style={protocolStatePillStyle(displayedReviewState)}>{displayedReviewState}</span>
-                  ) : (
-                    <span
-                      style={{
-                        fontFamily: MONO,
-                        fontSize: "0.68rem",
-                        letterSpacing: "0.1em",
-                        color: "var(--text-dim)",
-                        padding: "0.22rem 0.5rem",
-                        border: "1px dashed var(--border-strong)",
-                        borderRadius: INNER_TILE_RADIUS,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {language === "tr" ? "DURUM —" : "STATE —"}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            {selectedPackage ? (
-              <div
-                style={{
+                  background: "#1c1e24",
+                  borderBottom: "1px solid var(--border-strong)",
+                  padding: PX.incidentPad,
                   display: "grid",
                   gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-                  gap: "0.34rem",
-                  padding: "0.1rem 0 0.4rem",
+                  gap: "1px",
                 }}
               >
-                <div style={{ border: "1px solid var(--border)", borderRadius: INNER_TILE_RADIUS, background: "var(--panel-card)", padding: INNER_TILE_PAD_COMPACT }}>
-                  <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginBottom: "0.12rem", letterSpacing: "0.09em" }}>BAĞLAM</div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.38 }}>
-                    {packageSummaryMain ?? selectedPackage.summary}
+                {[
+                  { label: language === "tr" ? "BAĞLAM" : "CONTEXT", value: packageSummaryMain ?? selectedPackage?.summary ?? (language === "tr" ? "Demo arşivi yerel paket seçimi" : "Demo archive local package selection") },
+                  { label: language === "tr" ? "OPERASYON" : "OPERATION", value: selectedPackage?.title ?? (language === "tr" ? "İnceleme paketi hazırlanıyor" : "Inspection package preparing") },
+                  { label: language === "tr" ? "ZAMAN / FAZ" : "TIMING / PHASE", value: selectedPhaseSpec ? phaseUiLabel(selectedPhaseSpec.phase, language) : phaseUiLabel(selectedPhase, language) },
+                  { label: language === "tr" ? "SAHNE KİMLİĞİ" : "SCENE IDENTITY", value: packageOperationalContext ?? selectedPackage?.identity ?? (language === "tr" ? "Kayıtlı/türetilmiş ayrımı bekleniyor" : "Recorded/derived split pending") },
+                ].map((cell, index) => (
+                  <div key={cell.label} style={{ padding: "0 14px", borderRight: index < 3 ? "1px solid var(--border)" : "none" }}>
+                    <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-muted)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>{cell.label}</div>
+                    <div style={{ fontSize: "11px", color: "var(--text-primary)", lineHeight: 1.3 }}>{cell.value}</div>
                   </div>
-                </div>
-                <div style={{ border: "1px solid var(--border)", borderRadius: INNER_TILE_RADIUS, background: "var(--panel-card)", padding: INNER_TILE_PAD_COMPACT }}>
-                  <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginBottom: "0.12rem", letterSpacing: "0.09em" }}>OPERASYON</div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.38 }}>{selectedPackage.title}</div>
-                </div>
-                <div style={{ border: "1px solid var(--border)", borderRadius: INNER_TILE_RADIUS, background: "var(--panel-card)", padding: INNER_TILE_PAD_COMPACT }}>
-                  <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginBottom: "0.12rem", letterSpacing: "0.09em" }}>KRİTİK AN</div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.38 }}>
-                    {language === "tr" ? "Kayıtlı/türetilmiş ayrımı ve iz bağı" : "Recorded/derived split and trace linkage"}
-                  </div>
-                </div>
-                <div style={{ border: "1px solid var(--border)", borderRadius: INNER_TILE_RADIUS, background: "var(--panel-card)", padding: INNER_TILE_PAD_COMPACT }}>
-                  <div style={{ fontFamily: MONO, fontSize: "0.62rem", color: "var(--text-dim)", marginBottom: "0.12rem", letterSpacing: "0.09em" }}>
-                    {language === "tr" ? "SAHNE KİMLİĞİ" : "SCENE IDENTITY"}
-                  </div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-soft)", lineHeight: 1.38 }}>
-                    {packageOperationalContext ?? selectedPackage.identity}
-                  </div>
-                </div>
+                ))}
               </div>
-            ) : null}
-            <div
-              style={{
-                margin: selectedPackage ? "0.06rem 0 0.4rem" : "0.16rem 0 0.42rem",
-                border: "1px solid var(--border)",
-                background: "var(--panel-card)",
-                padding: "0.38rem 0.5rem",
-                borderRadius: UI.radius.sm,
-                boxShadow: workstationLive ? "inset 0 0 0 1px rgba(255,102,0,0.06)" : "none",
-              }}
-            >
-              <div style={{ fontFamily: MONO, fontSize: "0.61rem", letterSpacing: "0.09em", color: "var(--text-dim)", marginBottom: "0.24rem" }}>
-                {language === "tr" ? "ROL ODAĞI" : "ROLE FOCUS"}
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.14rem", marginBottom: "0.2rem" }}>
+
+              <div
+                style={{
+                  background: "#161820",
+                  borderBottom: "1px solid var(--border)",
+                  padding: PX.rolePad,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", letterSpacing: "0.15em", textTransform: "uppercase", marginRight: "4px" }}>
+                  {language === "tr" ? "ROL MERCEĞİ" : "ROLE LENS"}
+                </span>
                 {ROLE_LENSES.map((role) => {
                   const selected = selectedRoleLens === role.id;
                   return (
@@ -2381,234 +2098,291 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       onClick={() => setSelectedRoleLens(role.id)}
                       style={{
                         fontFamily: MONO,
-                        fontSize: "0.63rem",
-                        letterSpacing: "0.02em",
-                        lineHeight: 1.15,
-                        padding: "0.15rem 0.34rem",
-                        border: selected ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                        background: selected ? "var(--accent-soft)" : "var(--panel)",
-                        color: selected ? "var(--text)" : "var(--text-muted)",
-                        fontWeight: selected ? 600 : 500,
+                        fontSize: "9px",
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        padding: "3px 10px",
+                        border: selected ? "1px solid var(--accent-border)" : "1px solid var(--border-strong)",
+                        background: selected ? "var(--accent-soft)" : "transparent",
+                        color: selected ? "var(--accent)" : "var(--text-secondary)",
                         cursor: "pointer",
-                        borderRadius: INNER_TILE_RADIUS,
                       }}
                     >
                       {language === "tr" ? role.tr : role.en}
                     </button>
                   );
                 })}
+                <span style={{ marginLeft: "auto", fontSize: "11px", color: "var(--text-secondary)", fontStyle: "italic" }}>
+                  {language === "tr" ? selectedRoleLensMeta.insightTr : selectedRoleLensMeta.insightEn}
+                </span>
               </div>
-              <p style={{ margin: 0, fontSize: "0.76rem", color: "var(--text-soft)", lineHeight: 1.4 }}>
-                {language === "tr" ? selectedRoleLensMeta.insightTr : selectedRoleLensMeta.insightEn}
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.14rem", marginTop: "0.24rem" }}>
-                {roleSignals[selectedRoleLens].map((signal) => (
-                  <span
-                    key={signal}
-                    style={{
-                      fontFamily: MONO,
-                      fontSize: "0.62rem",
-                      letterSpacing: "0.04em",
-                      border: "1px solid var(--border)",
-                      background: "var(--panel)",
-                      color: "var(--text-dim)",
-                      padding: "0.12rem 0.34rem",
-                      borderRadius: INNER_TILE_RADIUS,
-                    }}
-                  >
-                    {signal}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <nav
-              aria-label={language === "tr" ? "İnceleme sekmeleri" : "Inspection tabs"}
-              style={{
-                position: "relative",
-                zIndex: 2,
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "0.22rem",
-                alignItems: "center",
-                paddingBottom: "0.45rem",
-                marginBottom: "0.35rem",
-                borderBottom: "1px solid var(--border-muted)",
-              }}
-            >
-              {reviewTabs.map((tab) => {
-                const on = activeReviewTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => selectReviewTab(tab.id as ReviewTabId)}
-                    style={{
-                      fontFamily: MONO,
-                      fontSize: "0.72rem",
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
-                      padding: "0.24rem 0.44rem",
-                      borderRadius: INNER_TILE_RADIUS,
-                      border: `1px solid ${on ? "var(--accent-border)" : "var(--border)"}`,
-                      background: on ? "var(--accent-soft)" : "var(--panel)",
-                      color: on ? "var(--text)" : "var(--text-muted)",
-                      cursor: "pointer",
-                      fontWeight: on ? 700 : 500,
-                    }}
-                  >
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </nav>
 
-            {activeReviewTab === "scene" && (
-              <div
-                style={{
-                  position: "relative",
-                  width: "100%",
-                  maxWidth: "100%",
-                  overflow: "hidden",
-                  marginBottom: "0.35rem",
-                }}
+              <nav
+                aria-label={language === "tr" ? "İnceleme sekmeleri" : "Inspection tabs"}
+                style={{ background: "#1c1e24", borderBottom: "1px solid var(--border-strong)", display: "flex", gap: 0, padding: `0 ${PX.tabPadX}px`, flexWrap: "wrap" }}
               >
-                <div
-                  style={{
-                    border: "1px solid var(--border)",
-                    borderBottom: "none",
-                    background: workstationLive ? "var(--accent-soft)" : "var(--panel)",
-                    padding: INNER_TILE_PAD_COMPACT,
-                    borderTopLeftRadius: INNER_TILE_RADIUS,
-                    borderTopRightRadius: INNER_TILE_RADIUS,
-                  }}
-                >
-                  <div style={{ fontFamily: MONO, fontSize: "0.66rem", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "0.1rem" }}>
-                    {language === "tr" ? "OLAY SAHASI" : "INCIDENT FIELD"}
-                  </div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
-                    {language === "tr"
-                      ? "Kayıtlı katman, uzman okuması ve inceleme izi aynı sahada fakat ayrı doktrin çizgilerinde görünür."
-                      : "Recorded layer, expert reading, and review trace are shown in one field with doctrine boundaries preserved."}
-                  </div>
-                </div>
+                {reviewTabs.map((tab) => {
+                  const on = activeReviewTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => selectReviewTab(tab.id as ReviewTabId)}
+                      style={{
+                        fontFamily: MONO,
+                        fontSize: "10px",
+                        letterSpacing: "0.1em",
+                        padding: "10px 14px",
+                        color: on ? "var(--accent)" : "var(--text-secondary)",
+                        cursor: "pointer",
+                        borderBottom: on ? "2px solid var(--accent)" : "2px solid transparent",
+                        textTransform: "uppercase",
+                        background: "transparent",
+                        borderTop: "none",
+                        borderLeft: "none",
+                        borderRight: "none",
+                      }}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </nav>
 
-                {selectedCase?.incidentSpine?.phases ? (
-                  <div style={{ margin: "0.6rem 0 0.6rem", display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
-                    {selectedCase.incidentSpine.phases.map((phase) => {
+              <div style={{ flex: "1 1 0", minHeight: 0, display: "grid", gridTemplateColumns: "minmax(0, 1fr) 280px", overflow: "hidden" }}>
+                <div style={{ display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0, borderRight: "1px solid var(--border)", overflow: "hidden" }}>
+                  <div style={{ background: "#1c1e24", borderBottom: "1px solid var(--border-strong)", display: "flex", alignItems: "center", padding: `0 ${PX.phasePadX}px`, gap: 0, flexShrink: 0 }}>
+                    <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", letterSpacing: "0.15em", textTransform: "uppercase", marginRight: "12px" }}>
+                      {language === "tr" ? "FAZ" : "PHASE"}
+                    </span>
+                    {(selectedCase?.incidentSpine?.phases ?? [
+                      { phase: "t0" as const },
+                      { phase: "t1" as const },
+                      { phase: "t2" as const },
+                      { phase: "t3" as const },
+                    ]).map((phase, index) => {
                       const active = selectedPhase === phase.phase;
                       return (
-                        <button
-                          key={phase.phase}
-                          type="button"
-                          onClick={() => setSelectedPhase(phase.phase)}
-                          style={{
-                            fontFamily: MONO,
-                            fontSize: "0.62rem",
-                            letterSpacing: "0.08em",
-                            borderRadius: INNER_TILE_RADIUS,
-                            border: active ? "1px solid var(--accent-border)" : "1px solid var(--border)",
-                            background: active ? "var(--accent-soft)" : "var(--panel)",
-                            color: active ? "var(--accent)" : "var(--text-muted)",
-                            padding: "0.2rem 0.3rem",
-                            cursor: "pointer",
-                          }}
-                        >
-                          {phaseUiLabel(phase.phase, language)}
-                        </button>
+                        <div key={phase.phase} style={{ display: "flex", alignItems: "center" }}>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedPhase(phase.phase)}
+                            style={{
+                              fontFamily: MONO,
+                              fontSize: "10px",
+                              padding: "9px 16px",
+                              cursor: "pointer",
+                              color: active ? "var(--accent)" : "var(--text-secondary)",
+                              border: "none",
+                              background: active ? "var(--orange-glow)" : "transparent",
+                              borderBottom: active ? "2px solid var(--accent)" : "2px solid transparent",
+                              letterSpacing: "0.08em",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {phaseUiLabel(phase.phase, language)}
+                          </button>
+                          {index < 3 ? <div style={{ width: 1, height: 16, background: "var(--border-strong)" }} /> : null}
+                        </div>
                       );
                     })}
                   </div>
-                ) : (
-                  <div
-                    style={{
-                      margin: "0.5rem 0",
-                      padding: "0.32rem 0.45rem",
-                      color: "var(--text-muted)",
-                      fontFamily: MONO,
-                      fontSize: "0.62rem",
-                      border: "1px solid var(--border)",
-                      borderRadius: INNER_TILE_RADIUS,
-                      background: "var(--panel)",
-                    }}
-                  >
-                    {language === "tr"
-                      ? "Olay omurgası bulunamadı; t2 (kritik) aşamasına varsayılan geçiş yapıldı."
-                      : "Incident spine not found; defaulted to t2 (critical) phase."}
-                  </div>
-                )}
 
-                {selectedPhaseSpec?.verification ? (
-                  <div
-                    style={{
-                      margin: "-0.15rem 0 0.55rem",
-                      border: "1px solid var(--border)",
-                      background: "var(--panel-card)",
-                      borderRadius: INNER_TILE_RADIUS,
-                      padding: "0.42rem 0.5rem",
-                      display: "grid",
-                      gridTemplateColumns: "minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr)",
-                      gap: "0.4rem 0.6rem",
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "0.14rem" }}>
-                        {language === "tr" ? "FAZ DİSİPLİNİ" : "PHASE DISCIPLINE"}
-                      </div>
-                      <div style={{ fontSize: "0.82rem", color: "var(--text-soft)", fontWeight: 600, lineHeight: 1.3 }}>
-                        {phaseUiLabel(selectedPhaseSpec.phase, language)}
-                      </div>
-                      <div style={{ marginTop: "0.1rem", fontSize: "0.74rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
-                        {language === "tr" ? selectedPhaseSpec.descriptionTr : selectedPhaseSpec.descriptionEn}
+                  <div style={{ flex: "1 1 0", minHeight: 0, position: "relative", overflow: "hidden", background: "#0a0b0e" }}>
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 3, padding: "8px 12px", display: "flex", alignItems: "center", gap: "10px", background: "linear-gradient(to bottom, rgba(10,11,14,0.9), rgba(10,11,14,0))" }}>
+                      <span style={{ fontFamily: MONO, fontSize: "10px", color: "var(--text-secondary)", letterSpacing: "0.15em", textTransform: "uppercase" }}>
+                        {language === "tr" ? "Mühürlü Yeniden Oluşturma Görünümü" : "Sealed Reconstruction Viewport"}
+                      </span>
+                      <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: "9px", color: "var(--text-secondary)", letterSpacing: "0.12em" }}>
+                        {selectedPhaseSpec ? phaseUiLabel(selectedPhaseSpec.phase, language) : phaseUiLabel(selectedPhase, language)}
+                      </span>
+                    </div>
+
+                    <ReconstructionViewport
+                      language={language}
+                      system={selectedSystem}
+                      incidentClass={selectedEventCard != null ? selectedCase?.incidentClass ?? null : null}
+                      eventId={selectedEventCard != null ? selectedEventCard.eventId ?? selectedId : null}
+                      title={selectedEventCard?.title ?? null}
+                      verificationState={visibleReviewState}
+                      role={selectedRoleLens}
+                      incidentPhase={selectedPhase}
+                      incidentSpine={selectedCase?.incidentSpine ?? null}
+                    />
+                  </div>
+
+                  {/* ── scrubber-bar (canonical geometry element) ── */}
+                  <div style={{ background: "var(--surface2, #1c1e24)", borderTop: "1px solid var(--border)", padding: "8px 16px", display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
+                    <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>00:00:00</span>
+                    <div style={{ flex: 1, position: "relative", height: "24px", display: "flex", alignItems: "center" }}>
+                      <div style={{ width: "100%", height: "2px", background: "var(--surface3, #2b2b2b)", position: "relative", borderRadius: "1px" }}>
+                        <div style={{ height: "100%", width: "55%", background: "var(--accent)", borderRadius: "1px" }} />
+                        {[0, 25, 50, 75].map((pct, i) => {
+                          const isCurrent = i === 2;
+                          return (
+                            <div key={pct} style={{ position: "absolute", top: "-8px", left: `${pct}%`, width: "1px", height: "18px", background: isCurrent ? "var(--accent)" : "var(--border2, #3a3a3a)" }}>
+                              <span style={{ position: "absolute", top: "-18px", fontFamily: MONO, fontSize: "8px", color: isCurrent ? "var(--accent)" : "var(--text-muted)", transform: "translateX(-50%)", whiteSpace: "nowrap" }}>
+                                {["T\u2080", "T\u2081", "T\u2082", "T\u2083"][i]}
+                              </span>
+                            </div>
+                          );
+                        })}
+                        <div style={{ position: "absolute", top: "50%", left: "55%", transform: "translate(-50%, -50%)", width: "10px", height: "10px", background: "var(--accent)", borderRadius: "50%" }} />
                       </div>
                     </div>
-                    <div>
-                      <div style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "0.14rem" }}>
-                        {language === "tr" ? "DOĞRULAMA DURUŞU" : "VERIFICATION POSTURE"}
+                    <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>00:04:32</span>
+                  </div>
+
+                  <div style={{ height: "140px", flexShrink: 0, borderTop: "1px solid var(--border-strong)", display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", background: "#161820" }}>
+                    {[
+                      { title: language === "tr" ? "KAYITLI" : "RECORDED", items: evidenceRecordedBandItems },
+                      { title: language === "tr" ? "TÜRETİLMİŞ" : "DERIVED", items: evidenceDerivedBandItems },
+                      { title: language === "tr" ? "AÇIK / ÇEKİŞMELİ" : "UNKNOWN / DISPUTED", items: evidenceUnknownBandItems },
+                    ].map((panel, index) => (
+                      <div key={panel.title} style={{ padding: PX.evidencePad, borderRight: index < 2 ? "1px solid var(--border)" : "none", overflow: "hidden" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.2rem" }}>
+                          <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.15em", color: "var(--text-dim)", textTransform: "uppercase" }}>{panel.title}</span>
+                          <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)" }}>{panel.items.length}</span>
+                        </div>
+                        {panel.items.length > 0 ? panel.items.map((item, itemIndex) => (
+                          <div key={`${panel.title}-${itemIndex}`} style={{ display: "flex", alignItems: "flex-start", gap: "6px", padding: "3px 0", borderBottom: itemIndex < panel.items.length - 1 ? "1px solid var(--border)" : "none" }}>
+                            <span style={{ width: 3, height: 14, marginTop: 1, background: "var(--accent)", opacity: 0.75, flexShrink: 0 }} />
+                            <span style={{ fontSize: "10px", color: "var(--text-secondary)", lineHeight: 1.4, flex: 1 }}>{item}</span>
+                            <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", flexShrink: 0 }}>{itemIndex + 1}</span>
+                          </div>
+                        )) : (
+                          <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", lineHeight: 1.4 }}>
+                            {language === "tr" ? "Katman verisi görünür olduğunda burada sabitlenir." : "Layer data will pin here when visible."}
+                          </div>
+                        )}
                       </div>
-                      <div style={{ fontSize: "0.82rem", color: "var(--accent)", fontWeight: 700, lineHeight: 1.3 }}>
-                        {phasePostureLabel(selectedPhaseSpec.verification.posture, language)}
-                      </div>
-                      <div style={{ marginTop: "0.1rem", fontSize: "0.74rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
-                        {language === "tr" ? selectedPhaseSpec.verification.noteTr ?? selectedPhaseSpec.verification.note : selectedPhaseSpec.verification.note}
-                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <aside style={{ display: "flex", flexDirection: "column", overflowY: "auto", background: "#161820", borderLeft: "1px solid var(--border)", boxShadow: "none" }}>
+                  <div style={{ padding: PX.rightBlockPad, borderBottom: "1px solid var(--border)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.45rem" }}>
+                      <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.15em", color: "var(--text-dim)", textTransform: "uppercase" }}>
+                        {language === "tr" ? "DOĞRULAMA İZİ" : "TRACE"}
+                      </span>
+                      <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", letterSpacing: "0.1em" }}>{traceStepRows.length}</span>
                     </div>
-                    <div>
-                      <div style={{ fontFamily: MONO, fontSize: "0.6rem", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "0.14rem" }}>
-                        {language === "tr" ? "DÜZENLEME HAZIRLIĞI" : "ARTIFACT READINESS"}
+                    {traceStepRows.slice(0, 7).map((row, index) => (
+                      <div key={`${row.label}-${index}`} style={{ display: "flex", gap: "8px", padding: "5px 0", borderBottom: index < Math.min(traceStepRows.length, 7) - 1 ? "1px solid var(--border)" : "none" }}>
+                        <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--accent)", width: 22, flexShrink: 0, paddingTop: 1 }}>{index + 1}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: "10px", color: "var(--text-primary)", marginBottom: 2 }}>{row.label}</div>
+                          <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", lineHeight: 1.35 }}>{row.note ?? row.status}</div>
+                        </div>
                       </div>
-                      <div style={{ fontSize: "0.82rem", color: "var(--text-soft)", fontWeight: 700, lineHeight: 1.3 }}>
-                        {phasePostureLabel(selectedPhaseSpec.verification.artifactReadiness, language)}
+                    ))}
+                  </div>
+
+                  <div style={{ padding: PX.rightBlockPad, borderBottom: "1px solid var(--border)" }}>
+                    <div style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.15em", color: "var(--text-dim)", textTransform: "uppercase", marginBottom: "8px" }}>
+                      {language === "tr" ? "HAZIRLIK / DURUM" : "READINESS / STATUS"}
+                    </div>
+                    <div style={{ display: "grid", gap: "8px" }}>
+                      <div>
+                        <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", letterSpacing: "0.1em", marginBottom: 2 }}>{language === "tr" ? "FAZ DURUŞU" : "PHASE POSTURE"}</div>
+                        <div style={{ fontSize: "10px", color: "var(--accent)", fontWeight: 600 }}>{selectedPhaseSpec ? phasePostureLabel(selectedPhaseSpec.verification.posture, language) : (language === "tr" ? "Bekliyor" : "Pending")}</div>
+                        <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", lineHeight: 1.35, marginTop: 2 }}>{selectedPhaseSpec ? (language === "tr" ? selectedPhaseSpec.verification.noteTr ?? selectedPhaseSpec.verification.note : selectedPhaseSpec.verification.note) : (language === "tr" ? "Demo faz yapısı görünür kılındı." : "Demo phase structure is now visible.")}</div>
                       </div>
-                      <div style={{ marginTop: "0.1rem", fontSize: "0.74rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
-                        {selectedSystem === "drone"
-                          ? language === "tr"
-                            ? "Drone hattı faza göre açıkça sınırlanır; link ve el değişimi görünür kalır."
-                            : "Drone lane remains visibly bounded by phase; link and handoff stay explicit."
-                          : selectedSystem === "robot"
-                            ? language === "tr"
-                              ? "Robot hattı faza göre görünür ve kamusal bağlam sorularını açık bırakır."
-                              : "Robot lane stays visibly phased and leaves public-context questions open."
-                            : language === "tr"
-                              ? "Araç hattı faza göre görünür, ancak açık hususların üstüne yazmaz."
-                              : "Vehicle lane remains visibly phased without outranking open items."}
+                      <div>
+                        <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", letterSpacing: "0.1em", marginBottom: 2 }}>{language === "tr" ? "BELGE HAZIRLIĞI" : "ARTIFACT READINESS"}</div>
+                        <div style={{ fontSize: "10px", color: "var(--text-primary)", fontWeight: 600 }}>{selectedPhaseSpec ? phasePostureLabel(selectedPhaseSpec.verification.artifactReadiness, language) : (language === "tr" ? "Bekliyor" : "Pending")}</div>
+                        <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", lineHeight: 1.35, marginTop: 2 }}>{selectedProfileLabel}</div>
                       </div>
+                      <div>
+                        <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", letterSpacing: "0.1em", marginBottom: 2 }}>{language === "tr" ? "KİMLİK BAĞI" : "IDENTITY LINK"}</div>
+                        <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-primary)", lineHeight: 1.5 }}>{bundleAnchorId}</div>
+                        <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", marginTop: 2 }}>{manifestAnchorId}</div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={canExport ? runExportPdf : undefined}
+                        disabled={!canExport || !isVerificationReady || !!exportLoading}
+                        title={exportDisabledReason ?? undefined}
+                        style={{
+                          fontFamily: MONO,
+                          fontSize: "10px",
+                          letterSpacing: "0.1em",
+                          padding: "8px 12px",
+                          border: canExport ? "1px solid var(--accent-border)" : "1px solid var(--border-strong)",
+                          background: canExport ? "var(--accent-soft)" : "transparent",
+                          color: canExport ? "var(--accent)" : "var(--text-dim)",
+                          cursor: !canExport || !isVerificationReady || exportLoading ? "not-allowed" : "pointer",
+                          opacity: !canExport || !isVerificationReady || exportLoading ? 0.55 : 1,
+                          width: "100%",
+                          textAlign: "center",
+                          textTransform: "uppercase",
+                          fontWeight: 700,
+                          display: activeReviewTab === "scene" ? "none" : "block",
+                        }}
+                      >
+                        {exportLoading === "pdf" ? "PDF..." : !canExport
+                          ? language === "tr" ? "Belge — bağlantı yok" : "Artifact — no connection"
+                          : language === "tr" ? "Belgeyi Çıkar" : "Issue Artifact"}
+                      </button>
                     </div>
                   </div>
-                ) : null}
 
-                <ReconstructionViewport
-                  language={language}
-                  system={selectedSystem}
-                  incidentClass={selectedEventCard != null ? selectedCase?.incidentClass ?? null : null}
-                  eventId={selectedEventCard != null ? selectedEventCard.eventId ?? selectedId : null}
-                  title={selectedEventCard?.title ?? null}
-                  verificationState={visibleReviewState}
-                  role={selectedRoleLens}
-                  incidentPhase={selectedPhase}
-                  incidentSpine={selectedCase?.incidentSpine ?? null}
-                />
+                  <div style={{ display: activeReviewTab === "scene" ? "none" : "block", padding: PX.rightBlockPad, borderBottom: "1px solid var(--border)" }}>
+                    <div style={{ fontFamily: MONO, fontSize: "0.58rem", letterSpacing: "0.14em", color: "var(--text-dim)", textTransform: "uppercase", marginBottom: "0.45rem" }}>
+                      {language === "tr" ? "İŞLEMLER" : "ACTIONS"}
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                      <button
+                        type="button"
+                        onClick={runVerification}
+                        disabled={!isPackageSelected || loading}
+                        style={{ fontFamily: MONO, fontSize: "0.68rem", letterSpacing: "0.08em", padding: "0.52rem 0.65rem", border: loading ? "1px solid var(--border-strong)" : "1px solid var(--accent)", background: loading ? "var(--panel-card)" : "linear-gradient(180deg, rgba(255,102,0,0.22), rgba(255,102,0,0.11))", color: "var(--text)", cursor: loading ? "wait" : !isPackageSelected ? "not-allowed" : "pointer", opacity: !isPackageSelected ? 0.55 : 1, fontWeight: 700, width: "100%", textAlign: "center", textTransform: "uppercase" }}
+                      >
+                        {loading ? (language === "tr" ? "DOĞRULANIYOR" : "VERIFYING") : (language === "tr" ? "İNCELEMEYİ BAŞLAT" : "START REVIEW")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={canExport ? runExportPdf : undefined}
+                        disabled={!canExport || !isVerificationReady || !!exportLoading}
+                        title={exportDisabledReason ?? undefined}
+                        style={{ fontFamily: MONO, fontSize: "0.64rem", letterSpacing: "0.06em", padding: "0.48rem 0.65rem", border: "1px solid var(--border)", background: "var(--panel-card)", color: canExport ? "var(--text)" : "var(--text-dim)", cursor: !canExport || !isVerificationReady || exportLoading ? "not-allowed" : "pointer", opacity: !canExport || !isVerificationReady || exportLoading ? 0.55 : 1, width: "100%", textAlign: "center", textTransform: "uppercase" }}
+                      >
+                        {exportLoading === "pdf" ? "PDF…" : !canExport
+                          ? exportAvailability === "access_required"
+                            ? language === "tr" ? "BELGE — ERİŞİM GEREKLİ" : "DOCUMENT — ACCESS REQUIRED"
+                            : exportAvailability === "preview_only"
+                            ? language === "tr" ? "BELGE — ÖNİZLEME" : "DOCUMENT — PREVIEW"
+                            : language === "tr" ? "BELGE — API YOK" : "DOCUMENT — NO API"
+                          : language === "tr" ? "BELGE ÜRET" : "ISSUE DOCUMENT"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={resetVerificationRun}
+                        disabled={resetRunDisabled}
+                        style={{ fontFamily: MONO, fontSize: "0.62rem", letterSpacing: "0.06em", padding: "0.44rem 0.65rem", border: "1px solid var(--border-strong)", background: "var(--panel)", color: "var(--text-muted)", cursor: resetRunDisabled ? "not-allowed" : "pointer", opacity: resetRunDisabled ? 0.45 : 1, width: "100%", textAlign: "center", textTransform: "uppercase" }}
+                      >
+                        {language === "tr" ? "YENİ İNCELEME" : "NEW REVIEW"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ padding: PX.rightBlockPad, display: activeReviewTab === "scene" ? "none" : "block" }}>
+                    <div style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.15em", color: "var(--text-dim)", textTransform: "uppercase", marginBottom: "8px" }}>
+                      {language === "tr" ? "DOKTRİN NOTU" : "DOCTRINE"}
+                    </div>
+                    <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", lineHeight: 1.8 }}>
+                      <div>{language === "tr" ? "KAYITLI ≠ TÜRETİLMİŞ" : "RECORDED ≠ DERIVED"}</div>
+                      <div>{language === "tr" ? "TÜRETİLMİŞ ≠ KARAR" : "DERIVED ≠ DECISION"}</div>
+                      <div>{language === "tr" ? "İZ ≠ NİHAİ GERÇEK" : "TRACE ≠ FINAL TRUTH"}</div>
+                    </div>
+                    {verificationError ? <div style={{ marginTop: "0.5rem", fontSize: "0.68rem", color: "var(--error)", lineHeight: 1.35 }}>{verificationError}</div> : null}
+                    {exportError ? <div style={{ marginTop: "0.5rem", fontSize: "0.68rem", color: "var(--error)", lineHeight: 1.35 }}>{exportError}</div> : null}
+                  </div>
+                </aside>
               </div>
-            )}
+
+              <div style={{ display: activeReviewTab === "scene" ? "none" : "block", padding: "0.42rem 0.82rem 0.9rem", background: "var(--panel)" }}>
 
             <div
               id="verifier-inspection-detail-deck"
@@ -3919,6 +3693,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       </p>
                       {!hasConnectedApiIssuanceProfile ? (
                       <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
+                        {exportAvailability === "backend_unavailable" ? (
+                          <p style={{ fontSize: "0.84rem", color: "var(--text-dim)", margin: 0, lineHeight: 1.5 }}>
+                            {language === "tr"
+                              ? "Belge üretimi için API bağlantısı gereklidir. Şu anda backend erişimi yok."
+                              : "API connection required for artifact issuance. Backend currently unreachable."}
+                          </p>
+                        ) : (
+                        <>
                         <button
                           type="button"
                           onClick={runExportJson}
@@ -3938,7 +3720,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         >
                           {exportLoading === "json"
                             ? language === "tr" ? "Hazırlanıyor…" : "Preparing…"
-                            : language === "tr" ? "Sınırlı Belge Düzenleme — JSON" : "Issue bounded JSON"}
+                            : language === "tr" ? "Önizleme — JSON" : "Preview — JSON"}
                         </button>
                         <button
                           type="button"
@@ -3959,8 +3741,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         >
                           {exportLoading === "pdf"
                             ? language === "tr" ? "Hazırlanıyor…" : "Preparing…"
-                            : language === "tr" ? "Sınırlı Belge Düzenleme — PDF" : "Issue bounded PDF"}
+                            : language === "tr" ? "Önizleme — PDF" : "Preview — PDF"}
                         </button>
+                        </>
+                        )}
                       </div>
                       ) : (
                         <p style={{ fontSize: "0.8125rem", color: "var(--text-dim)", marginTop: "0.45rem", marginBottom: 0 }}>
@@ -4252,6 +4036,14 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   </div>
                   {!hasConnectedApiIssuanceProfile ? (
                   <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", flexWrap: "wrap" }}>
+                    {exportAvailability === "backend_unavailable" ? (
+                      <p style={{ fontSize: "0.84rem", color: "var(--text-dim)", margin: 0, lineHeight: 1.5 }}>
+                        {language === "tr"
+                          ? "Belge üretimi için API bağlantısı gereklidir."
+                          : "API connection required for artifact issuance."}
+                      </p>
+                    ) : (
+                    <>
                     <button
                       type="button"
                       onClick={runExportJson}
@@ -4267,7 +4059,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         opacity: !selectedId || exportLoading ? 0.6 : 1,
                       }}
                     >
-                      {exportLoading === "json" ? (language === "tr" ? "Hazırlanıyor…" : "Preparing…") : language === "tr" ? "Issuance — JSON" : "Issue as JSON"}
+                      {exportLoading === "json" ? (language === "tr" ? "Hazırlanıyor…" : "Preparing…") : language === "tr" ? "Önizleme — JSON" : "Preview — JSON"}
                     </button>
                     <button
                       type="button"
@@ -4284,8 +4076,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         opacity: !selectedId || exportLoading ? 0.6 : 1,
                       }}
                     >
-                      {exportLoading === "pdf" ? (language === "tr" ? "Hazırlanıyor…" : "Preparing…") : language === "tr" ? "Issuance — PDF" : "Issue as PDF"}
+                      {exportLoading === "pdf" ? (language === "tr" ? "Hazırlanıyor…" : "Preparing…") : language === "tr" ? "Önizleme — PDF" : "Preview — PDF"}
                     </button>
+                    </>
+                    )}
                   </div>
                   ) : (
                     <p style={{ fontSize: "0.8125rem", color: "var(--text-dim)", marginTop: "0.45rem", marginBottom: 0 }}>
@@ -4459,9 +4253,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             )}
             </div>
             </div>
+            </div>
           </main>
-      </div>
-      <BrandSignatureBand mode="surface" label="Qaraqutu sahiplilik imzasi" />
+      <div style={{ display: "none" }}><BrandSignatureBand mode="surface" label="Qaraqutu sahiplilik imzasi" /></div>
     </div>
   );
 }

@@ -4,8 +4,8 @@ import type { CSSProperties } from "react";
 
 const MONO = "'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace";
 
-/** Minimum stage height: primary forensic workstation surface (scene-first) */
-const STAGE_MIN_H = "clamp(420px, 62vh, 720px)";
+/** Minimum stage height: constrained to keep evidence band visible in first-screen */
+const STAGE_MIN_H = "0";
 
 export type ReconstructionSystem = "vehicle" | "drone" | "robot";
 
@@ -92,17 +92,17 @@ const panel: CSSProperties = {
   borderRadius: 0,
   background: "var(--panel-card)",
   overflow: "hidden",
-  boxShadow: "inset 0 0 0 1px rgba(255,102,0,0.06)",
+  boxShadow: "none",
 };
 
 const labelBar: CSSProperties = {
-  padding: "0.4rem 0.62rem",
+  padding: "8px 12px",
   borderBottom: "1px solid var(--border)",
-  background: "#1a1c21",
+  background: "var(--surface)",
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  gap: "0.52rem",
+  gap: "6px",
 };
 
 const accentOrange = "var(--accent)";
@@ -839,37 +839,43 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
     <section
       style={{
         ...panel,
-        marginBottom: "0.5rem",
+        marginBottom: 0,
+        border: "none",
+        borderRadius: 0,
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column" as const,
         borderColor: sceneActive ? "var(--accent-border)" : "var(--border)",
-        boxShadow: sceneActive ? "inset 0 0 0 1px rgba(255,102,0,0.1)" : panel.boxShadow,
+        boxShadow: "none",
       }}
       aria-label={language === "tr" ? "Olay mekânı yeniden oluşturma" : "Event spatial reconstruction"}
     >
-      <div style={labelBar}>
+      <div style={{ ...labelBar, display: "none" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem", minWidth: 0 }}>
-          <span style={{ fontFamily: MONO, fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", fontWeight: 700 }}>
+          <span style={{ fontFamily: MONO, fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--text-dim)", fontWeight: 600 }}>
             {titleBar}
           </span>
           <span
             style={{
               fontFamily: MONO,
-              fontSize: "0.62rem",
+              fontSize: "9px",
               color: "var(--text-muted)",
-              letterSpacing: "0.1em",
+              letterSpacing: "0.12em",
               textTransform: "uppercase",
             }}
           >
             {familyGrammar}
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", maxWidth: "60%" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", maxWidth: "60%" }}>
           <span
             style={{
               fontFamily: MONO,
-              fontSize: "0.62rem",
-              letterSpacing: "0.1em",
+              fontSize: "9px",
+              letterSpacing: "0.12em",
               textTransform: "uppercase",
-              padding: "0.14rem 0.35rem",
+              padding: "2px 8px",
               border: "1px solid var(--accent-border)",
               color: "var(--accent)",
               background: "var(--accent-soft)",
@@ -883,10 +889,10 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
             <span
               style={{
                 fontFamily: MONO,
-                fontSize: "0.58rem",
-                letterSpacing: "0.08em",
+                fontSize: "9px",
+                letterSpacing: "0.12em",
                 textTransform: "uppercase",
-                padding: "0.12rem 0.28rem",
+                padding: "2px 6px",
                 border: "1px solid var(--border)",
                 color: "var(--text-muted)",
                 background: "var(--panel)",
@@ -898,7 +904,7 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
             </span>
           ) : null}
           <span
-            style={{ fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}
+            style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}
             title={title ?? ""}
           >
             {eventId ? `${system.toUpperCase()} · ${title ?? incidentClass ?? ""}` : `${system.toUpperCase()} · ${language === "tr" ? "beklemede" : "standby"}`}
@@ -909,14 +915,9 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
       <div
         style={{
           position: "relative",
-          minHeight: STAGE_MIN_H,
-          background:
-            system === "vehicle"
-              ? "linear-gradient(180deg, rgba(212,86,26,0.09), transparent 30%), var(--panel-raised)"
-              : system === "drone"
-                ? "linear-gradient(180deg, rgba(102,148,255,0.11), transparent 30%), var(--panel-raised)"
-                : "linear-gradient(180deg, rgba(110,210,170,0.09), transparent 30%), var(--panel-raised)",
-          borderBottom: "1px solid var(--border-strong)",
+          flex: 1,
+          minHeight: 0,
+          background: "var(--panel-raised)",
         }}
       >
         <div
@@ -924,15 +925,14 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
             position: "absolute",
             inset: 0,
             zIndex: 0,
-            padding: "0.35rem 0.55rem",
+            padding: 0,
             pointerEvents: "none",
           }}
         >
-          <div style={{ width: "100%", height: "100%", minHeight: STAGE_MIN_H }}>
+          <div style={{ width: "100%", height: "100%" }}>
             <SceneRenderer kind={scene} language={language} role={role} />
           </div>
         </div>
-        <SpatialReadinessLayer seed={seed} active={sceneActive} language={language} phase={incidentPhase} />
         <MetaCluster lat={lat} lon={lon} zone={zone} conf={conf} />
         <div
           style={{
@@ -941,64 +941,38 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
             left: 10,
             zIndex: 2,
             pointerEvents: "none",
-            border: `1px solid ${phaseVisual.color}`,
+            border: "1px solid var(--border-strong)",
             background: "rgba(0,0,0,0.45)",
             borderRadius: 0,
-            padding: "0.26rem 0.4rem",
+            padding: "8px 10px",
             color: "var(--text-soft)",
             fontFamily: MONO,
-            fontSize: "0.64rem",
+            fontSize: "9px",
             minWidth: 220,
-            maxWidth: 300,
+            maxWidth: 280,
           }}
         >
-          <div style={{ fontWeight: 700, color: phaseVisual.color }}>{phaseVisual.label}</div>
-          <div>{phaseVisual.zone}</div>
-          <div style={{ color: "var(--text-muted)", marginTop: "0.1rem" }}>{phaseVisual.detail}</div>
-          <div style={{ marginTop: "0.12rem", fontSize: "0.58rem", color: "var(--text-dim)" }}>
-            {system === "vehicle"
-              ? language === "tr"
-                ? "Araç koridoru odaklı sahne dili"
-                : "Vehicle corridor context"
-              : system === "drone"
-                ? language === "tr"
-                  ? "Drone irtifa/koridor sahne dili"
-                  : "Drone airspace context"
-                : language === "tr"
-                  ? "Robot hücre güvenirliği sahne dili"
-                  : "Robot workcell context"}
+          <div style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.12em", color: "var(--text-dim)", textTransform: "uppercase", marginBottom: "4px" }}>
+            {language === "tr" ? "LEJANT" : "LEGEND"}
           </div>
-          <div
-            style={{
-              marginTop: "0.35rem",
-              borderTop: "1px solid var(--border-strong)",
-              paddingTop: "0.3rem",
-            }}
-          >
-            <div style={{ fontSize: "0.58rem", letterSpacing: "0.08em", color: "var(--text-dim)", marginBottom: "0.15rem" }}>
-              {language === "tr" ? "Doğrulama Durumu" : "Verification Posture"}
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.2rem" }}>
-              {statusChip(language === "tr" ? "Genel" : "Overall", phaseVerificationPosture)}
-              {statusChip(language === "tr" ? "Kayıtlı" : "Recorded", phaseVerification?.recordedPosture ?? "UNVERIFIED")}
-              {statusChip(language === "tr" ? "Türetilmiş" : "Derived", phaseVerification?.derivedPosture ?? "UNVERIFIED")}
-              {statusChip(language === "tr" ? "Bilinmeyen" : "Unknown", phaseVerification?.unknownDisputedPosture ?? "UNVERIFIED")}
-              {statusChip(language === "tr" ? "İz" : "Trace", phaseVerification?.tracePosture ?? "UNVERIFIED")}
-              {statusChip(language === "tr" ? "Düzenleme" : "Artifact", phaseArtifactReadiness)}
-            </div>
-            {phaseVerification?.note ? (
-              <div style={{ marginTop: "0.2rem", fontSize: "0.55rem", color: "var(--text-muted)" }}>
-                {language === "tr" ? phaseVerification.noteTr ?? phaseVerification.note : phaseVerification.note}
-              </div>
-            ) : null}
-            <div style={{ marginTop: "0.18rem", fontSize: "0.54rem", color: "var(--text-dim)", lineHeight: 1.45 }}>
-              {readinessContext}
-            </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#5ea4ff", flexShrink: 0 }} />
+            <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-secondary)" }}>{language === "tr" ? "Kayıtlı iz" : "Recorded trace"}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--accent)", flexShrink: 0 }} />
+            <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-secondary)" }}>{language === "tr" ? "Türetilmiş hipotez" : "Derived hypothesis"}</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ width: 16, height: 1, background: phaseVisual.color, flexShrink: 0 }} />
+            <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-secondary)" }}>{phaseVisual.label}</span>
           </div>
         </div>
       </div>
 
-      <TelemetryStrip language={language} system={system} seed={seed} idle={idle} phase={incidentPhase} />
+      <div style={{ display: "none" }}>
+        <TelemetryStrip language={language} system={system} seed={seed} idle={idle} phase={incidentPhase} />
+      </div>
     </section>
   );
 }

@@ -11,3 +11,6 @@ postgres-data
 .env
 .env.*
 !.env.example
+
+# Proof screenshots / debug captures
+apps/web/verifier-scene-captures/
