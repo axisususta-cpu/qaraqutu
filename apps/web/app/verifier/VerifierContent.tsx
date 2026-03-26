@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useLanguage } from "../../lib/LanguageContext";
@@ -21,6 +22,7 @@ import {
   getArtifactProfilesForDomain,
 } from "../../lib/artifact-profiles";
 import { BrandSignatureBand } from "../components/BrandSignatureBand";
+import { LogoPrimary } from "../components/LogoPrimary";
 import { ReconstructionViewport } from "../components/verifier/ReconstructionViewport";
 import { DocumentShell } from "../components/documents/DocumentShell";
 import { DocumentSection } from "../components/documents/DocumentSection";
@@ -1471,9 +1473,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         lineHeight: 1.4,
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
         display: "grid",
-        gridTemplateRows: `${CH.topNavPx}px 1fr`,
+        gridTemplateRows: `${CH.topNavPx}px 1fr 28px`,
         gridTemplateColumns: `${CH.spinePx}px 1fr`,
-        gridTemplateAreas: `"hdr hdr" "nav main"`,
+        gridTemplateAreas: `"hdr hdr" "nav main" "foot foot"`,
+        /* bottom bar row added for brand attribution strip */
         overflow: "hidden",
       }}
     >
@@ -1490,33 +1493,32 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           padding: `0 ${PX.headerPadX}px`,
         }}
       >
-        <span
+        <Link
+          href="/"
+          aria-label={language === "tr" ? "QARAQUTU ana sayfaya git" : "Go to QARAQUTU home"}
           style={{
-            fontFamily: MONO,
-            fontSize: "13px",
-            fontWeight: 600,
-            color: "var(--accent)",
-            letterSpacing: "0.12em",
-            border: "1px solid var(--accent)",
-            padding: "3px 8px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "10px",
+            minWidth: 0,
             flexShrink: 0,
-            textTransform: "uppercase",
+            textDecoration: "none",
           }}
         >
-          Qaraqutu
-        </span>
-        <span
-          style={{
-            fontFamily: MONO,
-            fontSize: "10px",
-            color: "var(--text-secondary)",
-            letterSpacing: "0.15em",
-            textTransform: "uppercase",
-            flexShrink: 0,
-          }}
-        >
-          {language === "tr" ? "İnceleme İstasyonu" : "Inspection Station"}
-        </span>
+          <LogoPrimary height={22} variant="onDarkSurface" />
+          <span
+            style={{
+              fontFamily: MONO,
+              fontSize: "10px",
+              color: "var(--text-secondary)",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              flexShrink: 0,
+            }}
+          >
+            {language === "tr" ? "İnceleme İstasyonu" : "Inspection Station"}
+          </span>
+        </Link>
         <span style={{ width: 1, height: 20, background: "var(--border-strong)", flexShrink: 0 }} />
         <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "10px", overflow: "hidden", minWidth: 0 }}>
           <span style={{ fontFamily: MONO, fontSize: "11px", color: "var(--text-secondary)", flexShrink: 0 }}>PKT:</span>
@@ -4256,6 +4258,57 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
             </div>
           </main>
       <div style={{ display: "none" }}><BrandSignatureBand mode="surface" label="Qaraqutu sahiplilik imzasi" /></div>
+      <footer
+        style={{
+          gridArea: "foot",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 16px",
+          background: "#0c0d10",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          gap: "12px",
+          minWidth: 0,
+          overflow: "hidden",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: MONO,
+            fontSize: "0.56rem",
+            letterSpacing: "0.1em",
+            color: "rgba(255,255,255,0.32)",
+            flexShrink: 0,
+          }}
+        >
+          QARAQUTU by AxisUS
+        </span>
+        <span
+          style={{
+            fontFamily: MONO,
+            fontSize: "0.56rem",
+            color: "rgba(255,255,255,0.32)",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            minWidth: 0,
+            textAlign: "center",
+            flex: "1 1 auto",
+          }}
+        >
+          {language === "tr" ? "Tek zincir · role bağlı kabuk" : "One chain · role-scoped shells"}
+        </span>
+        <Image
+          src="/brand/logo_qaraqutu.svg"
+          alt="QARAQUTU verifier bottom bar logo"
+          aria-label="QARAQUTU verifier bottom bar logo"
+          width={132}
+          height={28}
+          priority
+          unoptimized
+          style={{ height: 14, width: "auto", opacity: 0.5, flexShrink: 0 }}
+        />
+      </footer>
     </div>
   );
 }
