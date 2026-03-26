@@ -17,6 +17,7 @@ export type ReconstructionViewportProps = {
   title: string | null;
   verificationState: string | null;
   role: string | null;
+  incidentPhase?: "t0" | "t1" | "t2" | "t3" | null;
 };
 
 function stableHash(s: string): number {
@@ -345,11 +346,25 @@ function SpatialReadinessLayer({
   seed,
   active,
   language,
+  phase,
 }: {
   seed: number;
   active: boolean;
   language: "en" | "tr";
+  phase?: "t0" | "t1" | "t2" | "t3" | null;
 }) {
+  const phaseAccent =
+    phase === "t0"
+      ? "rgba(116, 185, 255, 0.22)"
+      : phase === "t1"
+        ? "rgba(253, 203, 110, 0.22)"
+        : phase === "t2"
+          ? "rgba(225, 112, 85, 0.22)"
+          : phase === "t3"
+            ? "rgba(0, 184, 148, 0.22)"
+            : "rgba(149, 165, 166, 0.16)";
+  const traceThickness =
+    phase === "t2" ? 0.8 : phase === "t1" ? 0.6 : phase === "t3" ? 0.5 : 0.4;
   const points = Array.from({ length: 140 }, (_, i) => {
     const x = 6 + ((seed + i * 37) % 88);
     const y = 6 + ((seed + i * 53) % 88);
@@ -374,7 +389,7 @@ function SpatialReadinessLayer({
         pointerEvents: "none",
         border: active ? "1px solid var(--accent-border)" : "1px solid var(--border)",
         background:
-          "linear-gradient(180deg, rgba(10,25,40,0.24) 0%, rgba(16,36,58,0.14) 40%, rgba(20,42,72,0.0) 100%)",
+          `linear-gradient(180deg, rgba(10,25,40,0.24) 0%, rgba(16,36,58,0.14) 40%, rgba(20,42,72,0.0) 100%), ${phaseAccent}`,
       }}
       aria-hidden
     >
@@ -401,7 +416,7 @@ function SpatialReadinessLayer({
           points="8,80 24,65 42,72 57,50 74,58 90,36"
           fill="none"
           stroke="rgba(255,173,92,0.95)"
-          strokeWidth="0.45"
+          strokeWidth={0.45 + traceThickness * 0.3}
           strokeDasharray="1.2 1.0"
           opacity={active ? 0.94 : 0.66}
         />
@@ -409,7 +424,7 @@ function SpatialReadinessLayer({
           points="12,22 30,26 47,18 60,24 79,14"
           fill="none"
           stroke="rgba(164,216,255,0.8)"
-          strokeWidth="0.42"
+          strokeWidth={0.42 + traceThickness * 0.26}
           strokeDasharray="1 1.1"
           opacity={active ? 0.85 : 0.58}
         />
@@ -417,7 +432,7 @@ function SpatialReadinessLayer({
           points="10,68 28,60 45,62 63,44 84,47"
           fill="none"
           stroke="rgba(162,212,255,0.8)"
-          strokeWidth="0.36"
+          strokeWidth={0.36 + traceThickness * 0.22}
           strokeDasharray="0.8 1.2"
           opacity={active ? 0.78 : 0.56}
         />
@@ -433,7 +448,7 @@ function SpatialReadinessLayer({
               x2={target.x}
               y2={target.y}
               stroke="rgba(255,200,120,0.55)"
-              strokeWidth="0.24"
+              strokeWidth={0.24 + traceThickness * 0.4}
               strokeDasharray="2 1"
               opacity={active ? 0.85 : 0.6}
             />
@@ -469,11 +484,13 @@ function TelemetryStrip({
   system,
   seed,
   idle,
+  phase,
 }: {
   language: "en" | "tr";
   system: ReconstructionSystem;
   seed: number;
   idle: boolean;
+  phase?: "t0" | "t1" | "t2" | "t3" | null;
 }) {
   const t0 = 8 + (seed % 5);
   const marks = [0, 1, 2, 3, 4].map((i) => `${t0 + i * 2}s`);
@@ -543,7 +560,25 @@ function TelemetryStrip({
           ))}
         </div>
         <span style={{ fontFamily: MONO, fontSize: "0.64rem", color: "var(--text-dim)" }}>
-          {language === "tr" ? "KRİTİK @t2" : "CRITICAL @t2"}
+          {phase
+            ? phase === "t0"
+              ? language === "tr"
+                ? "ÖNCEPHE @t0"
+                : "PRE-EVENT @t0"
+              : phase === "t1"
+                ? language === "tr"
+                  ? "YAKLAŞIM @t1"
+                  : "APPROACH @t1"
+                : phase === "t2"
+                  ? language === "tr"
+                    ? "KRİTİK @t2"
+                    : "CRITICAL @t2"
+                  : language === "tr"
+                    ? "SONRASI @t3"
+                    : "POST-EVENT @t3"
+            : language === "tr"
+              ? "KRİTİK @t2"
+              : "CRITICAL @t2"}
         </span>
       </div>
       <div
@@ -644,7 +679,7 @@ function MetaCluster({
 }
 
 export function ReconstructionViewport(props: ReconstructionViewportProps) {
-  const { language, system, incidentClass, eventId, title, verificationState, role } = props;
+  const { language, system, incidentClass, eventId, title, verificationState, role, incidentPhase } = props;
   const scene = resolveSceneKind(system, incidentClass, eventId);
   const seed = eventId ? stableHash(eventId) : stableHash(system + (title ?? ""));
   const lat = eventId ? fmtCoord(seed, 41.0, 4) : "—";
@@ -672,6 +707,29 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
   const idle = !eventId;
   const sceneActive = Boolean(eventId);
   const familyGrammar = familyGrammarLabel(system, language);
+  const phaseLabel = incidentPhase
+    ? incidentPhase === "t0"
+      ? language === "tr"
+        ? "Ön Olay"
+        : "Pre-Event"
+      : incidentPhase === "t1"
+        ? language === "tr"
+          ? "Yaklaşım"
+          : "Approach"
+        : incidentPhase === "t2"
+          ? language === "tr"
+            ? "Kritik"
+            : "Critical"
+          : incidentPhase === "t3"
+            ? language === "tr"
+              ? "Olay Sonrası"
+              : "Post-Event"
+            : language === "tr"
+              ? "Aşama: bilinmiyor"
+              : "Phase: unknown"
+    : language === "tr"
+      ? "Aşama: bilinmiyor"
+      : "Phase: unknown";
   const riskTag =
     verificationState === "FAIL"
       ? language === "tr"
@@ -684,6 +742,18 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
         : language === "tr"
           ? "KONTROLLÜ İNCELEME"
           : "CONTROLLED REVIEW";
+
+  type PhaseVisual = { color: string; label: string; detail: string; zone: string };
+  const phaseVisual: PhaseVisual = incidentPhase
+    ? incidentPhase === "t0"
+      ? { color: "#74b9ff", label: language === "tr" ? "Hafif mavi" : "Pre-flight", detail: language === "tr" ? "Sensör ön ısıtması ve veri kaydı" : "Sensor warmup and baseline capture", zone: language === "tr" ? "Ön uçuş koridoru" : "Pre-flight corridor" }
+      : incidentPhase === "t1"
+        ? { color: "#fdcb6e", label: language === "tr" ? "Sarı yaklaşım" : "Approach", detail: language === "tr" ? "Çizgi koridoru ve link durumda yoğunluk" : "Corridor and link intensity", zone: language === "tr" ? "Yaklaşım penceresi" : "Approach window" }
+        : incidentPhase === "t2"
+          ? { color: "#e17055", label: language === "tr" ? "Kırmızı kritik" : "Critical", detail: language === "tr" ? "Aktif olay penceresi; çekirdek risk" : "Active event window; core risk", zone: language === "tr" ? "Kritik olay bölgesi" : "Critical incident locus" }
+          : { color: "#00b894", label: language === "tr" ? "Yeşil sonrası" : "Post-Event", detail: language === "tr" ? "İz ve doğrulama sonlandırma" : "Trace review and closure", zone: language === "tr" ? "Olay sonrası inceleme" : "Post-event review" }
+    : { color: "#95a5a6", label: language === "tr" ? "Standby" : "Standby", detail: language === "tr" ? "Olay seçilmedi" : "No event selected", zone: language === "tr" ? "Bekleme" : "Standby" };
+
 
   return (
     <section
@@ -729,6 +799,24 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
           >
             {riskTag}
           </span>
+          {incidentPhase ? (
+            <span
+              style={{
+                fontFamily: MONO,
+                fontSize: "0.58rem",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                padding: "0.12rem 0.28rem",
+                border: "1px solid var(--border)",
+                color: "var(--text-muted)",
+                background: "var(--panel)",
+                fontWeight: 700,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {language === "tr" ? "Aşama" : "Phase"}: {phaseLabel}
+            </span>
+          ) : null}
           <span
             style={{ fontFamily: MONO, fontSize: "0.66rem", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" }}
             title={title ?? ""}
@@ -764,11 +852,44 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
             <SceneRenderer kind={scene} language={language} role={role} />
           </div>
         </div>
-        <SpatialReadinessLayer seed={seed} active={sceneActive} language={language} />
+        <SpatialReadinessLayer seed={seed} active={sceneActive} language={language} phase={incidentPhase} />
         <MetaCluster lat={lat} lon={lon} zone={zone} conf={conf} />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 10,
+            left: 10,
+            zIndex: 2,
+            pointerEvents: "none",
+            border: `1px solid ${phaseVisual.color}`,
+            background: "rgba(0,0,0,0.45)",
+            borderRadius: 4,
+            padding: "0.3rem 0.45rem",
+            color: "var(--text-soft)",
+            fontFamily: MONO,
+            fontSize: "0.64rem",
+          }}
+        >
+          <div style={{ fontWeight: 700, color: phaseVisual.color }}>{phaseVisual.label}</div>
+          <div>{phaseVisual.zone}</div>
+          <div style={{ color: "var(--text-muted)", marginTop: "0.1rem" }}>{phaseVisual.detail}</div>
+          <div style={{ marginTop: "0.12rem", fontSize: "0.58rem", color: "var(--text-dim)" }}>
+            {system === "vehicle"
+              ? language === "tr"
+                ? "Araç koridoru odaklı sahne dili"
+                : "Vehicle corridor context"
+              : system === "drone"
+                ? language === "tr"
+                  ? "Drone irtifa/koridor sahne dili"
+                  : "Drone airspace context"
+                : language === "tr"
+                  ? "Robot hücre güvenirliği sahne dili"
+                  : "Robot workcell context"}
+          </div>
+        </div>
       </div>
 
-      <TelemetryStrip language={language} system={system} seed={seed} idle={idle} />
+      <TelemetryStrip language={language} system={system} seed={seed} idle={idle} phase={incidentPhase} />
     </section>
   );
 }

@@ -95,6 +95,35 @@ export interface CanonicalEvent {
 /** Canonical spine: one case shape for all verticals (Vehicle / Drone / Robot). */
 export type CanonicalSystemId = "vehicle" | "drone" | "robot";
 
+export type IncidentPhase = "t0" | "t1" | "t2" | "t3";
+
+export interface IncidentPhaseSpec {
+  phase: IncidentPhase;
+  labelTr: string;
+  labelEn: string;
+  descriptionTr: string;
+  descriptionEn: string;
+  recordedLayerHint: string;
+  derivedLayerHint: string;
+  traceMarker: string;
+}
+
+export interface IncidentSpine {
+  systemType: CanonicalSystemId;
+  incidentId: string;
+  scenarioTitle: string;
+  incidentSummary: string;
+  riskLabel: "DUSUK" | "ORTA" | "YUKSEK";
+  uncertaintyState: "low" | "medium" | "high";
+  spatialVocabulary: {
+    generic: string;
+    vehicle?: string;
+    drone?: string;
+    robot?: string;
+  };
+  phases: IncidentPhaseSpec[];
+}
+
 export interface VerificationTraceStep {
   step: number;
   check: string;
@@ -170,5 +199,7 @@ export interface CanonicalCase {
   axisusStates?: AxisusState[];
   /** Artifact Issuance Discipline Pack v1: case-aware profile visibility (optional). */
   artifactProfiles?: ArtifactProfileVisibility[];
+  /** Connected Incident Spine (phase-driven forensic reconstruction model). */
+  incidentSpine?: IncidentSpine;
 }
 

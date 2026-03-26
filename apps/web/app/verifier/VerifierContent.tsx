@@ -731,6 +731,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedRoleLens, setSelectedRoleLens] = useState<RoleLensId>("insurance");
+  const [selectedPhase, setSelectedPhase] = useState<"t0" | "t1" | "t2" | "t3">("t2");
   const [expandedUniverse, setExpandedUniverse] = useState<MockSystemId>(selectedSystem);
   const [activeSpineSection, setActiveSpineSection] = useState<string>("source");
   type ReviewTabId = "scene" | "recorded" | "derived" | "unknownDisputed" | "transcript" | "issuance";
@@ -861,6 +862,16 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
   const selectedCase = selectedEventId ? getCanonicalCaseByEventId(selectedEventId) : null;
   const selectedPackage = displayEvents.find((e) => e.eventId === selectedEventId) ?? null;
+
+  useEffect(() => {
+    if (selectedCase?.incidentSpine?.phases?.length) {
+      const phaseOptions = selectedCase.incidentSpine.phases.map((p) => p.phase);
+      if (phaseOptions.includes(selectedPhase)) return;
+      setSelectedPhase(selectedCase.incidentSpine.phases[0].phase);
+    } else {
+      setSelectedPhase("t2");
+    }
+  }, [selectedCase, selectedPhase]);
   const packageSummaryMain =
     selectedPackage?.summary.split(language === "tr" ? " Bağlam:" : " Context:")[0] ??
     null;
@@ -2465,6 +2476,52 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       : "Recorded layer, expert reading, and review trace are shown in one field with doctrine boundaries preserved."}
                   </div>
                 </div>
+
+                {selectedCase?.incidentSpine?.phases ? (
+                  <div style={{ margin: "0.6rem 0 0.6rem", display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
+                    {selectedCase.incidentSpine.phases.map((phase) => {
+                      const active = selectedPhase === phase.phase;
+                      return (
+                        <button
+                          key={phase.phase}
+                          type="button"
+                          onClick={() => setSelectedPhase(phase.phase)}
+                          style={{
+                            fontFamily: MONO,
+                            fontSize: "0.62rem",
+                            letterSpacing: "0.08em",
+                            borderRadius: INNER_TILE_RADIUS,
+                            border: active ? "1px solid var(--accent-border)" : "1px solid var(--border)",
+                            background: active ? "var(--accent-soft)" : "var(--panel)",
+                            color: active ? "var(--accent)" : "var(--text-muted)",
+                            padding: "0.24rem 0.34rem",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {language === "tr" ? phase.labelTr : phase.labelEn} ({phase.phase})
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      margin: "0.5rem 0",
+                      padding: "0.32rem 0.45rem",
+                      color: "var(--text-muted)",
+                      fontFamily: MONO,
+                      fontSize: "0.62rem",
+                      border: "1px solid var(--border)",
+                      borderRadius: INNER_TILE_RADIUS,
+                      background: "var(--panel)",
+                    }}
+                  >
+                    {language === "tr"
+                      ? "Olay omurgası bulunamadı; t2 (kritik) aşamasına varsayılan geçiş yapıldı."
+                      : "Incident spine not found; defaulted to t2 (critical) phase."}
+                  </div>
+                )}
+
                 <ReconstructionViewport
                   language={language}
                   system={selectedSystem}
@@ -2473,6 +2530,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   title={selectedEventCard?.title ?? null}
                   verificationState={visibleReviewState}
                   role={selectedRoleLens}
+                  incidentPhase={selectedPhase}
                 />
               </div>
             )}
