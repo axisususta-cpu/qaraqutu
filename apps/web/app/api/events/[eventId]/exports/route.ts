@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { ExportArtifactResponse } from "contracts";
 import { resolveBffUpstreamToken } from "../../../../../lib/access-token";
+import {
+  hasTrustedAccessSession,
+  resolveTrustedRole,
+  trustedRoleExportProfile,
+} from "../../../../../lib/trusted-access";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -35,6 +40,15 @@ function localPreviewExport(eventId: string, body: Record<string, unknown> | nul
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ eventId: string }> }) {
+  if (!hasTrustedAccessSession(req)) {
+    return NextResponse.json({ error: "ACCESS_REQUIRED" }, { status: 401 });
+  }
+
+  const trustedRole = resolveTrustedRole(req);
+  if (!trustedRole) {
+    return NextResponse.json({ error: "ROLE_CONTEXT_REQUIRED" }, { status: 403 });
+  }
+
   const token = resolveBffUpstreamToken(req);
   const { eventId } = await ctx.params;
   if (!isSafeId(eventId)) {
@@ -44,6 +58,17 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ eventId: s
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return NextResponse.json({ error: "INVALID_REQUEST_BODY" }, { status: 400 });
+  }
+
+  if (body.profile !== trustedRoleExportProfile(trustedRole)) {
+    return NextResponse.json(
+      {
+        error: "ROLE_EXPORT_PROFILE_NOT_ALLOWED",
+        trusted_role: trustedRole,
+        export_profile: body.profile ?? null,
+      },
+      { status: 403 }
+    );
   }
 
   if (token.length < 12 && process.env.NODE_ENV !== "production") {
@@ -60,6 +85,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ eventId: s
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
         "x-qaraqutu-access": token,
+        "x-qaraqutu-role": trustedRole,
       },
       body: JSON.stringify(body),
       cache: "no-store",

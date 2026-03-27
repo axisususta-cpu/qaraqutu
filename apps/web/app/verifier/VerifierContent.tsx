@@ -31,6 +31,7 @@ import { DocumentShell } from "../components/documents/DocumentShell";
 import { DocumentSection } from "../components/documents/DocumentSection";
 import { DocumentMetadataBlock } from "../components/documents/DocumentMetadataBlock";
 import { MSG } from "../../lib/i18n/messages";
+import type { TrustedRoleId } from "../../lib/trusted-access";
 import type { InstitutionAudienceId } from "../../lib/report-authority";
 import {
   DEFAULT_AUDIENCE_BY_PROFILE,
@@ -213,14 +214,7 @@ const PROFESSIONAL_SCENARIO_LABELS_EN: Record<string, string> = {
   "Rota engel çarpması": "Route Obstacle Contact Review",
 };
 
-type RoleLensId =
-  | "insurance"
-  | "police"
-  | "adjudication"
-  | "expert"
-  | "manufacturer"
-  | "software"
-  | "engineering";
+type RoleLensId = TrustedRoleId;
 
 const ROLE_LENSES: {
   id: RoleLensId;
@@ -877,14 +871,14 @@ function phasePostureLabel(value: string | undefined, language: "en" | "tr") {
   return value;
 }
 
-export function VerifierContent({ initialEventId }: { initialEventId?: string }) {
+export function VerifierContent({ initialEventId, trustedRole }: { initialEventId?: string; trustedRole: RoleLensId }) {
   const { lang: language, setLang: setLanguage } = useLanguage();
   const [selectedSource, setSelectedSource] = useState<SourceId>("demo_archive");
   const [activeSourcePanel, setActiveSourcePanel] = useState<SourceId>("demo_archive");
   const [selectedSystem, setSelectedSystem] = useState<MockSystemId>(() => resolveInitialSystem(initialEventId));
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [selectedRoleLens, setSelectedRoleLens] = useState<RoleLensId>("insurance");
+  const [selectedRoleLens, setSelectedRoleLens] = useState<RoleLensId>(trustedRole);
   const [selectedPhase, setSelectedPhase] = useState<"t0" | "t1" | "t2" | "t3">("t2");
   const [expandedUniverse, setExpandedUniverse] = useState<MockSystemId>(selectedSystem);
   const [activeSpineSection, setActiveSpineSection] = useState<string>("");
@@ -937,6 +931,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   useEffect(() => {
     setExpandedUniverse(selectedSystem);
   }, [selectedSystem]);
+
+  useEffect(() => {
+    setSelectedRoleLens(trustedRole);
+  }, [trustedRole]);
 
   /** New event selection must not inherit verify/export identity from a previous package. */
   useEffect(() => {
@@ -1130,6 +1128,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         const res = await fetch("/api/export-status", { cache: "no-store" });
         const json = (await res.json().catch(() => null)) as ExportStatusResponse | null;
         if (cancelled) return;
+        if (res.status === 401 || res.status === 403) {
+          setExportRuntimeState("access_required");
+          setAccessGateConfigured(false);
+          return;
+        }
         if (!res.ok || !json?.state) {
           setExportRuntimeState(canUseLocalPreviewFallbackArtifact ? "preview_only" : "backend_unavailable");
           setAccessGateConfigured(canUseLocalPreviewFallbackArtifact ? null : true);
@@ -1409,6 +1412,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     try {
       const res = await fetch(`/api/events/${selectedId}/verify`, {
         method: "POST",
+        headers: {
+          "x-qaraqutu-role": selectedRoleLens,
+        },
       });
       const json = (await res.json().catch(() => ({}))) as
         | (Partial<VerificationRunResponse> & { local_preview?: boolean; preview_reason?: string })
@@ -1490,6 +1496,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-qaraqutu-role": selectedRoleLens,
         },
         body: JSON.stringify(requestBody),
       });
@@ -1600,7 +1607,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     try {
       const res = await fetch(`/api/exports/${issuedArtifact.meta.export_id}/reverify`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-qaraqutu-role": selectedRoleLens,
+        },
         body: JSON.stringify({ artifact_package: submission }),
       });
       const json = (await res.json().catch(() => ({}))) as ArtifactReverificationResponse | { error?: string };
@@ -2427,11 +2437,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 </span>
                 {ROLE_LENSES.map((role) => {
                   const selected = selectedRoleLens === role.id;
+                  const authorized = trustedRole === role.id;
                   return (
                     <button
                       key={role.id}
                       type="button"
-                      onClick={() => setSelectedRoleLens(role.id)}
+                      onClick={() => {
+                        if (authorized) setSelectedRoleLens(role.id);
+                      }}
+                      disabled={!authorized}
                       style={{
                         fontFamily: MONO,
                         fontSize: "9px",
@@ -2440,8 +2454,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         padding: "3px 10px",
                         border: selected ? "1px solid var(--accent-border)" : "1px solid var(--border-strong)",
                         background: selected ? "var(--accent-soft)" : "transparent",
-                        color: selected ? "var(--accent)" : "var(--text-secondary)",
-                        cursor: "pointer",
+                        color: selected ? "var(--accent)" : authorized ? "var(--text-secondary)" : "var(--text-dim)",
+                        cursor: authorized ? "pointer" : "not-allowed",
+                        opacity: authorized ? 1 : 0.45,
                       }}
                     >
                       {language === "tr" ? role.tr : role.en}

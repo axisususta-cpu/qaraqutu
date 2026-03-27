@@ -1,5 +1,8 @@
 import { Suspense } from "react";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { VerifierContent } from "./VerifierContent";
+import { hasTrustedAccessFromCookies, resolveTrustedRoleFromCookies } from "../../lib/trusted-access";
 
 /** Verifier-shaped shell so initial load does not present as a broken or stuck page. */
 function LoadingFallback() {
@@ -45,9 +48,21 @@ export default async function VerifierPage({
 }) {
   const p = await searchParams;
   const initialEventId = p?.eventId ?? undefined;
+  const cookieStore = await cookies();
+  const nextPath = initialEventId ? `/verifier?eventId=${encodeURIComponent(initialEventId)}` : "/verifier";
+
+  if (!hasTrustedAccessFromCookies(cookieStore)) {
+    redirect(`/access?next=${encodeURIComponent(nextPath)}`);
+  }
+
+  const trustedRole = resolveTrustedRoleFromCookies(cookieStore);
+  if (!trustedRole) {
+    redirect(`/access?next=${encodeURIComponent(nextPath)}`);
+  }
+
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <VerifierContent initialEventId={initialEventId} />
+      <VerifierContent initialEventId={initialEventId} trustedRole={trustedRole} />
     </Suspense>
   );
 }

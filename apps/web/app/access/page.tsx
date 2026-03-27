@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useLanguage } from "../../lib/LanguageContext";
 import { MSG } from "../../lib/i18n/messages";
+import { TRUSTED_ROLES, type TrustedRoleId } from "../../lib/trusted-access";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
@@ -22,6 +23,7 @@ export default function AccessPage({
   const { lang } = useLanguage();
   const m = MSG[lang];
   const [token, setToken] = useState("");
+  const [role, setRole] = useState<TrustedRoleId>("adjudication");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +37,7 @@ export default function AccessPage({
       const res = await fetch("/api/access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, next }),
+        body: JSON.stringify({ token, next, role }),
       });
       if (res.redirected) {
         window.location.href = res.url;
@@ -114,6 +116,32 @@ export default function AccessPage({
             }}
             placeholder={m.accessTokenPlaceholder}
           />
+
+          <label style={{ display: "block", fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.8rem", marginBottom: "0.35rem" }}>
+            {lang === "tr" ? "Rol bağlamı" : "Role context"}
+          </label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as TrustedRoleId)}
+            style={{
+              width: "100%",
+              boxSizing: "border-box",
+              padding: "0.6rem 0.7rem",
+              borderRadius: 10,
+              border: "1px solid var(--border)",
+              background: "var(--panel-card)",
+              color: "var(--text)",
+              outline: "none",
+              fontFamily: SANS,
+              fontSize: "0.84rem",
+            }}
+          >
+            {TRUSTED_ROLES.map((item) => (
+              <option key={item.id} value={item.id}>
+                {lang === "tr" ? item.tr : item.en}
+              </option>
+            ))}
+          </select>
 
           {error ? (
             <div

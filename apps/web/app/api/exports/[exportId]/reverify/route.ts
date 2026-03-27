@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { ArtifactReverificationResponse } from "contracts";
 import { resolveBffUpstreamToken } from "../../../../../lib/access-token";
+import { hasTrustedAccessSession, resolveTrustedRole } from "../../../../../lib/trusted-access";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -13,6 +14,15 @@ function isSafeExportId(value: string): boolean {
 }
 
 export async function POST(req: NextRequest, ctx: { params: Promise<{ exportId: string }> }) {
+  if (!hasTrustedAccessSession(req)) {
+    return NextResponse.json({ error: "ACCESS_REQUIRED" }, { status: 401 });
+  }
+
+  const trustedRole = resolveTrustedRole(req);
+  if (!trustedRole) {
+    return NextResponse.json({ error: "ROLE_CONTEXT_REQUIRED" }, { status: 403 });
+  }
+
   const token = resolveBffUpstreamToken(req);
   const { exportId } = await ctx.params;
   if (!isSafeExportId(exportId)) {
@@ -33,6 +43,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ exportId: 
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
         "x-qaraqutu-access": token,
+        "x-qaraqutu-role": trustedRole,
       },
       body: JSON.stringify(body),
       cache: "no-store",

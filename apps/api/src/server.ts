@@ -19,6 +19,12 @@ import type { DocumentIdentity } from "./modules/documents/types";
 import { registerVerifierRoutes } from "./verifier";
 import { registerSmokeRoutes } from "./smoke";
 import { randomUUID } from "crypto";
+import {
+  getClientIp,
+  hasBearerAccess,
+  isRoleAllowedExportProfile,
+  resolveTrustedRoleHeader,
+} from "./security";
 
 const prisma = new PrismaClient();
 
@@ -31,31 +37,6 @@ const BUILD_COMMIT_SHA = process.env.VERCEL_GIT_COMMIT_SHA ?? "unknown";
 const BUILD_TIME = process.env.BUILD_TIME ?? new Date().toISOString();
 const API_SUPPORTED_EXPORT_PROFILES: ExportProfileCode[] = ["claims", "legal"];
 const API_SUPPORTED_EXPORT_FORMATS: ExportFormat[] = ["json", "pdf"];
-/** Normalized secret; Vercel/env may inject BOM, CR/LF, or trailing newlines. */
-function normalizeAccessToken(raw: string): string {
-  return raw.replace(/^\uFEFF/, "").trim();
-}
-const ACCESS_TOKEN_RAW = normalizeAccessToken(process.env.QARAQUTU_ACCESS_TOKEN ?? "");
-const ACCESS_TOKEN = ACCESS_TOKEN_RAW.length >= 12 ? ACCESS_TOKEN_RAW : null;
-
-function getClientIp(request: any): string {
-  const xff = request.headers?.["x-forwarded-for"];
-  if (typeof xff === "string" && xff.length > 0) return xff.split(",")[0]?.trim() || "unknown";
-  const xri = request.headers?.["x-real-ip"];
-  if (typeof xri === "string" && xri.length > 0) return xri;
-  return request.ip ?? "unknown";
-}
-
-function hasBearerAccess(request: any): boolean {
-  if (!ACCESS_TOKEN) return false;
-  const auth = request.headers?.authorization;
-  if (typeof auth === "string" && auth.startsWith("Bearer ")) {
-    const provided = normalizeAccessToken(auth.slice("Bearer ".length));
-    return provided === ACCESS_TOKEN;
-  }
-  const alt = request.headers?.["x-qaraqutu-access"];
-  return typeof alt === "string" && normalizeAccessToken(alt) === ACCESS_TOKEN;
-}
 
 type RateKey = string;
 const RATE_BUCKETS = new Map<RateKey, { count: number; resetAt: number }>();
@@ -395,6 +376,19 @@ fastify.post<{
       export_profile: profile,
       format,
       purpose: null,
+    });
+  }
+
+  const trustedRole = resolveTrustedRoleHeader(request);
+  if (!trustedRole) {
+    return reply.code(403).send({ error: "ROLE_CONTEXT_REQUIRED" });
+  }
+
+  if (!isRoleAllowedExportProfile(trustedRole, profile as ExportProfileCode)) {
+    return reply.code(403).send({
+      error: "ROLE_EXPORT_PROFILE_NOT_ALLOWED",
+      trusted_role: trustedRole,
+      export_profile: profile,
     });
   }
 

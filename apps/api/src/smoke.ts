@@ -4,11 +4,16 @@ import { randomUUID } from "crypto";
 import { renderClaimsPdf } from "./modules/documents/claims-pack";
 import type { DocumentIdentity } from "./modules/documents/types";
 import type { CanonicalEvent, VerificationState } from "./contracts";
+import { hasBearerAccess } from "./security";
 
 const prisma = new PrismaClient();
 
 export function registerSmokeRoutes(app: FastifyInstance) {
-  app.get("/v1/system/smoke", async () => {
+  app.get("/v1/system/smoke", async (request, reply) => {
+    if ((process.env.NODE_ENV ?? "development") === "production" && !hasBearerAccess(request)) {
+      return reply.code(403).send({ error: "ACCESS_REQUIRED" });
+    }
+
     const now = new Date().toISOString();
 
     const events = await prisma.event.findMany();
@@ -140,6 +145,10 @@ export function registerSmokeRoutes(app: FastifyInstance) {
 
   // Internal long-form PDF fixture for multi-page validation
   app.get("/v1/system/pdf-fixture/claims-long", async (request, reply) => {
+    if ((process.env.NODE_ENV ?? "development") === "production" && !hasBearerAccess(request)) {
+      return reply.code(403).send({ error: "ACCESS_REQUIRED" });
+    }
+
     const now = new Date().toISOString();
     const identity: DocumentIdentity = {
       eventId: "QEV-SMOKE-LONG",

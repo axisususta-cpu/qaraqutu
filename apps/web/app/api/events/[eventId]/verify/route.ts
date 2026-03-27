@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { VerificationRunResponse } from "contracts";
-import { normalizeQaraqutuAccessToken } from "../../../../../lib/access-token";
+import { resolveBffUpstreamToken } from "../../../../../lib/access-token";
+import { hasTrustedAccessSession, resolveTrustedRole } from "../../../../../lib/trusted-access";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ??
@@ -36,6 +37,15 @@ function localPreviewVerification(eventId: string, reason: string): Verification
 }
 
 export async function POST(_req: NextRequest, ctx: { params: Promise<{ eventId: string }> }) {
+  if (!hasTrustedAccessSession(_req)) {
+    return NextResponse.json({ error: "ACCESS_REQUIRED" }, { status: 401 });
+  }
+
+  const trustedRole = resolveTrustedRole(_req);
+  if (!trustedRole) {
+    return NextResponse.json({ error: "ROLE_CONTEXT_REQUIRED" }, { status: 403 });
+  }
+
   const { eventId } = await ctx.params;
   if (!isSafeId(eventId)) {
     return NextResponse.json({ error: "INVALID_EVENT_ID" }, { status: 400 });
@@ -44,9 +54,10 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ eventId: 
   try {
     // Production Fastify/Vercel: POST with no body → 415; Content-Type: application/json with *empty* body → 400
     // (parse error → REQUEST_REJECTED). Valid empty JSON object is accepted (same as a minimal JSON payload).
-    const token = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
+    const token = resolveBffUpstreamToken(_req);
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
+      "x-qaraqutu-role": trustedRole,
     };
     if (token.length >= 12) {
       headers.Authorization = `Bearer ${token}`;

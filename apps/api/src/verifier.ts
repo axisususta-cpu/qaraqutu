@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { randomUUID } from "crypto";
 import { PrismaClient } from "@prisma/client";
 import type { VerificationState } from "./contracts";
+import { hasBearerAccess, resolveTrustedRoleHeader } from "./security";
 
 const prisma = new PrismaClient();
 
@@ -38,6 +39,12 @@ export function registerVerifierRoutes(app: FastifyInstance) {
   }>("/v1/events/:eventId/verify", async (request, reply) => {
     verifyRateLimit(request as any, reply as any);
     if ((reply as any).sent) return;
+    if (!hasBearerAccess(request)) {
+      return reply.code(403).send({ error: "ACCESS_REQUIRED" });
+    }
+    if (!resolveTrustedRoleHeader(request)) {
+      return reply.code(403).send({ error: "ROLE_CONTEXT_REQUIRED" });
+    }
     const { eventId } = request.params;
     if (!/^[a-zA-Z0-9_-]{6,80}$/.test(eventId)) {
       return reply.code(400).send({ error: "INVALID_EVENT_ID" });
@@ -121,6 +128,12 @@ export function registerVerifierRoutes(app: FastifyInstance) {
   app.get<{
     Params: { verificationRunId: string };
   }>("/v1/verifications/:verificationRunId", async (request, reply) => {
+    if (!hasBearerAccess(request)) {
+      return reply.code(403).send({ error: "ACCESS_REQUIRED" });
+    }
+    if (!resolveTrustedRoleHeader(request)) {
+      return reply.code(403).send({ error: "ROLE_CONTEXT_REQUIRED" });
+    }
     const { verificationRunId } = request.params;
     const run = await prisma.verificationRun.findUnique({
       where: { verificationRunId },
