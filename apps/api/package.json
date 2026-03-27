@@ -7,12 +7,14 @@
   "scripts": {
     "dev": "cross-env PORT=4100 tsx src/server.ts",
     "build": "prisma generate && tsc -p tsconfig.json",
+    "vercel-build": "npx tsc -p ../../packages/contracts/tsconfig.json && prisma generate && tsc -p tsconfig.json",
     "postinstall": "prisma generate",
     "start": "node dist/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name local_acceptance_runtime",
     "prisma:deploy": "prisma migrate deploy",
-    "smoke": "tsx src/smoke-cli.ts"
+    "smoke": "tsx src/smoke-cli.ts",
+    "test:doctrine": "tsx --test src/modules/doctrine/recorded-derived.test.ts"
   },
   "dependencies": {
     "@fastify/cors": "latest",
