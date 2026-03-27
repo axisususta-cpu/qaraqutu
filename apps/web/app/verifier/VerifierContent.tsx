@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useLanguage } from "../../lib/LanguageContext";
 import type {
+  ArtifactDocumentFamily,
   ArtifactReverificationResponse,
+  CanonicalCase,
   CanonicalEvent,
   CreateExportRequest,
   RecordedEvidenceItem,
@@ -111,6 +113,7 @@ interface IssuanceRecord {
 // Phase 1 mock data scaffolding for future workstation wiring.
 type MockSystemId = "vehicle" | "drone" | "robot";
 type SourceId = "demo_archive" | "connected_device" | "uploaded_package";
+type CaseStateFamily = "pass_clean" | "pass_limited" | "reverify_fail";
 
 const MOCK_SYSTEMS: { id: MockSystemId; label: string }[] = [
   { id: "vehicle", label: "Vehicle Pack" },
@@ -171,6 +174,14 @@ const SYSTEM_LABELS: Record<MockSystemId, { tr: string; en: string }> = {
   drone: { tr: "Drone", en: "Drone" },
   robot: { tr: "Robot", en: "Robot" },
 };
+
+const CASE_STATE_FAMILY_ORDER: CaseStateFamily[] = ["pass_clean", "pass_limited", "reverify_fail"];
+const INTEGRITY_NOTICE_FAMILIES: ArtifactDocumentFamily[] = [
+  "integrity_failure_notice",
+  "tamper_detected_notice",
+  "chain_breach_notice",
+  "artifact_invalidity_notice",
+];
 
 const PROFESSIONAL_SCENARIO_LABELS_TR: Record<string, string> = {
   "Sinyal ve yol geçiş ihlali": "Sinyal Geçiş Uyum İncelemesi",
@@ -402,14 +413,59 @@ const DEMO_PACKAGES: DemoPackageDef[] = [
 ];
 
 function getScenarioClassesBySystem(system: MockSystemId): string[] {
-  const set = new Set(DEMO_PACKAGES.filter((p) => p.system === system).map((p) => p.scenarioClass));
-  return Array.from(set);
+  return getCaseFamilyOptions(system).map((family) => family.id);
 }
 
 function resolveInitialSystem(eventId?: string): MockSystemId {
   if (!eventId) return "vehicle";
   const c = getCanonicalCaseByEventId(eventId);
   return (c?.system as MockSystemId) ?? "vehicle";
+}
+
+function getCaseStateFamily(caseItem: Pick<CanonicalCase, "limitations" | "reverification">): CaseStateFamily {
+  if (caseItem.reverification?.enabled) return "reverify_fail";
+  if ((caseItem.limitations?.length ?? 0) > 0) return "pass_limited";
+  return "pass_clean";
+}
+
+function getCaseFamilyOptions(system: MockSystemId): Array<{ id: CaseStateFamily; count: number }> {
+  return CASE_STATE_FAMILY_ORDER.map((family) => ({
+    id: family,
+    count: getCanonicalCases(system).filter((caseItem) => getCaseStateFamily(caseItem) === family).length,
+  })).filter((family) => family.count > 0);
+}
+
+function getRiskSeverity(caseItem: CanonicalCase): string {
+  const risk = caseItem.incidentSpine?.riskLabel?.toUpperCase();
+  if (risk === "YUKSEK" || risk === "HIGH") return "high";
+  if (risk === "ORTA" || risk === "MEDIUM") return "medium";
+  return "low";
+}
+
+function caseStateFamilyLabel(family: CaseStateFamily, language: "en" | "tr"): string {
+  if (family === "pass_clean") return "PASS";
+  if (family === "pass_limited") return "PASS WITH LIMITATIONS";
+  return "RE-VERIFICATION FAIL";
+}
+
+function caseStateFamilyCaption(family: CaseStateFamily, language: "en" | "tr"): string {
+  if (language === "tr") {
+    if (family === "pass_clean") return "Ana issuance çizgisi temiz PASS.";
+    if (family === "pass_limited") return "Ana issuance PASS kalır; sınırlamalar annex içinde görünür.";
+    return "Ana issuance PASS kalır; FAIL yalnız integrity / re-verification hattında görünür.";
+  }
+  if (family === "pass_clean") return "Main issuance line is clean PASS.";
+  if (family === "pass_limited") return "Main issuance line stays PASS; limitations remain visible in the annex.";
+  return "Main issuance stays PASS; FAIL appears only in the integrity / re-verification lane.";
+}
+
+function issuanceStateLabel(caseItem: CanonicalCase): string {
+  return getCaseStateFamily(caseItem) === "pass_limited" ? "PASS WITH LIMITATIONS" : "PASS";
+}
+
+function integrityStateLabel(caseItem: CanonicalCase, language: "en" | "tr"): string {
+  if (caseItem.reverification?.enabled) return "RE-VERIFICATION FAIL";
+  return language === "tr" ? "INTEGRITY WATCH" : "INTEGRITY WATCH";
 }
 
 // Unified event card shape (Vehicle from API, Drone/Robot from mock).
@@ -421,40 +477,45 @@ interface EventCard {
   timestamp: string;
   severity: string;
   state: string;
+  stateFamily: CaseStateFamily;
+  stateLabel: string;
+  issuanceLabel: string;
+  integrityLabel: string;
   availableOutputs: string[];
+  incidentClass: string;
+  limitationsCount: number;
+  documentFamilies: ArtifactDocumentFamily[];
+  integrityFamilies: ArtifactDocumentFamily[];
   bundleId?: string;
   manifestId?: string;
 }
 
 /** Map canonical case to EventCard for spine display. */
-function caseToEventCard(
-  c: {
-    eventId: string;
-    title?: string;
-    scenarioFrame: string;
-    summary: string;
-    summaryTr?: string;
-    occurredAt: string;
-    verificationState: string;
-    bundleId: string;
-    manifestId: string;
-    artifactIssuance: { available: boolean };
-  },
-  lang: "en" | "tr"
-): EventCard {
-  const severity = c.verificationState === "FAIL" ? "high" : c.verificationState === "PASS" ? "low" : "medium";
-  const outputs = c.artifactIssuance.available ? ["Claims artifact", "Legal artifact", "Trace"] : ["Demo context"];
-  const summary = lang === "tr" && c.summaryTr ? c.summaryTr : c.summary;
+function caseToEventCard(caseItem: CanonicalCase, lang: "en" | "tr"): EventCard {
+  const family = getCaseStateFamily(caseItem);
+  const summary = lang === "tr" && caseItem.summaryTr ? caseItem.summaryTr : caseItem.summary;
+  const outputs = (caseItem.artifactIssuance.documentFamilies ?? []).map((familyId) =>
+    documentFamilyLabel(familyId as never, lang)
+  );
   return {
-    eventId: c.eventId,
-    title: c.title ?? c.scenarioFrame,
+    eventId: caseItem.eventId,
+    title: caseItem.title ?? caseItem.scenarioFrame,
     summary,
-    timestamp: c.occurredAt,
-    severity,
-    state: c.verificationState,
+    identity: caseItem.recordedEvidenceSummary,
+    timestamp: caseItem.occurredAt,
+    severity: getRiskSeverity(caseItem),
+    state: caseItem.verificationState,
+    stateFamily: family,
+    stateLabel: caseStateFamilyLabel(family, lang),
+    issuanceLabel: issuanceStateLabel(caseItem),
+    integrityLabel: integrityStateLabel(caseItem, lang),
     availableOutputs: outputs,
-    bundleId: c.bundleId,
-    manifestId: c.manifestId,
+    incidentClass: caseItem.incidentClass,
+    limitationsCount: caseItem.limitations.length,
+    documentFamilies: caseItem.artifactIssuance.documentFamilies ?? [],
+    integrityFamilies: caseItem.reverification?.enabled ? INTEGRITY_NOTICE_FAMILIES : [],
+    bundleId: caseItem.bundleId,
+    manifestId: caseItem.manifestId,
   };
 }
 
@@ -687,10 +748,10 @@ function getVisibleUnknownItems(
   return items ?? [];
 }
 
-/** User-facing protocol state: API may emit UNVERIFIED; surface shows UNREVIEWED. */
-function displayProtocolState(raw: string | null | undefined): string {
-  if (raw == null || raw === "") return "UNREVIEWED";
-  if (raw === "UNVERIFIED") return "UNREVIEWED";
+/** User-facing protocol state: API may emit UNVERIFIED; surface shows REVIEW PENDING. */
+function displayProtocolState(raw: string | null | undefined, language: "en" | "tr"): string {
+  if (raw == null || raw === "") return language === "tr" ? "İNCELEME BEKLİYOR" : "REVIEW PENDING";
+  if (raw === "UNVERIFIED") return language === "tr" ? "İNCELEME BEKLİYOR" : "REVIEW PENDING";
   return raw;
 }
 
@@ -716,6 +777,30 @@ function protocolStatePillStyle(label: string): CSSProperties {
       borderColor: "var(--success)",
       background: "var(--success-soft)",
       color: "var(--success)",
+    };
+  }
+  if (key === "PASS WITH LIMITATIONS") {
+    return {
+      ...base,
+      borderColor: "var(--warning)",
+      background: "var(--warning-soft)",
+      color: "var(--warning)",
+    };
+  }
+  if (key === "RE-VERIFICATION FAIL") {
+    return {
+      ...base,
+      borderColor: "var(--error)",
+      background: "var(--error-soft)",
+      color: "var(--error)",
+    };
+  }
+  if (key === "REVIEW PENDING" || key === "İNCELEME BEKLİYOR") {
+    return {
+      ...base,
+      borderColor: "var(--border-strong)",
+      background: "var(--panel-raised)",
+      color: "var(--text-secondary)",
     };
   }
   if (key === "FAIL") {
@@ -767,9 +852,9 @@ function phaseUiLabel(
 }
 
 function phasePostureLabel(value: string | undefined, language: "en" | "tr") {
-  if (!value) return language === "tr" ? "Doğrulanmadı" : "Unverified";
+  if (!value) return language === "tr" ? "İnceleme Bekliyor" : "Review Pending";
   if (language === "tr") {
-    if (value === "UNVERIFIED") return "Doğrulanmadı";
+    if (value === "UNVERIFIED") return "İnceleme Bekliyor";
     if (value === "SUPPORTED") return "Destekleniyor";
     if (value === "CONTESTED") return "Çekişmeli";
     if (value === "INSUFFICIENT") return "Yetersiz";
@@ -880,8 +965,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         if (canon) {
           setSelectedSource("demo_archive");
           setSelectedSystem(canon.system as MockSystemId);
-          const pkg = DEMO_PACKAGES.find((p) => p.system === (canon.system as MockSystemId) && getCanonicalCases(canon.system as MockSystemId)[p.canonicalIndex]?.eventId === match.eventId);
-          setSelectedScenario(pkg?.scenarioClass ?? null);
+            setSelectedScenario(getCaseStateFamily(canon));
         }
       }
     }
@@ -910,22 +994,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     setSelectedId(null);
   };
 
-  // Demo packages visible for selected scenario class; each package binds to a canonical case identity.
-  const displayEvents: EventCard[] = (selectedScenario
-    ? DEMO_PACKAGES.filter((p) => p.system === selectedSystem && p.scenarioClass === selectedScenario)
-    : []
-  ).map((p) => {
-    const base = getCanonicalCases(selectedSystem)[p.canonicalIndex] ?? getCanonicalCases(selectedSystem)[0];
-    const mapped = caseToEventCard(base, language);
-    return {
-      ...mapped,
-      eventId: base.eventId,
-      title: p.title,
-      summary: `${p.summaryTr} ${language === "tr" ? "Bağlam" : "Context"}: ${p.opContextTr}`,
-      identity: p.sceneIdentityTr,
-      severity: p.riskBand === "YUKSEK" ? "high" : p.riskBand === "ORTA" ? "medium" : "low",
-    };
-  });
+  const displayEvents: EventCard[] = getCanonicalCases(selectedSystem)
+    .filter((caseItem) => !selectedScenario || getCaseStateFamily(caseItem) === selectedScenario)
+    .map((caseItem) => caseToEventCard(caseItem, language));
 
   const selectedEventCard =
     displayEvents.find((e) => e.eventId === selectedEventId) ?? null;
@@ -936,7 +1007,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
   useEffect(() => {
     if (initialEventId || selectedSource !== "demo_archive" || selectedScenario) return;
-    const firstScenario = DEMO_PACKAGES.find((pkg) => pkg.system === selectedSystem)?.scenarioClass ?? null;
+    const firstScenario = getCaseFamilyOptions(selectedSystem)[0]?.id ?? null;
     if (firstScenario) setSelectedScenario(firstScenario);
   }, [initialEventId, selectedScenario, selectedSource, selectedSystem]);
 
@@ -1023,8 +1094,23 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       ? selectedProfileMeta.labelTr
       : selectedProfileMeta.labelEn
     : exportProfile;
-  const visibleReviewState = verificationState ?? selectedEventCard?.state ?? null;
-  const displayedReviewState = displayProtocolState(visibleReviewState);
+  const visibleReviewState = verificationState
+    ? verificationState === "PASS"
+      ? selectedEventCard?.stateLabel ?? displayProtocolState(verificationState, language)
+      : displayProtocolState(verificationState, language)
+    : selectedEventCard?.stateLabel ?? null;
+  const displayedReviewState =
+    visibleReviewState ?? (language === "tr" ? "İNCELEME BEKLİYOR" : "REVIEW PENDING");
+  const displayedIssuanceState = selectedEventCard?.issuanceLabel ?? "PASS";
+  const displayedIntegrityState =
+    selectedEventCard?.integrityLabel ??
+    (language === "tr" ? "INTEGRITY WATCH" : "INTEGRITY WATCH");
+  const displayedDocumentFamilies = (selectedEventCard?.documentFamilies ?? []).map((familyId) =>
+    documentFamilyLabel(familyId as never, language)
+  );
+  const displayedIntegrityFamilies = (selectedEventCard?.integrityFamilies ?? []).map((familyId) =>
+    documentFamilyLabel(familyId as never, language)
+  );
   const canUseLocalPreviewFallbackArtifact =
     typeof window !== "undefined" &&
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
@@ -1716,7 +1802,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
           </span>
           <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", border: "1px solid rgba(122,173,232,0.4)", color: "#7aade8", background: "rgba(122,173,232,0.08)", textTransform: "uppercase" }}>{selectedSystem}</span>
           <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", border: "1px solid rgba(232,101,10,0.4)", color: "var(--accent)", background: "var(--accent-soft)", textTransform: "uppercase" }}>{selectedPackage?.severity === "high" ? (language === "tr" ? "RİSK: YÜKSEK" : "RISK: HIGH") : selectedPackage?.severity === "medium" ? (language === "tr" ? "RİSK: ORTA" : "RISK: MEDIUM") : (language === "tr" ? "RİSK: DÜŞÜK" : "RISK: LOW")}</span>
-          <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", border: "1px solid var(--border-strong)", color: "var(--text-secondary)", textTransform: "uppercase" }}>{displayedReviewState}</span>
+          <span style={{ ...protocolStatePillStyle(displayedReviewState), fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", textTransform: "uppercase" }}>{displayedReviewState}</span>
+          <span style={{ ...protocolStatePillStyle(displayedIssuanceState), fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", textTransform: "uppercase" }}>{displayedIssuanceState}</span>
+          <span style={{ ...protocolStatePillStyle(displayedIntegrityState), fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", textTransform: "uppercase" }}>{displayedIntegrityState}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
           <span
@@ -1836,8 +1924,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 }}
               >
                 {language === "tr"
-                  ? "1 Kaynak → 2 Aile → 3 Sınıf → 4 Paket"
-                  : "1 Source → 2 Family → 3 Class → 4 Package"}
+                  ? "1 Kaynak → 2 Aile → 3 Durum → 4 Vaka"
+                  : "1 Source → 2 Family → 3 State → 4 Case"}
               </span>
             </div>
 
@@ -1874,12 +1962,12 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
               {
                 id: "scenario",
                 step: 3,
-                label: language === "tr" ? "Olay Sınıfı" : "Incident Class",
+                label: language === "tr" ? "Durum Hattı" : "State Lane",
               },
               {
                 id: "event",
                 step: 4,
-                label: language === "tr" ? "Olay Paketi" : "Event Package",
+                label: language === "tr" ? "Kanonik Vaka" : "Canonical Case",
               },
             ].map((section) => {
               const isActive = activeSpineSection === section.id;
@@ -1988,16 +2076,16 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         })
                       }
                       {section.id === "scenario" &&
-                        getScenarioClassesBySystem(selectedSystem).map((name) => {
-                          const isSel = selectedScenario === name;
+                        getCaseFamilyOptions(selectedSystem).map((option) => {
+                          const isSel = selectedScenario === option.id;
                           return (
                             <div
-                              key={name}
-                              onClick={() => handleScenarioChange(name)}
+                              key={option.id}
+                              onClick={() => handleScenarioChange(option.id)}
                               style={{
                                 padding: "6px 14px 6px 22px",
                                 display: "flex",
-                                alignItems: "center",
+                                alignItems: "flex-start",
                                 gap: "6px",
                                 cursor: "pointer",
                                 borderBottom: "1px solid var(--border)",
@@ -2006,10 +2094,17 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                 transition: "background 0.12s",
                               }}
                             >
-                              <span style={{ fontFamily: MONO, fontSize: "10px", color: isSel ? "var(--accent)" : "var(--text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                                {professionalScenarioLabel(name)}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontFamily: MONO, fontSize: "10px", color: isSel ? "var(--accent)" : "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                  {caseStateFamilyLabel(option.id, language)}
+                                </div>
+                                <div style={{ fontFamily: MONO, fontSize: "8px", color: "var(--text-dim)", lineHeight: 1.35, marginTop: "2px" }}>
+                                  {caseStateFamilyCaption(option.id, language)}
+                                </div>
+                              </div>
+                              <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", flexShrink: 0 }}>
+                                {option.count}
                               </span>
-                              <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", flexShrink: 0 }}>›</span>
                             </div>
                           );
                         })
@@ -2018,12 +2113,17 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         <div style={{ maxHeight: 320, overflowY: "auto" }}>
                           {displayEvents.length === 0 ? (
                             <div style={{ padding: "6px 14px 6px 22px", fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)" }}>
-                              {selectedScenario ? msg.verifierEmptyEventCatalog : msg.verifierPickScenarioFirst}
+                              {selectedScenario
+                                ? language === "tr"
+                                  ? "Bu durum hattında görünür vaka yok."
+                                  : "No visible cases in this state lane."
+                                : language === "tr"
+                                  ? "Önce durum hattı seçin."
+                                  : "Select a state lane first."}
                             </div>
                           ) : (
                             displayEvents.map((ev) => {
                               const isEvSel = selectedEventId === ev.eventId;
-                              const protocolLabel = displayProtocolState(ev.state);
                               return (
                                 <div
                                   key={ev.eventId}
@@ -2041,12 +2141,15 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                     <span style={{ fontFamily: MONO, fontSize: "10px", color: isEvSel ? "var(--accent)" : "var(--text-muted)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                       {ev.eventId}
                                     </span>
-                                    <span style={{ ...protocolStatePillStyle(protocolLabel), fontSize: "8px", padding: "1px 4px", flexShrink: 0 }}>
-                                      {protocolLabel}
+                                    <span style={{ ...protocolStatePillStyle(ev.stateLabel), fontSize: "8px", padding: "1px 4px", flexShrink: 0 }}>
+                                      {ev.stateLabel}
                                     </span>
                                   </div>
                                   <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", marginTop: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                     {ev.title}
+                                  </div>
+                                  <div style={{ fontFamily: MONO, fontSize: "8px", color: "var(--text-dim)", marginTop: "2px", lineHeight: 1.35 }}>
+                                    {ev.incidentClass} · {ev.documentFamilies.length} {language === "tr" ? "belge ailesi" : "document families"}
                                   </div>
                                 </div>
                               );
@@ -2474,6 +2577,28 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", letterSpacing: "0.1em", marginBottom: 2 }}>{language === "tr" ? "BELGE HAZIRLIĞI" : "ARTIFACT READINESS"}</div>
                         <div style={{ fontSize: "10px", color: "var(--text-primary)", fontWeight: 600 }}>{selectedPhaseSpec ? phasePostureLabel(selectedPhaseSpec.verification.artifactReadiness, language) : (language === "tr" ? "Bekliyor" : "Pending")}</div>
                         <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", lineHeight: 1.35, marginTop: 2 }}>{selectedProfileLabel}</div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", letterSpacing: "0.1em", marginBottom: 2 }}>{language === "tr" ? "ISSUANCE HATTI" : "ISSUANCE LANE"}</div>
+                        <div style={{ fontSize: "10px", color: "var(--accent)", fontWeight: 600 }}>{displayedIssuanceState}</div>
+                        <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", lineHeight: 1.35, marginTop: 2 }}>
+                          {displayedDocumentFamilies.length > 0
+                            ? displayedDocumentFamilies.join(" · ")
+                            : language === "tr"
+                              ? "Belge ailesi bekleniyor"
+                              : "Document families pending"}
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", letterSpacing: "0.1em", marginBottom: 2 }}>{language === "tr" ? "RE-VERIFICATION HATTI" : "RE-VERIFICATION LANE"}</div>
+                        <div style={{ fontSize: "10px", color: displayedIntegrityState === "RE-VERIFICATION FAIL" ? "var(--error)" : "var(--text-primary)", fontWeight: 600 }}>{displayedIntegrityState}</div>
+                        <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", lineHeight: 1.35, marginTop: 2 }}>
+                          {displayedIntegrityFamilies.length > 0
+                            ? displayedIntegrityFamilies.join(" · ")
+                            : language === "tr"
+                              ? "Bütünlük izleme hattı aktif"
+                              : "Integrity watch lane active"}
+                        </div>
                       </div>
                       <div>
                         <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", letterSpacing: "0.1em", marginBottom: 2 }}>{language === "tr" ? "KİMLİK BAĞI" : "IDENTITY LINK"}</div>
@@ -3520,8 +3645,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       : "Verification State"}
                   </div>
                   <div style={{ marginTop: "0.35rem" }}>
-                    <span style={protocolStatePillStyle(displayProtocolState(verificationState))}>
-                      {displayProtocolState(verificationState)}
+                    <span style={protocolStatePillStyle(displayProtocolState(verificationState, language))}>
+                      {displayProtocolState(verificationState, language)}
                     </span>
                   </div>
                   {(verificationRunId || transcriptId) && (
@@ -3629,7 +3754,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                       {!loading && verificationError && <strong style={{ color: "var(--error)" }}>{verificationError}</strong>}
                       {!loading && !verificationError && verificationState && (language === "tr" ? "Durum: " : "Status: ")}
                       {!loading && !verificationError && verificationState && (
-                        <strong>{displayProtocolState(verificationState)}</strong>
+                        <strong>{displayProtocolState(verificationState, language)}</strong>
                       )}
                       {!loading && !verificationError && !verificationState && selectedId && (language === "tr" ? "Doğrulama bekleniyor." : "Verification pending.")}
                     </div>
