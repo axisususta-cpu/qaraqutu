@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 
 const BASE_URL = process.env.SMOKE_BASE_URL ?? "http://localhost:4100";
 const ACCESS_TOKEN = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
+const TRUSTED_ROLE = process.env.QARAQUTU_TRUSTED_ROLE?.trim() || "adjudication";
 
 function withAccessHeaders(init?: RequestInit): RequestInit | undefined {
   if (!ACCESS_TOKEN) {
@@ -16,11 +17,51 @@ function withAccessHeaders(init?: RequestInit): RequestInit | undefined {
   if (!headers.has("Authorization")) {
     headers.set("Authorization", `Bearer ${ACCESS_TOKEN}`);
   }
+  if (!headers.has("x-qaraqutu-role")) {
+    headers.set("x-qaraqutu-role", TRUSTED_ROLE);
+  }
 
   return {
     ...init,
     headers,
   };
+}
+
+function getRestrictedMarkers(event: any): { ids: string[]; labels: string[] } {
+  const items = [
+    ...(Array.isArray(event?.recordedEvidence) ? event.recordedEvidence : []),
+    ...(Array.isArray(event?.derivedEvidence) ? event.derivedEvidence : []),
+  ].filter((item: any) => item?.visibility_class === "restricted_internal");
+
+  return {
+    ids: items
+      .flatMap((item: any) => [item.recordId, item.derivedId, item.sourceId, item.machineLabel])
+      .filter((value: unknown): value is string => typeof value === "string" && value.length > 0),
+    labels: items
+      .flatMap((item: any) => [item.displayLabel, item.displayLabelTr, item.humanSummary, item.humanSummaryTr])
+      .filter((value: unknown): value is string => typeof value === "string" && value.length > 0),
+  };
+}
+
+function assertStructuredRedaction(container: any, expectedProfile: string) {
+  const record = container?.redaction_record;
+  if (!record || !Array.isArray(record.entries) || record.entries.length === 0) {
+    throw new Error("expected structured redaction_record entries");
+  }
+  if (record.export_profile !== expectedProfile) {
+    throw new Error(`unexpected redaction export profile: ${record.export_profile}`);
+  }
+  if (!record.entries.some((entry: any) => entry.visibility_class === "restricted_internal")) {
+    throw new Error("expected restricted_internal entry in redaction_record");
+  }
+}
+
+function assertNoMarkers(haystack: string, markers: string[], label: string) {
+  for (const marker of markers) {
+    if (haystack.includes(marker)) {
+      throw new Error(`${label} leaked restricted marker: ${marker}`);
+    }
+  }
 }
 
 const nativeFetch = globalThis.fetch.bind(globalThis);
@@ -34,6 +75,17 @@ const verifyPostJsonEmpty: RequestInit = {
   headers: { "Content-Type": "application/json" },
   body: "{}",
 };
+
+function exportRequestInit(body: Record<string, unknown>, role: string): RequestInit {
+  return {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-qaraqutu-role": role,
+    },
+    body: JSON.stringify(body),
+  };
+}
 
 type SmokeCategory = "passing_path" | "failing_path";
 
@@ -146,6 +198,8 @@ async function main() {
   // Dataset
   let sampleEventId: string | null = null;
   let eventIdWithRestricted: string | null = null;
+  let restrictedMarkerIds: string[] = [];
+  let restrictedMarkerLabels: string[] = [];
   results.push(
     await check("dataset", "passing_path", smokeRun.smokeRunId, async () => {
       const res = await fetch(`${BASE_URL}/v1/events`);
@@ -156,6 +210,16 @@ async function main() {
       }
       sampleEventId = json.items[0].eventId;
       eventIdWithRestricted = json.items.length > 1 ? json.items[1].eventId : json.items[0].eventId;
+
+      const restrictedEvent = await prisma.event.findUnique({
+        where: { eventId: eventIdWithRestricted as string },
+      });
+      const markers = getRestrictedMarkers(restrictedEvent);
+      restrictedMarkerIds = markers.ids;
+      restrictedMarkerLabels = markers.labels;
+      if (restrictedMarkerIds.length === 0 && restrictedMarkerLabels.length === 0) {
+        throw new Error("expected restricted markers in seeded dataset");
+      }
     })
   );
 
@@ -239,15 +303,14 @@ async function main() {
         `${BASE_URL}/v1/events/${encodeURIComponent(
           sampleEventId as string
         )}/exports`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        exportRequestInit(
+          {
             profile: "claims",
             format: "json",
             purpose: "smoke_claims_chain",
-          }),
-        }
+          },
+          "insurance"
+        )
       );
       if (!res.ok) throw new Error(`claims export create status ${res.status}`);
       const meta = await res.json();
@@ -307,15 +370,14 @@ async function main() {
       async () => {
         const res = await fetch(
           `${BASE_URL}/v1/events/${encodeURIComponent(sampleEventId as string)}/exports`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          exportRequestInit(
+            {
               profile: "claims",
               format: "json",
               purpose: "smoke_reverification_chain",
-            }),
-          }
+            },
+            "insurance"
+          )
         );
         if (!res.ok) throw new Error(`reverification export create status ${res.status}`);
         const meta = await res.json();
@@ -577,15 +639,14 @@ async function main() {
         `${BASE_URL}/v1/events/${encodeURIComponent(
           sampleEventId as string
         )}/exports`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            profile: "claims",
-            format: "txt",
-            purpose: "smoke_unsupported_format",
-          }),
-        }
+          exportRequestInit(
+            {
+              profile: "claims",
+              format: "txt",
+              purpose: "smoke_unsupported_format",
+            },
+            "insurance"
+          )
       );
       if (res.status !== 400) {
         throw new Error(`expected 400, got ${res.status}`);
@@ -609,15 +670,14 @@ async function main() {
         `${BASE_URL}/v1/events/${encodeURIComponent(
           sampleEventId as string
         )}/exports`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            profile: "claims",
-            format: "json",
-            purpose: "   ",
-          }),
-        }
+          exportRequestInit(
+            {
+              profile: "claims",
+              format: "json",
+              purpose: "   ",
+            },
+            "insurance"
+          )
       );
       if (res.status !== 400) {
         throw new Error(`expected 400, got ${res.status}`);
@@ -675,15 +735,14 @@ async function main() {
           `${BASE_URL}/v1/events/${encodeURIComponent(
             sampleEventId as string
           )}/exports`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          exportRequestInit(
+            {
               profile: "claims",
               format: "json",
               purpose: "smoke_policy_profile_not_allowed",
-            }),
-          }
+            },
+            "insurance"
+          )
         );
         if (res.status !== 403) {
           throw new Error(`expected 403, got ${res.status}`);
@@ -758,25 +817,26 @@ async function main() {
           `${BASE_URL}/v1/events/${encodeURIComponent(
             eventId as string
           )}/exports`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          exportRequestInit(
+            {
               profile: "claims",
               format: "json",
               purpose: "smoke_claims_redaction",
-            }),
-          }
+            },
+            "insurance"
+          )
         );
         if (!res.ok) {
           throw new Error(`claims export create status ${res.status}`);
         }
         const meta = await res.json();
         const exportId: string = meta.export_id;
+        assertStructuredRedaction(meta.artifact_package, "claims");
 
         const dl = await fetch(`${BASE_URL}/v1/exports/${exportId}/download`);
         if (!dl.ok) throw new Error(`claims download status ${dl.status}`);
         const payload = await dl.json();
+        assertStructuredRedaction(payload, "claims");
 
         const rec = payload.recorded_evidence ?? [];
         const der = payload.derived_evidence ?? [];
@@ -803,6 +863,10 @@ async function main() {
         if (!payload.redaction_basis) {
           throw new Error("expected redaction_basis to be present");
         }
+
+        const payloadText = JSON.stringify(payload);
+        assertNoMarkers(payloadText, restrictedMarkerIds, "claims json export");
+        assertNoMarkers(payloadText, restrictedMarkerLabels, "claims json export");
       }
     )
   );
@@ -834,10 +898,12 @@ async function main() {
         }
         const meta = await res.json();
         const exportId: string = meta.export_id;
+        assertStructuredRedaction(meta.artifact_package, "legal");
 
         const dl = await fetch(`${BASE_URL}/v1/exports/${exportId}/download`);
         if (!dl.ok) throw new Error(`legal download status ${dl.status}`);
         const payload = await dl.json();
+        assertStructuredRedaction(payload, "legal");
 
         const rec = payload.recorded_evidence ?? [];
         const der = payload.derived_evidence ?? [];
@@ -875,6 +941,50 @@ async function main() {
         if (!payload.redaction_basis) {
           throw new Error("expected redaction_basis to be present");
         }
+
+        const payloadText = JSON.stringify(payload);
+        assertNoMarkers(payloadText, restrictedMarkerIds, "legal json export");
+        assertNoMarkers(payloadText, restrictedMarkerLabels, "legal json export");
+      }
+    )
+  );
+
+  // PDF redaction enforced
+  results.push(
+    await check(
+      "pdf_redaction_enforced",
+      "failing_path",
+      smokeRun.smokeRunId,
+      async () => {
+        const eventId = eventIdWithRestricted ?? sampleEventId;
+        const createRes = await fetch(
+          `${BASE_URL}/v1/events/${encodeURIComponent(eventId as string)}/exports`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              profile: "legal",
+              format: "pdf",
+              purpose: "smoke_pdf_redaction",
+            }),
+          }
+        );
+        if (!createRes.ok) {
+          throw new Error(`pdf export create status ${createRes.status}`);
+        }
+        const meta = await createRes.json();
+        assertStructuredRedaction(meta.artifact_package, "legal");
+        const exportId: string = meta.export_id;
+
+        const dl = await fetch(`${BASE_URL}/v1/exports/${exportId}/download`);
+        if (!dl.ok) throw new Error(`pdf download status ${dl.status}`);
+        const contentType = dl.headers.get("content-type") ?? "";
+        if (!contentType.includes("application/pdf")) {
+          throw new Error(`unexpected pdf content-type: ${contentType}`);
+        }
+        const pdfParse = require("pdf-parse/lib/pdf-parse.js") as (dataBuffer: Buffer) => Promise<{ text: string }>;
+        const parsed = await pdfParse(Buffer.from(await dl.arrayBuffer()));
+        assertNoMarkers(parsed.text, restrictedMarkerLabels, "pdf export");
       }
     )
   );
@@ -926,15 +1036,14 @@ async function main() {
           `${BASE_URL}/v1/events/${encodeURIComponent(
             sampleEventId as string
           )}/exports`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          exportRequestInit(
+            {
               profile: "claims",
               format: "json",
               purpose: "smoke_policy_visibility_violation",
-            }),
-          }
+            },
+            "insurance"
+          )
         );
         if (res.status !== 403) {
           throw new Error(`expected 403, got ${res.status}`);

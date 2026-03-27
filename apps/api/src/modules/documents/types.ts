@@ -1,4 +1,4 @@
-import type { CanonicalEvent, VerificationState } from "../../contracts";
+import type { ArtifactRedactionRecord, CanonicalEvent, PolicyDecisionTrace, VerificationState } from "../../contracts";
 import PDFDocument from "pdfkit";
 
 export interface DocumentIdentity {
@@ -17,6 +17,8 @@ export interface DocumentIdentity {
   redactionApplied?: boolean;
   redactedItemCount?: number;
   redactionBasis?: string | null;
+  redactionRecord?: ArtifactRedactionRecord | null;
+  policyTrace?: PolicyDecisionTrace | null;
   /** Latest verification transcript id when linked at export time. */
   transcriptId?: string | null;
   /** Latest verification run id when linked at export time. */

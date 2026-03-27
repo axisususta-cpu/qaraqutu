@@ -57,6 +57,15 @@ interface Diagnostics {
     build_version: string;
     schema_version: string;
   }>;
+  smoke_history_summary?: {
+    total_runs: number;
+    total_checks: number;
+    oldest_started_at: string | null;
+    latest_started_at: string | null;
+    available_check_names: string[];
+    available_check_categories: string[];
+    query_route: string;
+  };
   tenant_policy?: {
     tenant_id: string;
     enabled_export_profiles: string[];
@@ -567,6 +576,22 @@ export default async function AdminPage() {
             ) : (
               <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>No smoke runs yet.</p>
             )}
+            {diagnostics.smoke_history_summary ? (
+              <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.65rem", lineHeight: 1.55 }}>
+                <p style={{ margin: 0, marginBottom: "0.15rem" }}>
+                  Retained runs: {diagnostics.smoke_history_summary.total_runs} / checks: {diagnostics.smoke_history_summary.total_checks}
+                </p>
+                <p style={{ margin: 0, marginBottom: "0.15rem" }}>
+                  Oldest: {diagnostics.smoke_history_summary.oldest_started_at ?? "—"}
+                </p>
+                <p style={{ margin: 0, marginBottom: "0.15rem" }}>
+                  Filter route: {diagnostics.smoke_history_summary.query_route}
+                </p>
+                <p style={{ margin: 0 }}>
+                  Check types: {diagnostics.smoke_history_summary.available_check_categories.join(", ") || "—"}
+                </p>
+              </div>
+            ) : null}
           </div>
         </section>
 

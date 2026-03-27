@@ -98,6 +98,50 @@ async function main() {
         "restricted_internal",
       ],
       redactionEnabled: true,
+      roleOverrides: {
+        insurance: {
+          enabled_export_profiles: ["claims"],
+          enabled_visibility_classes: ["claims_review"],
+        },
+        adjudication: {
+          enabled_export_profiles: ["legal"],
+          enabled_visibility_classes: ["claims_review", "legal_review", "technical_review"],
+        },
+        operator: {
+          enabled_export_profiles: ["legal"],
+          enabled_visibility_classes: ["claims_review", "technical_review"],
+        },
+        police: {
+          enabled_export_profiles: ["legal"],
+          enabled_visibility_classes: ["claims_review", "legal_review", "technical_review"],
+        },
+        expert: {
+          enabled_export_profiles: ["legal"],
+          enabled_visibility_classes: ["claims_review", "legal_review", "technical_review"],
+        },
+        manufacturer: {
+          enabled_export_profiles: ["legal"],
+          enabled_visibility_classes: ["claims_review", "legal_review", "technical_review"],
+        },
+        software: {
+          enabled_export_profiles: ["legal"],
+          enabled_visibility_classes: ["claims_review", "legal_review", "technical_review"],
+        },
+        engineering: {
+          enabled_export_profiles: ["legal"],
+          enabled_visibility_classes: ["claims_review", "legal_review", "technical_review"],
+        },
+      } as any,
+      userOverrides: {
+        insurance_claims_subject: {
+          enabled_export_profiles: ["claims"],
+          enabled_visibility_classes: ["claims_review"],
+        },
+        insurance_legal_subject: {
+          enabled_export_profiles: ["legal"],
+          enabled_visibility_classes: ["claims_review", "legal_review", "technical_review"],
+        },
+      } as any,
     },
   });
 

@@ -4,6 +4,7 @@ import { resolveBffUpstreamToken } from "../../../../../lib/access-token";
 import {
   hasTrustedAccessSession,
   resolveTrustedRole,
+  resolveTrustedSubject,
   trustedRoleExportProfile,
 } from "../../../../../lib/trusted-access";
 
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ eventId: s
   if (!trustedRole) {
     return NextResponse.json({ error: "ROLE_CONTEXT_REQUIRED" }, { status: 403 });
   }
+  const trustedSubject = resolveTrustedSubject(req);
 
   const token = resolveBffUpstreamToken(req);
   const { eventId } = await ctx.params;
@@ -86,6 +88,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ eventId: s
         Authorization: `Bearer ${token}`,
         "x-qaraqutu-access": token,
         "x-qaraqutu-role": trustedRole,
+        ...(trustedSubject ? { "x-qaraqutu-subject": trustedSubject } : {}),
       },
       body: JSON.stringify(body),
       cache: "no-store",
@@ -94,9 +97,6 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ eventId: s
     const json = await res.json().catch(() => ({}));
     if (res.ok) {
       return NextResponse.json(json, { status: res.status });
-    }
-    if (process.env.NODE_ENV !== "production") {
-      return NextResponse.json(localPreviewExport(eventId, body, `upstream_non_ok_${res.status}`), { status: 200 });
     }
     return NextResponse.json(json, { status: res.status });
   } catch {

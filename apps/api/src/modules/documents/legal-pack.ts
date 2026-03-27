@@ -17,6 +17,19 @@ import {
 } from "./layout";
 import type { DocumentIdentity } from "./types";
 
+function redactionSummaryLines(identity: DocumentIdentity): string[] {
+  const entries = identity.redactionRecord?.entries ?? [];
+  const grouped = new Map<string, number>();
+  for (const entry of entries) {
+    const key = `${entry.layer}:${entry.field}:${entry.visibility_class}`;
+    grouped.set(key, (grouped.get(key) ?? 0) + 1);
+  }
+  return Array.from(grouped.entries()).map(([key, count]) => {
+    const [layer, field, visibilityClass] = key.split(":");
+    return `${count} ${layer}.${field} removal(s) under ${visibilityClass}`;
+  });
+}
+
 export function renderLegalPdf(
   identity: DocumentIdentity,
   event: CanonicalEvent & {
@@ -83,6 +96,10 @@ export function renderLegalPdf(
         typeof identity.redactedItemCount === "number" ? identity.redactedItemCount : "at least one"
       }.`
     );
+    const lines = redactionSummaryLines(identity);
+    if (lines.length > 0) {
+      drawParagraph(ctx, lines.map((line) => `·  ${line}`).join("\n"));
+    }
   } else {
     drawParagraph(ctx, "No policy-driven redactions or exclusions were applied in this legal review export.");
   }

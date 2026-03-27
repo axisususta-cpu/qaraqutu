@@ -4,6 +4,7 @@ export type TrustedRoleId =
   | "insurance"
   | "police"
   | "adjudication"
+  | "operator"
   | "expert"
   | "manufacturer"
   | "software"
@@ -13,6 +14,7 @@ const TRUSTED_ROLE_EXPORTS: Record<TrustedRoleId, ExportProfileCode[]> = {
   insurance: ["claims"],
   police: ["legal"],
   adjudication: ["legal"],
+  operator: ["legal"],
   expert: ["legal"],
   manufacturer: ["legal"],
   software: ["legal"],
@@ -51,8 +53,19 @@ export function normalizeTrustedRole(raw: unknown): TrustedRoleId | null {
   return normalized in TRUSTED_ROLE_EXPORTS ? (normalized as TrustedRoleId) : null;
 }
 
+export function normalizeTrustedSubject(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const normalized = raw.trim();
+  if (!/^[a-zA-Z0-9:_-]{3,80}$/.test(normalized)) return null;
+  return normalized;
+}
+
 export function resolveTrustedRoleHeader(request: any): TrustedRoleId | null {
   return normalizeTrustedRole(request.headers?.["x-qaraqutu-role"]);
+}
+
+export function resolveTrustedSubjectHeader(request: any): string | null {
+  return normalizeTrustedSubject(request.headers?.["x-qaraqutu-subject"]);
 }
 
 export function isRoleAllowedExportProfile(role: TrustedRoleId, profile: ExportProfileCode): boolean {

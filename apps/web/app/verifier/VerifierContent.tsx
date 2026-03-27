@@ -31,6 +31,7 @@ import { DocumentShell } from "../components/documents/DocumentShell";
 import { DocumentSection } from "../components/documents/DocumentSection";
 import { DocumentMetadataBlock } from "../components/documents/DocumentMetadataBlock";
 import { MSG } from "../../lib/i18n/messages";
+import { getLiveIntegrationReadiness } from "../../lib/live-integration-readiness";
 import type { TrustedRoleId } from "../../lib/trusted-access";
 import type { InstitutionAudienceId } from "../../lib/report-authority";
 import {
@@ -49,6 +50,8 @@ const DEFAULT_API_BASE =
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE;
+
+const LIVE_INTEGRATION_READINESS = getLiveIntegrationReadiness();
 
 // ── Design language: light theme, institutional review station ──────────────
 const MONO = "'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace";
@@ -117,6 +120,31 @@ interface ExportStatusResponse {
   state: ExportAvailability;
 }
 
+type ConnectedDeviceRuntimeState = "unconfigured" | "configured_unverified" | "ready" | "unavailable";
+
+interface ConnectedDeviceStatusResponse {
+  state: ConnectedDeviceRuntimeState;
+}
+
+type ConnectedDevicePilotIngestState = "waiting" | "available";
+
+interface ConnectedDevicePilotEventEnvelope {
+  event_id: string;
+  occurred_at: string;
+  system: MockSystemId;
+  incident_class: string;
+  title: string;
+  summary: string;
+  bundle_id: string;
+  manifest_id: string;
+  severity?: "low" | "medium" | "high";
+}
+
+interface ConnectedDevicePilotIngestResponse {
+  state: ConnectedDevicePilotIngestState;
+  event: ConnectedDevicePilotEventEnvelope | null;
+}
+
 // Phase 1 mock data scaffolding for future workstation wiring.
 type MockSystemId = "vehicle" | "drone" | "robot";
 type SourceId = "demo_archive" | "connected_device" | "uploaded_package";
@@ -132,8 +160,6 @@ const SOURCE_CHANNELS: {
   id: SourceId;
   tr: string;
   en: string;
-  badgeTr: string;
-  badgeEn: string;
   infoTr: string;
   infoEn: string;
 }[] = [
@@ -141,8 +167,6 @@ const SOURCE_CHANNELS: {
     id: "demo_archive",
     tr: "Demo Arşivi",
     en: "Demo Archive",
-    badgeTr: "Canlı kanal",
-    badgeEn: "Live channel",
     infoTr: "Yerel inceleme turunda etkin kaynak. Demo cihaz evreni ve olay paketleri bu kanaldan yönetilir.",
     infoEn: "Active source for local review. Demo device universe and event packages are managed from this channel.",
   },
@@ -150,8 +174,6 @@ const SOURCE_CHANNELS: {
     id: "connected_device",
     tr: "Bağlı Cihazlar",
     en: "Connected Devices",
-    badgeTr: "Pilot kanal",
-    badgeEn: "Pilot channel",
     infoTr:
       "Bu kanal pilot kurulumlarda kurumsal cihaza bağlanır. Aktif cihazlar burada görünür. Pilot başlatmak için erişim gerekir.",
     infoEn:
@@ -161,8 +183,6 @@ const SOURCE_CHANNELS: {
     id: "uploaded_package",
     tr: "Yüklenen Dosya Paketi",
     en: "Uploaded File Package",
-    badgeTr: "Kurumsal entegrasyon",
-    badgeEn: "Institutional integration",
     infoTr:
       "Bu kanal dışarıdan sağlanan olay paketlerini içeri alır; log, telemetri, medya, manifest, operatör notu, önceki belge ve zincir kayıtlarını okuyabilir.",
     infoEn:
@@ -254,6 +274,16 @@ const ROLE_LENSES: {
     insightEn: "Evidence chain, review trace, and open issues prioritized.",
     primaryOutputTr: "Hukuk / Muhakeme Belgesi",
     primaryOutputEn: "Legal / Adjudication Document",
+    exportProfile: "legal",
+  },
+  {
+    id: "operator",
+    tr: "Operatör",
+    en: "Operator",
+    insightTr: "Operasyon sırası, sistem tepkisi ve teknik sapma notları önceliklidir; hukuki hüküm üretimi değil, kontrollü saha okuması hedeflenir.",
+    insightEn: "Operational sequence, system response, and technical deviation notes are prioritized; the goal is bounded field reading rather than legal adjudication.",
+    primaryOutputTr: "Operasyon İnceleme Belgesi",
+    primaryOutputEn: "Operator Review Document",
     exportProfile: "legal",
   },
   {
@@ -516,6 +546,29 @@ function caseToEventCard(caseItem: CanonicalCase, lang: "en" | "tr"): EventCard 
     integrityFamilies: caseItem.reverification?.enabled ? INTEGRITY_NOTICE_FAMILIES : [],
     bundleId: caseItem.bundleId,
     manifestId: caseItem.manifestId,
+  };
+}
+
+function pilotEnvelopeToEventCard(envelope: ConnectedDevicePilotEventEnvelope, lang: "en" | "tr"): EventCard {
+  return {
+    eventId: envelope.event_id,
+    title: envelope.title,
+    summary: envelope.summary,
+    identity: "Pilot envelope",
+    timestamp: envelope.occurred_at,
+    severity: envelope.severity ?? "medium",
+    state: "bounded",
+    stateFamily: "pass_limited",
+    stateLabel: "PILOT SHELL",
+    issuanceLabel: lang === "tr" ? "PILOT SINIRLI" : "PILOT BOUNDED",
+    integrityLabel: lang === "tr" ? "PILOT ZARFI" : "PILOT ENVELOPE",
+    availableOutputs: [],
+    incidentClass: envelope.incident_class,
+    limitationsCount: 1,
+    documentFamilies: [],
+    integrityFamilies: [],
+    bundleId: envelope.bundle_id,
+    manifestId: envelope.manifest_id,
   };
 }
 
@@ -873,6 +926,7 @@ function phasePostureLabel(value: string | undefined, language: "en" | "tr") {
 
 export function VerifierContent({ initialEventId, trustedRole }: { initialEventId?: string; trustedRole: RoleLensId }) {
   const { lang: language, setLang: setLanguage } = useLanguage();
+  const liveIntegrationReadiness = LIVE_INTEGRATION_READINESS;
   const [selectedSource, setSelectedSource] = useState<SourceId>("demo_archive");
   const [activeSourcePanel, setActiveSourcePanel] = useState<SourceId>("demo_archive");
   const [selectedSystem, setSelectedSystem] = useState<MockSystemId>(() => resolveInitialSystem(initialEventId));
@@ -919,6 +973,9 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
   const [reverifyResult, setReverifyResult] = useState<ArtifactReverificationResponse | null>(null);
   const [reverifyError, setReverifyError] = useState<string | null>(null);
   const [accessGateConfigured, setAccessGateConfigured] = useState<boolean | null>(null);
+  const [connectedDevicePilotState, setConnectedDevicePilotState] = useState<ConnectedDeviceRuntimeState>("configured_unverified");
+  const [connectedDevicePilotEnvelope, setConnectedDevicePilotEnvelope] = useState<ConnectedDevicePilotEventEnvelope | null>(null);
+  const [connectedDevicePilotIngestState, setConnectedDevicePilotIngestState] = useState<ConnectedDevicePilotIngestState>("waiting");
   const [issuanceAudience, setIssuanceAudience] = useState<InstitutionAudienceId>(
     DEFAULT_AUDIENCE_BY_PROFILE.claims
   );
@@ -977,7 +1034,7 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
     load();
   }, [initialEventId]);
 
-  // When source/family changes: reset scenario and event; only Demo Archive is active in this local pass.
+  // When source/family changes: reset scenario and event to avoid leaking a demo selection into another lane.
   useEffect(() => {
     setSelectedScenario(null);
     setSelectedEventId(null);
@@ -999,9 +1056,22 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
     setSelectedId(null);
   };
 
-  const displayEvents: EventCard[] = getCanonicalCases(selectedSystem)
-    .filter((caseItem) => !selectedScenario || getCaseStateFamily(caseItem) === selectedScenario)
-    .map((caseItem) => caseToEventCard(caseItem, language));
+  const selectedSourceMeta = SOURCE_CHANNELS.find((source) => source.id === selectedSource) ?? SOURCE_CHANNELS[0];
+  const selectedSourceLabel = language === "tr" ? selectedSourceMeta.tr : selectedSourceMeta.en;
+  const isDemoArchiveSource = selectedSource === "demo_archive";
+  const isConnectedDeviceSource = selectedSource === "connected_device";
+
+  const connectedDeviceDisplayEvents: EventCard[] = connectedDevicePilotEnvelope
+    ? [pilotEnvelopeToEventCard(connectedDevicePilotEnvelope, language)]
+    : [];
+
+  const displayEvents: EventCard[] = isDemoArchiveSource
+    ? getCanonicalCases(selectedSystem)
+        .filter((caseItem) => !selectedScenario || getCaseStateFamily(caseItem) === selectedScenario)
+        .map((caseItem) => caseToEventCard(caseItem, language))
+    : isConnectedDeviceSource
+    ? connectedDeviceDisplayEvents
+    : [];
 
   const selectedEventCard =
     displayEvents.find((e) => e.eventId === selectedEventId) ?? null;
@@ -1037,11 +1107,124 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
   const packageOperationalContext =
     selectedPackage?.summary.split(language === "tr" ? " Bağlam:" : " Context:")[1]?.trim() ??
     null;
+  const defaultPackageIdentity = isDemoArchiveSource ? "DEMO-PACKAGE-PENDING" : "CONNECTED-DEVICE-PILOT";
+  const pendingPackageTitle = isConnectedDeviceSource
+    ? language === "tr"
+      ? "Pilot feed bekleniyor"
+      : "Pilot feed pending"
+    : language === "tr"
+    ? "Paket seçimi bekleniyor"
+    : "Package selection pending";
+  const contextFallback = isConnectedDeviceSource
+    ? language === "tr"
+      ? "Connected-device pilot lane seçildi; demo arşivi vakaları bu kanala taşınmadı."
+      : "Connected-device pilot lane selected; demo archive cases are not reused in this lane."
+    : language === "tr"
+    ? "Demo arşivi yerel paket seçimi"
+    : "Demo archive local package selection";
+  const operationFallback = isConnectedDeviceSource
+    ? language === "tr"
+      ? "Pilot istasyon durumu izleniyor"
+      : "Pilot station status under review"
+    : language === "tr"
+    ? "İnceleme paketi hazırlanıyor"
+    : "Inspection package preparing";
+  const sceneIdentityFallback = isConnectedDeviceSource
+    ? language === "tr"
+      ? "Bağlı cihaz feed'i henüz iliştirilmedi"
+      : "No connected-device feed attached yet"
+    : language === "tr"
+    ? "Kayıtlı/türetilmiş ayrımı bekleniyor"
+    : "Recorded/derived split pending";
+
+  useEffect(() => {
+    if (!isConnectedDeviceSource) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function refreshConnectedDevicePilotState() {
+      try {
+        const res = await fetch("/api/connected-device-status", { cache: "no-store" });
+        const json = (await res.json().catch(() => null)) as ConnectedDeviceStatusResponse | null;
+        if (cancelled) return;
+        if (!res.ok || !json?.state) {
+          setConnectedDevicePilotState("unavailable");
+          return;
+        }
+        setConnectedDevicePilotState(json.state);
+      } catch {
+        if (cancelled) return;
+        setConnectedDevicePilotState("unavailable");
+      }
+    }
+
+    refreshConnectedDevicePilotState();
+    window.addEventListener("focus", refreshConnectedDevicePilotState);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", refreshConnectedDevicePilotState);
+    };
+  }, [isConnectedDeviceSource]);
+
+  useEffect(() => {
+    if (!isConnectedDeviceSource) {
+      setConnectedDevicePilotEnvelope(null);
+      setConnectedDevicePilotIngestState("waiting");
+      return;
+    }
+
+    let cancelled = false;
+
+    async function refreshConnectedDevicePilotEnvelope() {
+      try {
+        const res = await fetch("/api/connected-device-ingest", { cache: "no-store" });
+        const json = (await res.json().catch(() => null)) as ConnectedDevicePilotIngestResponse | null;
+        if (cancelled) return;
+        if (!res.ok || !json?.state) {
+          setConnectedDevicePilotEnvelope(null);
+          setConnectedDevicePilotIngestState("waiting");
+          return;
+        }
+        setConnectedDevicePilotIngestState(json.state);
+        setConnectedDevicePilotEnvelope(json.state === "available" && json.event ? json.event : null);
+      } catch {
+        if (cancelled) return;
+        setConnectedDevicePilotEnvelope(null);
+        setConnectedDevicePilotIngestState("waiting");
+      }
+    }
+
+    refreshConnectedDevicePilotEnvelope();
+    window.addEventListener("focus", refreshConnectedDevicePilotEnvelope);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", refreshConnectedDevicePilotEnvelope);
+    };
+  }, [isConnectedDeviceSource]);
+
+  useEffect(() => {
+    if (!isConnectedDeviceSource) {
+      return;
+    }
+
+    if (displayEvents.length === 0) {
+      setSelectedEventId(null);
+      setSelectedId(null);
+      return;
+    }
+
+    if (!selectedEventId || !displayEvents.some((eventCard) => eventCard.eventId === selectedEventId)) {
+      setSelectedEventId(displayEvents[0].eventId);
+    }
+    setSelectedId(null);
+  }, [displayEvents, isConnectedDeviceSource, selectedEventId]);
 
   // When user selects an event from cards: set selectedEventId; for Vehicle also set selectedId for API.
   const handleSelectEvent = (eventId: string) => {
     setSelectedEventId(eventId);
-    setSelectedId(eventId);
+    setSelectedId(isConnectedDeviceSource ? null : eventId);
   };
 
   const selected = events.find((e) => e.eventId === selectedId) ?? null;
@@ -1106,10 +1289,22 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
     : selectedEventCard?.stateLabel ?? null;
   const displayedReviewState =
     visibleReviewState ?? (language === "tr" ? "İNCELEME BEKLİYOR" : "REVIEW PENDING");
-  const displayedIssuanceState = selectedEventCard?.issuanceLabel ?? "PASS";
+  const displayedIssuanceState =
+    selectedEventCard?.issuanceLabel ??
+    (isConnectedDeviceSource
+      ? language === "tr"
+        ? "PİLOT SINIRLI"
+        : "PILOT BOUNDED"
+      : "PASS");
   const displayedIntegrityState =
     selectedEventCard?.integrityLabel ??
-    (language === "tr" ? "INTEGRITY WATCH" : "INTEGRITY WATCH");
+    (isConnectedDeviceSource
+      ? language === "tr"
+        ? "FEED BEKLİYOR"
+        : "FEED PENDING"
+      : language === "tr"
+      ? "INTEGRITY WATCH"
+      : "INTEGRITY WATCH");
   const displayedDocumentFamilies = (selectedEventCard?.documentFamilies ?? []).map((familyId) =>
     documentFamilyLabel(familyId as never, language)
   );
@@ -1174,6 +1369,7 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
     insurance: [selectedRoleLensMeta.primaryOutputTr, "Teminat bağı", "Hasar zinciri", "Kapsam ayracı"],
     police: [selectedRoleLensMeta.primaryOutputTr, "Zaman çizgisi", "Sahne tutarlılığı"],
     adjudication: [selectedRoleLensMeta.primaryOutputTr, "Kayıt/türetilmiş ayrımı", "İz bağı", "Açık hususlar"],
+    operator: [selectedRoleLensMeta.primaryOutputTr, "Operasyon sırası", "Teknik sapma", "Saha teyidi"],
     expert: [selectedRoleLensMeta.primaryOutputTr, "Teknik bağlam", "Bulgu karşılaştırma", "Belirsizlik notu"],
     manufacturer: [selectedRoleLensMeta.primaryOutputTr, "Sistem davranışı", "Güvenlik zarfı", "Tepki penceresi"],
     software: [selectedRoleLensMeta.primaryOutputTr, "Telemetri izi", "Sürüm etkisi", "Karar akış izi"],
@@ -1185,8 +1381,8 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
       ? visibleRecorded.map((item) => `${item.source} · ${item.referenceId}`)
       : [
           language === "tr"
-            ? `Paket kimliği · ${selectedEventCard?.eventId ?? "DEMO-PACKAGE-PENDING"}`
-            : `Package identity · ${selectedEventCard?.eventId ?? "DEMO-PACKAGE-PENDING"}`,
+            ? `Paket kimliği · ${selectedEventCard?.eventId ?? defaultPackageIdentity}`
+            : `Package identity · ${selectedEventCard?.eventId ?? defaultPackageIdentity}`,
           language === "tr"
             ? `Bağ kimliği · ${bundleAnchorId}`
             : `Bundle link · ${bundleAnchorId}`,
@@ -1194,8 +1390,8 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
             ? `Manifest · ${manifestAnchorId}`
             : `Manifest · ${manifestAnchorId}`,
           language === "tr"
-            ? `Kaynak durum · ${selectedSource}`
-            : `Source status · ${selectedSource}`,
+            ? `Kaynak durum · ${selectedSourceLabel}`
+            : `Source status · ${selectedSourceLabel}`,
         ]
   ).slice(0, 4);
 
@@ -1298,6 +1494,10 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
               ? "Muhakeme için birincil belge: Delil zinciri, inceleme izi ve açık hususlar üçüncü seviye okumada öne çıkarılır."
               : role === "adjudication" && language === "en"
               ? "Primary document for adjudication: Evidence chain, review trace, and open issues are prioritized in third-level reading."
+              : role === "operator" && language === "tr"
+              ? "Operatör için birincil belge: Operasyon sırası, sistem tepkisi ve teknik sapma notları kontrollü saha okuması olarak toplanır; nihai hukuki hüküm kurulmaz."
+              : role === "operator" && language === "en"
+              ? "Primary document for operator: Operational sequence, system response, and technical deviation notes are assembled as a bounded field reading; no final legal judgment is produced."
               : language === "tr"
               ? `${selectedRoleLensMeta.primaryOutputTr} rolüne özel birincil inceleme belgesi.`
               : `Primary inspection document specific to ${selectedRoleLensMeta.primaryOutputEn} role.`}
@@ -1759,6 +1959,7 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
   const resetRunDisabled =
     !canResetVerificationRun || loading || !!exportLoading;
   const isPackageSelected = Boolean(selectedId);
+  const canStartReview = isPackageSelected && !isConnectedDeviceSource;
   const isVerificationReady = Boolean(verificationState || verifyIdentityMatchesSelection);
 
   /** Export availability — truthful reflection of backend reachability */
@@ -1786,7 +1987,77 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
         : "Preview only — no backend connection"
       : null;
 
-  const workstationLive = Boolean(selectedEventCard);
+  const workstationActive = Boolean(selectedEventCard);
+  const selectedSourceReadiness =
+    liveIntegrationReadiness.sources.find((source) => source.id === selectedSource) ?? liveIntegrationReadiness.sources[0];
+  const connectedDevicePilotBadge =
+    connectedDevicePilotState === "unconfigured"
+      ? language === "tr"
+        ? "Pilot config yok"
+        : "Pilot config missing"
+      : connectedDevicePilotState === "configured_unverified"
+      ? language === "tr"
+        ? "Pilot config var, contract doğrulanmadı"
+        : "Pilot config present, contract unverified"
+      : connectedDevicePilotState === "ready"
+      ? language === "tr"
+        ? "Pilot ready"
+        : "Pilot ready"
+      : connectedDevicePilotState === "unavailable"
+      ? language === "tr"
+        ? "Pilot probe başarısız"
+        : "Pilot probe unavailable"
+      : language === "tr"
+      ? "Pilot lane seçildi"
+      : "Pilot lane selected";
+  const connectedDevicePilotBody =
+    connectedDevicePilotState === "unconfigured"
+      ? language === "tr"
+        ? "CONNECTED_DEVICE_BASE_URL ve CONNECTED_DEVICE_ACCESS_TOKEN server-side tanımlı değil. Lane seçilebilir kalır, fakat pilot hazır sayılmaz ve vaka kartı üretmez."
+        : "CONNECTED_DEVICE_BASE_URL and CONNECTED_DEVICE_ACCESS_TOKEN are not configured server-side. The lane stays selectable, but it is not treated as pilot-ready and produces no case cards."
+      : connectedDevicePilotState === "configured_unverified"
+      ? language === "tr"
+        ? "Server-side config mevcut, fakat pilot handshake contract doğrulanmadı. Bu yüzden lane connected sayılmaz ve demo verisi kullanmaz."
+        : "Server-side config exists, but the pilot handshake contract is still unverified. The lane is therefore not treated as connected and does not reuse demo data."
+      : connectedDevicePilotState === "ready"
+      ? language === "tr"
+        ? connectedDevicePilotEnvelope
+          ? "Server-side config, auth kontrolü ve pilot handshake contract doğrulandı. Geçerli pilot ingest envelope alındı; lane yalnız bounded pilot event shell gösterir ve veri üretmez."
+          : "Server-side config, auth kontrolü ve pilot handshake contract doğrulandı. Geçerli pilot ingest envelope bekleniyor; lane bounded waiting durumunda kalır."
+        : connectedDevicePilotEnvelope
+        ? "Server-side config, auth checks, and the pilot handshake contract are verified. A valid pilot ingest envelope is present; the lane only shows a bounded pilot event shell and does not fabricate data."
+        : "Server-side config, auth checks, and the pilot handshake contract are verified. A valid pilot ingest envelope is still pending, so the lane remains in a bounded waiting state."
+      : connectedDevicePilotState === "unavailable"
+      ? language === "tr"
+        ? "Server-side probe başarısız oldu. Bu yüzden lane fake live hissi üretmeden unavailable kalır ve vaka kartı üretmez."
+        : "The server-side probe failed. The lane therefore stays unavailable without creating a fake live impression and produces no case cards."
+      : language === "tr"
+      ? "Pilot lane seçildi; doğrulama için istasyon kontrolü bekleniyor."
+      : "The pilot lane is selected; station verification is pending.";
+  const connectedDeviceEmptyState =
+    connectedDevicePilotState === "unconfigured"
+      ? language === "tr"
+        ? "Pilot lane seçildi. Server-side pilot config eksik olduğu için connected_device hazır değil ve vaka kartı gösterilmiyor."
+        : "Pilot lane selected. Server-side pilot config is missing, so connected_device is not ready and no case cards are shown."
+      : connectedDevicePilotState === "configured_unverified"
+      ? language === "tr"
+        ? "Pilot lane seçildi. Server-side config var, fakat pilot handshake contract doğrulanmadığı için connected_device ready sayılmıyor."
+        : "Pilot lane selected. Server-side config exists, but connected_device is not considered ready because the pilot handshake contract is still unverified."
+      : connectedDevicePilotState === "ready"
+      ? language === "tr"
+        ? connectedDevicePilotIngestState === "available"
+          ? "Pilot lane seçildi. Geçerli pilot ingest envelope bounded event shell olarak gösteriliyor; kayıtlı/türetilmiş delil ve export üretimi bu slice'ta kapalıdır."
+          : "Pilot lane seçildi. Ready doğrulandı, fakat geçerli pilot ingest envelope henüz gelmediği için bounded waiting durumunda vaka kartı gösterilmiyor."
+        : connectedDevicePilotIngestState === "available"
+        ? "Pilot lane selected. A valid pilot ingest envelope is shown as a bounded event shell; recorded/derived evidence and export generation stay closed in this slice."
+        : "Pilot lane selected. Ready is verified, but no valid pilot ingest envelope has arrived yet, so no case card is shown in bounded waiting mode."
+      : connectedDevicePilotState === "unavailable"
+      ? language === "tr"
+        ? "Pilot lane seçildi. Server-side probe başarısız olduğu için connected_device unavailable durumda ve vaka kartı gösterilmiyor."
+        : "Pilot lane selected. The server-side probe failed, so connected_device is unavailable and no case cards are shown."
+      : language === "tr"
+      ? "Pilot lane seçildi. Yetkili istasyon kontrolü yapılıyor; demo arşivi kartları bu kanala taşınmıyor."
+      : "Pilot lane selected. The authorized station check is in progress, and demo archive cards are not reused in this lane.";
 
   return (
     <div
@@ -1860,13 +2131,16 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
               textOverflow: "ellipsis",
             }}
           >
-            {selectedEventCard?.eventId ?? "DEMO-PACKAGE-PENDING"} · {selectedEventCard?.title ?? (language === "tr" ? "Paket seçimi bekleniyor" : "Package selection pending")}
+            {selectedEventCard?.eventId ?? defaultPackageIdentity} · {selectedEventCard?.title ?? pendingPackageTitle}
           </span>
           <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", border: "1px solid rgba(122,173,232,0.4)", color: "#7aade8", background: "rgba(122,173,232,0.08)", textTransform: "uppercase" }}>{selectedSystem}</span>
-          <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", border: "1px solid rgba(232,101,10,0.4)", color: "var(--accent)", background: "var(--accent-soft)", textTransform: "uppercase" }}>{selectedPackage?.severity === "high" ? (language === "tr" ? "RİSK: YÜKSEK" : "RISK: HIGH") : selectedPackage?.severity === "medium" ? (language === "tr" ? "RİSK: ORTA" : "RISK: MEDIUM") : (language === "tr" ? "RİSK: DÜŞÜK" : "RISK: LOW")}</span>
+          <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", border: "1px solid rgba(232,101,10,0.4)", color: "var(--accent)", background: "var(--accent-soft)", textTransform: "uppercase" }}>{selectedPackage?.severity === "high" ? (language === "tr" ? "RİSK: YÜKSEK" : "RISK: HIGH") : selectedPackage?.severity === "medium" ? (language === "tr" ? "RİSK: ORTA" : "RISK: MEDIUM") : selectedPackage?.severity === "low" ? (language === "tr" ? "RİSK: DÜŞÜK" : "RISK: LOW") : isConnectedDeviceSource ? (language === "tr" ? "PİLOT: FEED YOK" : "PILOT: NO FEED") : (language === "tr" ? "RİSK: BEKLİYOR" : "RISK: PENDING")}</span>
           <span style={{ ...protocolStatePillStyle(displayedReviewState), fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", textTransform: "uppercase" }}>{displayedReviewState}</span>
           <span style={{ ...protocolStatePillStyle(displayedIssuanceState), fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", textTransform: "uppercase" }}>{displayedIssuanceState}</span>
           <span style={{ ...protocolStatePillStyle(displayedIntegrityState), fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", textTransform: "uppercase" }}>{displayedIntegrityState}</span>
+          <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.12em", padding: "2px 6px", border: "1px solid rgba(122,173,232,0.4)", color: "#7aade8", background: "rgba(122,173,232,0.08)", textTransform: "uppercase" }}>
+            {language === "tr" ? liveIntegrationReadiness.modeBadgeTr : liveIntegrationReadiness.modeBadgeEn}
+          </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
           <span
@@ -1875,15 +2149,15 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
               fontSize: "9px",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              color: workstationLive ? "#5fc87a" : "var(--text-dim)",
+              color: workstationActive ? "#5fc87a" : "var(--text-dim)",
               padding: "1px 5px",
-              border: `1px solid ${workstationLive ? "rgba(95,200,122,0.4)" : "var(--border)"}`,
-              background: workstationLive ? "rgba(95,200,122,0.08)" : "var(--panel)",
+              border: `1px solid ${workstationActive ? "rgba(95,200,122,0.4)" : "var(--border)"}`,
+              background: workstationActive ? "rgba(95,200,122,0.08)" : "var(--panel)",
               borderRadius: 0,
               whiteSpace: "nowrap",
             }}
           >
-            {workstationLive ? (language === "tr" ? "İstasyon Aktif" : "Station Active") : (language === "tr" ? "İstasyon Hazır" : "Station Ready")}
+            {workstationActive ? (language === "tr" ? "İstasyon Aktif" : "Station Active") : (language === "tr" ? "İstasyon Hazır" : "Station Ready")}
           </span>
           <div
             style={{
@@ -2082,27 +2356,35 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
                       {section.id === "source" &&
                         SOURCE_CHANNELS.map((src) => {
                           const isSelected = selectedSource === src.id;
+                          const readiness = liveIntegrationReadiness.sources.find((item) => item.id === src.id);
+                          const selectable = readiness?.selectable ?? src.id === "demo_archive";
                           return (
                             <div
                               key={src.id}
-                              onClick={() => { setActiveSourcePanel(src.id); setSelectedSource(src.id); }}
+                              onClick={() => {
+                                setActiveSourcePanel(src.id);
+                                if (selectable) {
+                                  setSelectedSource(src.id);
+                                }
+                              }}
                               style={{
                                 padding: "6px 14px 6px 22px",
                                 display: "flex",
                                 alignItems: "center",
                                 gap: "6px",
-                                cursor: "pointer",
+                                cursor: selectable ? "pointer" : "not-allowed",
                                 borderBottom: "1px solid var(--border)",
                                 borderLeft: isSelected ? "2px solid var(--accent)" : "2px solid transparent",
                                 background: isSelected ? "rgba(232,101,10,0.10)" : "transparent",
                                 transition: "background 0.12s",
+                                opacity: selectable ? 1 : 0.62,
                               }}
                             >
                               <span style={{ fontFamily: MONO, fontSize: "10px", color: isSelected ? "var(--accent)" : "var(--text-muted)", flex: 1 }}>
                                 {language === "tr" ? src.tr : src.en}
                               </span>
                               <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)" }}>
-                                {language === "tr" ? src.badgeTr : src.badgeEn}
+                                {language === "tr" ? readiness?.badgeTr : readiness?.badgeEn}
                               </span>
                             </div>
                           );
@@ -2131,13 +2413,17 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
                                 {language === "tr" ? `${SYSTEM_LABELS[sys.id].tr}` : `${SYSTEM_LABELS[sys.id].en}`}
                               </span>
                               <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)" }}>
-                                {DEMO_DEVICES_BY_SYSTEM[sys.id].length} {language === "tr" ? "varlık" : "assets"}
+                                {isDemoArchiveSource
+                                  ? `${DEMO_DEVICES_BY_SYSTEM[sys.id].length} ${language === "tr" ? "varlık" : "assets"}`
+                                  : language === "tr"
+                                  ? "pilot kapsam"
+                                  : "pilot scope"}
                               </span>
                             </div>
                           );
                         })
                       }
-                      {section.id === "scenario" &&
+                      {section.id === "scenario" && isDemoArchiveSource &&
                         getCaseFamilyOptions(selectedSystem).map((option) => {
                           const isSel = selectedScenario === option.id;
                           return (
@@ -2171,11 +2457,24 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
                           );
                         })
                       }
+                      {section.id === "scenario" && !isDemoArchiveSource && (
+                        <div style={{ padding: "6px 14px 6px 22px", fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", lineHeight: 1.45 }}>
+                          {isConnectedDeviceSource
+                            ? language === "tr"
+                              ? "Connected-device pilot lane vaka senaryosu üretmez; yalnız readiness, erişim ve backend sağlığı gösterilir."
+                              : "The connected-device pilot lane does not generate case scenarios; it only exposes readiness, access, and backend health."
+                            : language === "tr"
+                            ? "Bu kaynak için senaryo hattı bu slice kapsamında kapalı tutulur."
+                            : "Scenario selection stays closed for this source in this slice."}
+                        </div>
+                      )}
                       {section.id === "event" && (
                         <div style={{ maxHeight: 320, overflowY: "auto" }}>
                           {displayEvents.length === 0 ? (
                             <div style={{ padding: "6px 14px 6px 22px", fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)" }}>
-                              {selectedScenario
+                              {!isDemoArchiveSource
+                                ? connectedDeviceEmptyState
+                                : selectedScenario
                                 ? language === "tr"
                                   ? "Bu durum hattında görünür vaka yok."
                                   : "No visible cases in this state lane."
@@ -2254,7 +2553,7 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
                 <button
                   type="button"
                   onClick={runVerification}
-                  disabled={!isPackageSelected || loading}
+                  disabled={!canStartReview || loading}
                   style={{
                     fontFamily: MONO,
                     fontSize: "10px",
@@ -2263,8 +2562,8 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
                     border: "none",
                     background: loading ? "var(--panel-card)" : "var(--accent)",
                     color: loading ? "var(--text-muted)" : "#0e0f11",
-                    cursor: loading ? "wait" : !isPackageSelected ? "not-allowed" : "pointer",
-                    opacity: !isPackageSelected ? 0.55 : 1,
+                    cursor: loading ? "wait" : !canStartReview ? "not-allowed" : "pointer",
+                    opacity: !canStartReview ? 0.55 : 1,
                     fontWeight: 600,
                     width: "100%",
                     textAlign: "center",
@@ -2275,9 +2574,13 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
                     ? language === "tr"
                       ? "DOĞRULANIYOR…"
                       : "VERIFYING…"
-                    : !isPackageSelected
+                    : !canStartReview
                     ? language === "tr"
-                      ? "PAKET SEÇ"
+                      ? isConnectedDeviceSource
+                        ? "PILOT SHELL — DOĞRULAMA KAPALI"
+                        : "PAKET SEÇ"
+                      : isConnectedDeviceSource
+                      ? "PILOT SHELL - REVIEW CLOSED"
                       : "SELECT PACKAGE"
                     : language === "tr"
                     ? "İNCELEMEYİ BAŞLAT"
@@ -2409,10 +2712,10 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
                 }}
               >
                 {[
-                  { label: language === "tr" ? "BAĞLAM" : "CONTEXT", value: packageSummaryMain ?? selectedPackage?.summary ?? (language === "tr" ? "Demo arşivi yerel paket seçimi" : "Demo archive local package selection") },
-                  { label: language === "tr" ? "OPERASYON" : "OPERATION", value: selectedPackage?.title ?? (language === "tr" ? "İnceleme paketi hazırlanıyor" : "Inspection package preparing") },
+                  { label: language === "tr" ? "BAĞLAM" : "CONTEXT", value: packageSummaryMain ?? selectedPackage?.summary ?? contextFallback },
+                  { label: language === "tr" ? "OPERASYON" : "OPERATION", value: selectedPackage?.title ?? operationFallback },
                   { label: language === "tr" ? "ZAMAN / FAZ" : "TIMING / PHASE", value: selectedPhaseSpec ? phaseUiLabel(selectedPhaseSpec.phase, language) : phaseUiLabel(selectedPhase, language) },
-                  { label: language === "tr" ? "SAHNE KİMLİĞİ" : "SCENE IDENTITY", value: packageOperationalContext ?? selectedPackage?.identity ?? (language === "tr" ? "Kayıtlı/türetilmiş ayrımı bekleniyor" : "Recorded/derived split pending") },
+                  { label: language === "tr" ? "SAHNE KİMLİĞİ" : "SCENE IDENTITY", value: packageOperationalContext ?? selectedPackage?.identity ?? sceneIdentityFallback },
                 ].map((cell, index) => (
                   <div key={cell.label} style={{ padding: "0 14px", borderRight: index < 3 ? "1px solid var(--border)" : "none" }}>
                     <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-muted)", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "4px" }}>{cell.label}</div>
@@ -2709,10 +3012,10 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
                       <button
                         type="button"
                         onClick={runVerification}
-                        disabled={!isPackageSelected || loading}
-                        style={{ fontFamily: MONO, fontSize: "0.68rem", letterSpacing: "0.08em", padding: "0.52rem 0.65rem", border: loading ? "1px solid var(--border-strong)" : "1px solid var(--accent)", background: loading ? "var(--panel-card)" : "linear-gradient(180deg, rgba(255,102,0,0.22), rgba(255,102,0,0.11))", color: "var(--text)", cursor: loading ? "wait" : !isPackageSelected ? "not-allowed" : "pointer", opacity: !isPackageSelected ? 0.55 : 1, fontWeight: 700, width: "100%", textAlign: "center", textTransform: "uppercase" }}
+                        disabled={!canStartReview || loading}
+                        style={{ fontFamily: MONO, fontSize: "0.68rem", letterSpacing: "0.08em", padding: "0.52rem 0.65rem", border: loading ? "1px solid var(--border-strong)" : "1px solid var(--accent)", background: loading ? "var(--panel-card)" : "linear-gradient(180deg, rgba(255,102,0,0.22), rgba(255,102,0,0.11))", color: "var(--text)", cursor: loading ? "wait" : !canStartReview ? "not-allowed" : "pointer", opacity: !canStartReview ? 0.55 : 1, fontWeight: 700, width: "100%", textAlign: "center", textTransform: "uppercase" }}
                       >
-                        {loading ? (language === "tr" ? "DOĞRULANIYOR" : "VERIFYING") : (language === "tr" ? "İNCELEMEYİ BAŞLAT" : "START REVIEW")}
+                        {loading ? (language === "tr" ? "DOĞRULANIYOR" : "VERIFYING") : !canStartReview ? (language === "tr" ? "PILOT SHELL — DOĞRULAMA KAPALI" : "PILOT SHELL - REVIEW CLOSED") : (language === "tr" ? "İNCELEMEYİ BAŞLAT" : "START REVIEW")}
                       </button>
                       <button
                         type="button"
@@ -2801,37 +3104,119 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
               </section>
             ) : null}
 
-            {/* 0) Demo scenario notice */}
-            {selectedCase && (
-              <section style={{ marginBottom: UI.sectionGap, display: "none" }} aria-label={language === "tr" ? "Demo senaryosu bildirimi" : "Demo scenario notice"}>
-                <div
-                  style={{
-                    borderRadius: UI.radius.xs,
-                    padding: "0.5rem 0.85rem",
-                    fontSize: "0.92rem",
-                    background: "var(--panel-card)",
-                    border: `1px solid ${"var(--border-muted)"}`,
-                    color: "var(--text-dim)",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.5rem 1rem",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <span style={{ fontFamily: MONO, fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", fontWeight: 600, flexShrink: 0 }}>
-                    {language === "tr" ? "DEMO" : "DEMO"}
+            {/* 0) Operating mode boundary */}
+            <section style={{ marginBottom: UI.sectionGap }} aria-label={language === "tr" ? "Çalışma modu sınırı" : "Operating mode boundary"}>
+              <div
+                style={{
+                  borderRadius: UI.radius.xs,
+                  padding: "0.7rem 0.85rem",
+                  fontSize: "0.88rem",
+                  background: "var(--panel-card)",
+                  border: `1px solid ${"var(--border-muted)"}`,
+                  color: "var(--text-dim)",
+                  display: "grid",
+                  gap: "0.45rem",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                  <span style={{ fontFamily: MONO, fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "#7aade8", fontWeight: 600, flexShrink: 0 }}>
+                    {language === "tr" ? liveIntegrationReadiness.modeBadgeTr : liveIntegrationReadiness.modeBadgeEn}
                   </span>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0 0.6rem", color: "var(--text-dim)" }}>
-                    <span>{msg.verifierDemoLabel}</span>
-                  </div>
-                  {(selectedCase.demoNoticeTr || selectedCase.demoNoticeEn) && (
-                    <span style={{ color: "var(--text-dim)" }}>
-                      {language === "tr" ? selectedCase.demoNoticeTr : selectedCase.demoNoticeEn}
-                    </span>
-                  )}
+                  <span style={{ fontFamily: MONO, fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-dim)", fontWeight: 600 }}>
+                    {language === "tr" ? selectedSourceReadiness.badgeTr : selectedSourceReadiness.badgeEn}
+                  </span>
+                  <span style={{ fontFamily: MONO, fontSize: "0.72rem", letterSpacing: "0.1em", textTransform: "uppercase", color: exportAvailability === "export_ready" ? "#5fc87a" : "var(--text-dim)", fontWeight: 600 }}>
+                    {exportAvailability === "export_ready"
+                      ? language === "tr"
+                        ? "İhraç hattı hazır"
+                        : "Issuance ready"
+                      : exportAvailability === "preview_only"
+                      ? language === "tr"
+                        ? "İhraç: önizleme"
+                        : "Issuance: preview"
+                      : exportAvailability === "access_required"
+                      ? language === "tr"
+                        ? "İhraç: erişim gerekli"
+                        : "Issuance: access required"
+                      : language === "tr"
+                      ? "İhraç: backend yok"
+                      : "Issuance: backend unavailable"}
+                  </span>
                 </div>
-              </section>
-            )}
+                <div style={{ color: "var(--text-primary)", lineHeight: 1.45 }}>
+                  {language === "tr" ? liveIntegrationReadiness.modeTitleTr : liveIntegrationReadiness.modeTitleEn}
+                </div>
+                <div style={{ color: "var(--text-soft)", lineHeight: 1.5 }}>
+                  {language === "tr" ? liveIntegrationReadiness.modeBodyTr : liveIntegrationReadiness.modeBodyEn}
+                </div>
+                <div style={{ color: "var(--text-soft)", lineHeight: 1.5 }}>
+                  {language === "tr" ? selectedSourceReadiness.detailTr : selectedSourceReadiness.detailEn}
+                </div>
+                {isConnectedDeviceSource ? (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                      gap: "0.45rem",
+                    }}
+                  >
+                    {[
+                      {
+                        label: language === "tr" ? "PİLOT HATTI" : "PILOT LANE",
+                        value: language === "tr" ? selectedSourceReadiness.badgeTr : selectedSourceReadiness.badgeEn,
+                      },
+                      {
+                        label: language === "tr" ? "ERİŞİM" : "ACCESS",
+                        value:
+                          connectedDevicePilotState === "unconfigured"
+                            ? language === "tr"
+                              ? "config yok"
+                              : "missing config"
+                            : connectedDevicePilotState === "configured_unverified"
+                            ? language === "tr"
+                              ? "probe bekliyor"
+                              : "probe pending"
+                            : language === "tr"
+                            ? "server-side doğrulandı"
+                            : "server-verified",
+                      },
+                      {
+                        label: language === "tr" ? "BACKEND SAĞLIĞI" : "BACKEND HEALTH",
+                        value:
+                          connectedDevicePilotState === "ready"
+                            ? language === "tr"
+                              ? "erişilebilir"
+                              : "reachable"
+                            : connectedDevicePilotState === "unavailable"
+                            ? language === "tr"
+                              ? "erişilemiyor"
+                              : "unreachable"
+                            : language === "tr"
+                            ? "bekliyor"
+                            : "pending",
+                      },
+                    ].map((item) => (
+                      <div key={item.label} style={{ border: "1px solid var(--border)", padding: "0.5rem 0.55rem", background: "rgba(255,255,255,0.02)" }}>
+                        <div style={{ fontFamily: MONO, fontSize: "0.67rem", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "0.3rem" }}>
+                          {item.label}
+                        </div>
+                        <div style={{ color: "var(--text-primary)", lineHeight: 1.35 }}>{item.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+                {isConnectedDeviceSource ? (
+                  <div style={{ color: connectedDevicePilotState === "ready" ? "#7aade8" : "var(--text-soft)", lineHeight: 1.5 }}>
+                    {connectedDevicePilotBadge} · {connectedDevicePilotBody}
+                  </div>
+                ) : null}
+                {selectedCase && (selectedCase.demoNoticeTr || selectedCase.demoNoticeEn) ? (
+                  <div style={{ color: "var(--text-dim)", lineHeight: 1.5 }}>
+                    {msg.verifierDemoLabel} · {language === "tr" ? selectedCase.demoNoticeTr : selectedCase.demoNoticeEn}
+                  </div>
+                ) : null}
+              </div>
+            </section>
 
             {/* Identity chain */}
             <section id="verifier-panel-identity" style={{ marginBottom: UI.sectionGap, display: "none" }}>

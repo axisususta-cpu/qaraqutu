@@ -2,6 +2,7 @@
 
 import { useLanguage } from "../../lib/LanguageContext";
 import { MSG } from "../../lib/i18n/messages";
+import { getLiveIntegrationReadiness } from "../../lib/live-integration-readiness";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
@@ -42,6 +43,7 @@ const SHELL_LANES = [
 export default function ConsolePage() {
   const { lang } = useLanguage();
   const m = MSG[lang];
+  const liveIntegrationReadiness = getLiveIntegrationReadiness();
   return (
     <div
       style={{
@@ -68,7 +70,7 @@ export default function ConsolePage() {
             {m.consoleBody}
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem", marginTop: "0.85rem" }}>
-            {["Reserved surface", "Controlled shell", "Authorized access required", "Protocol evolution"].map((pill) => (
+            {["Reserved surface", "Controlled shell", "Authorized access required", lang === "tr" ? liveIntegrationReadiness.modeBadgeTr : liveIntegrationReadiness.modeBadgeEn].map((pill) => (
               <span
                 key={pill}
                 style={{
@@ -159,6 +161,24 @@ export default function ConsolePage() {
             style={{
               marginTop: "0.75rem",
               borderRadius: 8,
+              border: `1px solid ${"var(--border)"}`,
+              padding: "0.7rem 0.8rem",
+              fontSize: "0.8rem",
+              lineHeight: 1.6,
+              background: "var(--panel-card)",
+            }}
+          >
+            <div style={{ color: "var(--text-soft)", marginBottom: "0.2rem" }}>
+              <strong>{lang === "tr" ? "Operator sınırı:" : "Operator boundary:"}</strong> {lang === "tr" ? liveIntegrationReadiness.operatorBoundaryTr : liveIntegrationReadiness.operatorBoundaryEn}
+            </div>
+            <div style={{ color: "var(--text-muted)" }}>
+              {lang === "tr" ? liveIntegrationReadiness.modeTitleTr : liveIntegrationReadiness.modeTitleEn}
+            </div>
+          </div>
+          <div
+            style={{
+              marginTop: "0.75rem",
+              borderRadius: 8,
               border: `1px dashed ${"var(--border)"}`,
               padding: "0.7rem 0.8rem",
               fontSize: "0.8rem",
@@ -170,8 +190,9 @@ export default function ConsolePage() {
               <strong>Current mode:</strong> reserved preparation shell
             </div>
             <div style={{ color: "var(--text-muted)" }}>
-              No command runner, no production operation trigger, and no expanded operator privileges are enabled in
-              this stage.
+              {lang === "tr"
+                ? "Komut çalıştırıcı yok ve production operasyon tetikleyicisi yok. Operator rolü kontrollü erişim kimliği olarak açılmış olsa da bu yüzey komut istasyonu değil; canlı entegrasyon kanalları da halen kapalıdır."
+                : "There is no command runner and no production-operation trigger. Even though operator is now opened as a controlled access identity, this surface is still not a command workstation and live integration lanes remain closed."}
             </div>
           </div>
           </div>

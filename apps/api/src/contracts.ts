@@ -59,6 +59,55 @@ export interface ArtifactManifestRecord {
   file_hash: string;
 }
 
+export interface PolicyOverrideRecord {
+  enabled_export_profiles?: string[];
+  enabled_visibility_classes?: string[];
+  redaction_enabled?: boolean;
+}
+
+export interface PolicyTraceLayer<T> {
+  layer: "tenant_default" | "role_override" | "user_override" | "profile_default";
+  source_key: string;
+  value: T;
+  applied: boolean;
+}
+
+export interface PolicyTraceField<T> {
+  final_value: T;
+  resolved_from: "tenant_default" | "role_override" | "user_override" | "profile_default";
+  layers: Array<PolicyTraceLayer<T>>;
+}
+
+export interface PolicyDecisionTrace {
+  trusted_role: string;
+  trusted_subject: string | null;
+  requested_export_profile: ExportProfileCode;
+  export_profiles: PolicyTraceField<string[]>;
+  actor_visibility_classes: PolicyTraceField<string[]>;
+  effective_visibility_classes: PolicyTraceField<string[]>;
+  redaction_enabled: PolicyTraceField<boolean>;
+}
+
+export interface ArtifactRedactionEntry {
+  action: "remove_item" | "remove_reference";
+  layer: "recorded_evidence" | "derived_evidence";
+  field: "recorded_evidence" | "derived_evidence" | "derivedFrom" | "sourceDependencies";
+  target_path: string;
+  visibility_class: string;
+  export_profile: ExportProfileCode;
+  policy_scope: "profile" | "tenant" | "profile_and_tenant";
+  removed_count?: number;
+}
+
+export interface ArtifactRedactionRecord {
+  applied: boolean;
+  basis: string | null;
+  export_profile: ExportProfileCode;
+  enabled_visibility_classes: string[];
+  tenant_visibility_classes: string[] | null;
+  entries: ArtifactRedactionEntry[];
+}
+
 export interface ArtifactPackageRecord {
   document_id: string;
   event_id: string;
@@ -76,6 +125,8 @@ export interface ArtifactPackageRecord {
   json_summary: Record<string, unknown>;
   seal_metadata: ArtifactSealMetadata;
   visible_text: string;
+  redaction_record?: ArtifactRedactionRecord | null;
+  policy_trace?: PolicyDecisionTrace | null;
 }
 
 export interface ExportArtifactResponse {
@@ -92,6 +143,7 @@ export interface ExportArtifactResponse {
   document_family?: ArtifactDocumentFamily;
   linked_document_families?: ArtifactDocumentFamily[];
   artifact_package?: ArtifactPackageRecord;
+  policy_trace?: PolicyDecisionTrace;
 }
 
 export interface ArtifactReverificationRequest {

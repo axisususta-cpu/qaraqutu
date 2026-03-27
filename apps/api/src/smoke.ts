@@ -8,6 +8,26 @@ import { hasBearerAccess } from "./security";
 
 const prisma = new PrismaClient();
 
+function firstQueryValue(value: unknown): string | undefined {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value) && typeof value[0] === "string") return value[0];
+  return undefined;
+}
+
+function parseDateQuery(value: unknown): Date | null {
+  const raw = firstQueryValue(value);
+  if (!raw) return null;
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function parseLimitQuery(value: unknown, fallback: number): number {
+  const raw = firstQueryValue(value);
+  const parsed = raw ? Number.parseInt(raw, 10) : fallback;
+  if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+  return Math.min(parsed, 100);
+}
+
 export function registerSmokeRoutes(app: FastifyInstance) {
   app.get("/v1/system/smoke", async (request, reply) => {
     if ((process.env.NODE_ENV ?? "development") === "production" && !hasBearerAccess(request)) {
@@ -140,6 +160,103 @@ export function registerSmokeRoutes(app: FastifyInstance) {
       claims_export,
       legal_export,
       receipt_linkage,
+    };
+  });
+
+  app.get("/v1/system/smoke-history", async (request, reply) => {
+    if ((process.env.NODE_ENV ?? "development") === "production" && !hasBearerAccess(request)) {
+      return reply.code(403).send({ error: "ACCESS_REQUIRED" });
+    }
+
+    const query = request.query as Record<string, unknown>;
+    const startedFrom = parseDateQuery(query.started_from);
+    const startedTo = parseDateQuery(query.started_to);
+    const overallResult = firstQueryValue(query.overall_result)?.trim().toUpperCase() || undefined;
+    const checkName = firstQueryValue(query.check_name)?.trim() || undefined;
+    const checkCategory = firstQueryValue(query.check_category)?.trim() || undefined;
+    const checkResult = firstQueryValue(query.check_result)?.trim().toUpperCase() || undefined;
+    const limit = parseLimitQuery(query.limit, 20);
+
+    if (query.started_from != null && !startedFrom) {
+      return reply.code(400).send({ error: "INVALID_STARTED_FROM" });
+    }
+    if (query.started_to != null && !startedTo) {
+      return reply.code(400).send({ error: "INVALID_STARTED_TO" });
+    }
+
+    const runScopeWhere: Record<string, unknown> = {};
+    if (startedFrom || startedTo) {
+      runScopeWhere.startedAt = {
+        ...(startedFrom ? { gte: startedFrom } : {}),
+        ...(startedTo ? { lte: startedTo } : {}),
+      };
+    }
+    if (overallResult) {
+      runScopeWhere.overallResult = overallResult;
+    }
+
+    const checkWhere: Record<string, unknown> = {};
+    if (checkName) checkWhere.checkName = checkName;
+    if (checkCategory) checkWhere.category = checkCategory;
+    if (checkResult) checkWhere.result = checkResult;
+    const hasCheckFilter = Object.keys(checkWhere).length > 0;
+
+    const runsWhere = {
+      ...runScopeWhere,
+      ...(hasCheckFilter ? { checks: { some: checkWhere } } : {}),
+    };
+
+    const [totalRuns, totalChecks, runs] = await Promise.all([
+      prisma.smokeRun.count({ where: runsWhere as any }),
+      prisma.smokeCheck.count({
+        where: {
+          ...(checkWhere as any),
+          run: runScopeWhere as any,
+        },
+      }),
+      prisma.smokeRun.findMany({
+        where: runsWhere as any,
+        orderBy: { startedAt: "desc" },
+        take: limit,
+        include: {
+          checks: {
+            where: hasCheckFilter ? (checkWhere as any) : undefined,
+            orderBy: { createdAt: "asc" },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      filters: {
+        started_from: startedFrom?.toISOString() ?? null,
+        started_to: startedTo?.toISOString() ?? null,
+        overall_result: overallResult ?? null,
+        check_name: checkName ?? null,
+        check_category: checkCategory ?? null,
+        check_result: checkResult ?? null,
+        limit,
+      },
+      total_runs: totalRuns,
+      total_checks: totalChecks,
+      items: runs.map((run) => ({
+        smoke_run_id: run.smokeRunId,
+        overall_result: run.overallResult,
+        started_at: run.startedAt.toISOString(),
+        finished_at: run.finishedAt?.toISOString() ?? null,
+        environment: run.environment,
+        dataset_version: run.datasetVersion,
+        build_version: run.buildVersion,
+        schema_version: run.schemaVersion,
+        checks: run.checks.map((check) => ({
+          smoke_run_id: run.smokeRunId,
+          check_name: check.checkName,
+          check_category: check.category,
+          check_result: check.result,
+          check_detail: check.detail,
+          recorded_at: check.createdAt.toISOString(),
+        })),
+      })),
     };
   });
 

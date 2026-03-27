@@ -3,9 +3,13 @@ import type {
   ArtifactDocumentFamily,
   ArtifactIntegrityFailureCode,
   ArtifactPackageRecord,
+  DerivedEvidenceItem,
+  PolicyDecisionTrace,
+  ArtifactRedactionRecord,
   ArtifactReverificationResponse,
   ExportFormat,
   ExportProfileCode,
+  RecordedEvidenceItem,
   VerificationTranscriptEntry,
 } from "../../contracts";
 
@@ -26,7 +30,7 @@ function hashOf(value: unknown): string {
   return createHash("sha256").update(stableJson(value)).digest("hex");
 }
 
-function getDocumentFamilies(profile: ExportProfileCode, eventClass: string): {
+export function getDocumentFamilies(profile: ExportProfileCode, eventClass: string): {
   primary: ArtifactDocumentFamily;
   linked: ArtifactDocumentFamily[];
 } {
@@ -71,8 +75,10 @@ export function buildArtifactPackage(input: {
   summary: string;
   verificationState: string;
   purpose: string;
-  recordedEvidence: unknown[];
-  derivedEvidence: unknown[];
+  recordedEvidence: ReadonlyArray<RecordedEvidenceItem>;
+  derivedEvidence: ReadonlyArray<DerivedEvidenceItem>;
+  redactionRecord?: ArtifactRedactionRecord | null;
+  policyTrace?: PolicyDecisionTrace | null;
 }): {
   documentFamily: ArtifactDocumentFamily;
   linkedDocumentFamilies: ArtifactDocumentFamily[];
@@ -91,6 +97,8 @@ export function buildArtifactPackage(input: {
     export_purpose: input.purpose,
     recorded_evidence_count: input.recordedEvidence.length,
     derived_evidence_count: input.derivedEvidence.length,
+    redaction_record: input.redactionRecord ?? null,
+    policy_trace: input.policyTrace ?? null,
     summary: input.summary,
     document_family: primary,
   };
@@ -103,6 +111,8 @@ export function buildArtifactPackage(input: {
     input.summary,
     `recorded:${input.recordedEvidence.length}`,
     `derived:${input.derivedEvidence.length}`,
+    `redaction:${input.redactionRecord?.entries.length ?? 0}`,
+    `policy:${input.policyTrace?.export_profiles.resolved_from ?? "tenant_default"}`,
     `verification:${input.verificationState}`,
   ].join("\n");
   const visibleTextHash = hashOf(visibleText);
@@ -159,6 +169,8 @@ export function buildArtifactPackage(input: {
         seal_locator: `seal://${input.exportId}`,
       },
       visible_text: visibleText,
+      redaction_record: input.redactionRecord ?? null,
+      policy_trace: input.policyTrace ?? null,
     },
   };
 }
