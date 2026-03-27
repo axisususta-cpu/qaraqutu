@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLanguage } from "../../lib/LanguageContext";
 import { MSG } from "../../lib/i18n/messages";
 import { TRUSTED_ROLES, type TrustedRoleId } from "../../lib/trusted-access";
@@ -15,11 +16,8 @@ function safeNext(next: string | null): string {
   return next;
 }
 
-export default function AccessPage({
-  searchParams,
-}: {
-  searchParams: { next?: string };
-}) {
+function AccessPageInner() {
+  const searchParams = useSearchParams();
   const { lang } = useLanguage();
   const m = MSG[lang];
   const [token, setToken] = useState("");
@@ -27,7 +25,7 @@ export default function AccessPage({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const next = useMemo(() => safeNext(searchParams?.next ?? null), [searchParams?.next]);
+  const next = useMemo(() => safeNext(searchParams?.get("next") ?? null), [searchParams]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -60,9 +58,6 @@ export default function AccessPage({
         color: "var(--text)",
         padding: "2.2rem 2rem",
         fontFamily: SANS,
-      }}
-    >
-      <div style={{ maxWidth: 860, margin: "0 auto" }}>
         <div style={{ marginBottom: "1rem" }}>
           <div
             style={{
@@ -142,6 +137,9 @@ export default function AccessPage({
               </option>
             ))}
           </select>
+          <p style={{ marginTop: "0.55rem", marginBottom: 0, fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
+            {lang === "tr" ? liveIntegrationReadiness.operatorBoundaryTr : liveIntegrationReadiness.operatorBoundaryEn}
+          </p>
 
           {error ? (
             <div
@@ -202,6 +200,14 @@ export default function AccessPage({
         </form>
       </div>
     </div>
+  );
+}
+
+export default function AccessPage() {
+  return (
+    <Suspense fallback={null}>
+      <AccessPageInner />
+    </Suspense>
   );
 }
 
