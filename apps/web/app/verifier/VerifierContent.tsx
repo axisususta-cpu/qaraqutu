@@ -110,6 +110,12 @@ interface IssuanceRecord {
   previewReason?: string;
 }
 
+type ExportAvailability = "export_ready" | "preview_only" | "access_required" | "backend_unavailable";
+
+interface ExportStatusResponse {
+  state: ExportAvailability;
+}
+
 // Phase 1 mock data scaffolding for future workstation wiring.
 type MockSystemId = "vehicle" | "drone" | "robot";
 type SourceId = "demo_archive" | "connected_device" | "uploaded_package";
@@ -914,6 +920,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     null
   );
   const [exportError, setExportError] = useState<string | null>(null);
+  const [exportRuntimeState, setExportRuntimeState] = useState<ExportAvailability | null>(null);
   const [reverifyState, setReverifyState] = useState<"idle" | "pending" | "success" | "error">("idle");
   const [reverifyResult, setReverifyResult] = useState<ArtifactReverificationResponse | null>(null);
   const [reverifyError, setReverifyError] = useState<string | null>(null);
@@ -1114,6 +1121,43 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const canUseLocalPreviewFallbackArtifact =
     typeof window !== "undefined" &&
     (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function refreshExportStatus() {
+      try {
+        const res = await fetch("/api/export-status", { cache: "no-store" });
+        const json = (await res.json().catch(() => null)) as ExportStatusResponse | null;
+        if (cancelled) return;
+        if (!res.ok || !json?.state) {
+          setExportRuntimeState(canUseLocalPreviewFallbackArtifact ? "preview_only" : "backend_unavailable");
+          setAccessGateConfigured(canUseLocalPreviewFallbackArtifact ? null : true);
+          return;
+        }
+        setExportRuntimeState(json.state);
+        setAccessGateConfigured(
+          json.state === "access_required"
+            ? false
+            : json.state === "preview_only"
+            ? null
+            : true
+        );
+      } catch {
+        if (cancelled) return;
+        setExportRuntimeState(canUseLocalPreviewFallbackArtifact ? "preview_only" : "backend_unavailable");
+        setAccessGateConfigured(canUseLocalPreviewFallbackArtifact ? null : true);
+      }
+    }
+
+    refreshExportStatus();
+    window.addEventListener("focus", refreshExportStatus);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", refreshExportStatus);
+    };
+  }, [canUseLocalPreviewFallbackArtifact]);
+
   /**
    * issuedArtifact: only reflects an artifact explicitly produced by user action
    * (runExport / runVerification). No silent auto-construction.
@@ -1470,12 +1514,16 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         const rawError = errorPayload.error ?? `Export failed (HTTP ${res.status})`;
         if (rawError === "ACCESS_GATE_NOT_CONFIGURED") {
           setAccessGateConfigured(false);
+          setExportRuntimeState("access_required");
           setExportError(
             language === "tr"
               ? "Erişim kapısı yapılandırılmamış — belge üretimi için QARAQUTU_ACCESS_TOKEN ortam değişkeni gerekli."
               : "Access gate not configured — QARAQUTU_ACCESS_TOKEN environment variable required for document issuance."
           );
         } else {
+          if (res.status >= 500 || rawError === "EXPORT_UPSTREAM_UNAVAILABLE") {
+            setExportRuntimeState("backend_unavailable");
+          }
           setExportError(rawError);
         }
         return;
@@ -1484,6 +1532,11 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
       const meta = successPayload as ExportArtifactResponse;
       if (isLocalPreview && successPayload.preview_reason === "access_gate_not_configured") {
         setAccessGateConfigured(false);
+        setExportRuntimeState("preview_only");
+      }
+      if (!isLocalPreview) {
+        setAccessGateConfigured(true);
+        setExportRuntimeState("export_ready");
       }
       setIssuanceState("success");
       setLastIssuedAtIso(new Date().toISOString());
@@ -1699,21 +1752,20 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
   const isVerificationReady = Boolean(verificationState || verifyIdentityMatchesSelection);
 
   /** Export availability — truthful reflection of backend reachability */
-  type ExportAvailability = "export_ready" | "preview_only" | "access_required" | "backend_unavailable";
   const exportAvailability: ExportAvailability =
-    accessGateConfigured === false
+    !hasConnectedApiIssuanceProfile
+      ? canUseLocalPreviewFallbackArtifact
+        ? "preview_only"
+        : "backend_unavailable"
+      : exportRuntimeState === "access_required" || accessGateConfigured === false
       ? "access_required"
-      : hasConnectedApiIssuanceProfile
-      ? "export_ready"
-      : canUseLocalPreviewFallbackArtifact
-      ? "preview_only"
-      : "backend_unavailable";
+      : exportRuntimeState ?? (canUseLocalPreviewFallbackArtifact ? "preview_only" : "backend_unavailable");
   const canExport = exportAvailability === "export_ready";
   const exportDisabledReason: string | null =
     exportAvailability === "access_required"
       ? language === "tr"
-        ? "Erişim kapısı yapılandırılmamış — QARAQUTU_ACCESS_TOKEN gerekli"
-        : "Access gate not configured — QARAQUTU_ACCESS_TOKEN required"
+        ? "Belge üretimi için erişim anahtarı gerekli"
+        : "Artifact issuance requires an access token"
       : exportAvailability === "backend_unavailable"
       ? language === "tr"
         ? "API bağlantısı yok"
