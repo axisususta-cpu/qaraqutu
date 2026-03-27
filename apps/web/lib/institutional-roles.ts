@@ -15,6 +15,15 @@ export type InstitutionalRoleId =
   | "oversight";
 
 export type DocumentFamilyCode =
+  | "pass_witness_summary"
+  | "pass_verification_summary"
+  | "pass_incident_review_summary"
+  | "pass_limitation_annex"
+  | "pass_vehicle_incident_report"
+  | "integrity_failure_notice"
+  | "tamper_detected_notice"
+  | "chain_breach_notice"
+  | "artifact_invalidity_notice"
   | "incident_report"
   | "verification_summary"
   | "trace_appendix"

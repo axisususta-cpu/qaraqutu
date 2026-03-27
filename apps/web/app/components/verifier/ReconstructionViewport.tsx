@@ -730,8 +730,7 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
                 : eventId
                   ? "PKG"
                   : "—";
-  const conf =
-    verificationState === "PASS" ? "0.94" : verificationState === "FAIL" ? "0.61" : verificationState === "UNKNOWN" ? "0.72" : eventId ? "0.82" : "—";
+  const conf = verificationState === "PASS" ? "0.94" : verificationState === "FAIL" ? "0.61" : eventId ? "0.82" : "—";
 
   const titleBar = language === "tr" ? "Mühürlü yeniden oluşturma görünümü" : "Sealed reconstruction view";
   const idle = !eventId;
@@ -747,13 +746,9 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
       ? language === "tr"
         ? "YÜKSEK GÖZLEM"
         : "HIGH WATCH"
-      : verificationState === "UNKNOWN"
-        ? language === "tr"
-          ? "BELİRSİZLİK AÇIK"
-          : "UNCERTAINTY OPEN"
-        : language === "tr"
-          ? "KONTROLLÜ İNCELEME"
-          : "CONTROLLED REVIEW";
+      : language === "tr"
+        ? "KONTROLLÜ İNCELEME"
+        : "CONTROLLED REVIEW";
 
   type PhaseVisual = { color: string; label: string; detail: string; zone: string };
   const phaseVisual: PhaseVisual = incidentPhase

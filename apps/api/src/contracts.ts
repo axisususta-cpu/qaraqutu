@@ -1,6 +1,23 @@
-export type VerificationState = "PASS" | "FAIL" | "UNKNOWN" | "UNVERIFIED";
+export type VerificationState = "PASS" | "FAIL" | "UNVERIFIED";
 export type ExportProfileCode = "claims" | "legal";
 export type ExportFormat = "json" | "pdf";
+
+export type ArtifactDocumentFamily =
+  | "pass_witness_summary"
+  | "pass_verification_summary"
+  | "pass_incident_review_summary"
+  | "pass_limitation_annex"
+  | "pass_vehicle_incident_report"
+  | "integrity_failure_notice"
+  | "tamper_detected_notice"
+  | "chain_breach_notice"
+  | "artifact_invalidity_notice";
+
+export type ArtifactIntegrityFailureCode =
+  | "TAMPER_DETECTED"
+  | "INTEGRITY_BREACH"
+  | "CHAIN_MISMATCH"
+  | "ARTIFACT_INVALID";
 
 export interface VerificationTranscriptEntry {
   step: number;
@@ -27,6 +44,40 @@ export interface CreateExportRequest {
   outputTitle?: string;
 }
 
+export interface ArtifactSealMetadata {
+  issuer_version: string;
+  key_id: string;
+  signature: string;
+  seal_locator: string;
+}
+
+export interface ArtifactManifestRecord {
+  manifest_hash: string;
+  page_count: number;
+  visible_text_hash: string;
+  canonical_payload_hash: string;
+  file_hash: string;
+}
+
+export interface ArtifactPackageRecord {
+  document_id: string;
+  event_id: string;
+  issued_at: string;
+  issuer_version: string;
+  artifact_type: string;
+  page_count: number;
+  canonical_payload_hash: string;
+  file_hash: string;
+  manifest_hash: string;
+  signature: string;
+  key_id: string;
+  document_family: ArtifactDocumentFamily;
+  manifest: ArtifactManifestRecord;
+  json_summary: Record<string, unknown>;
+  seal_metadata: ArtifactSealMetadata;
+  visible_text: string;
+}
+
 export interface ExportArtifactResponse {
   export_id: string;
   receipt_id: string;
@@ -38,6 +89,22 @@ export interface ExportArtifactResponse {
   export_purpose: string;
   schema_version: string;
   download_url: string;
+  document_family?: ArtifactDocumentFamily;
+  linked_document_families?: ArtifactDocumentFamily[];
+  artifact_package?: ArtifactPackageRecord;
+}
+
+export interface ArtifactReverificationRequest {
+  artifact_package: ArtifactPackageRecord;
+}
+
+export interface ArtifactReverificationResponse {
+  export_id: string;
+  event_id: string;
+  verification_state: "PASS" | "FAIL";
+  failure_type?: ArtifactIntegrityFailureCode;
+  transcript_summary: VerificationTranscriptEntry[];
+  artifact_package: ArtifactPackageRecord;
 }
 
 export interface RecordedEvidenceItem {
@@ -54,6 +121,7 @@ export interface RecordedEvidenceItem {
   storageRef?: string;
   displayLabel: string;
   machineLabel: string;
+  visibility_class?: string;
 }
 
 export interface DerivedEvidenceItem {
@@ -69,6 +137,7 @@ export interface DerivedEvidenceItem {
   machineLabel: string;
   humanSummary: string;
   sourceDependencies: string[];
+  visibility_class?: string;
 }
 
 export interface PdfVerificationTraceStep {
@@ -93,8 +162,6 @@ export interface CanonicalEvent {
   summary: string;
   recordedEvidence: RecordedEvidenceItem[];
   derivedEvidence: DerivedEvidenceItem[];
-  /** When attached for PDF (e.g. from latest verification run). */
   verificationTrace?: PdfVerificationTraceStep[];
-  /** Optional unknown/disputed lines when present on canonical snapshot. */
   unknownDisputed?: string[];
 }

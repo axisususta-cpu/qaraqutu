@@ -2,6 +2,8 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { PrismaClient, Prisma } from "@prisma/client";
 import {
+  ArtifactReverificationRequest,
+  ArtifactReverificationResponse,
   CanonicalEvent,
   CreateExportRequest,
   ExportArtifactResponse,
@@ -12,6 +14,7 @@ import {
 import PDFDocument from "pdfkit";
 import { renderClaimsPdf } from "./modules/documents/claims-pack";
 import { renderLegalPdf } from "./modules/documents/legal-pack";
+import { buildArtifactPackage, reverifyArtifactPackage } from "./modules/artifacts/integrity";
 import type { DocumentIdentity } from "./modules/documents/types";
 import { registerVerifierRoutes } from "./verifier";
 import { registerSmokeRoutes } from "./smoke";
@@ -538,6 +541,25 @@ fastify.post<{
     EXPORT_TITLES.set(exportId, request.body.outputTitle);
   }
 
+  const artifactMeta = buildArtifactPackage({
+    exportId,
+    receiptId,
+    schemaVersion: SCHEMA_VERSION,
+    buildVersion: BUILD_VERSION,
+    profile: profile as ExportProfileCode,
+    format: format as ExportFormat,
+    eventClass: event.eventClass,
+    eventId: event.eventId,
+    bundleId: event.bundleId,
+    manifestId: event.manifestId,
+    issuedAt: createdExport.createdAt.toISOString(),
+    summary: event.summary,
+    verificationState: event.verificationState,
+    purpose: normalizedPurpose,
+    recordedEvidence: filteredRecorded,
+    derivedEvidence: filteredDerived,
+  });
+
   const response: ExportArtifactResponse = {
     export_id: exportId,
     receipt_id: receiptId,
@@ -549,6 +571,9 @@ fastify.post<{
     export_purpose: normalizedPurpose,
     schema_version: SCHEMA_VERSION,
     download_url: `/v1/exports/${exportId}/download`,
+    document_family: artifactMeta.documentFamily,
+    linked_document_families: artifactMeta.linkedDocumentFamilies,
+    artifact_package: artifactMeta.artifactPackage,
   };
 
   return reply.code(201).send(response);
@@ -627,6 +652,24 @@ fastify.get<{
       redaction_applied: redactionApplied,
       redacted_item_count: redactedItemCount,
       redaction_basis: redactionBasis,
+      artifact_package: buildArtifactPackage({
+        exportId: exp.exportId,
+        receiptId: receipt.receiptId,
+        schemaVersion: SCHEMA_VERSION,
+        buildVersion: BUILD_VERSION,
+        profile: exp.profile as ExportProfileCode,
+        format: exp.format as ExportFormat,
+        eventClass: event.eventClass,
+        eventId: event.eventId,
+        bundleId: exp.bundleId,
+        manifestId: exp.manifestId,
+        issuedAt: exp.createdAt.toISOString(),
+        summary: event.summary,
+        verificationState: exp.verificationState,
+        purpose: exp.purpose,
+        recordedEvidence: Array.isArray(recorded) ? recorded : [],
+        derivedEvidence: Array.isArray(derived) ? derived : [],
+      }).artifactPackage,
     };
 
     return reply
@@ -800,6 +843,75 @@ fastify.get<{
       format: exp.format,
     });
 });
+
+fastify.post<{
+  Params: { exportId: string };
+  Body: ArtifactReverificationRequest;
+}>(
+  "/v1/exports/:exportId/reverify",
+  {
+    preHandler: [
+      rateLimit({ windowMs: 60_000, max: 30, keyPrefix: "export_reverify" }),
+      async (request, reply) => {
+        if (!hasBearerAccess(request)) {
+          fastify.log.warn(
+            { ip: getClientIp(request as any), route: "/v1/exports/:exportId/reverify" },
+            "access_denied"
+          );
+          return reply.code(403).send({ error: "ACCESS_REQUIRED" });
+        }
+      },
+    ],
+  },
+  async (request, reply) => {
+    const { exportId } = request.params;
+    if (!/^QEX-[a-zA-Z0-9-]{6,120}$/.test(exportId)) {
+      return reply.code(400).send({ error: "INVALID_EXPORT_ID" });
+    }
+
+    const submitted = request.body?.artifact_package;
+    if (!submitted) {
+      return reply.code(400).send({ error: "INVALID_ARTIFACT_PACKAGE" });
+    }
+
+    const exp = await prisma.export.findUnique({
+      where: { exportId },
+      include: { event: true, receipt: true },
+    }) as any;
+    if (!exp || !exp.receipt?.receiptId) {
+      return reply.code(404).send({ error: "EXPORT_NOT_FOUND" });
+    }
+
+    const recorded = (exp as any).recordedEvidenceSnapshot ?? (exp.event.recordedEvidence ?? []);
+    const derived = (exp as any).derivedEvidenceSnapshot ?? (exp.event.derivedEvidence ?? []);
+    const expected = buildArtifactPackage({
+      exportId: exp.exportId,
+      receiptId: exp.receipt.receiptId,
+      schemaVersion: SCHEMA_VERSION,
+      buildVersion: BUILD_VERSION,
+      profile: exp.profile as ExportProfileCode,
+      format: exp.format as ExportFormat,
+      eventClass: exp.event.eventClass,
+      eventId: exp.event.eventId,
+      bundleId: exp.bundleId,
+      manifestId: exp.manifestId,
+      issuedAt: exp.createdAt.toISOString(),
+      summary: exp.event.summary,
+      verificationState: exp.verificationState,
+      purpose: exp.purpose,
+      recordedEvidence: Array.isArray(recorded) ? recorded : [],
+      derivedEvidence: Array.isArray(derived) ? derived : [],
+    }).artifactPackage;
+
+    const response: ArtifactReverificationResponse = reverifyArtifactPackage({
+      exportId: exp.exportId,
+      expected,
+      submitted,
+    });
+
+    return reply.code(200).send(response);
+  }
+);
 
 const port = Number(process.env.PORT) || 4000;
 

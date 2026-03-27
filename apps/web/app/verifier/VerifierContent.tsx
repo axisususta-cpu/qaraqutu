@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type CSSProperties } from "react";
 import { useLanguage } from "../../lib/LanguageContext";
 import type {
+  ArtifactReverificationResponse,
   CanonicalEvent,
   CreateExportRequest,
   RecordedEvidenceItem,
@@ -308,7 +309,7 @@ const DEMO_PACKAGES: DemoPackageDef[] = [
     opContextTr: "Kentsel şerit, yaya önceliği, düşük hız geçişi.",
     riskBand: "YUKSEK",
     sceneIdentityTr: "Şerit · dur çizgisi · kritik geçiş anı",
-    canonicalIndex: 0,
+    canonicalIndex: 2,
   },
   {
     packageKey: "veh-child-crossing-contact",
@@ -330,7 +331,7 @@ const DEMO_PACKAGES: DemoPackageDef[] = [
     opContextTr: "Yol koridoru, manevra ve denetim izi eşleştirmesi.",
     riskBand: "ORTA",
     sceneIdentityTr: "Koridor · yön sapması · sinyal-zaman hizası",
-    canonicalIndex: 0,
+    canonicalIndex: 2,
   },
   {
     packageKey: "drone-wireline-contact",
@@ -352,7 +353,7 @@ const DEMO_PACKAGES: DemoPackageDef[] = [
     opContextTr: "Görev planı, coğrafi sınır ve operatör devri.",
     riskBand: "YUKSEK",
     sceneIdentityTr: "Sınır poligonu · ihlal vektörü · dönüş hattı",
-    canonicalIndex: 1,
+    canonicalIndex: 2,
   },
   {
     packageKey: "drone-uncontrolled-descent",
@@ -429,6 +430,7 @@ interface EventCard {
 function caseToEventCard(
   c: {
     eventId: string;
+    title?: string;
     scenarioFrame: string;
     summary: string;
     summaryTr?: string;
@@ -445,7 +447,7 @@ function caseToEventCard(
   const summary = lang === "tr" && c.summaryTr ? c.summaryTr : c.summary;
   return {
     eventId: c.eventId,
-    title: c.scenarioFrame,
+    title: c.title ?? c.scenarioFrame,
     summary,
     timestamp: c.occurredAt,
     severity,
@@ -480,8 +482,16 @@ function getIncidentSummary(
       next: language === "tr" ? "Bir olay seçin." : "Select an event.",
     };
   }
-  const whyFromCase = undefined;
-  const nextFromCase = undefined;
+  const whyFromCase = selectedCase
+    ? language === "tr"
+      ? selectedCase.reviewWhyTr
+      : selectedCase.reviewWhyEn
+    : undefined;
+  const nextFromCase = selectedCase
+    ? language === "tr"
+      ? selectedCase.nextStepTr
+      : selectedCase.nextStepEn
+    : undefined;
 
   if (system === "vehicle" && verificationState) {
     return {
@@ -494,7 +504,7 @@ function getIncidentSummary(
       state: verificationState,
       next:
         nextFromCase ??
-        (verificationState === "UNVERIFIED" || verificationState === "UNKNOWN"
+        (verificationState === "UNVERIFIED"
           ? language === "tr"
             ? "Doğrulamayı çalıştırın veya kontrollü belge çıktısı başlatın."
             : "Run verification or start controlled artifact."
@@ -520,7 +530,7 @@ function getIncidentSummary(
       state: verificationState,
       next:
         nextFromCase ??
-        (verificationState === "UNVERIFIED" || verificationState === "UNKNOWN"
+        (verificationState === "UNVERIFIED"
           ? language === "tr"
             ? "Doğrulamayı çalıştırın veya kontrollü belge çıktısı başlatın."
             : "Run verification or start controlled artifact."
@@ -716,7 +726,7 @@ function protocolStatePillStyle(label: string): CSSProperties {
       color: "var(--error)",
     };
   }
-  if (key === "UNKNOWN") {
+  if (key === "OPEN" || key === "UNRESOLVED") {
     return {
       ...base,
       borderColor: "var(--warning)",
@@ -819,6 +829,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     null
   );
   const [exportError, setExportError] = useState<string | null>(null);
+  const [reverifyState, setReverifyState] = useState<"idle" | "pending" | "success" | "error">("idle");
+  const [reverifyResult, setReverifyResult] = useState<ArtifactReverificationResponse | null>(null);
+  const [reverifyError, setReverifyError] = useState<string | null>(null);
   const [accessGateConfigured, setAccessGateConfigured] = useState<boolean | null>(null);
   const [issuanceAudience, setIssuanceAudience] = useState<InstitutionAudienceId>(
     DEFAULT_AUDIENCE_BY_PROFILE.claims
@@ -845,6 +858,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     setLastIssuedArtifact(null);
     setIssuanceState("idle");
     setExportError(null);
+    setReverifyState("idle");
+    setReverifyResult(null);
+    setReverifyError(null);
     setLastIssuedAtIso(null);
   }, [selectedEventId]);
 
@@ -1244,6 +1260,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     setLastIssuedArtifact(null);
     setIssuanceState("idle");
     setExportError(null);
+    setReverifyState("idle");
+    setReverifyResult(null);
+    setReverifyError(null);
     setLastIssuedAtIso(null);
   }
 
@@ -1289,6 +1308,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
         setIssuanceState("success");
         setSelectedFormat("pdf");
         setLastIssuedAtIso(nowIso);
+        setReverifyState("idle");
+        setReverifyResult(null);
+        setReverifyError(null);
         setLastIssuedArtifact({
           format: "pdf",
           localPreview: true,
@@ -1320,6 +1342,9 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
     setSelectedFormat(format);
     setExportLoading(format);
     setExportError(null);
+    setReverifyState("idle");
+    setReverifyResult(null);
+    setReverifyError(null);
     setIssuanceState("pending");
     setLastIssuedArtifact(null);
 
@@ -1406,6 +1431,160 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
   async function runExportPdf() {
     await runExport("pdf");
+  }
+
+  async function runReverification(tampered: boolean) {
+    const artifactPackage = issuedArtifact?.meta?.artifact_package;
+    if (!issuedArtifact || !artifactPackage) {
+      setReverifyState("error");
+      setReverifyError(language === "tr" ? "Yeniden doğrulama için artifact package metadata eksik." : "Artifact package metadata is missing for re-verification.");
+      return;
+    }
+
+    setReverifyState("pending");
+    setReverifyError(null);
+    setReverifyResult(null);
+
+    const submission = tampered
+      ? {
+          ...artifactPackage,
+          page_count: artifactPackage.page_count + 1,
+          visible_text: `${artifactPackage.visible_text}\nTAMPERED COPY`,
+          file_hash: `tampered-${artifactPackage.file_hash}`,
+          seal_metadata: {
+            ...artifactPackage.seal_metadata,
+            seal_locator: `${artifactPackage.seal_metadata.seal_locator}:tampered`,
+          },
+        }
+      : artifactPackage;
+
+    try {
+      const res = await fetch(`/api/exports/${issuedArtifact.meta.export_id}/reverify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ artifact_package: submission }),
+      });
+      const json = (await res.json().catch(() => ({}))) as ArtifactReverificationResponse | { error?: string };
+      if (!res.ok) {
+        setReverifyState("error");
+        setReverifyError((json as { error?: string }).error ?? `HTTP ${res.status}`);
+        return;
+      }
+      setReverifyState("success");
+      setReverifyResult(json as ArtifactReverificationResponse);
+    } catch (error) {
+      setReverifyState("error");
+      setReverifyError(error instanceof Error ? error.message : "Re-verification failed");
+    }
+  }
+
+  function issuedDocumentType(meta: ExportArtifactResponse): string {
+    if (meta.document_family) {
+      return documentFamilyLabel(meta.document_family as never, language);
+    }
+    const { primary } = resolveIssuanceDocumentFamilies(meta.export_profile, selectedSystem);
+    return issuanceFamilyLabel(meta.export_profile, selectedRoleLens) || documentFamilyLabel(primary, language);
+  }
+
+  function renderReverificationPanel(meta: ExportArtifactResponse) {
+    const linkedFamilies = meta.linked_document_families ?? [];
+    const reverificationEnabled = selectedCase?.reverification?.enabled === true && !!meta.artifact_package;
+    return (
+      <div style={{ marginTop: "0.9rem", borderTop: "1px solid var(--border)", paddingTop: "0.85rem" }}>
+        <div style={{ fontFamily: MONO, fontSize: "0.72rem", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.45rem" }}>
+          {language === "tr" ? "Belge ailesi bağı" : "Document family binding"}
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", marginBottom: reverificationEnabled ? "0.85rem" : 0 }}>
+          {linkedFamilies.length > 0 ? (
+            linkedFamilies.map((family) => (
+              <span
+                key={family}
+                style={{
+                  border: "1px solid var(--border)",
+                  borderRadius: 999,
+                  padding: "0.18rem 0.45rem",
+                  fontSize: "0.78rem",
+                  color: "var(--text-soft)",
+                  background: "var(--panel)",
+                }}
+              >
+                {documentFamilyLabel(family as never, language)}
+              </span>
+            ))
+          ) : (
+            <span style={{ fontSize: "0.84rem", color: "var(--text-dim)" }}>
+              {language === "tr" ? "Bağlı belge ailesi metadata’sı yok." : "No linked document family metadata present."}
+            </span>
+          )}
+        </div>
+        {reverificationEnabled ? (
+          <>
+            <div style={{ fontFamily: MONO, fontSize: "0.72rem", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.45rem" }}>
+              {language === "tr" ? "Re-verification integrity hattı" : "Re-verification integrity lane"}
+            </div>
+            <p style={{ margin: "0 0 0.55rem", fontSize: "0.84rem", color: "var(--text-soft)", lineHeight: 1.5 }}>
+              {language === "tr"
+                ? "Ana issuance çizgisi PASS kalır. FAIL yalnızca geri dönen artifact copy üzerinde integrity breach yakalanırsa görünür."
+                : "The main issuance line stays PASS. FAIL appears only if the returning artifact copy triggers an integrity breach."}
+            </p>
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: reverifyResult || reverifyError ? "0.7rem" : 0 }}>
+              <button
+                type="button"
+                onClick={() => runReverification(false)}
+                disabled={reverifyState === "pending"}
+                style={{
+                  fontSize: "0.84rem",
+                  padding: "0.35rem 0.7rem",
+                  borderRadius: 4,
+                  border: "1px solid var(--border)",
+                  background: "var(--panel)",
+                  color: "var(--text)",
+                  cursor: reverifyState === "pending" ? "not-allowed" : "pointer",
+                  opacity: reverifyState === "pending" ? 0.6 : 1,
+                }}
+              >
+                {language === "tr" ? "Clean copy doğrula" : "Verify clean copy"}
+              </button>
+              <button
+                type="button"
+                onClick={() => runReverification(true)}
+                disabled={reverifyState === "pending"}
+                style={{
+                  fontSize: "0.84rem",
+                  padding: "0.35rem 0.7rem",
+                  borderRadius: 4,
+                  border: "1px solid var(--accent-border)",
+                  background: "var(--accent-soft)",
+                  color: "var(--text)",
+                  cursor: reverifyState === "pending" ? "not-allowed" : "pointer",
+                  opacity: reverifyState === "pending" ? 0.6 : 1,
+                }}
+              >
+                {language === "tr" ? "Oynanmış kopyayı geri ver" : "Submit tampered copy"}
+              </button>
+            </div>
+            {reverifyResult ? (
+              <div style={{ border: "1px solid var(--border)", borderRadius: 4, padding: "0.7rem", background: "var(--panel)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
+                  <span style={protocolStatePillStyle(reverifyResult.verification_state)}>{reverifyResult.verification_state}</span>
+                  {reverifyResult.failure_type ? (
+                    <span style={{ fontFamily: MONO, fontSize: "0.76rem", color: "var(--warning)" }}>{reverifyResult.failure_type}</span>
+                  ) : null}
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                  {reverifyResult.transcript_summary.map((step) => (
+                    <div key={`${step.step}-${step.check}`} style={{ fontSize: "0.82rem", color: "var(--text-soft)", lineHeight: 1.45 }}>
+                      <strong style={{ color: "var(--text)" }}>{step.step}. {step.check}</strong>: {step.result} · {step.note}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {reverifyError ? <p style={{ margin: "0.55rem 0 0", fontSize: "0.84rem", color: "var(--error)" }}>{reverifyError}</p> : null}
+          </>
+        ) : null}
+      </div>
+    );
   }
 
   const reviewTabs: { id: string; label: string }[] = [
@@ -2239,7 +2418,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     {[
                       { title: language === "tr" ? "KAYITLI" : "RECORDED", items: evidenceRecordedBandItems },
                       { title: language === "tr" ? "TÜRETİLMİŞ" : "DERIVED", items: evidenceDerivedBandItems },
-                      { title: language === "tr" ? "AÇIK / ÇEKİŞMELİ" : "UNKNOWN / DISPUTED", items: evidenceUnknownBandItems },
+                      { title: language === "tr" ? "AÇIK / ÇEKİŞMELİ" : "OPEN / DISPUTED", items: evidenceUnknownBandItems },
                     ].map((panel, index) => (
                       <div key={panel.title} style={{ padding: PX.evidencePad, borderRight: index < 2 ? "1px solid var(--border)" : "none", overflow: "hidden" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.2rem" }}>
@@ -2954,7 +3133,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
 
             {activeReviewTab === "unknownDisputed" && (
             <>
-            {/* Unknown / disputed */}
+            {/* Open / disputed register */}
             <section id="verifier-panel-unknownDisputed" style={{ marginBottom: UI.sectionGap }}>
               <div
                 style={{
@@ -2989,22 +3168,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   </p>
                   {selectedEventCard ? (
                     <>
-                      {verificationState === "UNKNOWN" && (
-                        <div
-                          style={{
-                            marginBottom: "0.75rem",
-                            padding: "0.5rem 0.7rem",
-                            borderLeft: `2px solid ${"var(--warning)"}`,
-                            background: "var(--warning-soft)",
-                            borderRadius: UI.radius.xs,
-                          }}
-                        >
-                          <div style={{ marginBottom: "0.35rem" }}>
-                            <span style={protocolStatePillStyle("UNKNOWN")}>UNKNOWN</span>
-                          </div>
-                          <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{msg.verifierHumanReviewTag}</div>
-                        </div>
-                      )}
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                         {visibleUnknownItems.length ? (
                           visibleUnknownItems.map((item, i) => (
@@ -3048,12 +3211,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                               </div>
                             </div>
                           ))
-                        ) : verificationState === "UNKNOWN" ? (
-                          <div style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>
-                            {language === "tr"
-                              ? "Bu çalıştırma için doğrulama sonucu belirsiz; insan incelemesi gerekir."
-                              : "Verification outcome unknown for this run; requires human review."}
-                          </div>
                         ) : (
                           <div style={{ fontFamily: MONO, fontSize: "0.92rem", color: "var(--text-dim)", lineHeight: 1.5 }}>
                             {language === "tr"
@@ -3121,7 +3278,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   (() => {
                     const normalizeResult = (r: string) => {
                       if (r === "OK" || r === "PASS") return { text: r, honesty: "pass" as const };
-                      if (r === "UNKNOWN" || r === "unresolved") return { text: r, honesty: "unresolved" as const };
+                      if (r === "OPEN" || r === "unresolved") return { text: r, honesty: "unresolved" as const };
                       if (r === "FAIL" || r === "partial") return { text: r, honesty: "partial" as const };
                       return { text: r, honesty: "pass" as const };
                     };
@@ -3576,8 +3733,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   </p>
                   <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>
                     {language === "tr"
-                      ? "Issuance rol ve iz ile sınırlıdır; bilinmeyen/çekişmeli alanın veya nihai hükmün yerini almaz."
-                      : "Issuance is role- and trace-bound; it does not override unknown/disputed or produce a final ruling."}
+                      ? "Issuance rol ve iz ile sınırlıdır; açık/çekişmeli kayıtların veya nihai hükmün yerini almaz."
+                      : "Issuance is role- and trace-bound; it does not override open/disputed items or produce a final ruling."}
                   </p>
                 </div>
               ) : selectedCase.artifactProfiles && selectedCase.artifactProfiles.length > 0 ? (
@@ -3612,10 +3769,10 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                     <div>
                       {language === "tr"
                         ? hasConnectedIssuanceProfile
-                          ? "Receipt/export hattı yalnızca bağlı profiller için açılır; issuance trace ve unknown/disputed üstüne yazmaz."
+                          ? "Receipt/export hattı yalnızca bağlı profiller için açılır; issuance trace ve açık/çekişmeli kayıtların üstüne yazmaz."
                           : "Receipt/export hattı bu vaka için kasıtlı olarak kapalıdır; sebep, API destekli issuance yolunun bağlı olmamasıdır."
                         : hasConnectedIssuanceProfile
-                        ? "The receipt/export path opens only for connected profiles; issuance does not override the trace or unknown/disputed items."
+                        ? "The receipt/export path opens only for connected profiles; issuance does not override the trace or open/disputed items."
                         : "The receipt/export path is intentionally withheld for this case because no API-backed issuance path is connected."}
                     </div>
                   </div>
@@ -3816,7 +3973,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             {(issuanceState === "success" || (issuanceState === "idle" && !!issuedArtifact))
                               ? language === "tr"
                                 ? `Seçili ${selectedProfileLabel} profili için artifact zincire bağlı olarak üretildi. Kimlik ve purpose alanları aşağıda görünür. Artifact doğrulama izi ve manifeste bağlıdır; bilinmeyen/çekişmeli alanın yerini almaz.`
-                                : `The selected ${selectedProfileLabel} artifact was issued while staying bound to the chain. Identity and purpose fields are visible below. Artifact is bound to the verification trace and manifest; it does not replace or outrank unknown/disputed items.`
+                                : `The selected ${selectedProfileLabel} artifact was issued while staying bound to the chain. Identity and purpose fields are visible below. Artifact is bound to the verification trace and manifest; it does not replace or outrank open/disputed items.`
                               : issuanceState === "error"
                               ? language === "tr"
                                 ? "Receipt/export hattı bu denemede kullanıcıya dönük bir sonuç üretemedi."
@@ -3900,10 +4057,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                             ? (() => {
                                 const m = MSG[language];
                                 const meta = issuedArtifact.meta;
-                                const { primary } = resolveIssuanceDocumentFamilies(
-                                  meta.export_profile,
-                                  selectedSystem
-                                );
                                 const framing = getInstitutionFraming(issuanceAudience, language);
                                 const traceDisplay =
                                   transcriptId ??
@@ -3970,7 +4123,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                       ))}
                                     </select>
                                     <DocumentShell
-                                      documentType={issuanceFamilyLabel(meta.export_profile, selectedRoleLens) || documentFamilyLabel(primary, language)}
+                                      documentType={issuedDocumentType(meta)}
                                       documentId={`QEV-${meta.export_id}`}
                                       eventId={meta.event_id}
                                       bundleId={meta.bundle_id}
@@ -3994,6 +4147,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                                     >
                                       {renderIssuanceDocumentBody(meta, selectedRoleLens)}
                                     </DocumentShell>
+                                    {renderReverificationPanel(meta)}
                                   </div>
                                 );
                               })()
@@ -4094,7 +4248,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                   {issuedArtifact ? (() => {
                     const m = MSG[language];
                     const meta = issuedArtifact.meta;
-                    const { primary } = resolveIssuanceDocumentFamilies(meta.export_profile, selectedSystem);
                     const framing = getInstitutionFraming(issuanceAudience, language);
                     const traceDisplay =
                       transcriptId ??
@@ -4114,7 +4267,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           </p>
                         ) : null}
                         <DocumentShell
-                          documentType={issuanceFamilyLabel(meta.export_profile, selectedRoleLens) || documentFamilyLabel(primary, language)}
+                          documentType={issuedDocumentType(meta)}
                           documentId={`QEV-${meta.export_id}`}
                           eventId={meta.event_id}
                           bundleId={meta.bundle_id}
@@ -4138,6 +4291,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         >
                           {renderIssuanceDocumentBody(meta, selectedRoleLens)}
                         </DocumentShell>
+                        {renderReverificationPanel(meta)}
                       </div>
                     );
                   })() : null}
@@ -4146,8 +4300,8 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 <div style={{ border: "1px solid var(--border)", borderRadius: 6, padding: "0.75rem 1rem", fontSize: "0.92rem", color: "var(--text-muted)" }}>
                   <p style={{ margin: "0 0 0.5rem" }}>
                     {language === "tr"
-                      ? "Kontrollü JSON/PDF çıktıları, canlı olay kataloğundaki (API) kimlik ve tenant politikasına bağlıdır; trace ve unknown/disputed üstüne yazılmaz."
-                      : "Controlled JSON/PDF outputs are bound to the live event catalog (API) identity and tenant policy; they do not override the trace or unknown/disputed items."}
+                      ? "Kontrollü JSON/PDF çıktıları, canlı olay kataloğundaki (API) kimlik ve tenant politikasına bağlıdır; trace ve açık/çekişmeli kayıtların üstüne yazılmaz."
+                      : "Controlled JSON/PDF outputs are bound to the live event catalog (API) identity and tenant policy; they do not override the trace or open/disputed items."}
                   </p>
                   <p style={{ margin: "0 0 0.5rem", fontSize: "0.9rem", opacity: 0.88, lineHeight: 1.45 }}>
                     {language === "tr"
@@ -4177,7 +4331,6 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                 ? (() => {
                     const m = MSG[language];
                     const meta = issuedArtifact.meta;
-                    const { primary } = resolveIssuanceDocumentFamilies(meta.export_profile, selectedSystem);
                     const framing = getInstitutionFraming(issuanceAudience, language);
                     const traceDisplay =
                       transcriptId ??
@@ -4221,7 +4374,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                           ))}
                         </select>
                         <DocumentShell
-                          documentType={issuanceFamilyLabel(meta.export_profile, selectedRoleLens) || documentFamilyLabel(primary, language)}
+                          documentType={issuedDocumentType(meta)}
                           documentId={`QEV-${meta.export_id}`}
                           eventId={meta.event_id}
                           bundleId={meta.bundle_id}
@@ -4245,6 +4398,7 @@ export function VerifierContent({ initialEventId }: { initialEventId?: string })
                         >
                           {renderIssuanceDocumentBody(meta, selectedRoleLens)}
                         </DocumentShell>
+                        {renderReverificationPanel(meta)}
                       </div>
                     );
                   })()

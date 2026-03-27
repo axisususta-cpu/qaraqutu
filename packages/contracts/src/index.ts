@@ -1,6 +1,23 @@
-export type VerificationState = "PASS" | "FAIL" | "UNKNOWN" | "UNVERIFIED";
+export type VerificationState = "PASS" | "FAIL" | "UNVERIFIED";
 export type ExportProfileCode = "claims" | "legal";
 export type ExportFormat = "json" | "pdf";
+
+export type ArtifactDocumentFamily =
+  | "pass_witness_summary"
+  | "pass_verification_summary"
+  | "pass_incident_review_summary"
+  | "pass_limitation_annex"
+  | "pass_vehicle_incident_report"
+  | "integrity_failure_notice"
+  | "tamper_detected_notice"
+  | "chain_breach_notice"
+  | "artifact_invalidity_notice";
+
+export type ArtifactIntegrityFailureCode =
+  | "TAMPER_DETECTED"
+  | "INTEGRITY_BREACH"
+  | "CHAIN_MISMATCH"
+  | "ARTIFACT_INVALID";
 
 export interface VerificationTranscriptEntry {
   step: number;
@@ -27,6 +44,40 @@ export interface CreateExportRequest {
   outputTitle?: string;
 }
 
+export interface ArtifactSealMetadata {
+  issuer_version: string;
+  key_id: string;
+  signature: string;
+  seal_locator: string;
+}
+
+export interface ArtifactManifestRecord {
+  manifest_hash: string;
+  page_count: number;
+  visible_text_hash: string;
+  canonical_payload_hash: string;
+  file_hash: string;
+}
+
+export interface ArtifactPackageRecord {
+  document_id: string;
+  event_id: string;
+  issued_at: string;
+  issuer_version: string;
+  artifact_type: string;
+  page_count: number;
+  canonical_payload_hash: string;
+  file_hash: string;
+  manifest_hash: string;
+  signature: string;
+  key_id: string;
+  document_family: ArtifactDocumentFamily;
+  manifest: ArtifactManifestRecord;
+  json_summary: Record<string, unknown>;
+  seal_metadata: ArtifactSealMetadata;
+  visible_text: string;
+}
+
 export interface ExportArtifactResponse {
   export_id: string;
   receipt_id: string;
@@ -38,6 +89,22 @@ export interface ExportArtifactResponse {
   export_purpose: string;
   schema_version: string;
   download_url: string;
+  document_family?: ArtifactDocumentFamily;
+  linked_document_families?: ArtifactDocumentFamily[];
+  artifact_package?: ArtifactPackageRecord;
+}
+
+export interface ArtifactReverificationRequest {
+  artifact_package: ArtifactPackageRecord;
+}
+
+export interface ArtifactReverificationResponse {
+  export_id: string;
+  event_id: string;
+  verification_state: "PASS" | "FAIL";
+  failure_type?: ArtifactIntegrityFailureCode;
+  transcript_summary: VerificationTranscriptEntry[];
+  artifact_package: ArtifactPackageRecord;
 }
 
 export interface RecordedEvidenceItem {
@@ -53,9 +120,9 @@ export interface RecordedEvidenceItem {
   originConfidence: number;
   storageRef?: string;
   displayLabel: string;
-  /** Optional Turkish surface label (verifier demo enrichment). */
   displayLabelTr?: string;
   machineLabel: string;
+  visibility_class?: string;
 }
 
 export interface DerivedEvidenceItem {
@@ -73,6 +140,7 @@ export interface DerivedEvidenceItem {
   humanSummary: string;
   humanSummaryTr?: string;
   sourceDependencies: string[];
+  visibility_class?: string;
 }
 
 export interface CanonicalEvent {
@@ -92,11 +160,8 @@ export interface CanonicalEvent {
   derivedEvidence: DerivedEvidenceItem[];
 }
 
-/** Canonical spine: one case shape for all verticals (Vehicle / Drone / Robot). */
 export type CanonicalSystemId = "vehicle" | "drone" | "robot";
-
 export type IncidentPhase = "t0" | "t1" | "t2" | "t3";
-
 export type PhaseVerificationPosture = "UNVERIFIED" | "SUPPORTED" | "CONTESTED" | "INSUFFICIENT" | "RESTRICTED";
 export type ArtifactReadiness = "ready" | "bounded" | "limited" | "not_ready";
 
@@ -148,7 +213,6 @@ export interface VerificationTraceStep {
   noteTr?: string;
 }
 
-/** AXISUS State Pack v1: case-aware boundary protocol state. */
 export interface AxisusState {
   id: string;
   labelTr: string;
@@ -161,7 +225,6 @@ export interface AxisusState {
   nextStepEn?: string;
 }
 
-/** Artifact Issuance Discipline Pack v1: per-case, per-profile visibility. */
 export interface ArtifactProfileVisibility {
   profileCode: string;
   enabled: boolean;
@@ -170,51 +233,58 @@ export interface ArtifactProfileVisibility {
   reasonEn: string;
 }
 
+export interface CaseReverificationMode {
+  enabled: boolean;
+  mode: "tampered_copy";
+  source_artifact_state: "PASS";
+  target_failure: ArtifactIntegrityFailureCode;
+  tamper_targets: string[];
+  source_document_family: ArtifactDocumentFamily;
+}
+
 export interface CanonicalCase {
+  id: string;
   caseId: string;
+  vertical: CanonicalSystemId;
   system: CanonicalSystemId;
-  /** Doctrine: Incident Class */
+  title: string;
+  titleTr?: string;
+  titleEn?: string;
   incidentClass: string;
-  /** Doctrine: Scenario Frame */
   scenarioFrame: string;
   eventId: string;
   bundleId: string;
   manifestId: string;
   occurredAt: string;
   summary: string;
-  /** Turkish incident summary for verifier-first demo surface. */
   summaryTr?: string;
   verificationState: VerificationState;
-  /** Doctrine: Recorded Evidence (never collapse with derived). */
+  recordedEvidenceSummary: string;
+  derivedAssessmentSummary: string;
+  limitations: string[];
+  limitationsTr?: string[];
   recordedEvidence: RecordedEvidenceItem[];
-  /** Doctrine: Derived Assessment (never collapse with recorded). */
   derivedAssessment: DerivedEvidenceItem[];
-  /** Doctrine: Unknown / Disputed */
   unknownDisputed: string[];
   unknownDisputedTr?: string[];
-  /** Doctrine: Verification Trace */
   verificationTrace: VerificationTraceStep[];
-  /** Doctrine: Artifact Issuance (available for vehicle when API-backed). */
-  artifactIssuance: { available: boolean; apiBacked?: boolean };
-  /** Doctrine: Why QARAQUTU is inevitable */
+  artifactIssuance: {
+    available: boolean;
+    apiBacked?: boolean;
+    documentFamilies?: ArtifactDocumentFamily[];
+  };
+  reverification?: CaseReverificationMode;
   whyInevitable: string;
-  /** Case Registry v1: demo framing (optional; fallback to generic). */
   demoNoticeTr?: string;
   demoNoticeEn?: string;
-  /** Case Registry v1: display title (optional; fallback to scenarioFrame). */
-  titleTr?: string;
-  titleEn?: string;
-  /** Case-density: why this event is under review (optional; fallback to system-based). */
   reviewWhyEn?: string;
   reviewWhyTr?: string;
-  /** Case-density: suggested next step for reviewer (optional; fallback to system-based). */
   nextStepEn?: string;
   nextStepTr?: string;
-  /** AXISUS State Pack v1: case-aware boundary states (optional). */
   axisusStates?: AxisusState[];
-  /** Artifact Issuance Discipline Pack v1: case-aware profile visibility (optional). */
   artifactProfiles?: ArtifactProfileVisibility[];
-  /** Connected Incident Spine (phase-driven forensic reconstruction model). */
   incidentSpine?: IncidentSpine;
 }
+
+export * from "./demo-matrix";
 

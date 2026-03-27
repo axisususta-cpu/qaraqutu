@@ -5,6 +5,28 @@ import { randomUUID } from "crypto";
 const prisma = new PrismaClient();
 
 const BASE_URL = process.env.SMOKE_BASE_URL ?? "http://localhost:4100";
+const ACCESS_TOKEN = process.env.QARAQUTU_ACCESS_TOKEN?.trim() ?? "";
+
+function withAccessHeaders(init?: RequestInit): RequestInit | undefined {
+  if (!ACCESS_TOKEN) {
+    return init;
+  }
+
+  const headers = new Headers(init?.headers ?? undefined);
+  if (!headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${ACCESS_TOKEN}`);
+  }
+
+  return {
+    ...init,
+    headers,
+  };
+}
+
+const nativeFetch = globalThis.fetch.bind(globalThis);
+globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+  return nativeFetch(input, withAccessHeaders(init));
+}) as typeof fetch;
 
 /** Vercel-hosted Fastify: bare POST can be 415; Content-Type json with zero-length body is 400. */
 const verifyPostJsonEmpty: RequestInit = {
@@ -277,6 +299,66 @@ async function main() {
     )
   );
 
+  results.push(
+    await check(
+      "artifact_reverification_tamper_detected",
+      "passing_path",
+      smokeRun.smokeRunId,
+      async () => {
+        const res = await fetch(
+          `${BASE_URL}/v1/events/${encodeURIComponent(sampleEventId as string)}/exports`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              profile: "claims",
+              format: "json",
+              purpose: "smoke_reverification_chain",
+            }),
+          }
+        );
+        if (!res.ok) throw new Error(`reverification export create status ${res.status}`);
+        const meta = await res.json();
+        const exportId: string = meta.export_id;
+        const artifactPackage = meta.artifact_package;
+        if (!exportId || !artifactPackage) {
+          throw new Error("missing export_id or artifact_package for re-verification");
+        }
+
+        const cleanRes = await fetch(`${BASE_URL}/v1/exports/${exportId}/reverify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ artifact_package: artifactPackage }),
+        });
+        if (!cleanRes.ok) throw new Error(`clean reverification status ${cleanRes.status}`);
+        const cleanJson = await cleanRes.json();
+        if (cleanJson.verification_state !== "PASS") {
+          throw new Error(`expected clean PASS, got ${cleanJson.verification_state}`);
+        }
+
+        const tampered = {
+          ...artifactPackage,
+          page_count: artifactPackage.page_count + 1,
+          visible_text: `${artifactPackage.visible_text}\nTAMPERED COPY`,
+          file_hash: `tampered-${artifactPackage.file_hash}`,
+        };
+        const tamperRes = await fetch(`${BASE_URL}/v1/exports/${exportId}/reverify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ artifact_package: tampered }),
+        });
+        if (!tamperRes.ok) throw new Error(`tampered reverification status ${tamperRes.status}`);
+        const tamperJson = await tamperRes.json();
+        if (tamperJson.verification_state !== "FAIL") {
+          throw new Error(`expected tampered FAIL, got ${tamperJson.verification_state}`);
+        }
+        if (!tamperJson.failure_type || tamperJson.failure_type !== "TAMPER_DETECTED") {
+          throw new Error(`expected TAMPER_DETECTED, got ${tamperJson.failure_type}`);
+        }
+      }
+    )
+  );
+
   // Legal export chain (PDF)
   results.push(
     await check(
@@ -435,11 +517,11 @@ async function main() {
       const beforeReceipts = await prisma.receipt.count();
 
       const res = await fetch(`${BASE_URL}/v1/exports/INVALID-EXPORT-ID/download`);
-      if (res.status !== 404) {
-        throw new Error(`expected 404, got ${res.status}`);
+      if (res.status !== 400) {
+        throw new Error(`expected 400, got ${res.status}`);
       }
       const json = await res.json();
-      if (!json || json.error !== "EXPORT_NOT_FOUND") {
+      if (!json || json.error !== "INVALID_EXPORT_ID") {
         throw new Error(`unexpected error payload: ${JSON.stringify(json)}`);
       }
 

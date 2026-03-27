@@ -12,6 +12,15 @@ export type CanonicalSectorId = "vehicle" | "drone" | "robot";
 
 /** Visible document families — authority metadata, not separate SKUs. */
 export type DocumentFamilyId =
+  | "pass_witness_summary"
+  | "pass_verification_summary"
+  | "pass_incident_review_summary"
+  | "pass_limitation_annex"
+  | "pass_vehicle_incident_report"
+  | "integrity_failure_notice"
+  | "tamper_detected_notice"
+  | "chain_breach_notice"
+  | "artifact_invalidity_notice"
   | "incident_event"
   | "verification_summary"
   | "trace_appendix"
@@ -31,6 +40,15 @@ export type InstitutionAudienceId =
   | "technical_vendor";
 
 export const DOCUMENT_FAMILY_IDS: DocumentFamilyId[] = [
+  "pass_witness_summary",
+  "pass_verification_summary",
+  "pass_incident_review_summary",
+  "pass_limitation_annex",
+  "pass_vehicle_incident_report",
+  "integrity_failure_notice",
+  "tamper_detected_notice",
+  "chain_breach_notice",
+  "artifact_invalidity_notice",
   "incident_event",
   "verification_summary",
   "trace_appendix",
@@ -45,6 +63,15 @@ export const DOCUMENT_FAMILY_IDS: DocumentFamilyId[] = [
 export function documentFamilyLabel(id: DocumentFamilyId, lang: Lang): string {
   const m = MSG[lang];
   const key: Record<DocumentFamilyId, keyof typeof MSG.en> = {
+    pass_witness_summary: "docFamily_passWitnessSummary",
+    pass_verification_summary: "docFamily_passVerificationSummary",
+    pass_incident_review_summary: "docFamily_passIncidentReviewSummary",
+    pass_limitation_annex: "docFamily_passLimitationAnnex",
+    pass_vehicle_incident_report: "docFamily_passVehicleIncidentReport",
+    integrity_failure_notice: "docFamily_integrityFailureNotice",
+    tamper_detected_notice: "docFamily_tamperDetectedNotice",
+    chain_breach_notice: "docFamily_chainBreachNotice",
+    artifact_invalidity_notice: "docFamily_artifactInvalidityNotice",
     incident_event: "docFamily_incidentEvent",
     verification_summary: "docFamily_verificationSummary",
     trace_appendix: "docFamily_traceAppendix",
@@ -68,8 +95,8 @@ export function sectorIncidentReportLabel(sector: CanonicalSectorId, lang: Lang)
 }
 
 export function artifactProfileToDocumentFamily(profile: ExportProfileCode | null | undefined): DocumentFamilyId {
-  if (profile === "claims") return "claims_pack";
-  if (profile === "legal") return "legal_pack";
+  if (profile === "claims") return "pass_witness_summary";
+  if (profile === "legal") return "pass_verification_summary";
   return "verification_summary";
 }
 
@@ -77,10 +104,16 @@ export function artifactProfileToDocumentFamily(profile: ExportProfileCode | nul
 export function resolveIssuanceDocumentFamilies(
   profile: ExportProfileCode,
   sector: CanonicalSectorId
-): { primary: DocumentFamilyId; contextualIncident: CanonicalSectorId } {
+): { primary: DocumentFamilyId; contextualIncident: CanonicalSectorId; linked: DocumentFamilyId[] } {
+  const primary = artifactProfileToDocumentFamily(profile);
+  const linked: DocumentFamilyId[] = [primary, "pass_incident_review_summary"];
+  if (sector === "vehicle") {
+    linked.push("pass_vehicle_incident_report");
+  }
   return {
-    primary: artifactProfileToDocumentFamily(profile),
+    primary,
     contextualIncident: sector,
+    linked,
   };
 }
 

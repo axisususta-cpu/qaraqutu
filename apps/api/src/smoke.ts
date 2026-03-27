@@ -147,7 +147,7 @@ export function registerSmokeRoutes(app: FastifyInstance) {
       manifestId: "QMF-SMOKE-LONG",
       exportId: `QEX-${randomUUID()}`,
       receiptId: null,
-      verificationState: "UNKNOWN" as VerificationState,
+      verificationState: "UNVERIFIED" as VerificationState,
       generatedAt: now,
       exportProfile: "claims",
       exportPurpose: "internal_pdf_fixture",
@@ -208,7 +208,7 @@ export function registerSmokeRoutes(app: FastifyInstance) {
       derivedEvidence,
       verificationTrace: [
         { step: 0, check: "Manifest hash binding", result: "PASS", note: "Fixture step — not a live verifier outcome." },
-        { step: 1, check: "Evidence inventory parity", result: "UNKNOWN", note: "Synthetic open item for layout." },
+        { step: 1, check: "Evidence inventory parity", result: "OPEN", note: "Synthetic open item for layout." },
       ],
       unknownDisputed: [
         "Fixture: scope of derived summaries vs. raw telemetry not adjudicated in this export.",
