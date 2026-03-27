@@ -134,6 +134,9 @@ model SmokeRun {
   buildVersion   String
   schemaVersion  String
   checks         SmokeCheck[]
+
+  @@index([startedAt])
+  @@index([overallResult, startedAt])
 }
 
 model SmokeCheck {
@@ -143,7 +146,11 @@ model SmokeCheck {
   category   String
   result     String
   detail     String?
+  createdAt  DateTime @default(now())
   run        SmokeRun @relation(fields: [smokeRunId], references: [smokeRunId])
+
+  @@index([smokeRunId, createdAt])
+  @@index([checkName, category, result, createdAt])
 }
 
 model TenantPolicy {
@@ -152,8 +159,32 @@ model TenantPolicy {
   enabledExportProfiles  String[]
   enabledVisibilityClasses String[]
   redactionEnabled       Boolean  @default(false)
+  roleOverrides          Json?
+  userOverrides          Json?
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
   tenant                 Tenant   @relation(fields: [tenantId], references: [id])
+}
+
+model ConnectedDevicePilotShell {
+  id              String   @id @default(cuid())
+  singletonKey    String   @unique
+  eventId         String
+  occurredAt      DateTime
+  system          String
+  incidentClass   String
+  title           String
+  summary         String
+  bundleId        String
+  manifestId      String
+  severity        String
+  acceptedAt      DateTime
+  sourceLane      String
+  contractVersion String
+  serviceId       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([acceptedAt])
 }
 
