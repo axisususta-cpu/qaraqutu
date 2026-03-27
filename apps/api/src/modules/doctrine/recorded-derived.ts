@@ -2,8 +2,9 @@ import {
   isDoctrineValidationError,
   normalizeEvidenceLayers,
   type DoctrineValidationError,
-} from "contracts";
-import type { DerivedEvidenceItem, RecordedEvidenceItem } from "../../contracts";
+  type DerivedEvidenceItem,
+  type RecordedEvidenceItem,
+} from "../../contracts";
 
 export interface DoctrineEvidencePair {
   recordedEvidence: RecordedEvidenceItem[];

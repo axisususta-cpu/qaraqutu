@@ -217,3 +217,208 @@ export interface CanonicalEvent {
   verificationTrace?: PdfVerificationTraceStep[];
   unknownDisputed?: string[];
 }
+
+// ======= DOCTRINE EVIDENCE SEPARATION VALIDATION =======
+
+export type DoctrineEvidenceLayer = "recorded" | "derived";
+
+export interface DoctrineViolation {
+  layer: DoctrineEvidenceLayer;
+  index: number;
+  field: string;
+  reason: string;
+}
+
+const RECORDED_REQUIRED_FIELDS = [
+  "recordId", "sourceType", "sourceId", "capturedAt", "contentType",
+  "hash", "sizeOrLength", "recordedFlag", "derivationNote",
+  "originConfidence", "displayLabel", "machineLabel",
+] as const;
+
+const DERIVED_REQUIRED_FIELDS = [
+  "derivedId", "derivedType", "derivedFrom", "generatedAt", "method",
+  "confidence", "recordedFlag", "derivationNote", "displayLabel",
+  "machineLabel", "humanSummary", "sourceDependencies",
+] as const;
+
+const RECORDED_FORBIDDEN_FIELDS = [
+  "derivedId", "derivedType", "derivedFrom", "generatedAt", "method",
+  "confidence", "humanSummary", "humanSummaryTr", "sourceDependencies",
+] as const;
+
+const DERIVED_FORBIDDEN_FIELDS = [
+  "recordId", "sourceType", "sourceId", "capturedAt", "contentType",
+  "hash", "sizeOrLength", "originConfidence", "storageRef",
+] as const;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((entry) => isNonEmptyString(entry));
+}
+
+function pushViolation(
+  violations: DoctrineViolation[],
+  layer: DoctrineEvidenceLayer,
+  index: number,
+  field: string,
+  reason: string
+) {
+  violations.push({ layer, index, field, reason });
+}
+
+function validateOptionalDoctrineString(
+  item: Record<string, unknown>,
+  field: string,
+  layer: DoctrineEvidenceLayer,
+  index: number,
+  violations: DoctrineViolation[]
+) {
+  if (item[field] !== undefined && !isNonEmptyString(item[field])) {
+    pushViolation(violations, layer, index, field, "must be a non-empty string when provided");
+  }
+}
+
+function validateRecordedItem(
+  item: unknown,
+  index: number,
+  violations: DoctrineViolation[]
+): RecordedEvidenceItem | null {
+  if (!isRecord(item)) { pushViolation(violations, "recorded", index, "item", "must be an object"); return null; }
+  for (const field of RECORDED_REQUIRED_FIELDS) {
+    if (!(field in item)) pushViolation(violations, "recorded", index, field, "is required");
+  }
+  for (const field of RECORDED_FORBIDDEN_FIELDS) {
+    if (item[field] !== undefined) pushViolation(violations, "recorded", index, field, "belongs to the derived layer");
+  }
+  if (!isNonEmptyString(item.recordId)) pushViolation(violations, "recorded", index, "recordId", "must be a non-empty string");
+  if (!isNonEmptyString(item.sourceType)) pushViolation(violations, "recorded", index, "sourceType", "must be a non-empty string");
+  if (!isNonEmptyString(item.sourceId)) pushViolation(violations, "recorded", index, "sourceId", "must be a non-empty string");
+  if (!isNonEmptyString(item.capturedAt)) pushViolation(violations, "recorded", index, "capturedAt", "must be a non-empty string");
+  if (!isNonEmptyString(item.contentType)) pushViolation(violations, "recorded", index, "contentType", "must be a non-empty string");
+  if (!isNonEmptyString(item.hash)) pushViolation(violations, "recorded", index, "hash", "must be a non-empty string");
+  if (!isFiniteNumber(item.sizeOrLength)) pushViolation(violations, "recorded", index, "sizeOrLength", "must be a finite number");
+  if (item.recordedFlag !== true) pushViolation(violations, "recorded", index, "recordedFlag", "must be true");
+  if (item.derivationNote !== null) pushViolation(violations, "recorded", index, "derivationNote", "must be null");
+  if (!isFiniteNumber(item.originConfidence)) pushViolation(violations, "recorded", index, "originConfidence", "must be a finite number");
+  if (!isNonEmptyString(item.displayLabel)) pushViolation(violations, "recorded", index, "displayLabel", "must be a non-empty string");
+  if (!isNonEmptyString(item.machineLabel)) pushViolation(violations, "recorded", index, "machineLabel", "must be a non-empty string");
+  validateOptionalDoctrineString(item, "storageRef", "recorded", index, violations);
+  validateOptionalDoctrineString(item, "visibility_class", "recorded", index, violations);
+  if (violations.some((v) => v.layer === "recorded" && v.index === index)) return null;
+  return {
+    recordId: item.recordId as string,
+    sourceType: item.sourceType as string,
+    sourceId: item.sourceId as string,
+    capturedAt: item.capturedAt as string,
+    contentType: item.contentType as string,
+    hash: item.hash as string,
+    sizeOrLength: item.sizeOrLength as number,
+    recordedFlag: true,
+    derivationNote: null,
+    originConfidence: item.originConfidence as number,
+    storageRef: item.storageRef as string | undefined,
+    displayLabel: item.displayLabel as string,
+    machineLabel: item.machineLabel as string,
+    visibility_class: item.visibility_class as string | undefined,
+  };
+}
+
+function validateDerivedItem(
+  item: unknown,
+  index: number,
+  violations: DoctrineViolation[]
+): DerivedEvidenceItem | null {
+  if (!isRecord(item)) { pushViolation(violations, "derived", index, "item", "must be an object"); return null; }
+  for (const field of DERIVED_REQUIRED_FIELDS) {
+    if (!(field in item)) pushViolation(violations, "derived", index, field, "is required");
+  }
+  for (const field of DERIVED_FORBIDDEN_FIELDS) {
+    if (item[field] !== undefined) pushViolation(violations, "derived", index, field, "belongs to the recorded layer");
+  }
+  if (!isNonEmptyString(item.derivedId)) pushViolation(violations, "derived", index, "derivedId", "must be a non-empty string");
+  if (!isNonEmptyString(item.derivedType)) pushViolation(violations, "derived", index, "derivedType", "must be a non-empty string");
+  if (!isStringArray(item.derivedFrom)) pushViolation(violations, "derived", index, "derivedFrom", "must be an array of strings");
+  if (!isNonEmptyString(item.generatedAt)) pushViolation(violations, "derived", index, "generatedAt", "must be a non-empty string");
+  if (!isNonEmptyString(item.method)) pushViolation(violations, "derived", index, "method", "must be a non-empty string");
+  if (!isFiniteNumber(item.confidence)) pushViolation(violations, "derived", index, "confidence", "must be a finite number");
+  if (item.recordedFlag !== false) pushViolation(violations, "derived", index, "recordedFlag", "must be false");
+  if (!isNonEmptyString(item.derivationNote)) pushViolation(violations, "derived", index, "derivationNote", "must be a non-empty string");
+  if (!isNonEmptyString(item.displayLabel)) pushViolation(violations, "derived", index, "displayLabel", "must be a non-empty string");
+  if (!isNonEmptyString(item.machineLabel)) pushViolation(violations, "derived", index, "machineLabel", "must be a non-empty string");
+  if (!isNonEmptyString(item.humanSummary)) pushViolation(violations, "derived", index, "humanSummary", "must be a non-empty string");
+  if (!isStringArray(item.sourceDependencies)) pushViolation(violations, "derived", index, "sourceDependencies", "must be an array of strings");
+  validateOptionalDoctrineString(item, "visibility_class", "derived", index, violations);
+  if (violations.some((v) => v.layer === "derived" && v.index === index)) return null;
+  return {
+    derivedId: item.derivedId as string,
+    derivedType: item.derivedType as string,
+    derivedFrom: [...(item.derivedFrom as string[])],
+    generatedAt: item.generatedAt as string,
+    method: item.method as string,
+    confidence: item.confidence as number,
+    recordedFlag: false,
+    derivationNote: item.derivationNote as string,
+    displayLabel: item.displayLabel as string,
+    machineLabel: item.machineLabel as string,
+    humanSummary: item.humanSummary as string,
+    sourceDependencies: [...(item.sourceDependencies as string[])],
+    visibility_class: item.visibility_class as string | undefined,
+  };
+}
+
+export class DoctrineValidationError extends Error {
+  readonly code = "DOCTRINE_RECORDED_DERIVED_SEPARATION_VIOLATION";
+  readonly source: string;
+  readonly violations: DoctrineViolation[];
+  constructor(source: string, violations: DoctrineViolation[]) {
+    super("Recorded and derived evidence layers must remain separated.");
+    this.name = "DoctrineValidationError";
+    this.source = source;
+    this.violations = violations;
+  }
+}
+
+export function isDoctrineValidationError(error: unknown): error is DoctrineValidationError {
+  return error instanceof DoctrineValidationError || (
+    !!error &&
+    typeof error === "object" &&
+    (error as { code?: unknown }).code === "DOCTRINE_RECORDED_DERIVED_SEPARATION_VIOLATION" &&
+    Array.isArray((error as { violations?: unknown[] }).violations)
+  );
+}
+
+export function normalizeEvidenceLayers(input: {
+  recordedEvidence: unknown;
+  derivedEvidence: unknown;
+  source?: string;
+}): { recordedEvidence: RecordedEvidenceItem[]; derivedEvidence: DerivedEvidenceItem[] } {
+  const source = input.source ?? "unknown";
+  const violations: DoctrineViolation[] = [];
+  const recordedSource = Array.isArray(input.recordedEvidence) ? input.recordedEvidence : [];
+  const derivedSource = Array.isArray(input.derivedEvidence) ? input.derivedEvidence : [];
+  if (input.recordedEvidence != null && !Array.isArray(input.recordedEvidence)) {
+    pushViolation(violations, "recorded", -1, "recordedEvidence", "must be an array");
+  }
+  if (input.derivedEvidence != null && !Array.isArray(input.derivedEvidence)) {
+    pushViolation(violations, "derived", -1, "derivedEvidence", "must be an array");
+  }
+  const recordedEvidence = recordedSource
+    .map((item, index) => validateRecordedItem(item, index, violations))
+    .filter((item): item is RecordedEvidenceItem => item !== null);
+  const derivedEvidence = derivedSource
+    .map((item, index) => validateDerivedItem(item, index, violations))
+    .filter((item): item is DerivedEvidenceItem => item !== null);
+  if (violations.length > 0) throw new DoctrineValidationError(source, violations);
+  return { recordedEvidence, derivedEvidence };
+}
