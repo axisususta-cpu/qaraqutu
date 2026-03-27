@@ -1,12 +1,11 @@
-﻿"use client";
-
-import React from "react";
-import Link from "next/link";
+﻿import Link from "next/link";
 import {
   CANONICAL_CASES,
   evaluateGoldenAcceptance,
   GOLDEN_ACCEPTANCE_RUBRIC_LABELS,
 } from "../../../lib/canonical-spine";
+
+export const dynamic = "force-dynamic";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";

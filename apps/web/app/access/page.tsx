@@ -58,6 +58,9 @@ function AccessPageInner() {
         color: "var(--text)",
         padding: "2.2rem 2rem",
         fontFamily: SANS,
+      }}
+    >
+      <div style={{ maxWidth: 860, margin: "0 auto" }}>
         <div style={{ marginBottom: "1rem" }}>
           <div
             style={{
@@ -137,9 +140,6 @@ function AccessPageInner() {
               </option>
             ))}
           </select>
-          <p style={{ marginTop: "0.55rem", marginBottom: 0, fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-            {lang === "tr" ? liveIntegrationReadiness.operatorBoundaryTr : liveIntegrationReadiness.operatorBoundaryEn}
-          </p>
 
           {error ? (
             <div
