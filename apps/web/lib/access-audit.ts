@@ -1,4 +1,3 @@
-import type { Prisma } from "@prisma/client";
 import { accessPrisma } from "./access-db";
 
 type AccessAuditInput = {
@@ -16,7 +15,7 @@ type AccessAuditInput = {
 };
 
 export async function writeAccessAudit(input: AccessAuditInput): Promise<void> {
-  const payload: Prisma.AccessAuditLogCreateInput = {
+  const payload = {
     email: input.email ?? null,
     role: input.role ?? null,
     requestedNext: input.requestedNext ?? null,
