@@ -39,8 +39,11 @@ function applySecurityHeaders(res: NextResponse) {
   res.headers.set("Content-Security-Policy", csp);
 }
 
-function hasLegacySharedTokenAccess(req: NextRequest): boolean {
-  const allowFallback = (process.env.ACCESS_ALLOW_SHARED_TOKEN_FALLBACK ?? "").trim().toLowerCase() === "true";
+function hasLegacySharedTokenAccess(req: NextRequest, pathname: string): boolean {
+  const allowFallback =
+    pathname === "/admin" ||
+    pathname.startsWith("/api/admin/access-issuance") ||
+    (process.env.ACCESS_ALLOW_SHARED_TOKEN_FALLBACK ?? "").trim().toLowerCase() === "true";
   if (!allowFallback) return false;
 
   const token = normalizeQaraqutuAccessToken(process.env.QARAQUTU_ACCESS_TOKEN);
@@ -120,7 +123,7 @@ export async function middleware(req: NextRequest) {
   const protectedApiSurface =
     pathname.startsWith("/api/diagnostics") || pathname.startsWith("/api/admin/access-issuance");
 
-  const hasAccess = (await hasEmailSessionAccess(req)) || hasLegacySharedTokenAccess(req);
+  const hasAccess = (await hasEmailSessionAccess(req)) || hasLegacySharedTokenAccess(req, pathname);
 
   if ((protectedPageSurface || protectedApiSurface) && !hasAccess) {
     // Minimal audit trace (no secrets).
