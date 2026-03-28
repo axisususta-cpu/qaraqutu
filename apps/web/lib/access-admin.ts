@@ -11,7 +11,7 @@ export type AccessAdminActor = {
 };
 
 function hasSharedTokenAdmin(req: NextRequest): AccessAdminActor | null {
-  const allowFallback = (process.env.ACCESS_ALLOW_SHARED_TOKEN_FALLBACK ?? "").toLowerCase() === "true";
+  const allowFallback = (process.env.ACCESS_ALLOW_SHARED_TOKEN_FALLBACK ?? "").trim().toLowerCase() === "true";
   if (!allowFallback) {
     return null;
   }

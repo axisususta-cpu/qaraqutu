@@ -40,7 +40,7 @@ function applySecurityHeaders(res: NextResponse) {
 }
 
 function hasLegacySharedTokenAccess(req: NextRequest): boolean {
-  const allowFallback = (process.env.ACCESS_ALLOW_SHARED_TOKEN_FALLBACK ?? "").toLowerCase() === "true";
+  const allowFallback = (process.env.ACCESS_ALLOW_SHARED_TOKEN_FALLBACK ?? "").trim().toLowerCase() === "true";
   if (!allowFallback) return false;
 
   const token = normalizeQaraqutuAccessToken(process.env.QARAQUTU_ACCESS_TOKEN);
