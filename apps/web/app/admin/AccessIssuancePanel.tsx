@@ -57,16 +57,31 @@ function formatDate(value: string | null): string {
   }
 
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString("tr-TR");
+}
+
+function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!local || !domain) {
+    return email;
+  }
+
+  if (local.length <= 2) {
+    return `**@${domain}`;
+  }
+
+  return `${local.slice(0, 2)}***@${domain}`;
 }
 
 function PanelList({
   title,
   items,
+  emptyLabel = "Kayıt yok.",
   children,
 }: {
   title: string;
   items: AccessRequestItem[];
+  emptyLabel?: string;
   children?: (item: AccessRequestItem) => ReactNode;
 }) {
   return (
@@ -102,16 +117,16 @@ function PanelList({
                 </p>
               ) : null}
               <p style={{ fontSize: "0.76rem", color: "var(--text-muted)", margin: "0.45rem 0 0" }}>
-                requested: {formatDate(item.requested_at)}
-                {item.approved_at ? ` · approved: ${formatDate(item.approved_at)} by ${item.approved_by ?? "-"}` : ""}
-                {item.denied_at ? ` · denied: ${formatDate(item.denied_at)} by ${item.denied_by ?? "-"}` : ""}
+                talep: {formatDate(item.requested_at)}
+                {item.approved_at ? ` · onay: ${formatDate(item.approved_at)} · ${item.approved_by ?? "-"}` : ""}
+                {item.denied_at ? ` · ret: ${formatDate(item.denied_at)} · ${item.denied_by ?? "-"}` : ""}
               </p>
               {children ? <div style={{ marginTop: "0.65rem" }}>{children(item)}</div> : null}
             </div>
           ))}
         </div>
       ) : (
-        <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)" }}>Kayıt yok.</p>
+        <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)" }}>{emptyLabel}</p>
       )}
     </div>
   );
@@ -187,9 +202,9 @@ export function AccessIssuancePanel() {
     >
       <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", alignItems: "flex-start" }}>
         <div>
-          <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.45rem" }}>Erişim Yetkilendirme</h2>
+          <h2 style={{ fontSize: "1rem", margin: 0, marginBottom: "0.45rem" }}>Erişim yetkilendirme akışı</h2>
           <p style={{ fontSize: "0.8rem", color: "var(--text-soft)", margin: 0, lineHeight: 1.55 }}>
-            Bu yüzey yalnız acil manuel yetki verme fallback hattı içindir. Talepler, owner admin tarafından onaylanana veya reddedilene kadar beklemede kalır.
+            Owner onayına bağlı geçici erişim hattı. Öncelik sırası: bekleyen talepler, onaylanan talepler ve son verilen geçici erişimler.
           </p>
         </div>
         <button
@@ -257,95 +272,179 @@ export function AccessIssuancePanel() {
       {!data ? (
         <p style={{ margin: "0.9rem 0 0", fontSize: "0.8rem", color: "var(--text-muted)" }}>Yetkilendirme durumu yükleniyor...</p>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "1rem", marginTop: "0.95rem" }}>
-          <PanelList title={`Bekleyen talepler (${data.pending.length})`} items={data.pending}>
-            {(item) => (
-              <div style={{ display: "flex", gap: "0.55rem", flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  disabled={issuing}
-                  onClick={() => resolveRequest(item.id, "approve")}
-                  style={{
-                    borderRadius: 10,
-                    border: "1px solid var(--accent)",
-                    background: "var(--accent-soft)",
-                    color: "var(--text)",
-                    padding: "0.45rem 0.7rem",
-                    cursor: issuing ? "not-allowed" : "pointer",
-                    fontSize: "0.78rem",
-                    fontWeight: 600,
-                  }}
-                >
-                  Onayla
-                </button>
-                <button
-                  type="button"
-                  disabled={issuing}
-                  onClick={() => resolveRequest(item.id, "deny")}
-                  style={{
-                    borderRadius: 10,
-                    border: "1px solid var(--border)",
-                    background: "var(--panel-card)",
-                    color: "var(--text)",
-                    padding: "0.45rem 0.7rem",
-                    cursor: issuing ? "not-allowed" : "pointer",
-                    fontSize: "0.78rem",
-                  }}
-                >
-                  Reddet
-                </button>
-              </div>
-            )}
-          </PanelList>
-
-          <PanelList title={`Onaylanan talepler (${data.approved.length})`} items={data.approved} />
-          <PanelList title={`Reddedilen talepler (${data.denied.length})`} items={data.denied} />
+        <>
+          <div style={{ display: "flex", gap: "0.45rem", flexWrap: "wrap", marginTop: "0.85rem" }}>
+            {[
+              `Bekleyen: ${data.pending.length}`,
+              `Onaylanan: ${data.approved.length}`,
+              `Son verilen: ${data.recent_issued.length}`,
+              `Reddedilen: ${data.denied.length}`,
+            ].map((chip) => (
+              <span
+                key={chip}
+                style={{
+                  borderRadius: 999,
+                  border: "1px solid var(--border)",
+                  background: "var(--panel-card)",
+                  padding: "0.15rem 0.55rem",
+                  fontSize: "0.75rem",
+                  color: "var(--text-muted)",
+                }}
+              >
+                {chip}
+              </span>
+            ))}
+          </div>
 
           <div
             style={{
-              borderRadius: 10,
-              border: "1px solid var(--border)",
-              background: "var(--panel-card)",
-              padding: "0.85rem 0.95rem",
+              display: "grid",
+              gridTemplateColumns: "minmax(0, 1.8fr) minmax(0, 1fr)",
+              gap: "1rem",
+              marginTop: "0.85rem",
             }}
           >
-            <h3 style={{ margin: 0, marginBottom: "0.55rem", fontSize: "0.88rem" }}>
-              Son verilen geçici erişimler ({data.recent_issued.length})
-            </h3>
-            {data.recent_issued.length ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                {data.recent_issued.map((item) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      borderRadius: 8,
-                      border: "1px solid var(--border)",
-                      background: "var(--panel)",
-                      padding: "0.7rem",
-                      fontSize: "0.78rem",
-                    }}
-                  >
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
-                      <strong>{item.email}</strong>
-                      <span>{item.name_or_org ?? "-"}</span>
-                      <span style={{ color: "var(--text-muted)" }}>{item.requested_surface}</span>
+            <div
+              style={{
+                borderRadius: 10,
+                border: "1px solid var(--border)",
+                background: "var(--panel-card)",
+                padding: "0.9rem 0.95rem",
+              }}
+            >
+              <h3 style={{ margin: 0, marginBottom: "0.5rem", fontSize: "0.95rem" }}>
+                Bekleyen talepler ({data.pending.length})
+              </h3>
+              {data.pending.length ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.7rem" }}>
+                  {data.pending.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{
+                        borderRadius: 8,
+                        border: "1px solid var(--border)",
+                        background: "var(--panel)",
+                        padding: "0.7rem",
+                      }}
+                    >
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem", fontSize: "0.8rem" }}>
+                        <strong>{item.email}</strong>
+                        <span>{item.name_or_org}</span>
+                        <span style={{ color: "var(--text-muted)" }}>{item.requested_surface}</span>
+                      </div>
+                      {item.optional_reason ? (
+                        <p style={{ fontSize: "0.78rem", color: "var(--text-soft)", margin: "0.4rem 0 0" }}>
+                          {item.optional_reason}
+                        </p>
+                      ) : null}
+                      <p style={{ margin: "0.4rem 0 0", fontSize: "0.76rem", color: "var(--text-muted)" }}>
+                        talep: {formatDate(item.requested_at)}
+                      </p>
+                      <div style={{ display: "flex", gap: "0.55rem", flexWrap: "wrap", marginTop: "0.6rem" }}>
+                        <button
+                          type="button"
+                          disabled={issuing}
+                          onClick={() => resolveRequest(item.id, "approve")}
+                          style={{
+                            borderRadius: 10,
+                            border: "1px solid var(--accent)",
+                            background: "var(--accent-soft)",
+                            color: "var(--text)",
+                            padding: "0.45rem 0.72rem",
+                            cursor: issuing ? "not-allowed" : "pointer",
+                            fontSize: "0.78rem",
+                            fontWeight: 600,
+                          }}
+                        >
+                          Onayla
+                        </button>
+                        <button
+                          type="button"
+                          disabled={issuing}
+                          onClick={() => resolveRequest(item.id, "deny")}
+                          style={{
+                            borderRadius: 10,
+                            border: "1px solid var(--border)",
+                            background: "var(--panel-card)",
+                            color: "var(--text)",
+                            padding: "0.45rem 0.72rem",
+                            cursor: issuing ? "not-allowed" : "pointer",
+                            fontSize: "0.78rem",
+                          }}
+                        >
+                          Reddet
+                        </button>
+                      </div>
                     </div>
-                    <div style={{ marginTop: "0.4rem", fontFamily: MONO, color: "var(--text-soft)", lineHeight: 1.6 }}>
-                      <div>rol: {item.role}</div>
-                      <div>yetkilendiren: {item.issued_by}</div>
-                      <div>verildi: {formatDate(item.issued_at)}</div>
-                      <div>süresi dolar: {formatDate(item.expires_at)}</div>
-                      <div>kullanıldı: {formatDate(item.used_at)}</div>
-                      <div>iptal edildi: {formatDate(item.revoked_at)}</div>
-                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                  Bekleyen talep yok.
+                </p>
+              )}
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}>
+              <PanelList
+                title={`Onaylanan talepler (${data.approved.length})`}
+                items={data.approved.slice(0, 8)}
+                emptyLabel="Onaylanan talep yok."
+              />
+
+              <div
+                style={{
+                  borderRadius: 10,
+                  border: "1px solid var(--border)",
+                  background: "var(--panel-card)",
+                  padding: "0.85rem 0.95rem",
+                }}
+              >
+                <h3 style={{ margin: 0, marginBottom: "0.55rem", fontSize: "0.88rem" }}>
+                  Son verilen geçici erişimler ({data.recent_issued.length})
+                </h3>
+                {data.recent_issued.length ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+                    {data.recent_issued.slice(0, 8).map((item) => (
+                      <div
+                        key={item.id}
+                        style={{
+                          borderRadius: 8,
+                          border: "1px solid var(--border)",
+                          background: "var(--panel)",
+                          padding: "0.65rem",
+                          fontSize: "0.78rem",
+                        }}
+                      >
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
+                          <strong>{maskEmail(item.email)}</strong>
+                          <span>{item.name_or_org ?? "-"}</span>
+                        </div>
+                        <div style={{ marginTop: "0.35rem", color: "var(--text-soft)", lineHeight: 1.6 }}>
+                          <div>yüzey: {item.requested_surface}</div>
+                          <div>rol: {item.role}</div>
+                          <div>yetkilendiren: {item.issued_by}</div>
+                          <div>verildi: {formatDate(item.issued_at)}</div>
+                          <div>süresi: {formatDate(item.expires_at)}</div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                    Henüz verilmiş geçici erişim yok.
+                  </p>
+                )}
               </div>
-            ) : (
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)" }}>Henüz verilmiş geçici erişim yok.</p>
-            )}
+
+              <PanelList
+                title={`Reddedilen talepler (${data.denied.length})`}
+                items={data.denied.slice(0, 6)}
+                emptyLabel="Reddedilen talep yok."
+              />
+            </div>
           </div>
-        </div>
+        </>
       )}
     </section>
   );

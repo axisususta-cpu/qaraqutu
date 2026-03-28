@@ -14,7 +14,9 @@ const MONO = "'IBM Plex Mono', 'JetBrains Mono', 'Fira Code', monospace";
  */
 export function ConditionalSiteFooter() {
   const pathname = usePathname() ?? "";
-  if (pathname.startsWith("/verifier")) return null;
+  if (pathname.startsWith("/verifier") || pathname.startsWith("/admin") || pathname.startsWith("/admin-login")) {
+    return null;
+  }
   const { lang } = useLanguage();
   const links = [
     { href: "/", label: lang === "tr" ? "Ana Sayfa" : "Home" },

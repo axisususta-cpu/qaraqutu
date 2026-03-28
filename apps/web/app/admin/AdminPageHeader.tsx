@@ -6,7 +6,7 @@ export function AdminPageHeader() {
   return (
     <div>
       <h1 style={{ fontSize: "1.35rem", margin: 0, marginBottom: "0.25rem" }}>
-        Admin Tanı Yüzeyi
+        Yönetici Erişim Yetkilendirme
       </h1>
       <p
         style={{
@@ -16,7 +16,7 @@ export function AdminPageHeader() {
           lineHeight: 1.5,
         }}
       >
-        Bu yüzey yalnız kontrollü tanı, izleme ve yetkilendirme amaçlıdır; genel kullanım paneli değildir.
+        Korumalı admin yüzeyinde öncelik erişim yetkilendirmedir; tanı blokları alt katmanda sınırlı görünür.
       </p>
     </div>
   );
@@ -25,7 +25,7 @@ export function AdminPageHeader() {
 export function AdminPageChips() {
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
-      {["YALNIZ TANI AMAÇLI", "KORUMALI YÜZEY"].map((chip) => (
+      {["owner-only", "protected", "temporary access"].map((chip) => (
         <span
           key={chip}
           style={{

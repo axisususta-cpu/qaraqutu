@@ -13,7 +13,9 @@ import { useLanguage } from "../../lib/LanguageContext";
  */
 export function ConditionalSiteHeader() {
   const pathname = usePathname() ?? "";
-  if (pathname.startsWith("/verifier")) return null;
+  if (pathname.startsWith("/verifier") || pathname.startsWith("/admin") || pathname.startsWith("/admin-login")) {
+    return null;
+  }
 
   const isHome = pathname === "/" || pathname === "";
   const bar = isHome ? "darkBar" : "default";
