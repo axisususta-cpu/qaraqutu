@@ -131,6 +131,16 @@ interface UploadedPackageIngestEnvelope {
   package_name: string;
   package_sha256: string;
   package_size_bytes: number;
+  manifest_version: string;
+  declared_artifact_count: number;
+  declared_hash_algorithms: string[];
+  declared_manifest_created_at: string;
+  declared_system_type: string;
+}
+
+interface ManifestValidationState {
+  state: "absent" | "invalid" | "valid";
+  reason?: string;
 }
 
 interface UploadedPackageIngestAuditMetadata {
@@ -144,6 +154,7 @@ interface UploadedPackageIngestReadResponse {
   state: "waiting" | "available";
   event: UploadedPackageIngestEnvelope | null;
   audit: UploadedPackageIngestAuditMetadata | null;
+  manifest_validation: ManifestValidationState | null;
 }
 
 const PILOT_SERVICE_ID = "connected_device_pilot";
@@ -291,6 +302,13 @@ function validateUploadedPackageEnvelope(
   const packageSize = typeof packageSizeRaw === "number" ? packageSizeRaw : Number.NaN;
   const system = envelope.system;
   const severityRaw = envelope.severity;
+  const manifestVersion = typeof envelope.manifest_version === "string" ? envelope.manifest_version.trim() : "";
+  const declaredArtifactCountRaw = envelope.declared_artifact_count;
+  const declaredArtifactCount = typeof declaredArtifactCountRaw === "number" ? declaredArtifactCountRaw : -1;
+  const declaredHashAlgorithmsRaw = envelope.declared_hash_algorithms;
+  const declaredHashAlgorithms = Array.isArray(declaredHashAlgorithmsRaw) ? declaredHashAlgorithmsRaw.filter((v) => typeof v === "string") : [];
+  const declaredManifestCreatedAt = typeof envelope.declared_manifest_created_at === "string" ? envelope.declared_manifest_created_at.trim() : "";
+  const declaredSystemType = typeof envelope.declared_system_type === "string" ? envelope.declared_system_type.trim() : "";
 
   if (!packageId || packageId.length > 80) {
     return { ok: false, reason: "invalid_package_id" };
@@ -340,6 +358,9 @@ function validateUploadedPackageEnvelope(
     return { ok: false, reason: "invalid_severity" };
   }
 
+  // Manifest fields are optional for envelope acceptance
+  // (validation happens separately and stored independently)
+
   return {
     ok: true,
     envelope: {
@@ -355,7 +376,87 @@ function validateUploadedPackageEnvelope(
       package_name: packageName,
       package_sha256: packageSha256.toLowerCase(),
       package_size_bytes: packageSize,
+      manifest_version: manifestVersion,
+      declared_artifact_count: declaredArtifactCount,
+      declared_hash_algorithms: declaredHashAlgorithms,
+      declared_manifest_created_at: declaredManifestCreatedAt,
+      declared_system_type: declaredSystemType,
     },
+  };
+}
+
+function validateManifestStructure(envelope: UploadedPackageIngestEnvelope): ManifestValidationState {
+  // Check if any manifest fields are present
+  const hasAnyManifestField =
+    envelope.manifest_version ||
+    envelope.declared_artifact_count !== -1 ||
+    (Array.isArray(envelope.declared_hash_algorithms) && envelope.declared_hash_algorithms.length > 0) ||
+    envelope.declared_manifest_created_at ||
+    envelope.declared_system_type;
+
+  // If no manifest fields provided, mark as absent
+  if (!hasAnyManifestField) {
+    return { state: "absent" };
+  }
+
+  // If some fields provided, validate all of them
+  if (!envelope.manifest_version || envelope.manifest_version.length > 32) {
+    return { state: "invalid", reason: "invalid_manifest_version" };
+  }
+
+  if (!Number.isInteger(envelope.declared_artifact_count) || envelope.declared_artifact_count < 0 || envelope.declared_artifact_count > 10000) {
+    return { state: "invalid", reason: "invalid_declared_artifact_count" };
+  }
+
+  if (!Array.isArray(envelope.declared_hash_algorithms) || envelope.declared_hash_algorithms.length === 0 || envelope.declared_hash_algorithms.some((alg) => !["sha256", "sha1", "md5"].includes(alg))) {
+    return { state: "invalid", reason: "invalid_declared_hash_algorithms" };
+  }
+
+  if (!envelope.declared_manifest_created_at || Number.isNaN(Date.parse(envelope.declared_manifest_created_at))) {
+    return { state: "invalid", reason: "invalid_declared_manifest_created_at" };
+  }
+
+  if (!envelope.declared_system_type || !isPilotSystem(envelope.declared_system_type as PilotSystem)) {
+    return { state: "invalid", reason: "invalid_declared_system_type" };
+  }
+
+  if (envelope.declared_system_type !== envelope.system) {
+    return { state: "invalid", reason: "declared_system_type_mismatch" };
+  }
+
+  // All manifest fields valid
+  return { state: "valid" };
+}
+
+function buildUploadedPackageManifestValidationWrite(
+  uploadedPackageShellId: string,
+  envelope: UploadedPackageIngestEnvelope,
+  manifestValidation: ManifestValidationState,
+  acceptedAt: Date
+) {
+  const manifestVersion = envelope.manifest_version || null;
+  const declaredArtifactCount = Number.isInteger(envelope.declared_artifact_count)
+    ? envelope.declared_artifact_count
+    : null;
+  const declaredHashAlgorithms = Array.isArray(envelope.declared_hash_algorithms)
+    ? envelope.declared_hash_algorithms.filter((value) => typeof value === "string")
+    : [];
+  const declaredManifestCreatedAt =
+    envelope.declared_manifest_created_at && !Number.isNaN(Date.parse(envelope.declared_manifest_created_at))
+      ? new Date(envelope.declared_manifest_created_at)
+      : null;
+  const declaredSystemType = envelope.declared_system_type || null;
+
+  return {
+    packageId: uploadedPackageShellId,
+    manifestVersion,
+    declaredArtifactCount,
+    declaredHashAlgorithms,
+    declaredManifestCreatedAt,
+    declaredSystemType,
+    validationState: manifestValidation.state,
+    validationReason: manifestValidation.reason ?? null,
+    acceptedAt,
   };
 }
 
@@ -398,6 +499,11 @@ function mapUploadedPackageShellRecordToResponse(record: any): UploadedPackageIn
       package_name: record.packageName,
       package_sha256: record.packageSha256,
       package_size_bytes: Number(record.packageSizeBytes),
+      manifest_version: record.manifestVersion || "",
+      declared_artifact_count: 0,
+      declared_hash_algorithms: [],
+      declared_manifest_created_at: new Date().toISOString(),
+      declared_system_type: record.system,
     },
     audit: {
       accepted_at: record.acceptedAt.toISOString(),
@@ -405,6 +511,7 @@ function mapUploadedPackageShellRecordToResponse(record: any): UploadedPackageIn
       contract_version: record.contractVersion,
       service_id: record.serviceId,
     },
+    manifest_validation: null,
   };
 }
 
@@ -801,10 +908,22 @@ fastify.get("/v1/uploaded-package-ingest", async () => {
       state: "waiting",
       event: null,
       audit: null,
+      manifest_validation: null,
     } satisfies UploadedPackageIngestReadResponse;
   }
 
-  return mapUploadedPackageShellRecordToResponse(latest);
+  const manifestValidationRecord = await prisma.uploadedPackageManifestValidation.findUnique({
+    where: { singletonKey: UPLOADED_PACKAGE_SHELL_SINGLETON_KEY },
+  });
+
+  const readback = mapUploadedPackageShellRecordToResponse(latest);
+  readback.manifest_validation = manifestValidationRecord
+    ? {
+        state: manifestValidationRecord.validationState as "absent" | "invalid" | "valid",
+        reason: manifestValidationRecord.validationReason ?? undefined,
+      }
+    : { state: "absent" };
+  return readback;
 });
 
 fastify.post("/v1/uploaded-package-ingest", async (request, reply) => {
@@ -866,6 +985,24 @@ fastify.post("/v1/uploaded-package-ingest", async (request, reply) => {
     },
   });
 
+  const manifestValidation = validateManifestStructure(validated.envelope);
+  const manifestValidationWrite = buildUploadedPackageManifestValidationWrite(
+    persisted.id,
+    validated.envelope,
+    manifestValidation,
+    acceptedAt
+  );
+  await prisma.uploadedPackageManifestValidation.upsert({
+    where: { singletonKey: UPLOADED_PACKAGE_SHELL_SINGLETON_KEY },
+    update: {
+      ...manifestValidationWrite,
+    },
+    create: {
+      singletonKey: UPLOADED_PACKAGE_SHELL_SINGLETON_KEY,
+      ...manifestValidationWrite,
+    },
+  });
+
   const readback = mapUploadedPackageShellRecordToResponse(persisted);
   return reply.code(202).send({
     accepted: true,
@@ -873,6 +1010,7 @@ fastify.post("/v1/uploaded-package-ingest", async (request, reply) => {
     contract: UPLOADED_PACKAGE_CONTRACT_ID,
     event: readback.event,
     audit: readback.audit,
+    manifest_validation: manifestValidation,
   });
 });
 
@@ -1504,4 +1642,5 @@ if (!process.env.VERCEL) {
     fastify.log.info(`API listening at ${address}`);
   });
 }
+
 

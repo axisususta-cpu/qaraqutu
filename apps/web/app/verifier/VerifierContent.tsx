@@ -147,6 +147,13 @@ interface ConnectedDevicePilotIngestResponse {
 
 type UploadedPackageIngestState = "waiting" | "available";
 
+type ManifestValidationState = "absent" | "invalid" | "valid";
+
+interface ManifestValidation {
+  state: ManifestValidationState;
+  reason?: string;
+}
+
 interface UploadedPackageEventEnvelope {
   package_id: string;
   uploaded_at: string;
@@ -160,11 +167,17 @@ interface UploadedPackageEventEnvelope {
   package_name: string;
   package_sha256: string;
   package_size_bytes: number;
+  manifest_version: string;
+  declared_artifact_count: number;
+  declared_hash_algorithms: string[];
+  declared_manifest_created_at: string;
+  declared_system_type: string;
 }
 
 interface UploadedPackageIngestResponse {
   state: UploadedPackageIngestState;
   event: UploadedPackageEventEnvelope | null;
+  manifest_validation?: ManifestValidation | null;
 }
 
 // Phase 1 mock data scaffolding for future workstation wiring.
@@ -540,6 +553,7 @@ interface EventCard {
   integrityFamilies: ArtifactDocumentFamily[];
   bundleId?: string;
   manifestId?: string;
+  manifestValidation?: ManifestValidation | null;
 }
 
 /** Map canonical case to EventCard for spine display. */
@@ -594,12 +608,26 @@ function pilotEnvelopeToEventCard(envelope: ConnectedDevicePilotEventEnvelope, l
   };
 }
 
-function uploadedEnvelopeToEventCard(envelope: UploadedPackageEventEnvelope, lang: "en" | "tr"): EventCard {
+function uploadedEnvelopeToEventCard(envelope: UploadedPackageEventEnvelope, lang: "en" | "tr", manifestValidation?: ManifestValidation | null): EventCard {
   const packageSizeMb = (envelope.package_size_bytes / 1024 / 1024).toFixed(2);
+  
+  // Add manifest validation badge to summary
+  let validationBadge = "";
+  if (manifestValidation) {
+    if (manifestValidation.state === "valid") {
+      validationBadge = lang === "tr" ? " ✓ Manifest yapısı doğrulandı" : " ✓ Manifest structure verified";
+    } else if (manifestValidation.state === "invalid") {
+      const reason = manifestValidation.reason ? `(${manifestValidation.reason})` : "";
+      validationBadge = lang === "tr" ? ` ✗ Manifest yapısı geçersiz ${reason}` : ` ✗ Manifest structure invalid ${reason}`;
+    } else {
+      validationBadge = lang === "tr" ? " ⊙ Manifest verisi sağlanmadı" : " ⊙ No manifest data";
+    }
+  }
+  
   const boundedSummary =
     lang === "tr"
-      ? `${envelope.summary} Bağlam: ${envelope.package_name} · ${packageSizeMb} MB · SHA256 ${envelope.package_sha256.slice(0, 16)}...`
-      : `${envelope.summary} Context: ${envelope.package_name} · ${packageSizeMb} MB · SHA256 ${envelope.package_sha256.slice(0, 16)}...`;
+      ? `${envelope.summary} Bağlam: ${envelope.package_name} · ${packageSizeMb} MB · SHA256 ${envelope.package_sha256.slice(0, 16)}...${validationBadge}`
+      : `${envelope.summary} Context: ${envelope.package_name} · ${packageSizeMb} MB · SHA256 ${envelope.package_sha256.slice(0, 16)}...${validationBadge}`;
 
   return {
     eventId: envelope.package_id,
@@ -620,6 +648,7 @@ function uploadedEnvelopeToEventCard(envelope: UploadedPackageEventEnvelope, lan
     integrityFamilies: [],
     bundleId: envelope.bundle_id,
     manifestId: envelope.manifest_id,
+    manifestValidation: manifestValidation ?? null,
   };
 }
 
@@ -1029,6 +1058,7 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
   const [connectedDevicePilotIngestState, setConnectedDevicePilotIngestState] = useState<ConnectedDevicePilotIngestState>("waiting");
   const [uploadedPackageEnvelope, setUploadedPackageEnvelope] = useState<UploadedPackageEventEnvelope | null>(null);
   const [uploadedPackageIngestState, setUploadedPackageIngestState] = useState<UploadedPackageIngestState>("waiting");
+  const [uploadedPackageManifestValidation, setUploadedPackageManifestValidation] = useState<ManifestValidation | null>(null);
   const [issuanceAudience, setIssuanceAudience] = useState<InstitutionAudienceId>(
     DEFAULT_AUDIENCE_BY_PROFILE.claims
   );
@@ -1120,7 +1150,7 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
     : [];
 
   const uploadedPackageDisplayEvents: EventCard[] = uploadedPackageEnvelope
-    ? [uploadedEnvelopeToEventCard(uploadedPackageEnvelope, language)]
+    ? [uploadedEnvelopeToEventCard(uploadedPackageEnvelope, language, uploadedPackageManifestValidation)]
     : [];
 
   const displayEvents: EventCard[] = isDemoArchiveSource
@@ -1252,6 +1282,7 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
     if (!isUploadedPackageSource) {
       setUploadedPackageEnvelope(null);
       setUploadedPackageIngestState("waiting");
+      setUploadedPackageManifestValidation(null);
       return;
     }
 
@@ -1265,14 +1296,17 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
         if (!res.ok || !json?.state) {
           setUploadedPackageEnvelope(null);
           setUploadedPackageIngestState("waiting");
+          setUploadedPackageManifestValidation(null);
           return;
         }
         setUploadedPackageIngestState(json.state);
         setUploadedPackageEnvelope(json.state === "available" && json.event ? json.event : null);
+        setUploadedPackageManifestValidation(json.manifest_validation ?? null);
       } catch {
         if (cancelled) return;
         setUploadedPackageEnvelope(null);
         setUploadedPackageIngestState("waiting");
+        setUploadedPackageManifestValidation(null);
       }
     }
 

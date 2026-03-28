@@ -209,6 +209,26 @@ model UploadedPackageShell {
   serviceId       String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  manifestValidation UploadedPackageManifestValidation?
+
+  @@index([acceptedAt])
+}
+
+model UploadedPackageManifestValidation {
+  id                      String   @id @default(cuid())
+  singletonKey            String   @unique
+  packageId               String   @unique
+  uploadedPackageShell    UploadedPackageShell @relation(fields: [packageId], references: [id])
+  manifestVersion         String?
+  declaredArtifactCount   Int?
+  declaredHashAlgorithms  String[] @default([])
+  declaredManifestCreatedAt DateTime?
+  declaredSystemType      String?
+  validationState         String
+  validationReason        String?
+  acceptedAt              DateTime
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 
   @@index([acceptedAt])
 }

@@ -40,10 +40,16 @@ interface UploadedPackageAuditMetadata {
   service_id: string;
 }
 
+interface ManifestValidation {
+  state: "absent" | "invalid" | "valid";
+  reason?: string;
+}
+
 interface UploadedPackageReadResponse {
   state: "waiting" | "available";
   event: UploadedPackageEnvelope | null;
   audit: UploadedPackageAuditMetadata | null;
+  manifest_validation: ManifestValidation | null;
 }
 
 const UPLOADED_SERVICE_ID = "uploaded_package_shell";
@@ -187,12 +193,18 @@ export async function GET() {
 
     const json = (await upstream.json().catch(() => null)) as UploadedPackageReadResponse | null;
     if (!upstream.ok || !json?.state) {
-      return NextResponse.json<UploadedPackageReadResponse>({ state: "waiting", event: null, audit: null }, { status: 200 });
+      return NextResponse.json<UploadedPackageReadResponse>(
+        { state: "waiting", event: null, audit: null, manifest_validation: null },
+        { status: 200 }
+      );
     }
 
     return NextResponse.json<UploadedPackageReadResponse>(json, { status: 200 });
   } catch {
-    return NextResponse.json<UploadedPackageReadResponse>({ state: "waiting", event: null, audit: null }, { status: 200 });
+    return NextResponse.json<UploadedPackageReadResponse>(
+      { state: "waiting", event: null, audit: null, manifest_validation: null },
+      { status: 200 }
+    );
   }
 }
 
