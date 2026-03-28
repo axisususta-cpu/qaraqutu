@@ -60,7 +60,7 @@ export async function GET() {
       : "unconfigured",
     acceptance_preview_enabled: acceptancePreviewEnabled,
     acceptance_preview_allowlist_count: acceptancePreviewAllowlist.length,
-    recent_access: recent.map((entry) => ({
+    recent_access: recent.map((entry: (typeof recent)[number]) => ({
       email: entry.email ? maskEmail(entry.email) : null,
       role: entry.role,
       requested_next: entry.requestedNext,
