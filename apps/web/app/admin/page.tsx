@@ -98,7 +98,12 @@ async function getDiagnostics(): Promise<Diagnostics | { error: string }> {
     const host = headersList.get("host") ?? headersList.get("x-forwarded-host") ?? "localhost:3000";
     const protocol = host.includes("localhost") ? "http" : "https";
     const base = `${protocol}://${host}`;
-    const res = await fetch(`${base}/api/diagnostics`, { next: { revalidate: 10 } });
+    const res = await fetch(`${base}/api/diagnostics`, {
+      headers: {
+        cookie: headersList.get("cookie") ?? "",
+      },
+      next: { revalidate: 10 },
+    });
     const data = await res.json();
     if (!res.ok) return { error: data?.message ?? `HTTP ${res.status}` };
     return data as Diagnostics;
@@ -113,7 +118,12 @@ async function getAccessDiagnostics(): Promise<AccessDiagnostics | { error: stri
     const host = headersList.get("host") ?? headersList.get("x-forwarded-host") ?? "localhost:3000";
     const protocol = host.includes("localhost") ? "http" : "https";
     const base = `${protocol}://${host}`;
-    const res = await fetch(`${base}/api/diagnostics/access`, { next: { revalidate: 10 } });
+    const res = await fetch(`${base}/api/diagnostics/access`, {
+      headers: {
+        cookie: headersList.get("cookie") ?? "",
+      },
+      next: { revalidate: 10 },
+    });
     const data = await res.json();
     if (!res.ok) return { error: data?.message ?? `HTTP ${res.status}` };
     return data as AccessDiagnostics;
