@@ -145,7 +145,6 @@ export async function middleware(req: NextRequest) {
   // server-side QARAQUTU_ACCESS_TOKEN from route handlers.
   const protectedPageSurface =
     pathname === "/verifier" ||
-    pathname === "/admin" ||
     pathname === "/console" ||
     pathname === "/protected" ||
     pathname === "/verifier/golden";
