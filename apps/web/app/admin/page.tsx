@@ -1,6 +1,7 @@
 ﻿import { headers } from "next/headers";
 import { CANONICAL_CASES, getCanonicalCases } from "../../lib/canonical-spine";
 import { AdminPageHeader, AdminPageChips } from "./AdminPageHeader";
+import { AccessIssuancePanel } from "./AccessIssuancePanel";
 
 const MONO = "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Menlo', monospace";
 const SANS = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
@@ -76,9 +77,11 @@ interface Diagnostics {
 }
 
 interface AccessDiagnostics {
-  email_delivery_mode: "provider" | "allowlist_preview_only" | "unconfigured";
+  email_delivery_mode: "provider" | "allowlist_preview_only" | "unconfigured" | "manual_temporary_owner_issued";
   acceptance_preview_enabled: boolean;
   acceptance_preview_allowlist_count: number;
+  pending_request_count?: number;
+  active_credential_count?: number;
   recent_access: Array<{
     email: string | null;
     role: string;
@@ -321,7 +324,7 @@ export default async function AdminPage() {
           ) : (
             <>
               <p style={{ fontSize: "0.8rem", color: "var(--text-soft)", margin: 0, marginBottom: "0.55rem" }}>
-                Delivery mode: <strong>{accessDiagnostics.email_delivery_mode}</strong>. Acceptance preview is {accessDiagnostics.acceptance_preview_enabled ? "enabled" : "disabled"}; allowlist count: {accessDiagnostics.acceptance_preview_allowlist_count}.
+                Access mode: <strong>{accessDiagnostics.email_delivery_mode}</strong>. Pending requests: {accessDiagnostics.pending_request_count ?? 0}. Active temporary credentials: {accessDiagnostics.active_credential_count ?? 0}.
               </p>
               {accessDiagnostics.recent_access.length ? (
                 <ul style={{ fontSize: "0.8rem", paddingLeft: "1.1rem", margin: 0, lineHeight: 1.6 }}>
@@ -338,6 +341,8 @@ export default async function AdminPage() {
             </>
           )}
         </section>
+
+        <AccessIssuancePanel />
 
         {/* Canonical and AXISUS overview */}
         <section

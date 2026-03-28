@@ -26,15 +26,14 @@ function sessionLabel(sessionId: string | null): string | null {
 }
 
 export async function GET() {
-  const acceptancePreviewAllowlist = (process.env.ACCESS_ACCEPTANCE_PREVIEW_ALLOWLIST ?? "")
-    .split(",")
-    .map((item) => item.trim().toLowerCase())
-    .filter(Boolean);
-  const acceptancePreviewEnabled =
-    (process.env.ACCESS_ACCEPTANCE_PREVIEW_ENABLED ?? "").toLowerCase() === "true";
-  const providerConfigured =
-    (process.env.RESEND_API_KEY?.trim().length ?? 0) > 0 &&
-    (process.env.ACCESS_EMAIL_FROM?.trim().length ?? 0) > 0;
+  const pendingRequestCount = await accessPrisma.accessRequest.count({ where: { status: "pending" } });
+  const activeCredentialCount = await accessPrisma.temporaryAccessCredential.count({
+    where: {
+      revokedAt: null,
+      usedAt: null,
+      expiresAt: { gt: new Date() },
+    },
+  });
 
   const recent = await accessPrisma.accessAuditLog.findMany({
     orderBy: { createdAt: "desc" },
@@ -53,13 +52,11 @@ export async function GET() {
   });
 
   return NextResponse.json({
-    email_delivery_mode: providerConfigured
-      ? "provider"
-      : acceptancePreviewEnabled && acceptancePreviewAllowlist.length > 0
-      ? "allowlist_preview_only"
-      : "unconfigured",
-    acceptance_preview_enabled: acceptancePreviewEnabled,
-    acceptance_preview_allowlist_count: acceptancePreviewAllowlist.length,
+    email_delivery_mode: "manual_temporary_owner_issued",
+    acceptance_preview_enabled: false,
+    acceptance_preview_allowlist_count: 0,
+    pending_request_count: pendingRequestCount,
+    active_credential_count: activeCredentialCount,
     recent_access: recent.map((entry: (typeof recent)[number]) => ({
       email: entry.email ? maskEmail(entry.email) : null,
       role: entry.role,

@@ -96,6 +96,7 @@ export async function middleware(req: NextRequest) {
     pathname === "/access" ||
     pathname === "/restricted" ||
     pathname === "/api/access" ||
+    pathname === "/api/access/login" ||
     pathname === "/api/access/request" ||
     pathname === "/api/access/session" ||
     pathname === "/api/access/sign-out" ||
@@ -116,7 +117,8 @@ export async function middleware(req: NextRequest) {
     pathname === "/protected" ||
     pathname === "/verifier/golden";
 
-  const protectedApiSurface = pathname.startsWith("/api/diagnostics");
+  const protectedApiSurface =
+    pathname.startsWith("/api/diagnostics") || pathname.startsWith("/api/admin/access-issuance");
 
   const hasAccess = (await hasEmailSessionAccess(req)) || hasLegacySharedTokenAccess(req);
 

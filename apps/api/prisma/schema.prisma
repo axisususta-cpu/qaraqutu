@@ -261,6 +261,50 @@ model AccessSession {
   @@index([expiresAt])
 }
 
+model AccessRequest {
+  id               String   @id @default(cuid())
+  email            String
+  nameOrOrg        String
+  requestedSurface String
+  optionalReason   String?
+  requestedRole    String
+  status           String   @default("pending")
+  requesterIp      String?
+  requesterUserAgent String?
+  requestedAt      DateTime @default(now())
+  approvedAt       DateTime?
+  approvedBy       String?
+  deniedAt         DateTime?
+  deniedBy         String?
+  deniedReason     String?
+  credentials      TemporaryAccessCredential[]
+
+  @@index([status, requestedAt])
+  @@index([email, requestedAt])
+}
+
+model TemporaryAccessCredential {
+  id               String   @id @default(cuid())
+  requestId        String?
+  email            String
+  nameOrOrg        String?
+  role             String
+  requestedSurface String
+  passwordHash     String
+  passwordSalt     String
+  issuedBy         String
+  issuedAt         DateTime @default(now())
+  expiresAt        DateTime
+  usedAt           DateTime?
+  usedFromIp       String?
+  revokedAt        DateTime?
+  revokedBy        String?
+  request          AccessRequest? @relation(fields: [requestId], references: [id])
+
+  @@index([email, issuedAt])
+  @@index([expiresAt])
+}
+
 model AccessAuditLog {
   id            String   @id @default(cuid())
   email         String?

@@ -1,30 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { accessPrisma } from "../../../../lib/access-db";
-import {
-  ACCESS_SESSION_TTL_MINUTES,
-  MAGIC_LINK_TTL_MINUTES,
-  createMagicLinkToken,
-  getRequestIp,
-  getUserAgent,
-  hashMagicToken,
-  isValidEmail,
-  normalizeEmail,
-  normalizeRole,
-  safeNext,
-} from "../../../../lib/access-auth";
-import { sendMagicLinkEmail } from "../../../../lib/access-mailer";
+import { getRequestIp, getUserAgent, isValidEmail, normalizeEmail, safeNext } from "../../../../lib/access-auth";
+import { defaultTrustedRole } from "../../../../lib/trusted-access";
 import { writeAccessAudit } from "../../../../lib/access-audit";
 
 export const runtime = "nodejs";
 
+function normalizeNameOrOrg(raw: unknown): string {
+  return typeof raw === "string" ? raw.trim() : "";
+}
+
+function normalizeOptionalReason(raw: unknown): string | null {
+  if (typeof raw !== "string") {
+    return null;
+  }
+
+  const normalized = raw.trim();
+  return normalized.length ? normalized : null;
+}
+
 export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => null)) as
-    | { email?: unknown; next?: unknown; role?: unknown }
+    | { email?: unknown; requested_surface?: unknown; optional_reason?: unknown; name_or_org?: unknown; next?: unknown }
     | null;
 
   const email = normalizeEmail(body?.email);
-  const requestedNext = safeNext(body?.next);
-  const role = normalizeRole(body?.role);
+  const requestedNext = safeNext(body?.requested_surface ?? body?.next);
+  const normalizedSurface = requestedNext === "/" ? "/verifier" : requestedNext;
+  const nameOrOrg = normalizeNameOrOrg(body?.name_or_org);
+  const optionalReason = normalizeOptionalReason(body?.optional_reason);
+  const role = defaultTrustedRole();
   const ip = getRequestIp(req);
   const userAgent = getUserAgent(req);
 
@@ -41,120 +46,80 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "INVALID_EMAIL" }, { status: 400 });
   }
 
-  const rawToken = createMagicLinkToken();
-  const tokenHash = hashMagicToken(rawToken);
-  const expiresAt = new Date(Date.now() + MAGIC_LINK_TTL_MINUTES * 60_000);
+  if (nameOrOrg.length < 2 || nameOrOrg.length > 160) {
+    await writeAccessAudit({
+      email,
+      role,
+      requestedNext: normalizedSurface,
+      result: "rejected",
+      reason: "invalid_name_or_org",
+      ip,
+      userAgent,
+    });
+    return NextResponse.json({ error: "INVALID_NAME_OR_ORG" }, { status: 400 });
+  }
 
-  await accessPrisma.accessMagicLinkToken.create({
+  if (optionalReason && optionalReason.length > 500) {
+    await writeAccessAudit({
+      email,
+      role,
+      requestedNext: normalizedSurface,
+      result: "rejected",
+      reason: "optional_reason_too_long",
+      ip,
+      userAgent,
+    });
+    return NextResponse.json({ error: "OPTIONAL_REASON_TOO_LONG" }, { status: 400 });
+  }
+
+  const recentRequestCount = await accessPrisma.accessAuditLog.count({
+    where: {
+      ip,
+      reason: "manual_request_received",
+      createdAt: { gte: new Date(Date.now() - 5 * 60_000) },
+    },
+  });
+
+  if (recentRequestCount >= 5) {
+    await writeAccessAudit({
+      email,
+      role,
+      requestedNext: normalizedSurface,
+      result: "failed",
+      reason: "manual_request_rate_limited",
+      ip,
+      userAgent,
+    });
+    return NextResponse.json({ error: "RATE_LIMITED", reason: "manual_request_rate_limited" }, { status: 429 });
+  }
+
+  const requestRecord = await accessPrisma.accessRequest.create({
     data: {
       email,
-      role,
-      requestedNext,
-      tokenHash,
-      expiresAt,
+      nameOrOrg,
+      requestedSurface: normalizedSurface,
+      optionalReason,
+      requestedRole: role,
+      requesterIp: ip,
+      requesterUserAgent: userAgent,
     },
   });
 
   await writeAccessAudit({
     email,
     role,
-    requestedNext,
+    requestedNext: normalizedSurface,
     result: "requested",
+    reason: "manual_request_received",
     ip,
     userAgent,
-    createdAt: new Date(),
-    expiresAt,
   });
 
-  const verifyUrl = new URL("/api/access/verify", req.url);
-  verifyUrl.searchParams.set("token", rawToken);
-  verifyUrl.searchParams.set("next", requestedNext);
-
-  const mailResult = await sendMagicLinkEmail({
-    email,
-    magicLinkUrl: verifyUrl.toString(),
+  return NextResponse.json({
+    ok: true,
+    mode: "pending_review",
+    request_id: requestRecord.id,
+    requested_surface: normalizedSurface,
+    status: "pending",
   });
-
-  if (mailResult.ok) {
-    await writeAccessAudit({
-      email,
-      role,
-      requestedNext,
-      result: "sent",
-      ip,
-      userAgent,
-      createdAt: new Date(),
-      expiresAt,
-    });
-    return NextResponse.json({
-      ok: true,
-      mode: "email_sent",
-      expires_in_minutes: MAGIC_LINK_TTL_MINUTES,
-      session_ttl_minutes: ACCESS_SESSION_TTL_MINUTES,
-    });
-  }
-
-  if (mailResult.devPreviewUrl) {
-    await writeAccessAudit({
-      email,
-      role,
-      requestedNext,
-      result: "failed",
-      reason: mailResult.reason,
-      ip,
-      userAgent,
-      createdAt: new Date(),
-      expiresAt,
-    });
-    return NextResponse.json({
-      ok: true,
-      mode: "dev_preview",
-      reason: mailResult.reason,
-      verify_url: mailResult.devPreviewUrl,
-      expires_in_minutes: MAGIC_LINK_TTL_MINUTES,
-      session_ttl_minutes: ACCESS_SESSION_TTL_MINUTES,
-    });
-  }
-
-  if (mailResult.acceptancePreviewUrl) {
-    await writeAccessAudit({
-      email,
-      role,
-      requestedNext,
-      result: "sent",
-      reason: mailResult.reason,
-      ip,
-      userAgent,
-      createdAt: new Date(),
-      expiresAt,
-    });
-    return NextResponse.json({
-      ok: true,
-      mode: "acceptance_preview",
-      reason: mailResult.reason,
-      verify_url: mailResult.acceptancePreviewUrl,
-      expires_in_minutes: MAGIC_LINK_TTL_MINUTES,
-      session_ttl_minutes: ACCESS_SESSION_TTL_MINUTES,
-    });
-  }
-
-  await writeAccessAudit({
-    email,
-    role,
-    requestedNext,
-    result: "failed",
-    reason: mailResult.reason,
-    ip,
-    userAgent,
-    createdAt: new Date(),
-    expiresAt,
-  });
-
-  return NextResponse.json(
-    {
-      error: "EMAIL_PROVIDER_NOT_CONFIGURED",
-      reason: mailResult.reason,
-    },
-    { status: 503 }
-  );
 }

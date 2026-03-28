@@ -4,7 +4,16 @@ type AccessAuditInput = {
   email?: string | null;
   role?: string | null;
   requestedNext?: string | null;
-  result: "requested" | "sent" | "verified" | "failed" | "expired" | "rejected";
+  result:
+    | "requested"
+    | "sent"
+    | "verified"
+    | "failed"
+    | "expired"
+    | "rejected"
+    | "approved"
+    | "denied"
+    | "signed_in";
   reason?: string | null;
   ip?: string | null;
   userAgent?: string | null;
