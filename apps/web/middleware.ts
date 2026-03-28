@@ -39,11 +39,8 @@ function applySecurityHeaders(res: NextResponse) {
   res.headers.set("Content-Security-Policy", csp);
 }
 
-function hasLegacySharedTokenAccess(req: NextRequest, pathname: string): boolean {
-  const allowFallback =
-    pathname === "/admin" ||
-    pathname.startsWith("/api/admin/access-issuance") ||
-    (process.env.ACCESS_ALLOW_SHARED_TOKEN_FALLBACK ?? "").trim().toLowerCase() === "true";
+function hasLegacySharedTokenAccess(req: NextRequest): boolean {
+  const allowFallback = (process.env.ACCESS_ALLOW_SHARED_TOKEN_FALLBACK ?? "").trim().toLowerCase() === "true";
   if (!allowFallback) return false;
 
   const token = normalizeQaraqutuAccessToken(process.env.QARAQUTU_ACCESS_TOKEN);
@@ -56,6 +53,24 @@ function hasLegacySharedTokenAccess(req: NextRequest, pathname: string): boolean
 async function hasEmailSessionAccess(req: NextRequest): Promise<boolean> {
   try {
     const sessionUrl = new URL("/api/access/session", req.url);
+    const response = await fetch(sessionUrl, {
+      method: "GET",
+      headers: {
+        cookie: req.headers.get("cookie") ?? "",
+      },
+      cache: "no-store",
+    });
+    if (!response.ok) return false;
+    const body = (await response.json().catch(() => null)) as { authenticated?: boolean } | null;
+    return body?.authenticated === true;
+  } catch {
+    return false;
+  }
+}
+
+async function hasOwnerAdminAccess(req: NextRequest): Promise<boolean> {
+  try {
+    const sessionUrl = new URL("/api/admin/auth/session", req.url);
     const response = await fetch(sessionUrl, {
       method: "GET",
       headers: {
@@ -91,19 +106,34 @@ function accessRedirect(req: NextRequest): NextResponse {
   return res;
 }
 
+function adminRedirect(req: NextRequest, reason: string): NextResponse {
+  const url = req.nextUrl.clone();
+  url.pathname = "/admin-login";
+  url.search = "";
+  url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
+  url.searchParams.set("error", reason);
+  const res = NextResponse.redirect(url, 307);
+  applySecurityHeaders(res);
+  return res;
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Allow public access tooling.
   if (
     pathname === "/access" ||
+    pathname === "/admin-login" ||
     pathname === "/restricted" ||
     pathname === "/api/access" ||
     pathname === "/api/access/login" ||
     pathname === "/api/access/request" ||
     pathname === "/api/access/session" ||
     pathname === "/api/access/sign-out" ||
-    pathname === "/api/access/verify"
+    pathname === "/api/access/verify" ||
+    pathname === "/api/admin/auth/login" ||
+    pathname === "/api/admin/auth/logout" ||
+    pathname === "/api/admin/auth/session"
   ) {
     const res = NextResponse.next();
     applySecurityHeaders(res);
@@ -120,10 +150,22 @@ export async function middleware(req: NextRequest) {
     pathname === "/protected" ||
     pathname === "/verifier/golden";
 
-  const protectedApiSurface =
-    pathname.startsWith("/api/diagnostics") || pathname.startsWith("/api/admin/access-issuance");
+  const protectedApiSurface = false;
+  const ownerOnlyApiSurface = pathname.startsWith("/api/admin/") || pathname.startsWith("/api/diagnostics");
+  const ownerOnlyPageSurface = pathname === "/admin";
 
-  const hasAccess = (await hasEmailSessionAccess(req)) || hasLegacySharedTokenAccess(req, pathname);
+  const hasAccess = (await hasEmailSessionAccess(req)) || hasLegacySharedTokenAccess(req);
+  const hasOwnerAdmin = await hasOwnerAdminAccess(req);
+
+  if (ownerOnlyPageSurface && !hasOwnerAdmin) {
+    return adminRedirect(req, "owner_admin_required");
+  }
+
+  if (ownerOnlyApiSurface && !hasOwnerAdmin) {
+    const res = NextResponse.json({ error: "OWNER_ADMIN_REQUIRED" }, { status: 401 });
+    applySecurityHeaders(res);
+    return res;
+  }
 
   if ((protectedPageSurface || protectedApiSurface) && !hasAccess) {
     // Minimal audit trace (no secrets).
@@ -142,7 +184,7 @@ export async function middleware(req: NextRequest) {
         : pathname === "/verifier/golden"
         ? "golden"
         : pathname.startsWith("/api/diagnostics")
-        ? "admin-diagnostics"
+        ? "owner-admin-diagnostics"
         : "protected";
 
     if (protectedPageSurface) {

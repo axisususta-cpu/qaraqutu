@@ -111,7 +111,7 @@ function PanelList({
           ))}
         </div>
       ) : (
-        <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)" }}>No items.</p>
+        <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)" }}>Kayıt yok.</p>
       )}
     </div>
   );
@@ -134,7 +134,7 @@ export function AccessIssuancePanel() {
 
   useEffect(() => {
     load().catch((cause) => {
-      setError(cause instanceof Error ? cause.message : "Failed to load access issuance state");
+      setError(cause instanceof Error ? cause.message : "Erişim yetkilendirme durumu yüklenemedi");
     });
   }, []);
 
@@ -170,7 +170,7 @@ export function AccessIssuancePanel() {
 
         await load();
       } catch (cause) {
-        setError(cause instanceof Error ? cause.message : "Access issuance action failed");
+        setError(cause instanceof Error ? cause.message : "Erişim yetkilendirme işlemi başarısız oldu");
       }
     });
   }
@@ -187,9 +187,9 @@ export function AccessIssuancePanel() {
     >
       <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", alignItems: "flex-start" }}>
         <div>
-          <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.45rem" }}>Access Issuance</h2>
+          <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.45rem" }}>Erişim Yetkilendirme</h2>
           <p style={{ fontSize: "0.8rem", color: "var(--text-soft)", margin: 0, lineHeight: 1.55 }}>
-            Emergency manual credential issuance fallback only. Requests stay pending until a protected admin approves or denies them.
+            Bu yüzey yalnız acil manuel yetki verme fallback hattı içindir. Talepler, owner admin tarafından onaylanana veya reddedilene kadar beklemede kalır.
           </p>
         </div>
         <button
@@ -197,7 +197,7 @@ export function AccessIssuancePanel() {
           onClick={() => {
             setIssuanceResult(null);
             load().catch((cause) => {
-              setError(cause instanceof Error ? cause.message : "Failed to refresh access issuance state");
+              setError(cause instanceof Error ? cause.message : "Erişim yetkilendirme durumu yenilenemedi");
             });
           }}
           style={{
@@ -210,7 +210,7 @@ export function AccessIssuancePanel() {
             fontSize: "0.8rem",
           }}
         >
-          Refresh
+          Yenile
         </button>
       </div>
 
@@ -240,25 +240,25 @@ export function AccessIssuancePanel() {
           }}
         >
           <div style={{ fontSize: "0.8rem", marginBottom: "0.35rem" }}>
-            Temporary access issued. Plain password is shown only in this issuance view.
+            Geçici erişim verildi. Düz metin parola yalnız bu yetkilendirme anında görünür.
           </div>
           <div style={{ fontFamily: MONO, fontSize: "0.8rem", lineHeight: 1.7 }}>
-            <div>email: {issuanceResult.email}</div>
-            <div>surface: {issuanceResult.requested_surface}</div>
-            <div>role: {issuanceResult.role}</div>
-            <div>temporary password: {issuanceResult.temporary_password}</div>
-            <div>issued by: {issuanceResult.issued_by}</div>
-            <div>issued at: {formatDate(issuanceResult.issued_at)}</div>
-            <div>expires at: {formatDate(issuanceResult.expires_at)}</div>
+            <div>e-posta: {issuanceResult.email}</div>
+            <div>yüzey: {issuanceResult.requested_surface}</div>
+            <div>rol: {issuanceResult.role}</div>
+            <div>geçici parola: {issuanceResult.temporary_password}</div>
+            <div>yetkilendiren: {issuanceResult.issued_by}</div>
+            <div>verildi: {formatDate(issuanceResult.issued_at)}</div>
+            <div>süresi dolar: {formatDate(issuanceResult.expires_at)}</div>
           </div>
         </div>
       ) : null}
 
       {!data ? (
-        <p style={{ margin: "0.9rem 0 0", fontSize: "0.8rem", color: "var(--text-muted)" }}>Loading issuance state...</p>
+        <p style={{ margin: "0.9rem 0 0", fontSize: "0.8rem", color: "var(--text-muted)" }}>Yetkilendirme durumu yükleniyor...</p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "1rem", marginTop: "0.95rem" }}>
-          <PanelList title={`Pending requests (${data.pending.length})`} items={data.pending}>
+          <PanelList title={`Bekleyen talepler (${data.pending.length})`} items={data.pending}>
             {(item) => (
               <div style={{ display: "flex", gap: "0.55rem", flexWrap: "wrap" }}>
                 <button
@@ -276,7 +276,7 @@ export function AccessIssuancePanel() {
                     fontWeight: 600,
                   }}
                 >
-                  Approve
+                  Onayla
                 </button>
                 <button
                   type="button"
@@ -292,14 +292,14 @@ export function AccessIssuancePanel() {
                     fontSize: "0.78rem",
                   }}
                 >
-                  Deny
+                  Reddet
                 </button>
               </div>
             )}
           </PanelList>
 
-          <PanelList title={`Approved requests (${data.approved.length})`} items={data.approved} />
-          <PanelList title={`Denied requests (${data.denied.length})`} items={data.denied} />
+          <PanelList title={`Onaylanan talepler (${data.approved.length})`} items={data.approved} />
+          <PanelList title={`Reddedilen talepler (${data.denied.length})`} items={data.denied} />
 
           <div
             style={{
@@ -310,7 +310,7 @@ export function AccessIssuancePanel() {
             }}
           >
             <h3 style={{ margin: 0, marginBottom: "0.55rem", fontSize: "0.88rem" }}>
-              Recent issued credentials ({data.recent_issued.length})
+              Son verilen geçici erişimler ({data.recent_issued.length})
             </h3>
             {data.recent_issued.length ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
@@ -331,18 +331,18 @@ export function AccessIssuancePanel() {
                       <span style={{ color: "var(--text-muted)" }}>{item.requested_surface}</span>
                     </div>
                     <div style={{ marginTop: "0.4rem", fontFamily: MONO, color: "var(--text-soft)", lineHeight: 1.6 }}>
-                      <div>role: {item.role}</div>
-                      <div>issued by: {item.issued_by}</div>
-                      <div>issued at: {formatDate(item.issued_at)}</div>
-                      <div>expires at: {formatDate(item.expires_at)}</div>
-                      <div>used at: {formatDate(item.used_at)}</div>
-                      <div>revoked at: {formatDate(item.revoked_at)}</div>
+                      <div>rol: {item.role}</div>
+                      <div>yetkilendiren: {item.issued_by}</div>
+                      <div>verildi: {formatDate(item.issued_at)}</div>
+                      <div>süresi dolar: {formatDate(item.expires_at)}</div>
+                      <div>kullanıldı: {formatDate(item.used_at)}</div>
+                      <div>iptal edildi: {formatDate(item.revoked_at)}</div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)" }}>No issued credentials yet.</p>
+              <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)" }}>Henüz verilmiş geçici erişim yok.</p>
             )}
           </div>
         </div>

@@ -111,7 +111,7 @@ async function getDiagnostics(): Promise<Diagnostics | { error: string }> {
     if (!res.ok) return { error: data?.message ?? `HTTP ${res.status}` };
     return data as Diagnostics;
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Failed to load diagnostics" };
+    return { error: e instanceof Error ? e.message : "Tanı verileri yüklenemedi" };
   }
 }
 
@@ -131,7 +131,7 @@ async function getAccessDiagnostics(): Promise<AccessDiagnostics | { error: stri
     if (!res.ok) return { error: data?.message ?? `HTTP ${res.status}` };
     return data as AccessDiagnostics;
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Failed to load access diagnostics" };
+    return { error: e instanceof Error ? e.message : "Erişim tanıları yüklenemedi" };
   }
 }
 
@@ -153,7 +153,7 @@ export default async function AdminPage() {
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <AdminPageHeader />
           <p style={{ fontSize: "0.85rem", color: "var(--error)", marginBottom: "0.8rem" }}>
-            Diagnostics only — not an operations dashboard.
+            Bu yüzey yalnız tanı amaçlıdır; operasyon paneli değildir.
           </p>
           <div
             style={{
@@ -164,7 +164,7 @@ export default async function AdminPage() {
               fontSize: "0.8rem",
             }}
           >
-            <strong style={{ display: "block", marginBottom: "0.25rem" }}>Diagnostics error</strong>
+            <strong style={{ display: "block", marginBottom: "0.25rem" }}>Tanı hatası</strong>
             <span style={{ fontFamily: MONO }}>{diagnostics.error}</span>
           </div>
         </div>
@@ -207,7 +207,7 @@ export default async function AdminPage() {
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
-            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>System status summary</h2>
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Sistem durumu özeti</h2>
             <p
               style={{
                 fontSize: "0.8rem",
@@ -216,7 +216,7 @@ export default async function AdminPage() {
                 marginBottom: "0.45rem",
               }}
             >
-              High-level, bounded view of the current verifier environment — not a live traffic or business usage panel.
+              Mevcut verifier ortamının üst düzey ve sınırlandırılmış görünümü; canlı trafik veya iş kullanım paneli değildir.
             </p>
             <div
               style={{
@@ -228,19 +228,19 @@ export default async function AdminPage() {
             >
               <ul style={{ listStyle: "none", padding: 0, margin: 0, lineHeight: 1.6 }}>
                 <li>
-                  <span style={{ color: "var(--text-muted)" }}>Environment:</span>{" "}
+                  <span style={{ color: "var(--text-muted)" }}>Ortam:</span>{" "}
                   <span style={{ fontFamily: MONO }}>{diagnostics.environment}</span>
                 </li>
                 <li>
-                  <span style={{ color: "var(--text-muted)" }}>Dataset:</span>{" "}
+                  <span style={{ color: "var(--text-muted)" }}>Veri kümesi:</span>{" "}
                   <span style={{ fontFamily: MONO }}>{diagnostics.dataset_version}</span>
                 </li>
                 <li>
-                  <span style={{ color: "var(--text-muted)" }}>Schema:</span>{" "}
+                  <span style={{ color: "var(--text-muted)" }}>Şema:</span>{" "}
                   <span style={{ fontFamily: MONO }}>{diagnostics.schema_version}</span>
                 </li>
                 <li>
-                  <span style={{ color: "var(--text-muted)" }}>Build:</span>{" "}
+                  <span style={{ color: "var(--text-muted)" }}>Derleme:</span>{" "}
                   <span style={{ fontFamily: MONO }}>{diagnostics.build_version}</span>
                 </li>
               </ul>
@@ -261,11 +261,11 @@ export default async function AdminPage() {
                     letterSpacing: "0.09em",
                   }}
                 >
-                  Verifier pipeline
+                  Verifier hattı
                 </div>
                 <p style={{ fontSize: "0.78rem", color: "var(--text-soft)", margin: 0, lineHeight: 1.5 }}>
-                  Recent verifier runs and issuance paths are tracked for integrity. This view reports spine health, not
-                  business throughput.
+                  Son verifier çalışmaları ve yetkilendirme yolları bütünlük için izlenir. Bu görünüm omurga sağlığını
+                  raporlar; iş hacmini raporlamaz.
                 </p>
               </div>
             </div>
@@ -280,7 +280,7 @@ export default async function AdminPage() {
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
-            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Protected surface boundary</h2>
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Korumalı yüzey sınırı</h2>
             <p
               style={{
                 fontSize: "0.8rem",
@@ -289,22 +289,22 @@ export default async function AdminPage() {
                 marginBottom: "0.45rem",
               }}
             >
-              Admin, console and golden surfaces are intentionally access-controlled. This section documents boundary
-              intent — it does not expose gate internals.
+              Admin, console ve golden yüzeyleri bilinçli olarak erişim denetimindedir. Bu bölüm sınır niyetini
+              açıklar; geçit iç ayrıntılarını açmaz.
             </p>
             <ul style={{ fontSize: "0.8rem", paddingLeft: "1.1rem", margin: 0, lineHeight: 1.6 }}>
               <li>
-                <strong>Admin</strong>: diagnostics workbench only — no generic operations dashboard, no business metrics.
+                <strong>Admin</strong>: yalnız tanı çalışma yüzeyi; genel operasyon paneli veya iş metriği içermez.
               </li>
               <li>
-                <strong>Console</strong>: reserved protocol shell — not activated as a public product surface.
+                <strong>Console</strong>: ayrılmış protokol kabuğu; herkese açık ürün yüzeyi olarak etkin değildir.
               </li>
               <li>
-                <strong>Golden</strong>: internal verifier acceptance view — surfaced under protected access only.
+                <strong>Golden</strong>: iç verifier kabul görünümü; yalnız korumalı erişim altında açılır.
               </li>
               <li>
-                <strong>Access boundary</strong>: protected routes require authorized access; unauthorized requests see a
-                bounded restricted state.
+                <strong>Erişim sınırı</strong>: korumalı rotalar yetkili erişim ister; yetkisiz istekler sınırlandırılmış
+                erişim reddi durumu görür.
               </li>
             </ul>
           </div>
@@ -318,25 +318,25 @@ export default async function AdminPage() {
             padding: "0.95rem 1.05rem 1.05rem",
           }}
         >
-          <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Recent access trace</h2>
+          <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Son erişim izi</h2>
           {"error" in accessDiagnostics ? (
             <p style={{ fontSize: "0.8rem", color: "var(--error)", margin: 0 }}>{accessDiagnostics.error}</p>
           ) : (
             <>
               <p style={{ fontSize: "0.8rem", color: "var(--text-soft)", margin: 0, marginBottom: "0.55rem" }}>
-                Access mode: <strong>{accessDiagnostics.email_delivery_mode}</strong>. Pending requests: {accessDiagnostics.pending_request_count ?? 0}. Active temporary credentials: {accessDiagnostics.active_credential_count ?? 0}.
+                Erişim modu: <strong>{accessDiagnostics.email_delivery_mode}</strong>. Bekleyen talep: {accessDiagnostics.pending_request_count ?? 0}. Aktif geçici kimlik bilgisi: {accessDiagnostics.active_credential_count ?? 0}.
               </p>
               {accessDiagnostics.recent_access.length ? (
                 <ul style={{ fontSize: "0.8rem", paddingLeft: "1.1rem", margin: 0, lineHeight: 1.6 }}>
                   {accessDiagnostics.recent_access.map((entry) => (
                     <li key={`${entry.created_at}-${entry.session_id ?? entry.result}`}>
-                      <strong>{entry.result}</strong> — next: {entry.requested_next ?? "—"} — email: {entry.email ?? "—"} — role: {entry.role} — session: {entry.session_id ?? "—"} — {entry.created_at}
-                      {entry.reason ? ` — reason: ${entry.reason}` : ""}
+                      <strong>{entry.result}</strong> — hedef: {entry.requested_next ?? "—"} — e-posta: {entry.email ?? "—"} — rol: {entry.role} — oturum: {entry.session_id ?? "—"} — {entry.created_at}
+                      {entry.reason ? ` — neden: ${entry.reason}` : ""}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>No access trace yet.</p>
+                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>Henüz erişim izi yok.</p>
               )}
             </>
           )}
@@ -360,7 +360,7 @@ export default async function AdminPage() {
               padding: "0.95rem 1.05rem 1.05rem",
             }}
           >
-            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Canonical spine</h2>
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Kanonik omurga</h2>
             <p
               style={{
                 fontSize: "0.8rem",
@@ -369,11 +369,11 @@ export default async function AdminPage() {
                 marginBottom: "0.5rem",
               }}
             >
-              Single product spine: witness → verification → issuance. Verifier reads from this registry.
+              Tek ürün omurgası: witness → verification → issuance. Verifier bu kaynaktan okur.
             </p>
             <ul style={{ fontSize: "0.8rem", paddingLeft: "1.1rem", margin: 0, lineHeight: 1.6 }}>
-              <li>Total cases: {CANONICAL_CASES.length}</li>
-              <li>Vehicle: {getCanonicalCases("vehicle").length}</li>
+              <li>Toplam vaka: {CANONICAL_CASES.length}</li>
+              <li>Araç: {getCanonicalCases("vehicle").length}</li>
               <li>Drone: {getCanonicalCases("drone").length}</li>
               <li>Robot: {getCanonicalCases("robot").length}</li>
             </ul>
@@ -387,7 +387,7 @@ export default async function AdminPage() {
               padding: "0.95rem 1.05rem 1.05rem",
             }}
           >
-            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>AXISUS state summary</h2>
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>AXISUS durum özeti</h2>
             <p
               style={{
                 fontSize: "0.8rem",
@@ -396,7 +396,7 @@ export default async function AdminPage() {
                 marginBottom: "0.5rem",
               }}
             >
-              Case-aware boundary states across spine (AXISUS State Pack v1).
+              Omurga genelinde vaka odaklı sınır durumları (AXISUS State Pack v1).
             </p>
             <ul style={{ fontSize: "0.8rem", paddingLeft: "1.1rem", margin: 0, lineHeight: 1.6 }}>
               <li>
@@ -424,7 +424,7 @@ export default async function AdminPage() {
                 }
               </li>
               <li>
-                Handoff:{" "}
+                Devir:{" "}
                 {
                   CANONICAL_CASES.flatMap((c) => c.axisusStates ?? []).filter(
                     (s) => s.severity === "handoff",
@@ -451,12 +451,12 @@ export default async function AdminPage() {
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
-            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Environment</h2>
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Ortam</h2>
             <ul style={{ fontSize: "0.8rem", paddingLeft: "1.1rem", margin: 0, lineHeight: 1.6 }}>
-              <li>Environment: {diagnostics.environment}</li>
-              <li>Dataset version: {diagnostics.dataset_version}</li>
-              <li>Schema version: {diagnostics.schema_version}</li>
-              <li>Build version: {diagnostics.build_version}</li>
+              <li>Ortam: {diagnostics.environment}</li>
+              <li>Veri kümesi sürümü: {diagnostics.dataset_version}</li>
+              <li>Şema sürümü: {diagnostics.schema_version}</li>
+              <li>Derleme sürümü: {diagnostics.build_version}</li>
             </ul>
           </div>
 
@@ -468,11 +468,11 @@ export default async function AdminPage() {
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
-            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Export profiles</h2>
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Dışa aktarma profilleri</h2>
             <p style={{ fontSize: "0.8rem", color: "var(--text-soft)", margin: 0 }}>
               {diagnostics.supported_export_profiles?.length
-                ? `Supported: ${diagnostics.supported_export_profiles.join(", ")}`
-                : "Supported: claims, legal"}
+                ? `Desteklenen: ${diagnostics.supported_export_profiles.join(", ")}`
+                : "Desteklenen: claims, legal"}
             </p>
           </div>
         </section>
@@ -494,7 +494,7 @@ export default async function AdminPage() {
             }}
           >
             <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>
-              Recent export activity (issuance)
+              Son dışa aktarma etkinliği (issuance)
             </h2>
             <p
               style={{
@@ -504,7 +504,7 @@ export default async function AdminPage() {
                 marginBottom: "0.5rem",
               }}
             >
-              Controlled artifact issuance from the verifier. Issuance is tracked separately from blame.
+              Verifier üzerinden kontrollü artifact issuance yapılır. Issuance, kusur atamasından ayrı izlenir.
             </p>
             {diagnostics.recent_exports?.length ? (
               <ul
@@ -517,13 +517,13 @@ export default async function AdminPage() {
               >
                 {diagnostics.recent_exports.slice(0, 10).map((e) => (
                   <li key={e.export_id} style={{ marginBottom: "0.2rem" }}>
-                    <strong>{e.export_id}</strong> — {e.profile} / {e.format} — event:{" "}
-                    {e.event_id ?? "—"} — receipt: {e.receipt_id ?? "—"} — {e.created_at}
+                    <strong>{e.export_id}</strong> — {e.profile} / {e.format} — olay:{" "}
+                    {e.event_id ?? "—"} — makbuz: {e.receipt_id ?? "—"} — {e.created_at}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>No export activity yet.</p>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>Henüz dışa aktarma etkinliği yok.</p>
             )}
           </div>
 
@@ -536,7 +536,7 @@ export default async function AdminPage() {
             }}
           >
             <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>
-              Recent verification activity (trace / runs)
+              Son doğrulama etkinliği (trace / çalıştırmalar)
             </h2>
             <p
               style={{
@@ -546,7 +546,7 @@ export default async function AdminPage() {
                 marginBottom: "0.5rem",
               }}
             >
-              Verification trace and run history from the verifier spine.
+              Verifier omurgasından gelen doğrulama izi ve çalıştırma geçmişi.
             </p>
             {diagnostics.recent_verifications?.length ? (
               <ul
@@ -559,13 +559,13 @@ export default async function AdminPage() {
               >
                 {diagnostics.recent_verifications.slice(0, 10).map((r) => (
                   <li key={r.verification_run_id} style={{ marginBottom: "0.2rem" }}>
-                    <strong>{r.verification_run_id}</strong> — event: {r.event_id ?? "—"} —{" "}
-                    {r.verification_state} — trace id: {r.transcript_id ?? "—"} — {r.created_at}
+                    <strong>{r.verification_run_id}</strong> — olay: {r.event_id ?? "—"} —{" "}
+                    {r.verification_state} — trace kimliği: {r.transcript_id ?? "—"} — {r.created_at}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>No verification activity yet.</p>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>Henüz doğrulama etkinliği yok.</p>
             )}
           </div>
         </section>
@@ -586,11 +586,11 @@ export default async function AdminPage() {
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
-            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Latest verification run</h2>
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Son doğrulama çalıştırması</h2>
             {diagnostics.latest_verification_run ? (
               <div style={{ fontSize: "0.8rem" }}>
                 <p style={{ margin: 0, marginBottom: "0.25rem" }}>
-                  <strong>{diagnostics.latest_verification_run.verification_run_id}</strong> — event:{" "}
+                  <strong>{diagnostics.latest_verification_run.verification_run_id}</strong> — olay:{" "}
                   {diagnostics.latest_verification_run.event_id ?? "—"} —{" "}
                   {diagnostics.latest_verification_run.verification_state} —{" "}
                   {diagnostics.latest_verification_run.created_at}
@@ -605,7 +605,7 @@ export default async function AdminPage() {
                         marginBottom: "0.25rem",
                       }}
                     >
-                      Trace summary:
+                      İz özeti:
                     </p>
                     <ul
                       style={{
@@ -625,7 +625,7 @@ export default async function AdminPage() {
                 ) : null}
               </div>
             ) : (
-              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>No verification runs yet.</p>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>Henüz doğrulama çalıştırması yok.</p>
             )}
           </div>
 
@@ -637,7 +637,7 @@ export default async function AdminPage() {
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
-            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Recent smoke runs</h2>
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Son smoke çalıştırmaları</h2>
             {diagnostics.recent_smoke_runs?.length ? (
               <ul
                 style={{
@@ -654,21 +654,21 @@ export default async function AdminPage() {
                 ))}
               </ul>
             ) : (
-              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>No smoke runs yet.</p>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>Henüz smoke çalıştırması yok.</p>
             )}
             {diagnostics.smoke_history_summary ? (
               <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.65rem", lineHeight: 1.55 }}>
                 <p style={{ margin: 0, marginBottom: "0.15rem" }}>
-                  Retained runs: {diagnostics.smoke_history_summary.total_runs} / checks: {diagnostics.smoke_history_summary.total_checks}
+                  Saklanan çalıştırma: {diagnostics.smoke_history_summary.total_runs} / kontrol: {diagnostics.smoke_history_summary.total_checks}
                 </p>
                 <p style={{ margin: 0, marginBottom: "0.15rem" }}>
-                  Oldest: {diagnostics.smoke_history_summary.oldest_started_at ?? "—"}
+                  En eski: {diagnostics.smoke_history_summary.oldest_started_at ?? "—"}
                 </p>
                 <p style={{ margin: 0, marginBottom: "0.15rem" }}>
-                  Filter route: {diagnostics.smoke_history_summary.query_route}
+                  Filtre rotası: {diagnostics.smoke_history_summary.query_route}
                 </p>
                 <p style={{ margin: 0 }}>
-                  Check types: {diagnostics.smoke_history_summary.available_check_categories.join(", ") || "—"}
+                  Kontrol türleri: {diagnostics.smoke_history_summary.available_check_categories.join(", ") || "—"}
                 </p>
               </div>
             ) : null}
@@ -685,27 +685,27 @@ export default async function AdminPage() {
               padding: "0.9rem 1.05rem 1.05rem",
             }}
           >
-            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Tenant policy</h2>
+            <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Tenant politikası</h2>
             {diagnostics.tenant_policy ? (
               <div style={{ fontSize: "0.8rem" }}>
                 <p style={{ margin: 0, marginBottom: "0.2rem" }}>
                   Tenant: {diagnostics.tenant_policy.tenant_id}
                 </p>
                 <p style={{ margin: 0, marginBottom: "0.2rem" }}>
-                  Enabled export profiles:{" "}
+                  Etkin dışa aktarma profilleri:{" "}
                   {diagnostics.tenant_policy.enabled_export_profiles.join(", ")}
                 </p>
                 <p style={{ margin: 0, marginBottom: "0.2rem" }}>
-                  Enabled visibility classes:{" "}
+                  Etkin görünürlük sınıfları:{" "}
                   {diagnostics.tenant_policy.enabled_visibility_classes.join(", ")}
                 </p>
                 <p style={{ margin: 0 }}>
-                  Redaction: {diagnostics.tenant_policy.redaction_enabled ? "enabled" : "disabled"}
+                  Redaksiyon: {diagnostics.tenant_policy.redaction_enabled ? "etkin" : "kapalı"}
                 </p>
               </div>
             ) : (
               <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>
-                No tenant policy record surfaced in diagnostics.
+                Tanı verilerinde tenant politikası kaydı bulunamadı.
               </p>
             )}
           </div>
