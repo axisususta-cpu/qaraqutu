@@ -91,13 +91,13 @@ export function getLiveIntegrationReadiness(): LiveIntegrationReadiness {
       },
       {
         id: "uploaded_package",
-        badgeTr: "Entegrasyon iskeleti",
-        badgeEn: "Integration skeleton",
+        badgeTr: "Bounded yüklenen paket hattı",
+        badgeEn: "Bounded uploaded-package lane",
         detailTr:
-          "Dış paket yüzeyi görünür tutulur, ancak bu slice'ta aktive edilmez. Source selector ortak kaldığı için connected_device ile UI coupling riski taşır ve veri hattı kapalıdır.",
+          "Yüklenen paket hattı yalnız bounded shell olarak açılır. Geçerli envelope yoksa waiting gösterir; demo ve connected_device olaylarına düşmez; verify/export işlemleri bu hatta kapalıdır.",
         detailEn:
-          "The external-package surface stays visible but is not activated in this slice. Because the source selector is shared, it carries UI coupling risk with connected-device and its data lane remains closed.",
-        selectable: false,
+          "The uploaded-package lane is opened only as a bounded shell. Without a valid envelope it stays waiting; it does not fall back to demo or connected-device events; verify/export actions stay closed on this lane.",
+        selectable: true,
       },
     ],
   };

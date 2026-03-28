@@ -188,3 +188,28 @@ model ConnectedDevicePilotShell {
   @@index([acceptedAt])
 }
 
+model UploadedPackageShell {
+  id              String   @id @default(cuid())
+  singletonKey    String   @unique
+  packageId       String
+  uploadedAt      DateTime
+  system          String
+  incidentClass   String
+  title           String
+  summary         String
+  bundleId        String
+  manifestId      String
+  severity        String
+  packageName     String
+  packageSha256   String
+  packageSizeBytes BigInt
+  acceptedAt      DateTime
+  sourceLane      String
+  contractVersion String
+  serviceId       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([acceptedAt])
+}
+

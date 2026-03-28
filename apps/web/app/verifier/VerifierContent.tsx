@@ -145,6 +145,28 @@ interface ConnectedDevicePilotIngestResponse {
   event: ConnectedDevicePilotEventEnvelope | null;
 }
 
+type UploadedPackageIngestState = "waiting" | "available";
+
+interface UploadedPackageEventEnvelope {
+  package_id: string;
+  uploaded_at: string;
+  system: MockSystemId;
+  incident_class: string;
+  title: string;
+  summary: string;
+  bundle_id: string;
+  manifest_id: string;
+  severity?: "low" | "medium" | "high";
+  package_name: string;
+  package_sha256: string;
+  package_size_bytes: number;
+}
+
+interface UploadedPackageIngestResponse {
+  state: UploadedPackageIngestState;
+  event: UploadedPackageEventEnvelope | null;
+}
+
 // Phase 1 mock data scaffolding for future workstation wiring.
 type MockSystemId = "vehicle" | "drone" | "robot";
 type SourceId = "demo_archive" | "connected_device" | "uploaded_package";
@@ -572,6 +594,35 @@ function pilotEnvelopeToEventCard(envelope: ConnectedDevicePilotEventEnvelope, l
   };
 }
 
+function uploadedEnvelopeToEventCard(envelope: UploadedPackageEventEnvelope, lang: "en" | "tr"): EventCard {
+  const packageSizeMb = (envelope.package_size_bytes / 1024 / 1024).toFixed(2);
+  const boundedSummary =
+    lang === "tr"
+      ? `${envelope.summary} Bağlam: ${envelope.package_name} · ${packageSizeMb} MB · SHA256 ${envelope.package_sha256.slice(0, 16)}...`
+      : `${envelope.summary} Context: ${envelope.package_name} · ${packageSizeMb} MB · SHA256 ${envelope.package_sha256.slice(0, 16)}...`;
+
+  return {
+    eventId: envelope.package_id,
+    title: envelope.title,
+    summary: boundedSummary,
+    identity: lang === "tr" ? "Yüklenen paket zarfı" : "Uploaded package envelope",
+    timestamp: envelope.uploaded_at,
+    severity: envelope.severity ?? "medium",
+    state: "bounded",
+    stateFamily: "pass_limited",
+    stateLabel: "UPLOADED SHELL",
+    issuanceLabel: lang === "tr" ? "YÜKLENEN SINIRLI" : "UPLOADED BOUNDED",
+    integrityLabel: lang === "tr" ? "PAKET ZARFI" : "PACKAGE ENVELOPE",
+    availableOutputs: [],
+    incidentClass: envelope.incident_class,
+    limitationsCount: 1,
+    documentFamilies: [],
+    integrityFamilies: [],
+    bundleId: envelope.bundle_id,
+    manifestId: envelope.manifest_id,
+  };
+}
+
 // Case-density: optional per-case review intent and next step (from canonical-spine).
 type CaseSummaryOverride = {
   reviewWhyEn?: string;
@@ -976,6 +1027,8 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
   const [connectedDevicePilotState, setConnectedDevicePilotState] = useState<ConnectedDeviceRuntimeState>("configured_unverified");
   const [connectedDevicePilotEnvelope, setConnectedDevicePilotEnvelope] = useState<ConnectedDevicePilotEventEnvelope | null>(null);
   const [connectedDevicePilotIngestState, setConnectedDevicePilotIngestState] = useState<ConnectedDevicePilotIngestState>("waiting");
+  const [uploadedPackageEnvelope, setUploadedPackageEnvelope] = useState<UploadedPackageEventEnvelope | null>(null);
+  const [uploadedPackageIngestState, setUploadedPackageIngestState] = useState<UploadedPackageIngestState>("waiting");
   const [issuanceAudience, setIssuanceAudience] = useState<InstitutionAudienceId>(
     DEFAULT_AUDIENCE_BY_PROFILE.claims
   );
@@ -1060,9 +1113,14 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
   const selectedSourceLabel = language === "tr" ? selectedSourceMeta.tr : selectedSourceMeta.en;
   const isDemoArchiveSource = selectedSource === "demo_archive";
   const isConnectedDeviceSource = selectedSource === "connected_device";
+  const isUploadedPackageSource = selectedSource === "uploaded_package";
 
   const connectedDeviceDisplayEvents: EventCard[] = connectedDevicePilotEnvelope
     ? [pilotEnvelopeToEventCard(connectedDevicePilotEnvelope, language)]
+    : [];
+
+  const uploadedPackageDisplayEvents: EventCard[] = uploadedPackageEnvelope
+    ? [uploadedEnvelopeToEventCard(uploadedPackageEnvelope, language)]
     : [];
 
   const displayEvents: EventCard[] = isDemoArchiveSource
@@ -1071,6 +1129,8 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
         .map((caseItem) => caseToEventCard(caseItem, language))
     : isConnectedDeviceSource
     ? connectedDeviceDisplayEvents
+    : isUploadedPackageSource
+    ? uploadedPackageDisplayEvents
     : [];
 
   const selectedEventCard =
@@ -1107,11 +1167,19 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
   const packageOperationalContext =
     selectedPackage?.summary.split(language === "tr" ? " Bağlam:" : " Context:")[1]?.trim() ??
     null;
-  const defaultPackageIdentity = isDemoArchiveSource ? "DEMO-PACKAGE-PENDING" : "CONNECTED-DEVICE-PILOT";
+  const defaultPackageIdentity = isDemoArchiveSource
+    ? "DEMO-PACKAGE-PENDING"
+    : isConnectedDeviceSource
+    ? "CONNECTED-DEVICE-PILOT"
+    : "UPLOADED-PACKAGE-SHELL";
   const pendingPackageTitle = isConnectedDeviceSource
     ? language === "tr"
       ? "Pilot feed bekleniyor"
       : "Pilot feed pending"
+    : isUploadedPackageSource
+    ? language === "tr"
+      ? "Yüklenen paket zarfı bekleniyor"
+      : "Uploaded package envelope pending"
     : language === "tr"
     ? "Paket seçimi bekleniyor"
     : "Package selection pending";
@@ -1119,6 +1187,10 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
     ? language === "tr"
       ? "Connected-device pilot lane seçildi; demo arşivi vakaları bu kanala taşınmadı."
       : "Connected-device pilot lane selected; demo archive cases are not reused in this lane."
+    : isUploadedPackageSource
+    ? language === "tr"
+      ? "Uploaded-package lane seçildi; yalnız doğrulanmış yüklenen paket zarfı gösterilir ve demo/connected_device verisine düşmez."
+      : "Uploaded-package lane selected; only a validated uploaded package envelope is shown and it never falls back to demo/connected_device data."
     : language === "tr"
     ? "Demo arşivi yerel paket seçimi"
     : "Demo archive local package selection";
@@ -1126,6 +1198,10 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
     ? language === "tr"
       ? "Pilot istasyon durumu izleniyor"
       : "Pilot station status under review"
+    : isUploadedPackageSource
+    ? language === "tr"
+      ? "Yüklenen paket bounded shell durumu izleniyor"
+      : "Uploaded package bounded-shell state under review"
     : language === "tr"
     ? "İnceleme paketi hazırlanıyor"
     : "Inspection package preparing";
@@ -1133,6 +1209,10 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
     ? language === "tr"
       ? "Bağlı cihaz feed'i henüz iliştirilmedi"
       : "No connected-device feed attached yet"
+    : isUploadedPackageSource
+    ? language === "tr"
+      ? "Geçerli yüklenen paket zarfı henüz iliştirilmedi"
+      : "No valid uploaded package envelope attached yet"
     : language === "tr"
     ? "Kayıtlı/türetilmiş ayrımı bekleniyor"
     : "Recorded/derived split pending";
@@ -1167,6 +1247,42 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
       window.removeEventListener("focus", refreshConnectedDevicePilotState);
     };
   }, [isConnectedDeviceSource]);
+
+  useEffect(() => {
+    if (!isUploadedPackageSource) {
+      setUploadedPackageEnvelope(null);
+      setUploadedPackageIngestState("waiting");
+      return;
+    }
+
+    let cancelled = false;
+
+    async function refreshUploadedPackageEnvelope() {
+      try {
+        const res = await fetch("/api/uploaded-package-ingest", { cache: "no-store" });
+        const json = (await res.json().catch(() => null)) as UploadedPackageIngestResponse | null;
+        if (cancelled) return;
+        if (!res.ok || !json?.state) {
+          setUploadedPackageEnvelope(null);
+          setUploadedPackageIngestState("waiting");
+          return;
+        }
+        setUploadedPackageIngestState(json.state);
+        setUploadedPackageEnvelope(json.state === "available" && json.event ? json.event : null);
+      } catch {
+        if (cancelled) return;
+        setUploadedPackageEnvelope(null);
+        setUploadedPackageIngestState("waiting");
+      }
+    }
+
+    refreshUploadedPackageEnvelope();
+    window.addEventListener("focus", refreshUploadedPackageEnvelope);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", refreshUploadedPackageEnvelope);
+    };
+  }, [isUploadedPackageSource]);
 
   useEffect(() => {
     if (!isConnectedDeviceSource) {
@@ -1205,7 +1321,7 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
   }, [isConnectedDeviceSource]);
 
   useEffect(() => {
-    if (!isConnectedDeviceSource) {
+    if (isDemoArchiveSource) {
       return;
     }
 
@@ -1219,12 +1335,12 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
       setSelectedEventId(displayEvents[0].eventId);
     }
     setSelectedId(null);
-  }, [displayEvents, isConnectedDeviceSource, selectedEventId]);
+  }, [displayEvents, isDemoArchiveSource, selectedEventId]);
 
   // When user selects an event from cards: set selectedEventId; for Vehicle also set selectedId for API.
   const handleSelectEvent = (eventId: string) => {
     setSelectedEventId(eventId);
-    setSelectedId(isConnectedDeviceSource ? null : eventId);
+    setSelectedId(isDemoArchiveSource ? eventId : null);
   };
 
   const selected = events.find((e) => e.eventId === selectedId) ?? null;
@@ -1959,7 +2075,7 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
   const resetRunDisabled =
     !canResetVerificationRun || loading || !!exportLoading;
   const isPackageSelected = Boolean(selectedId);
-  const canStartReview = isPackageSelected && !isConnectedDeviceSource;
+  const canStartReview = isPackageSelected && isDemoArchiveSource;
   const isVerificationReady = Boolean(verificationState || verifyIdentityMatchesSelection);
 
   /** Export availability — truthful reflection of backend reachability */
@@ -2058,6 +2174,14 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
       : language === "tr"
       ? "Pilot lane seçildi. Yetkili istasyon kontrolü yapılıyor; demo arşivi kartları bu kanala taşınmıyor."
       : "Pilot lane selected. The authorized station check is in progress, and demo archive cards are not reused in this lane.";
+  const uploadedPackageEmptyState =
+    uploadedPackageIngestState === "available"
+      ? language === "tr"
+        ? "Uploaded-package lane seçildi. Geçerli envelope mevcut; yalnız tek bounded shell kartı gösterilir ve inceleme/export kapalı kalır."
+        : "Uploaded-package lane selected. A valid envelope exists; only one bounded shell card is shown and review/export remain closed."
+      : language === "tr"
+      ? "Uploaded-package lane seçildi. Geçerli yüklenen paket envelope bulunamadı; bounded waiting durumu gösteriliyor."
+      : "Uploaded-package lane selected. No valid uploaded package envelope is present; bounded waiting state is shown.";
 
   return (
     <div
@@ -2473,7 +2597,9 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
                           {displayEvents.length === 0 ? (
                             <div style={{ padding: "6px 14px 6px 22px", fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)" }}>
                               {!isDemoArchiveSource
-                                ? connectedDeviceEmptyState
+                                ? isConnectedDeviceSource
+                                  ? connectedDeviceEmptyState
+                                  : uploadedPackageEmptyState
                                 : selectedScenario
                                 ? language === "tr"
                                   ? "Bu durum hattında görünür vaka yok."
@@ -2578,9 +2704,13 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
                     ? language === "tr"
                       ? isConnectedDeviceSource
                         ? "PILOT SHELL — DOĞRULAMA KAPALI"
+                        : isUploadedPackageSource
+                        ? "UPLOADED SHELL — DOĞRULAMA KAPALI"
                         : "PAKET SEÇ"
                       : isConnectedDeviceSource
                       ? "PILOT SHELL - REVIEW CLOSED"
+                      : isUploadedPackageSource
+                      ? "UPLOADED SHELL - REVIEW CLOSED"
                       : "SELECT PACKAGE"
                     : language === "tr"
                     ? "İNCELEMEYİ BAŞLAT"

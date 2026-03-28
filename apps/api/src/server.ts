@@ -118,10 +118,43 @@ interface PilotIngestReadResponse {
   audit: PilotIngestAuditMetadata | null;
 }
 
+interface UploadedPackageIngestEnvelope {
+  package_id: string;
+  uploaded_at: string;
+  system: PilotSystem;
+  incident_class: string;
+  title: string;
+  summary: string;
+  bundle_id: string;
+  manifest_id: string;
+  severity?: PilotSeverity;
+  package_name: string;
+  package_sha256: string;
+  package_size_bytes: number;
+}
+
+interface UploadedPackageIngestAuditMetadata {
+  accepted_at: string;
+  source_lane: "uploaded_package";
+  contract_version: string;
+  service_id: string;
+}
+
+interface UploadedPackageIngestReadResponse {
+  state: "waiting" | "available";
+  event: UploadedPackageIngestEnvelope | null;
+  audit: UploadedPackageIngestAuditMetadata | null;
+}
+
 const PILOT_SERVICE_ID = "connected_device_pilot";
 const PILOT_INGEST_CONTRACT_ID = "qaraqutu.connected_device.ingest.v1";
 const PILOT_SOURCE_LANE = "connected_device" as const;
 const PILOT_SHELL_SINGLETON_KEY = "connected_device_latest";
+const UPLOADED_PACKAGE_SERVICE_ID = "uploaded_package_shell";
+const UPLOADED_PACKAGE_CONTRACT_ID = "qaraqutu.uploaded_package.ingest.v1";
+const UPLOADED_PACKAGE_SOURCE_LANE = "uploaded_package" as const;
+const UPLOADED_PACKAGE_SHELL_SINGLETON_KEY = "uploaded_package_latest";
+const SHA256_HEX_PATTERN = /^[a-f0-9]{64}$/i;
 
 function normalizeSecret(raw: string | undefined): string {
   return typeof raw === "string" ? raw.trim() : "";
@@ -222,6 +255,110 @@ function validatePilotEnvelope(payload: unknown): { ok: true; envelope: PilotIng
   };
 }
 
+function validateUploadedPackageEnvelope(
+  payload: unknown
+): { ok: true; envelope: UploadedPackageIngestEnvelope } | { ok: false; reason: string } {
+  if (!isObjectLike(payload)) {
+    return { ok: false, reason: "payload_object_required" };
+  }
+
+  const service = typeof payload.service === "string" ? payload.service.trim() : "";
+  const contract = typeof payload.contract === "string" ? payload.contract.trim() : "";
+
+  if (service !== UPLOADED_PACKAGE_SERVICE_ID) {
+    return { ok: false, reason: "invalid_service" };
+  }
+
+  if (contract !== UPLOADED_PACKAGE_CONTRACT_ID) {
+    return { ok: false, reason: "invalid_contract" };
+  }
+
+  if (!isObjectLike(payload.envelope)) {
+    return { ok: false, reason: "envelope_object_required" };
+  }
+
+  const envelope = payload.envelope;
+  const packageId = typeof envelope.package_id === "string" ? envelope.package_id.trim() : "";
+  const uploadedAt = typeof envelope.uploaded_at === "string" ? envelope.uploaded_at.trim() : "";
+  const incidentClass = typeof envelope.incident_class === "string" ? envelope.incident_class.trim() : "";
+  const title = typeof envelope.title === "string" ? envelope.title.trim() : "";
+  const summary = typeof envelope.summary === "string" ? envelope.summary.trim() : "";
+  const bundleId = typeof envelope.bundle_id === "string" ? envelope.bundle_id.trim() : "";
+  const manifestId = typeof envelope.manifest_id === "string" ? envelope.manifest_id.trim() : "";
+  const packageName = typeof envelope.package_name === "string" ? envelope.package_name.trim() : "";
+  const packageSha256 = typeof envelope.package_sha256 === "string" ? envelope.package_sha256.trim() : "";
+  const packageSizeRaw = envelope.package_size_bytes;
+  const packageSize = typeof packageSizeRaw === "number" ? packageSizeRaw : Number.NaN;
+  const system = envelope.system;
+  const severityRaw = envelope.severity;
+
+  if (!packageId || packageId.length > 80) {
+    return { ok: false, reason: "invalid_package_id" };
+  }
+
+  if (!uploadedAt || Number.isNaN(Date.parse(uploadedAt))) {
+    return { ok: false, reason: "invalid_uploaded_at" };
+  }
+
+  if (!isPilotSystem(system)) {
+    return { ok: false, reason: "invalid_system" };
+  }
+
+  if (!incidentClass || incidentClass.length > 120) {
+    return { ok: false, reason: "invalid_incident_class" };
+  }
+
+  if (!title || title.length > 140) {
+    return { ok: false, reason: "invalid_title" };
+  }
+
+  if (!summary || summary.length > 400) {
+    return { ok: false, reason: "invalid_summary" };
+  }
+
+  if (!bundleId || bundleId.length > 96) {
+    return { ok: false, reason: "invalid_bundle_id" };
+  }
+
+  if (!manifestId || manifestId.length > 96) {
+    return { ok: false, reason: "invalid_manifest_id" };
+  }
+
+  if (!packageName || packageName.length > 180) {
+    return { ok: false, reason: "invalid_package_name" };
+  }
+
+  if (!SHA256_HEX_PATTERN.test(packageSha256)) {
+    return { ok: false, reason: "invalid_package_sha256" };
+  }
+
+  if (!Number.isInteger(packageSize) || packageSize <= 0 || packageSize > 10_000_000_000) {
+    return { ok: false, reason: "invalid_package_size_bytes" };
+  }
+
+  if (typeof severityRaw !== "undefined" && !isPilotSeverity(severityRaw)) {
+    return { ok: false, reason: "invalid_severity" };
+  }
+
+  return {
+    ok: true,
+    envelope: {
+      package_id: packageId,
+      uploaded_at: uploadedAt,
+      system,
+      incident_class: incidentClass,
+      title,
+      summary,
+      bundle_id: bundleId,
+      manifest_id: manifestId,
+      severity: isPilotSeverity(severityRaw) ? severityRaw : "medium",
+      package_name: packageName,
+      package_sha256: packageSha256.toLowerCase(),
+      package_size_bytes: packageSize,
+    },
+  };
+}
+
 function mapPilotShellRecordToResponse(record: any): PilotIngestReadResponse {
   return {
     state: "available",
@@ -245,6 +382,32 @@ function mapPilotShellRecordToResponse(record: any): PilotIngestReadResponse {
   };
 }
 
+function mapUploadedPackageShellRecordToResponse(record: any): UploadedPackageIngestReadResponse {
+  return {
+    state: "available",
+    event: {
+      package_id: record.packageId,
+      uploaded_at: record.uploadedAt.toISOString(),
+      system: record.system,
+      incident_class: record.incidentClass,
+      title: record.title,
+      summary: record.summary,
+      bundle_id: record.bundleId,
+      manifest_id: record.manifestId,
+      severity: record.severity,
+      package_name: record.packageName,
+      package_sha256: record.packageSha256,
+      package_size_bytes: Number(record.packageSizeBytes),
+    },
+    audit: {
+      accepted_at: record.acceptedAt.toISOString(),
+      source_lane: record.sourceLane,
+      contract_version: record.contractVersion,
+      service_id: record.serviceId,
+    },
+  };
+}
+
 function hasConnectedDeviceIngestAccess(request: any): boolean {
   const expected = normalizeSecret(process.env.CONNECTED_DEVICE_ACCESS_TOKEN);
   if (!expected) {
@@ -253,6 +416,17 @@ function hasConnectedDeviceIngestAccess(request: any): boolean {
 
   const authHeader = normalizeSecret(request.headers.authorization as string | undefined);
   const accessHeader = normalizeSecret(request.headers["x-connected-device-access"] as string | undefined);
+  return authHeader === `Bearer ${expected}` && accessHeader === expected;
+}
+
+function hasUploadedPackageIngestAccess(request: any): boolean {
+  const expected = normalizeSecret(process.env.UPLOADED_PACKAGE_ACCESS_TOKEN);
+  if (!expected) {
+    return false;
+  }
+
+  const authHeader = normalizeSecret(request.headers.authorization as string | undefined);
+  const accessHeader = normalizeSecret(request.headers["x-uploaded-package-access"] as string | undefined);
   return authHeader === `Bearer ${expected}` && accessHeader === expected;
 }
 
@@ -612,6 +786,91 @@ fastify.post("/v1/connected-device-ingest", async (request, reply) => {
     accepted: true,
     service: PILOT_SERVICE_ID,
     contract: PILOT_INGEST_CONTRACT_ID,
+    event: readback.event,
+    audit: readback.audit,
+  });
+});
+
+fastify.get("/v1/uploaded-package-ingest", async () => {
+  const latest = await prisma.uploadedPackageShell.findUnique({
+    where: { singletonKey: UPLOADED_PACKAGE_SHELL_SINGLETON_KEY },
+  });
+
+  if (!latest) {
+    return {
+      state: "waiting",
+      event: null,
+      audit: null,
+    } satisfies UploadedPackageIngestReadResponse;
+  }
+
+  return mapUploadedPackageShellRecordToResponse(latest);
+});
+
+fastify.post("/v1/uploaded-package-ingest", async (request, reply) => {
+  const expectedToken = normalizeSecret(process.env.UPLOADED_PACKAGE_ACCESS_TOKEN);
+  if (!expectedToken) {
+    return reply.code(503).send({ error: "uploaded_package_ingest_unconfigured" });
+  }
+
+  if (!hasUploadedPackageIngestAccess(request)) {
+    return reply.code(401).send({ error: "unauthorized" });
+  }
+
+  const validated = validateUploadedPackageEnvelope(request.body);
+  if (!validated.ok) {
+    return reply
+      .code(400)
+      .send({ error: "invalid_uploaded_package_envelope", reason: validated.reason });
+  }
+
+  const acceptedAt = new Date();
+  const persisted = await prisma.uploadedPackageShell.upsert({
+    where: { singletonKey: UPLOADED_PACKAGE_SHELL_SINGLETON_KEY },
+    update: {
+      packageId: validated.envelope.package_id,
+      uploadedAt: new Date(validated.envelope.uploaded_at),
+      system: validated.envelope.system,
+      incidentClass: validated.envelope.incident_class,
+      title: validated.envelope.title,
+      summary: validated.envelope.summary,
+      bundleId: validated.envelope.bundle_id,
+      manifestId: validated.envelope.manifest_id,
+      severity: validated.envelope.severity ?? "medium",
+      packageName: validated.envelope.package_name,
+      packageSha256: validated.envelope.package_sha256,
+      packageSizeBytes: BigInt(validated.envelope.package_size_bytes),
+      acceptedAt,
+      sourceLane: UPLOADED_PACKAGE_SOURCE_LANE,
+      contractVersion: UPLOADED_PACKAGE_CONTRACT_ID,
+      serviceId: UPLOADED_PACKAGE_SERVICE_ID,
+    },
+    create: {
+      singletonKey: UPLOADED_PACKAGE_SHELL_SINGLETON_KEY,
+      packageId: validated.envelope.package_id,
+      uploadedAt: new Date(validated.envelope.uploaded_at),
+      system: validated.envelope.system,
+      incidentClass: validated.envelope.incident_class,
+      title: validated.envelope.title,
+      summary: validated.envelope.summary,
+      bundleId: validated.envelope.bundle_id,
+      manifestId: validated.envelope.manifest_id,
+      severity: validated.envelope.severity ?? "medium",
+      packageName: validated.envelope.package_name,
+      packageSha256: validated.envelope.package_sha256,
+      packageSizeBytes: BigInt(validated.envelope.package_size_bytes),
+      acceptedAt,
+      sourceLane: UPLOADED_PACKAGE_SOURCE_LANE,
+      contractVersion: UPLOADED_PACKAGE_CONTRACT_ID,
+      serviceId: UPLOADED_PACKAGE_SERVICE_ID,
+    },
+  });
+
+  const readback = mapUploadedPackageShellRecordToResponse(persisted);
+  return reply.code(202).send({
+    accepted: true,
+    service: UPLOADED_PACKAGE_SERVICE_ID,
+    contract: UPLOADED_PACKAGE_CONTRACT_ID,
     event: readback.event,
     audit: readback.audit,
   });
