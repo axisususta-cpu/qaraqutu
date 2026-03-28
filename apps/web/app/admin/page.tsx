@@ -75,6 +75,23 @@ interface Diagnostics {
   error?: string;
 }
 
+interface AccessDiagnostics {
+  email_delivery_mode: "provider" | "allowlist_preview_only" | "unconfigured";
+  acceptance_preview_enabled: boolean;
+  acceptance_preview_allowlist_count: number;
+  recent_access: Array<{
+    email: string | null;
+    role: string;
+    requested_next: string | null;
+    result: string;
+    reason: string | null;
+    session_id: string | null;
+    created_at: string;
+    expires_at: string | null;
+    verified_at: string | null;
+  }>;
+}
+
 async function getDiagnostics(): Promise<Diagnostics | { error: string }> {
   try {
     const headersList = await headers();
@@ -90,8 +107,24 @@ async function getDiagnostics(): Promise<Diagnostics | { error: string }> {
   }
 }
 
+async function getAccessDiagnostics(): Promise<AccessDiagnostics | { error: string }> {
+  try {
+    const headersList = await headers();
+    const host = headersList.get("host") ?? headersList.get("x-forwarded-host") ?? "localhost:3000";
+    const protocol = host.includes("localhost") ? "http" : "https";
+    const base = `${protocol}://${host}`;
+    const res = await fetch(`${base}/api/diagnostics/access`, { next: { revalidate: 10 } });
+    const data = await res.json();
+    if (!res.ok) return { error: data?.message ?? `HTTP ${res.status}` };
+    return data as AccessDiagnostics;
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Failed to load access diagnostics" };
+  }
+}
+
 export default async function AdminPage() {
   const diagnostics = await getDiagnostics();
+  const accessDiagnostics = await getAccessDiagnostics();
 
   if ("error" in diagnostics) {
     return (
@@ -262,6 +295,38 @@ export default async function AdminPage() {
               </li>
             </ul>
           </div>
+        </section>
+
+        <section
+          style={{
+            borderRadius: 10,
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
+            padding: "0.95rem 1.05rem 1.05rem",
+          }}
+        >
+          <h2 style={{ fontSize: "0.96rem", margin: 0, marginBottom: "0.5rem" }}>Recent access trace</h2>
+          {"error" in accessDiagnostics ? (
+            <p style={{ fontSize: "0.8rem", color: "var(--error)", margin: 0 }}>{accessDiagnostics.error}</p>
+          ) : (
+            <>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-soft)", margin: 0, marginBottom: "0.55rem" }}>
+                Delivery mode: <strong>{accessDiagnostics.email_delivery_mode}</strong>. Acceptance preview is {accessDiagnostics.acceptance_preview_enabled ? "enabled" : "disabled"}; allowlist count: {accessDiagnostics.acceptance_preview_allowlist_count}.
+              </p>
+              {accessDiagnostics.recent_access.length ? (
+                <ul style={{ fontSize: "0.8rem", paddingLeft: "1.1rem", margin: 0, lineHeight: 1.6 }}>
+                  {accessDiagnostics.recent_access.map((entry) => (
+                    <li key={`${entry.created_at}-${entry.session_id ?? entry.result}`}>
+                      <strong>{entry.result}</strong> — next: {entry.requested_next ?? "—"} — email: {entry.email ?? "—"} — role: {entry.role} — session: {entry.session_id ?? "—"} — {entry.created_at}
+                      {entry.reason ? ` — reason: ${entry.reason}` : ""}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>No access trace yet.</p>
+              )}
+            </>
+          )}
         </section>
 
         {/* Canonical and AXISUS overview */}

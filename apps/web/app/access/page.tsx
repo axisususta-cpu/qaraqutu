@@ -20,31 +20,59 @@ function AccessPageInner() {
   const searchParams = useSearchParams();
   const { lang } = useLanguage();
   const m = MSG[lang];
-  const [token, setToken] = useState("");
+  const [email, setEmail] = useState("");
   const [role, setRole] = useState<TrustedRoleId>("adjudication");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+  const [previewLink, setPreviewLink] = useState<string | null>(null);
 
   const next = useMemo(() => safeNext(searchParams?.get("next") ?? null), [searchParams]);
+  const queryError = searchParams?.get("error");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
+    setInfo(null);
+    setPreviewLink(null);
     try {
-      const res = await fetch("/api/access", {
+      const res = await fetch("/api/access/request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, next, role }),
+        body: JSON.stringify({ email, next, role }),
       });
-      if (res.redirected) {
-        window.location.href = res.url;
+      const json = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        reason?: string;
+        mode?: string;
+        verify_url?: string;
+      };
+
+      if (!res.ok) {
+        setError(json?.reason ?? json?.error ?? `Access request failed (HTTP ${res.status})`);
         return;
       }
-      const json = (await res.json().catch(() => ({}))) as { error?: string; message?: string };
-      setError(json?.message ?? json?.error ?? `Access denied (HTTP ${res.status})`);
+
+      if (json.mode === "dev_preview" && json.verify_url) {
+        setInfo(lang === "tr" ? "Geliştirme kipinde e-posta sağlayıcısı yok; doğrulama linki üretildi." : "Email provider is not configured in development mode; verification link generated.");
+        setPreviewLink(json.verify_url);
+        return;
+      }
+
+      if (json.mode === "acceptance_preview" && json.verify_url) {
+        setInfo(
+          lang === "tr"
+            ? "Kabul önizleme linki yalnız izinli acceptance e-posta adresleri için görünür kılındı."
+            : "Acceptance preview link is visible only for approved acceptance email addresses."
+        );
+        setPreviewLink(json.verify_url);
+        return;
+      }
+
+      setInfo(lang === "tr" ? "Doğrulama linki e-posta adresinize gönderildi." : "Verification link was sent to your email address.");
     } catch {
-      setError("Access request failed");
+      setError(lang === "tr" ? "Erişim isteği gönderilemedi" : "Access request failed");
     } finally {
       setSubmitting(false);
     }
@@ -78,7 +106,9 @@ function AccessPageInner() {
             {m.accessTitle}
           </h1>
           <p style={{ fontSize: "0.86rem", color: "var(--text-soft)", margin: 0, lineHeight: 1.65, maxWidth: 720 }}>
-            {m.accessBody}
+            {lang === "tr"
+              ? "Korumalı yüzeylere erişim doğrulanmış e-posta oturumu ile verilir. E-posta adresinizi girin; tek kullanımlık kısa ömürlü doğrulama linki gönderilir."
+              : "Protected surfaces require verified email access. Enter your email address to receive a one-time, short-lived verification link."}
           </p>
         </div>
 
@@ -92,14 +122,15 @@ function AccessPageInner() {
           }}
         >
           <label style={{ display: "block", fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "0.35rem" }}>
-            {m.accessTokenLabel}
+            {lang === "tr" ? "E-posta adresi" : "Email address"}
           </label>
           <input
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            autoComplete="off"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
             spellCheck={false}
-            inputMode="text"
+            inputMode="email"
             style={{
               width: "100%",
               boxSizing: "border-box",
@@ -109,10 +140,10 @@ function AccessPageInner() {
               background: "var(--panel-card)",
               color: "var(--text)",
               outline: "none",
-              fontFamily: MONO,
+              fontFamily: SANS,
               fontSize: "0.84rem",
             }}
-            placeholder={m.accessTokenPlaceholder}
+            placeholder={lang === "tr" ? "ornek@kurum.com" : "name@institution.com"}
           />
 
           <label style={{ display: "block", fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.8rem", marginBottom: "0.35rem" }}>
@@ -159,6 +190,50 @@ function AccessPageInner() {
             </div>
           ) : null}
 
+          {!error && (info || queryError) ? (
+            <div
+              style={{
+                marginTop: "0.75rem",
+                borderRadius: 10,
+                border: "1px solid var(--border)",
+                background: "var(--panel-card)",
+                padding: "0.55rem 0.7rem",
+                fontSize: "0.82rem",
+                color: "var(--text)",
+              }}
+              role="status"
+              aria-live="polite"
+            >
+              {queryError
+                ? lang === "tr"
+                  ? `Doğrulama başarısız: ${queryError}`
+                  : `Verification failed: ${queryError}`
+                : info}
+            </div>
+          ) : null}
+
+          {previewLink ? (
+            <a
+              href={previewLink}
+              style={{
+                display: "inline-flex",
+                marginTop: "0.75rem",
+                color: "var(--accent)",
+                textDecoration: "underline",
+                fontSize: "0.82rem",
+                wordBreak: "break-all",
+              }}
+            >
+              {info?.includes("Kabul") || info?.includes("Acceptance")
+                ? lang === "tr"
+                  ? "Acceptance doğrulama linkini aç"
+                  : "Open acceptance verification link"
+                : lang === "tr"
+                ? "Geliştirme doğrulama linkini aç"
+                : "Open development verification link"}
+            </a>
+          ) : null}
+
           <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.95rem", flexWrap: "wrap" }}>
             <button
               type="submit"
@@ -174,7 +249,7 @@ function AccessPageInner() {
                 fontWeight: 600,
               }}
             >
-              {submitting ? "..." : m.accessSubmit}
+              {submitting ? "..." : lang === "tr" ? "Doğrulama Linki Gönder" : "Send Verification Link"}
             </button>
             <a
               href={next}
@@ -195,7 +270,9 @@ function AccessPageInner() {
           </div>
 
           <p style={{ marginTop: "0.9rem", marginBottom: 0, fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-            {m.accessNote}
+            {lang === "tr"
+              ? "Oturum doğrulaması 20 dakika boyunca geçerlidir. Süre dolunca korumalı yüzeyler tekrar erişim ister."
+              : "Session verification is valid for 20 minutes. After expiry, protected surfaces require access again."}
           </p>
         </form>
       </div>

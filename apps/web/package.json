@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.2",
     "contracts": "0.1.0",
     "next": "latest",
     "react": "latest",

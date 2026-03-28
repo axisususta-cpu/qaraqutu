@@ -233,3 +233,50 @@ model UploadedPackageManifestValidation {
   @@index([acceptedAt])
 }
 
+model AccessMagicLinkToken {
+  id            String   @id @default(cuid())
+  email         String
+  role          String
+  requestedNext String
+  tokenHash     String   @unique
+  expiresAt     DateTime
+  consumedAt    DateTime?
+  sessionId     String?
+  createdAt     DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([expiresAt])
+}
+
+model AccessSession {
+  id         String   @id @default(cuid())
+  email      String
+  role       String
+  subject    String?
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([expiresAt])
+}
+
+model AccessAuditLog {
+  id            String   @id @default(cuid())
+  email         String?
+  role          String?
+  requestedNext String?
+  result        String
+  reason        String?
+  ip            String?
+  userAgent     String?
+  sessionId     String?
+  createdAt     DateTime @default(now())
+  expiresAt     DateTime?
+  verifiedAt    DateTime?
+
+  @@index([createdAt])
+  @@index([email, createdAt])
+  @@index([result, createdAt])
+}
+

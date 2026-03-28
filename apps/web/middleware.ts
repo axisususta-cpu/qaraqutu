@@ -39,12 +39,33 @@ function applySecurityHeaders(res: NextResponse) {
   res.headers.set("Content-Security-Policy", csp);
 }
 
-function hasValidAccess(req: NextRequest): boolean {
+function hasLegacySharedTokenAccess(req: NextRequest): boolean {
+  const allowFallback = (process.env.ACCESS_ALLOW_SHARED_TOKEN_FALLBACK ?? "").toLowerCase() === "true";
+  if (!allowFallback) return false;
+
   const token = normalizeQaraqutuAccessToken(process.env.QARAQUTU_ACCESS_TOKEN);
   if (token.length < 12) return false;
   const cookieToken = normalizeQaraqutuAccessToken(req.cookies.get(QARAQUTU_ACCESS_COOKIE)?.value);
   const headerToken = normalizeQaraqutuAccessToken(req.headers.get("x-qaraqutu-access"));
   return cookieToken === token || headerToken === token;
+}
+
+async function hasEmailSessionAccess(req: NextRequest): Promise<boolean> {
+  try {
+    const sessionUrl = new URL("/api/access/session", req.url);
+    const response = await fetch(sessionUrl, {
+      method: "GET",
+      headers: {
+        cookie: req.headers.get("cookie") ?? "",
+      },
+      cache: "no-store",
+    });
+    if (!response.ok) return false;
+    const body = (await response.json().catch(() => null)) as { authenticated?: boolean } | null;
+    return body?.authenticated === true;
+  } catch {
+    return false;
+  }
 }
 
 function restrictedRedirect(req: NextRequest, surface: string): NextResponse {
@@ -57,11 +78,29 @@ function restrictedRedirect(req: NextRequest, surface: string): NextResponse {
   return res;
 }
 
-export function middleware(req: NextRequest) {
+function accessRedirect(req: NextRequest): NextResponse {
+  const url = req.nextUrl.clone();
+  url.pathname = "/access";
+  url.search = "";
+  url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
+  const res = NextResponse.redirect(url, 307);
+  applySecurityHeaders(res);
+  return res;
+}
+
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Allow public access tooling.
-  if (pathname === "/access" || pathname === "/restricted" || pathname.startsWith("/api/access")) {
+  if (
+    pathname === "/access" ||
+    pathname === "/restricted" ||
+    pathname === "/api/access" ||
+    pathname === "/api/access/request" ||
+    pathname === "/api/access/session" ||
+    pathname === "/api/access/sign-out" ||
+    pathname === "/api/access/verify"
+  ) {
     const res = NextResponse.next();
     applySecurityHeaders(res);
     return res;
@@ -70,13 +109,18 @@ export function middleware(req: NextRequest) {
   // Public verifier BFF (`/api/events/*/exports`, `/api/exports/*/download`) must not be
   // cookie-rewritten: POST would hit a page route and return 405. Upstream API auth uses
   // server-side QARAQUTU_ACCESS_TOKEN from route handlers.
-  const protectedSurface =
+  const protectedPageSurface =
+    pathname === "/verifier" ||
     pathname === "/admin" ||
     pathname === "/console" ||
-    pathname === "/verifier/golden" ||
-    pathname.startsWith("/api/diagnostics");
+    pathname === "/protected" ||
+    pathname === "/verifier/golden";
 
-  if (protectedSurface && !hasValidAccess(req)) {
+  const protectedApiSurface = pathname.startsWith("/api/diagnostics");
+
+  const hasAccess = (await hasEmailSessionAccess(req)) || hasLegacySharedTokenAccess(req);
+
+  if ((protectedPageSurface || protectedApiSurface) && !hasAccess) {
     // Minimal audit trace (no secrets).
     console.warn("qaraqutu_access_denied", {
       surface: pathname,
@@ -95,6 +139,10 @@ export function middleware(req: NextRequest) {
         : pathname.startsWith("/api/diagnostics")
         ? "admin-diagnostics"
         : "protected";
+
+    if (protectedPageSurface) {
+      return accessRedirect(req);
+    }
 
     return restrictedRedirect(req, surfaceName);
   }

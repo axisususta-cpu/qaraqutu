@@ -18,6 +18,10 @@ export function normalizeQaraqutuAccessToken(raw: string | undefined | null): st
 export function resolveBffUpstreamToken(req: NextRequest): string {
   const envTok = normalizeQaraqutuAccessToken(process.env.QARAQUTU_ACCESS_TOKEN);
   if (envTok.length >= 12) return envTok;
+
+  const allowLegacyCookieFallback = (process.env.ACCESS_ALLOW_SHARED_TOKEN_FALLBACK ?? "").toLowerCase() === "true";
+  if (!allowLegacyCookieFallback) return "";
+
   const cookieTok = normalizeQaraqutuAccessToken(req.cookies.get(QARAQUTU_ACCESS_COOKIE)?.value);
   return cookieTok.length >= 12 ? cookieTok : "";
 }

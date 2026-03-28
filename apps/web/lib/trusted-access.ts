@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { normalizeQaraqutuAccessToken, QARAQUTU_ACCESS_COOKIE } from "./access-token";
+import { ACCESS_SESSION_COOKIE, verifySessionToken } from "./access-auth";
 
 export type TrustedRoleId =
   | "insurance"
@@ -55,15 +55,9 @@ export function trustedRoleExportProfile(role: TrustedRoleId): "claims" | "legal
   return TRUSTED_ROLES.find((item) => item.id === role)?.exportProfile ?? "legal";
 }
 
-function expectedAccessToken(): string {
-  return normalizeQaraqutuAccessToken(process.env.QARAQUTU_ACCESS_TOKEN);
-}
-
 export function hasTrustedAccessFromCookies(cookies: CookieReader): boolean {
-  const expected = expectedAccessToken();
-  if (expected.length < 12) return false;
-  const actual = normalizeQaraqutuAccessToken(cookies.get(QARAQUTU_ACCESS_COOKIE)?.value);
-  return actual === expected;
+  const sessionToken = cookies.get(ACCESS_SESSION_COOKIE)?.value;
+  return verifySessionToken(sessionToken) !== null;
 }
 
 export function hasTrustedAccessSession(req: NextRequest): boolean {
@@ -71,11 +65,12 @@ export function hasTrustedAccessSession(req: NextRequest): boolean {
 }
 
 export function resolveTrustedRoleFromCookies(cookies: CookieReader): TrustedRoleId | null {
-  if (!hasTrustedAccessFromCookies(cookies)) {
+  const sessionToken = cookies.get(ACCESS_SESSION_COOKIE)?.value;
+  const session = verifySessionToken(sessionToken);
+  if (!session) {
     return null;
   }
-
-  return normalizeTrustedRole(cookies.get(QARAQUTU_ROLE_COOKIE)?.value) ?? defaultTrustedRole();
+  return normalizeTrustedRole(session.role) ?? defaultTrustedRole();
 }
 
 export function resolveTrustedRole(req: NextRequest): TrustedRoleId | null {
@@ -83,10 +78,6 @@ export function resolveTrustedRole(req: NextRequest): TrustedRoleId | null {
 }
 
 export function resolveTrustedSubjectFromCookies(cookies: CookieReader): string | null {
-  if (!hasTrustedAccessFromCookies(cookies)) {
-    return null;
-  }
-
   return normalizeTrustedSubject(cookies.get(QARAQUTU_SUBJECT_COOKIE)?.value);
 }
 
