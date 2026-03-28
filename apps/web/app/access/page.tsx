@@ -30,6 +30,26 @@ function AccessPageInner() {
   const next = useMemo(() => safeNext(searchParams?.get("next") ?? null), [searchParams]);
   const queryError = searchParams?.get("error");
 
+  function mapAccessError(raw: string | undefined): string {
+    if (!raw) {
+      return lang === "tr" ? "Erişim isteği gönderilemedi" : "Access request failed";
+    }
+
+    if (raw.includes("email_provider_not_configured")) {
+      return lang === "tr"
+        ? "E-posta teslim sağlayıcısı production ortamında yapılandırılmadığı için doğrulama linki gönderilemiyor."
+        : "Verification email cannot be delivered because the production email provider is not configured.";
+    }
+
+    if (raw.includes("email_provider_error_")) {
+      return lang === "tr"
+        ? "E-posta sağlayıcısı teslim isteğini reddetti. Lütfen daha sonra tekrar deneyin."
+        : "Email provider rejected the delivery request. Please try again later.";
+    }
+
+    return raw;
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
@@ -50,7 +70,7 @@ function AccessPageInner() {
       };
 
       if (!res.ok) {
-        setError(json?.reason ?? json?.error ?? `Access request failed (HTTP ${res.status})`);
+        setError(mapAccessError(json?.reason ?? json?.error ?? `Access request failed (HTTP ${res.status})`));
         return;
       }
 
