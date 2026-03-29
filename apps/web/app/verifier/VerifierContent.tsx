@@ -790,6 +790,58 @@ interface DerivedEvidenceRow {
   profileRelevance: string;
 }
 
+interface ViewportSensorSummary {
+  hasLidar: boolean;
+  hasCamera: boolean;
+  hasTelemetry: boolean;
+  cameraSources: string[];
+  sourceSummary: string[];
+  recordedPackageSummary: string | null;
+}
+
+function extractViewportSensorSummary(
+  recordedItems: RecordedEvidenceItem[] | undefined,
+  recordedSummary: string | null | undefined,
+  language: "en" | "tr"
+): ViewportSensorSummary {
+  const items = recordedItems ?? [];
+  const lidarRe = /(lidar|point\s*cloud|3d\s*scan|3d\s*tarama)/i;
+  const cameraRe = /(camera|video|frame|cctv|security\s*cam|dash\s*cam|vision|optical|rgb)/i;
+  const telemetryRe = /(telemetry|imu|gps|can\b|odometry|rf\s*link|altitude|speed|nav)/i;
+
+  const sourceLines = items.map((item) => {
+    return [item.sourceType, item.contentType, item.machineLabel, item.displayLabel, item.displayLabelTr]
+      .filter(Boolean)
+      .join(" ");
+  });
+
+  const hasLidar = sourceLines.some((line) => lidarRe.test(line));
+  const hasCamera = sourceLines.some((line) => cameraRe.test(line));
+  const hasTelemetry = sourceLines.some((line) => telemetryRe.test(line));
+
+  const cameraSources = Array.from(
+    new Set(
+      items
+        .filter((item) => cameraRe.test([item.sourceType, item.contentType, item.machineLabel, item.displayLabel, item.displayLabelTr].filter(Boolean).join(" ")))
+        .map((item) => {
+          const preferredLabel = language === "tr" ? item.displayLabelTr ?? item.displayLabel : item.displayLabel;
+          return preferredLabel || `${item.sourceType} / ${item.sourceId}`;
+        })
+    )
+  ).slice(0, 4);
+
+  const sourceSummary = Array.from(new Set(items.map((item) => item.sourceType).filter(Boolean))).slice(0, 5);
+
+  return {
+    hasLidar,
+    hasCamera,
+    hasTelemetry,
+    cameraSources,
+    sourceSummary,
+    recordedPackageSummary: recordedSummary?.trim() ? recordedSummary.trim() : null,
+  };
+}
+
 function toRecordedRows(items: RecordedEvidenceItem[], lang: "en" | "tr"): RecordedEvidenceRow[] {
   return items.map((r) => {
     const label =
@@ -1390,6 +1442,11 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
   const visibleRecorded = selectedCase?.recordedEvidence?.length
     ? toRecordedRows(selectedCase.recordedEvidence, language)
     : [];
+  const viewportSensorSummary = extractViewportSensorSummary(
+    selectedCase?.recordedEvidence,
+    selectedCase?.recordedEvidenceSummary,
+    language
+  );
   const visibleDerived = selectedCase?.derivedAssessment?.length
     ? toDerivedRows(selectedCase.derivedAssessment, language)
     : [];
@@ -3026,6 +3083,7 @@ export function VerifierContent({ initialEventId, trustedRole }: { initialEventI
                       role={selectedRoleLens}
                       incidentPhase={selectedPhase}
                       incidentSpine={selectedCase?.incidentSpine ?? null}
+                      sensorSummary={viewportSensorSummary}
                     />
                   </div>
 

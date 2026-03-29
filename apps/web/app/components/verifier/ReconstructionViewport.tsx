@@ -33,6 +33,14 @@ export type ReconstructionViewportProps = {
       };
     }>;
   } | null;
+  sensorSummary?: {
+    hasLidar: boolean;
+    hasCamera: boolean;
+    hasTelemetry: boolean;
+    cameraSources: string[];
+    sourceSummary: string[];
+    recordedPackageSummary: string | null;
+  };
 };
 
 function stableHash(s: string): number {
@@ -709,7 +717,7 @@ function MetaCluster({
 }
 
 export function ReconstructionViewport(props: ReconstructionViewportProps) {
-  const { language, system, incidentClass, eventId, title, verificationState, role, incidentPhase, incidentSpine } = props;
+  const { language, system, incidentClass, eventId, title, verificationState, role, incidentPhase, incidentSpine, sensorSummary } = props;
   const scene = resolveSceneKind(system, incidentClass, eventId);
   const seed = eventId ? stableHash(eventId) : stableHash(system + (title ?? ""));
   const lat = eventId ? fmtCoord(seed, 41.0, 4) : "—";
@@ -829,6 +837,52 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
             ? "Robot interaction lane is visible, but does not outrank public-context questions."
             : "Robot interaction lane stays short of full readiness until field context closes.";
 
+    const hasLidar = sensorSummary?.hasLidar ?? false;
+    const hasCamera = sensorSummary?.hasCamera ?? false;
+    const hasTelemetry = sensorSummary?.hasTelemetry ?? false;
+    const cameraSources = sensorSummary?.cameraSources ?? [];
+    const sourceSummary = sensorSummary?.sourceSummary ?? [];
+    const recordedPackageSummary = sensorSummary?.recordedPackageSummary ?? null;
+
+    const lidarLine1 = hasLidar
+      ? language === "tr"
+        ? "Bu vakada LiDAR/3D tarama kaydı bağlı görünüyor."
+        : "LiDAR/3D scan record is linked for this case."
+      : language === "tr"
+        ? "Bu vakada LiDAR kaydı mevcut değil."
+        : "No LiDAR record is available in this case.";
+    const lidarLine2 = language === "tr"
+      ? "İnceleme kamera kayıtları ve diğer recorded evidence üzerinden sürdürülüyor."
+      : "Review continues over camera records and other recorded evidence.";
+
+    const cameraTitle =
+      system === "vehicle"
+        ? language === "tr"
+          ? "Araç kamerası / frame strip"
+          : "Vehicle camera / frame strip"
+        : system === "drone"
+          ? language === "tr"
+            ? "Drone görüntüsü / multi-view"
+            : "Drone view / multi-view"
+          : language === "tr"
+            ? "Robot görüş akışı / güvenlik kamerası"
+            : "Robot vision feed / security camera";
+
+    const cameraPanelLabel = hasCamera
+      ? language === "tr"
+        ? "Kamera recorded layer görünür"
+        : "Camera recorded layer visible"
+      : language === "tr"
+        ? "Kamera kaydı görünmüyor"
+        : "Camera record not visible";
+
+    const sourceTypeLabel =
+      sourceSummary.length > 0
+        ? sourceSummary.join(" · ")
+        : language === "tr"
+          ? "Kayıtlı kaynak türü bağlanmadı"
+          : "Recorded source type not linked";
+
 
   return (
     <section
@@ -910,9 +964,10 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
       <div
         style={{
           position: "relative",
-          flex: 1,
+          flex: "1 1 0",
           minHeight: 0,
           background: "var(--panel-raised)",
+          borderBottom: "1px solid var(--border)",
         }}
       >
         <div
@@ -929,6 +984,33 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
           </div>
         </div>
         <MetaCluster lat={lat} lon={lon} zone={zone} conf={conf} />
+        <div
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            zIndex: 3,
+            border: "1px solid var(--border-strong)",
+            background: "rgba(0,0,0,0.55)",
+            padding: "8px 10px",
+            minWidth: 250,
+            maxWidth: 340,
+            pointerEvents: "none",
+          }}
+        >
+          <div style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-dim)", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "5px" }}>
+            {language === "tr" ? "LIDAR / 3D TARAMA ALANI" : "LIDAR / 3D SCAN LANE"}
+          </div>
+          <div style={{ fontSize: "10px", color: hasLidar ? "#7fd2ff" : "var(--text-secondary)", lineHeight: 1.45, marginBottom: "3px" }}>
+            {lidarLine1}
+          </div>
+          <div style={{ fontSize: "9px", color: "var(--text-dim)", lineHeight: 1.4 }}>{lidarLine2}</div>
+          {!hasLidar ? (
+            <div style={{ marginTop: "6px", fontFamily: MONO, fontSize: "8px", color: "var(--text-dim)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+              {language === "tr" ? "Temsilî boş slot · gelecekte sensör omurgasına uyumlu" : "Representational empty slot · compatible with future sensor spine"}
+            </div>
+          ) : null}
+        </div>
         <div
           style={{
             position: "absolute",
@@ -963,6 +1045,114 @@ export function ReconstructionViewport(props: ReconstructionViewportProps) {
             <span style={{ fontFamily: MONO, fontSize: "9px", color: "var(--text-secondary)" }}>{phaseVisual.label}</span>
           </div>
         </div>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1.6fr) minmax(0, 1fr)",
+          gap: "0px",
+          borderTop: "1px solid var(--border)",
+          background: "#12141b",
+        }}
+      >
+        <section style={{ padding: "9px 10px", borderRight: "1px solid var(--border)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: "6px" }}>
+            <span style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--text-dim)" }}>
+              {language === "tr" ? "KAMERA KAYIT ALANI" : "CAMERA RECORDING LANE"}
+            </span>
+            <span
+              style={{
+                fontFamily: MONO,
+                fontSize: "8px",
+                color: hasCamera ? "var(--accent)" : "var(--text-dim)",
+                border: "1px solid var(--border-strong)",
+                padding: "1px 6px",
+              }}
+            >
+              {cameraPanelLabel}
+            </span>
+          </div>
+          <div style={{ fontSize: "10px", color: "var(--text-secondary)", lineHeight: 1.45, marginBottom: "6px" }}>
+            {cameraTitle}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "6px", marginBottom: "6px" }}>
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div
+                key={idx}
+                style={{
+                  border: "1px solid var(--border)",
+                  background: hasCamera ? "linear-gradient(135deg, rgba(232,101,10,0.08), rgba(94,164,255,0.05))" : "var(--panel-raised)",
+                  minHeight: 42,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontFamily: MONO,
+                  fontSize: "8px",
+                  color: "var(--text-dim)",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                }}
+              >
+                {language === "tr" ? `FRAME ${idx + 1}` : `FRAME ${idx + 1}`}
+              </div>
+            ))}
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: "8px", color: "var(--text-dim)", lineHeight: 1.45 }}>
+            {cameraSources.length > 0
+              ? cameraSources.join(" · ")
+              : language === "tr"
+                ? "Araç / drone / robot / güvenlik kamera akışı bu vakada bağlı görünmüyor."
+                : "Vehicle / drone / robot / security camera stream is not linked in this case."}
+          </div>
+          <div style={{ marginTop: "6px", fontFamily: MONO, fontSize: "8px", color: "var(--text-dim)", lineHeight: 1.45 }}>
+            {language === "tr"
+              ? "Recorded: video/raw frame. Derived: overlay/annotation/highlight/model reading ayrı işaretlenir."
+              : "Recorded: video/raw frame. Derived: overlay/annotation/highlight/model reading are marked separately."}
+          </div>
+        </section>
+
+        <section style={{ padding: "9px 10px" }}>
+          <div style={{ fontFamily: MONO, fontSize: "9px", letterSpacing: "0.13em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "7px" }}>
+            {language === "tr" ? "SENSÖR DURUMU / KAYNAK ÖZETİ" : "SENSOR STATUS / SOURCE SUMMARY"}
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "5px", marginBottom: "7px" }}>
+            {[
+              { label: "LiDAR", ok: hasLidar },
+              { label: language === "tr" ? "Kamera" : "Camera", ok: hasCamera },
+              { label: language === "tr" ? "Telemetri" : "Telemetry", ok: hasTelemetry },
+            ].map((item) => (
+              <div
+                key={item.label}
+                style={{
+                  border: "1px solid var(--border)",
+                  background: "var(--panel-raised)",
+                  padding: "4px 6px",
+                }}
+              >
+                <div style={{ fontFamily: MONO, fontSize: "8px", color: "var(--text-dim)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                  {item.label}
+                </div>
+                <div style={{ fontFamily: MONO, fontSize: "9px", color: item.ok ? "var(--accent)" : "var(--text-secondary)", marginTop: 1 }}>
+                  {item.ok ? (language === "tr" ? "var" : "present") : (language === "tr" ? "yok" : "absent")}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ fontSize: "9px", color: "var(--text-secondary)", lineHeight: 1.45, marginBottom: "5px" }}>
+            <strong style={{ color: "var(--text-muted)", fontWeight: 700 }}>{language === "tr" ? "Kaynak türleri:" : "Source types:"}</strong>{" "}
+            {sourceTypeLabel}
+          </div>
+          <div style={{ fontSize: "9px", color: "var(--text-secondary)", lineHeight: 1.45, marginBottom: "5px" }}>
+            <strong style={{ color: "var(--text-muted)", fontWeight: 700 }}>{language === "tr" ? "Recorded paket:" : "Recorded package:"}</strong>{" "}
+            {recordedPackageSummary ?? (language === "tr" ? "Özet bağlı değil" : "Summary not linked")}
+          </div>
+          <div style={{ fontFamily: MONO, fontSize: "8px", color: "var(--text-dim)", lineHeight: 1.45 }}>
+            {language === "tr"
+              ? "Gelecek uyumu: fabrika sensör konfigürasyonu, paket/trim donanımı, aftermarket eklemeler, sensör çıkarımı ve olay anı erişilebilirlik bilgisi için uyumlu slot yapısı korunur."
+              : "Future-compatible framing: slot structure remains compatible with factory config, trim hardware presence, aftermarket additions, sensor removal history, and incident-time availability."}
+          </div>
+        </section>
       </div>
 
       <div style={{ display: "none" }}>
